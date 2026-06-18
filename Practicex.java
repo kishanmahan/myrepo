@@ -1,6 +1,7 @@
 public class Practicex{
 public Practicex(){
 System.out.println("practice man be perfect");
+  System.out.println("merge from ui");
 }
 public static void main(String args[]){
 Practicex p=new Practicex();
