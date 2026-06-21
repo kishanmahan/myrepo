@@ -1,0 +1,778 @@
+()1. SQL Statement (Main Aggregation Query):-
+Ye query tab chalti hai jab aap "Account Aggregation" task chalate hain taaki saare users ek saath aa jayein.
+Kya bharna hai: SELECT * FROM identityiq.spt_identity;
+(Note: Agar aap practice kar rahe hain toh SailPoint ki apni identity table spt_identity ka use kar sakte hain).
+Line Reference: Aapki file mein exact query nahi hai, lekin database name Line 74 (identityiq) se liya gaya hai.
+
+2. getObjectSQL (Single Identity Query):-
+Ye tab kaam aati hai jab SailPoint ko kisi ek specific user ka data check karna ho.
+Kya bharna hai: SELECT * FROM identityiq.spt_identity WHERE name = '$(identity)';
+Logic: Yahan $(identity) ek placeholder hai jise SailPoint khud replace karta hai.
+
+()Step-by-Step Summary:-
+--Test Connection SQL (Top): Isme aapne pehle se SELECT 1; likha hua hai (Sahi hai).
+--SQL Statement (Middle): Isme SELECT * FROM spt_identity; likhein.
+--getObjectSQL (Bottom): Isme SELECT * FROM spt_identity WHERE name = '$(identity)'; likhein.
+--------------------------------------------------------------------------------------------------
+()application definition->application-> type-jdbc->details->yaha ye teeno box kya karte hai:-
+1. SQL Statement (Aggregation/Reconciliation):-
+Ye table se saare users ko pull karta hai.
+SQL
+Copy code
+SELECT * FROM target_users;
+Agar specific columns chahiye:
+SQL
+Copy code
+SELECT 
+    id,
+    username,
+    firstname,
+    lastname,
+    email,
+    department,
+    status
+FROM target_users;
+
+2. getObjectSQL:-
+Ye single user ko fetch karta hai jab IIQ kisi identity ko search karta hai.
+SQL
+Copy code
+SELECT * 
+FROM target_users
+WHERE username = '$(identity)';
+Ya employeeId se:
+SQL
+Copy code
+SELECT * 
+FROM target_users
+WHERE employee_id = '$(identity)';
+👉 $(identity) runtime pe SailPoint replace karta hai.
+Example:
+SQL
+Copy code
+WHERE username = 'kishan'
+
+3. Test Connection SQL box me simple SQL likha jata hai jisse SailPoint check karta hai ki database connection successful hai ya nahi.
+MySQL ke liye sabse common:
+SQL
+Copy code
+SELECT 1;
+
+Ya:
+SQL
+Copy code
+SELECT NOW();
+
+Ya:
+SQL
+Copy code
+SELECT CURRENT_DATE();
+Ye sirf testing ke liye hota hai — provisioning ya aggregation nahi karta.
+
+Tumhare case me best:-
+SQL
+Copy code
+SELECT 1;
+Kyunki ye lightweight aur fast hai.
+
+()Box Name-----Kaam:-
+()Test Connection SQL-----Sirf DB connection test karta hai
+()SQL Statement------Aggregate/Reconciliation karta hai (users SailPoint me lata hai)
+()getObjectSQL-----
+Single identity fetch karta hai/search karta hai.
+
+()yaha workbench me create update delete kaha hota hai?
+--()Create / Update / Delete Kahan Hota Hai? 🔥
+Ye in 3 boxes me nahi hota.
+Ye hota hai:-
+()Provisioning Rule
+()JDBC Provision Rule
+()Provisioning Policy
+()Direct JDBC Provisioning Queries
+me.
+------------------------------------------------------------------------------
+
+
+
+------------------------------------------------------
+1. useExecuteQuery:-
+Iska use tab hota hai jab aapki SQL query bahut badi ho ya wo complex logic use kar rahi ho jo standard JDBC fetch se slow ho rahi ho.
+Recommendation: Ise khali (uncheck) rehne dein. Simple SELECT queries ke liye iski zaroorat nahi padti.
+
+2. Direct Permission Execute Query:-
+Ye tab kaam aata hai jab aap users ke saath-saath unki Permissions (jaise Roles ya Rights) bhi isi database table se fetch kar rahe hon.
+Recommendation: Ise bhi khali (uncheck) rehne dein, kyunki abhi aap sirf basic account aggregation (users ka data) kar rahe hain.
+
+3. Enable Retry:-
+Ye connectivity ke liye bahut kaam ka feature hai. Agar database server temporary down ho jaye ya network issue aaye, 
+toh SailPoint turant fail hone ki jagah dobara koshish (retry) karega.
+Recommendation: Ise Check (Tick) kar dein. Ye production environment mein hamesha on rakha jata hai taaki task beech mein na ruke.
+
+()use stored procedure:-
+1. Ye kya karta hai?
+Agar aap is checkbox ko Tick (Check) karte hain, toh SailPoint ko lagta hai ki niche jo box mein aapne likha hai, 
+wo koi table query nahi balki ek procedure ka naam hai.
+Normal Query: SELECT * FROM users;
+Stored Procedure: call GetAllUsers();
+
+2. Iska use kab karna chahiye?
+Complex Logic: Jab aapko data directly ek table se nahi mil raha,balki 3-4 tables ko join karke ya kisi calculation ke baad nikalna pad raha ho.
+Security: Kuch companies direct table access nahi deti; wo sirf ek Procedure deti hain jise aap call kar sakte hain.
+Performance: Bahut bade data set ke liye kabhi-kabhi database level par procedure chalana zyada fast hota hai.
+
+3. Aapke case mein kya karna hai?
+Kyunki aapne boxes mein direct SELECT * FROM spt_identity; likha hai, isliye:-
+Ise UNCHECK (Khali) hi rehne dein. * Agar aap ise tick kar denge, 
+toh SailPoint query ko procedure samajh kar chalayega aur aapko "Syntax Error" ya "Procedure not found" ka error milega.
+
+
+--Identity Attribute: Isme id ya name likhein. Ye wo field honi chahiye jo database mein har user ke liye unique ho.
+
+--Display Attribute: Isme name ya firstname likhein. Ye wo naam hai jo SailPoint UI mein user ke account par dikhega.
+
+--Native Object Type: Ise account hi rehne dein (jaisa ki photo mein dikh raha hai).
+
+--Instance Attribute: Ise khali chodd sakte hain (isiki aksar zaroorat nahi hoti).
+
+()JDBC Connection Settings:-
+--Connection User->identityiq
+--Connection Password->root
+()Database URL:->yaha host ko localhost karde aur last me \database name(workbench ka)
+()JDBC Driver:-com.mysql.cj.jdbc.Driver
+
+()Test Connection SQL:-
+--Use Stored Procedure->untick
+--SELECT 1; //box me likho
+()SQL Statement
+--Use Stored Procedure->untick
+--SELECT * FROM spt_identity;
+()getObjectSQL:-
+--Use Stored Procedure->untick
+--SELECT * FROM spt_identity WHERE name = '$(identity)';
+()useExecuteQuery->untick
+()Direct Permission Execute Query->untick
+()Enable Retry->untick
+
+()3.correllation rule Kab Chalta Hai?
+Aggregation ke waqt, SailPoint har ek account ke liye is rule ko run karega. Rule jo identityAttributeValue return karega, 
+SailPoint usi value wali Identity se account ko link kar dega.
+ex:-
+import sailpoint.object.Identity;
+import sailpoint.object.ResourceObject;
+import java.util.Map;
+import java.util.HashMap;
+
+// Return map initialize karein
+Map returnMap = new HashMap();
+
+// Dhayan dein: Yahan 'account' use karna hai 'obj' nahi
+if (account != null) {
+    // Database se 'id' column ki value uthao
+    String nativeId = account.getString("id");
+
+    if (nativeId != null && !nativeId.trim().isEmpty()) {
+        /* identityAttributeName: Identity Warehouse mein "name" attribute se match karo
+           identityAttributeValue: Database ki ID value
+        */
+        returnMap.put("identityAttributeName", "name"); 
+        returnMap.put("identityAttributeValue", nativeId.trim());
+    }
+}
+
+return returnMap;
+------------------------------------------------------------------------------
+import sailpoint.object.Identity;
+import sailpoint.object.ResourceObject;
+import java.util.HashMap;
+import java.util.Map;
+
+// Ye map SailPoint ko batayega ki kaunsi Identity dhundni hai
+Map returnMap = new HashMap();
+
+// Account se 'name' attribute uthao
+String accountName = obj.getString("name").trim();
+
+if (accountName != null) {
+    // Identity dhundne ke liye logic
+    returnMap.put("identityAttributeName", "name");
+    returnMap.put("identityAttributeValue", accountName);
+}
+return returnMap;
+//Output:returnMap ka:-{identityAttributeName=name, identityAttributeValue=EMP101}
+
+
+//////////////*
+1. obj Kya Hai?
+orio (ResourceObject) se import karte hai.(import sailpoint.object.ResourceObject;)
+orio ka full form hota hai Object Request Internal Object (ya Resource Object).
+
+Ye ek Pre-defined Variable hai. Jab SailPoint aggregation karta hai,
+toh wo database ki har ek row ko ek "Object" mein convert kar deta hai. 
+obj wahi object hai jisme us waqt ki database row ka saara data bhara hota hai.
+Asaan bhasha mein: Samjhiye obj ek "Packet" hai jo database se ek user ka data utha kar rule ke paas laya hai.
+
+2. orio.getString("name") Kya Karta Hai?
+Ye us "Packet" (orio) ke andar se kisi specific value ko nikalne ka tarika hai.
+
+() .getString: Ye ek method hai jo batata hai ki hume data "String" (text) format mein chahiye.
+
+() "name": Ye aapke Schema Attribute ka naam hai. Jo naam aapne Schema tab mein rakha tha (jaise id, name, email), wahi yahan likhna hota hai.
+
+Pura matlab: "Us packet (orio) ke andar jao aur wahan jo 'name' naam ka column/attribute hai, uski text value mujhe nikal kar de do."
+*///////////
+
+()1. Schema mein id ka kya kaam hai?
+Jab aap Schema mein id ko Identity Attribute banate hain, 
+toh SailPoint us id (jaise 0a2ab6fa...) ko account ka Unique Identifier (Native Identity) maanta hai.
+Iska matlab hai ki SailPoint har account ko uski id se pehchanyega.
+Agar aapne Schema mein Identity Attribute ko id set kiya hai, toh correlation rule mein bhi wahi attribute use karna sabse safe rehta hai,
+ex:-
+import sailpoint.object.ResourceObject;
+import java.util.Map;
+import java.util.HashMap;
+
+// Return map initialize karein
+Map returnMap = new HashMap();
+
+if (obj != null) {
+    // Database se 'id' column ki value uthao
+    String nativeId = obj.getString("id");
+
+    if (nativeId != null && !nativeId.trim().isEmpty()) {
+        /* identityAttributeName: Identity Warehouse mein jo attribute hai (e.g., "name")
+           identityAttributeValue: Database se aayi hui unique ID
+        */
+        returnMap.put("identityAttributeName", "name"); 
+        returnMap.put("identityAttributeValue", nativeId.trim());
+    }
+}
+
+return returnMap;
+///////////*
+()String nativeId = obj.getString("id");
+Matlab: Hum obj(Account) ke andar se "id" naam ka column/attribute nikal rahe hain. 
+Maaniye database mein ID 8512500 hai, toh ab nativeId ki value 8512500 ho gayi.
+
+6. SailPoint ko Instruction dena:-
+Java
+returnMap.put("identityAttributeName", "name");
+Matlab: Hum box mein pehla instruction daal rahe hain: "Hey SailPoint, Identity Warehouse ke 'name' column mein ja kar dhundo."
+
+7. Match karne wali Value dena:-
+Java
+returnMap.put("identityAttributeValue", nativeId.trim());
+Matlab: Hum box mein doosra instruction daal rahe hain: "Wahan us bande ko dhundo jiska naam wahi hai jo is account ki 'id' hai (yaani 8512500)."
+
+8. Result Wapas bhejna:-
+Java
+return returnMap;
+Matlab: Rule khatam. SailPoint ab is box ko kholega, instructions padhega, 
+aur agar use name = 8512500 wali Identity mil gayi, toh account ko match kar dega.
+*///////////
+
+2. Account Aggregation Task Banayein:-
+-Setup-> Tasks mein jayein.
+-New Task par click karein aur Account Aggregation select karein.
+-Task ko ek naam dein (e.g., JDBC_User_Import).
+-Applications to Scan mein apni JDBC application select karein.
+-niche scroll karein aur "Check Correlation" wale box ko Tick (Check) zaroori karein.
+-Save and Execute par click karein.
+
+()account aggregation:-
+1. Only create links if they can be correlated to an existing identity.
+Kyun tick karein: Ye sabse zaroori checkbox hai. Ise tick karne ka matlab hai: "Agar account kisi identity se match ho raha hai, 
+tabhi link karo. Agar match nahi ho raha, toh naya fattu account mat banao."
+Isse aapka Identity Warehouse ganda nahi hoga (faltu IDs nahi banengi).
+
+2. Maintain identity histories:-
+Kyun tick karein: Ise tick karne se SailPoint record rakhta hai ki kab account correlate hua aur kab changes aaye. 
+Debugging ke liye ye accha rehta hai.
+
+3. Disable optimization of unchanged accounts:-
+Kyun tick karein: Kyunki aap pehli baar onboarding kar rahe hain, hum chahte hain ki SailPoint har ek account ko check kare, 
+bhale hi wo badla ho ya na badla ho. Pehli baar mein ise tick rakhna safe hai.
+
+4. Check active policies (Optional):-
+Agar aapne koi SOD (Segregation of Duties) policies banayi hain, toh ise tick karein taaki aggregation ke waqt hi violation check ho jayein.
+Inhe Tick MAT Karein:-
+Enable Delta Aggregation: Ise abhi khali chhodein. Delta tab use hota hai jab aap sirf naya/badla hua data lana chahte hain. 
+Pehli baar hamesha Full Aggregation hoti hai.
+Detect deleted accounts: Agar aap ise tick karenge aur database mein koi row nahi mili, toh SailPoint use delete maang lega. 
+Starting mein ise off hi rakhein.
+
+()error come while aggregation task run in taskresult:-
+
+2. IdentityIQ Logs (Asli Sachai):-(error)
+Kyunki aap Apache Tomcat use kar rahe hain, toh real error log file mein milega:
+Apne folder mein jayein: webapps/identityiq/WEB-INF/logs/identityiq.log
+Sabse niche jayein aur dekhein kya koi "Exception" hai.
+Common Error: Agar Java 17 ka issue hai, toh wahan InaccessibleObjectException dikhega. Agar rule mein galti hai,
+toh Beanshell script error dikhega.
+
+1. File Appender ko "Uncomment" karein:-
+Is file mein line number 53 ke aas-paas jayein. Wahan niche di gayi 5 lines ke aage se # hata dein (Uncomment karein):
+
+Properties:-
+appender.file.type=File
+appender.file.name=file
+appender.file.fileName=F:/sailpoinlogs/identityiq.log
+appender.file.layout.type=PatternLayout
+appender.file.layout.pattern=%d{ISO8601} %5p %t %c{4}:%L - %m%n
+
+2. Root Logger ko update karein:-
+Thoda niche scroll karein (line 85 ke paas) jahan rootLogger likha hai. Wahan is line ko uncomment karein:
+Properties:-
+rootLogger.appenderRef.file.ref=file
+
+
+3. Beanshell (Rule) Errors ke liye Special Logging:-
+Aapka error Beanshell rule mein hai, toh use detail mein dekhne ke liye file ke sabse niche ye line add kar dein:
+Properties:-
+logger.bsfRuleRunner.name=sailpoint.server.BSFRuleRunner
+logger.bsfRuleRunner.level=trace
+
+()Account Aggregation Task chalayein.
+
+2. Naya Error dhundne ki Technique:-
+Logs file ke sabse niche (end) par jayein aur wahan se upar ki taraf search karein.
+Log file khol kar Ctrl + End dabayein (is se aap bilkul aakhir mein pahunch jayenge).
+Ctrl + F dabayein.
+Search box mein ERROR ya Exception likhein.
+"Find Previous" ya "Up"(backward) direction select karke search karein. Is se aapko sabse latest (jo abhi hua) error dikhega.
+find name me error ka naam ya sirf error likho.
+--------------------------------------------------------------------------------------------------------------------------
+2. Identity Warehouse (Asli Data Dekhne ke liye):-
+Ye sabse best tarika hai verify karne ka:-
+Top menu mein Define > Identity Warehouse par jayein.
+Kisi bhi ek user (Identity) ko search karke uspar click karein.
+Us Identity ke andar Application tab par jayein.
+Agar wahan aapko apni JDBC Application ka icon/naam dikh raha hai aur uske niche "Correlated" likha hai, 
+toh samajh lijiye aapka kaam 100% sahi ho gaya hai.
+
+->success->ke baad kisi bhi identity warehouse ke identity me jake dekho application tab me kaha jdbc ka value correlated-true hai.
+1. Task Result (image_957a03.png):-
+Ye screenshot bata raha hai ki aggregation process ekdum smooth raha:-
+--Accounts scanned (492): Database se saara data uthaya gaya.
+--Identities updated (488): Iska matlab hai ki 488 identities ke pass ab database ka data pahunch gaya hai.
+--Accounts ignored (4): Ye shayad wo accounts hain jo rule se match nahi hue ya jinme data missing tha (ye normal hai).
+
+--------------------------------------------------------------------------------------------------------------------------------------
+1. MySQL Mein Naya Table Banayein
+Apne MySQL workbench mein ye command chalayein:-
+
+SQL
+CREATE TABLE target_system_users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    full_name VARCHAR(100),
+    email VARCHAR(100),
+    department VARCHAR(50),
+    status VARCHAR(20) DEFAULT 'Active',
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+2. Is Table ki Khasiyat:-
+Username: Isse hum SailPoint ki Identity se match karenge.
+Status: Provisioning mein hum is column ko use karke user ko 'Active' ya 'Inactive' (Disable/Enable) kar sakte hain.
+last_updated: Isse humein pata chalega ki SailPoint ne kab data update kiya.
+
+3. SailPoint mein kya setup karna hoga?
+Naya table banane ke baad aapko apni JDBC Application mein niche di gayi cheezein karni padengi:-
+Configuration Update: SQL Queries mein SELECT * FROM target_system_users dalein.
+Provisioning Policy: Ek "Create" aur "Update" policy banayein. 
+Isme aap map karenge ki SailPoint ka firstname table ke full_name mein kaise jayega.
+JDBC Provisioning Rule: Kyunki ye JDBC hai, 
+toh aapko ek Provisioning Rule likhna padega jo SailPoint ke "Plan" ko INSERT ya UPDATE queries mein badal sake.
+
+()MySQL Workbench khul gaya hai, ab hum asli Provisioning ka setup shuru karenge. 
+Iska matlab hai ki hum SailPoint se is database mein naya user "create" karenge.
+Ye rahe aapke agle steps:-
+
+1. Database se Connect karein:-
+Screenshot mein jo "Local instance MySQL80" dikh raha hai, us par click karke login karein.
+-password:-root
+
+2. Naya Table Banayein (Target System):-
+Connection khulne ke baad, SQL editor mein niche di gayi query paste karke run (Bijli wala icon) karein. 
+Hum ek aisa table banayenge jo "Provisioning" ke liye ready ho:-
+
+-- Naya database banayein (agar pehle se nahi hai)
+CREATE DATABASE IF NOT EXISTS provisioning_db;
+USE provisioning_db;
+
+-- Provisioning ke liye table
+CREATE TABLE target_users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    firstname VARCHAR(50),
+    lastname VARCHAR(50),
+    email VARCHAR(100),
+    status VARCHAR(20) DEFAULT 'Active'
+);
+
+--query ke 38 line ke baad paste karo:-
+--Bijli (Lightning Bolt) wala icon: Jisme sirf bijli bani hai (pehla icon), wo puri file ko run kar dega.
+--Bijli + I-Beam wala icon: Jisme bijli ke saath ek cursor bana hai (dusra icon), 
+wo sirf wahi query run karega jahan aapka mouse cursor hai.
+
+()error:-can't create database,identityiq db exists.
+--Sahi Tarika (Sirf Nayi Query Run Karein):-
+SQL Editor mein niche scroll karein jahan aapne naya code likha hai (Line 41 se 51).
+Mouse se Line 41 se lekar Line 51 tak ko pura Select (Highlight) kar lijiye.
+Ab toolbar mein Lightning Bolt (Bijli wala icon) dabayein.
+Dhyan rakhein: Agar aap select nahi karenge toh wo pura page run karega aur wahi "database exists" wala error dega.
+
+()Error Code 1046 ka matlab hai: "No database selected".
+
+()CREATE DATABASE IF NOT EXISTS provisioning_db;
+USE provisioning_db;
+
+()CREATE DATABASE provisioning_db;
+
+()USE provisioning_db;
+
+()CREATE TABLE target_users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    firstname VARCHAR(50),
+    lastname VARCHAR(50),
+    email VARCHAR(100),
+    status VARCHAR(20) DEFAULT 'Active'
+);
+
+
+
+1. Database ko "Zinda" karke dekhein (Refresh)
+Left side mein jahan SCHEMAS panel hai, wahan kisi bhi khali jagah par Right-Click kariye aur "Refresh All" par click kadiye.
+Ab dekhiye niche provisioning_db list mein aa jayega.
+
+2. Table ko Force-Run kariye
+Aapne jo blue highlight kiya hai, usse pehle sirf ek line aur select karni hai. Code ko aise select karke run kariye:
+Mouse se Line 45 (USE provisioning_db;) se lekar Line 54 () ;) tak pura select kariye.
+Phir Lightning Bolt (Bijli icon) dabaiye.
+-------------------
+
+
+--Identity Attribute: Isme id ya name likhein. Ye wo field honi chahiye jo database mein har user ke liye unique ho.
+
+--Display Attribute: Isme name ya firstname likhein. Ye wo naam hai jo SailPoint UI mein user ke account par dikhega.
+
+--Native Object Type: Ise account hi rehne dein (jaisa ki photo mein dikh raha hai).
+
+--Instance Attribute: Ise khali chodd sakte hain (isiki aksar zaroorat nahi hoti).
+
+()JDBC Connection Settings:-
+--Connection User->identityiq
+--Connection Password->root
+()Database URL: jdbc:mysql://localhost:3306/provisioning_db
+()JDBC Driver:-com.mysql.cj.jdbc.Driver
+
+SQL Query: SELECT * FROM target_users;
+
+GetObject Query: SELECT * FROM target_users WHERE username = '$(identity)';
+
+()schema tab:-
+--Native Object Type: account likhein.
+--Attributes section:-
+username (Ise Identity Attribute aur Display Attribute par check mark karein).
+
+1. Attributes Add Karein:-
+"Add New Schema Attribute" button par click karein aur ek-ek karke ye 5 attributes add karein 
+(dhyaan rahe ki spelling exactly MySQL table jaisi ho):-
+
+Name	     Type	Description (Optional)
+username:---String:--Unique ID
+firstname:--String:--First Name
+lastname:---String:--Last Name
+email:------String:--Email Address
+status:-----String:--Account Status
+
+()username:-ko edit->set as identity attribute.
+->kya tick karu edit me.
+Pehle "Set as Identity Attribute" button par click karo.
+Phir "Set as Display Attribute" button par click karo.
+Aur sabse zaroori: Beech mein jo "Entitlement" likha hai, 
+us chote box ko Tick (Check) ✅ kar do. Iske bina Role wala dropdown khali hi rahega.
+
+()Access denied ctrl+f me de aur error dekh.
+
+1. MySQL Permissions (Most Likely):-
+Aapne MySQL mein database toh bana diya, lekin identityiq user ko use karne ki permission nahi di. 
+Ise fix karne ke liye MySQL Workbench mein ye query run karke Green Tick check karein:-
+
+SQL
+-- IdentityIQ user ko naye database ka pura access de dein
+GRANT ALL PRIVILEGES ON provisioning_db.* TO 'identityiq'@'localhost';
+
+-- Permissions ko turant refresh karein
+FLUSH PRIVILEGES;
+
+------------------------------------------sailpoint me jao->
+3. JDBC Provisioning Rule (Asli Magic):-
+Kyunki ye JDBC hai, SailPoint ko ye nahi pata ki table mein data kaise daalna hai. 
+Humein ek chota sa Beanshell Rule likhna hoga jo INSERT query chalaye.
+Application mein Rules tab par jayein.
+JDBC Provisioning Rule wale dropdown mein Create New Rule karein (Ya agar pehle se bana hai toh wahi use karein).
+Usme ye basic logic daalna hoga:-
+
+()Provision Rule:-Is dropdown ke bagal mein jo ... (Three dots) wala button hai, us par click karein. 
+Ek naya popup khulega jisme hum Beanshell code likhenge.
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.api.Provisioner;
+
+// 1. Connection check karein (SailPoint automatically 'connection' object deta hai)
+if (connection == null) {
+    return; 
+}
+
+// 2. Plan se Account Requests nikalna
+List acctReqs = plan.getAccountRequests();
+if (acctReqs != null) {
+    for (AccountRequest acctReq : acctReqs) {
+        // Sirf 'Create' operation ke liye logic
+        if (AccountRequest.Operation.Create.equals(acctReq.getOperation())) {
+            
+            // Attributes nikalna
+            String v_user = (String) acctReq.getAttributeValue("username");
+            String v_first = (String) acctReq.getAttributeValue("firstname");
+            String v_last = (String) acctReq.getAttributeValue("lastname");
+            String v_email = (String) acctReq.getAttributeValue("email");
+
+            // MySQL INSERT Query
+            String sql = "INSERT INTO target_users (username, firstname, lastname, email) VALUES (?, ?, ?, ?)";
+            
+            PreparedStatement st = connection.prepareStatement(sql);
+            st.setString(1, v_user);
+            st.setString(2, v_first);
+            st.setString(3, v_last);
+            st.setString(4, v_email);
+            
+            st.executeUpdate();
+            st.close();
+        }
+    }
+}
+
+()agar chahte hai ki sari identities provissining target_system_users me ho jaye toh:-
+1. Business Role ya IT Role ka use karein (Recommended):-
+
+Step 1: IT Role Banayein (Application Link)
+IT Role batata hai ki kaunsi application par account banana hai.
+
+Manage > Roles par jayein.
+
+Right side mein Role Modeler > Create New Role par click karein.
+
+Name: MySQL_Target_IT_Role.
+
+Type: IT select karein.
+
+2. Provisioning Policy Section:-
+Ye section IT Role ke andar tab use hota hai jab humein role-specific data bhejna ho.
+Kyunki aapne Application level par pehle hi "Create" policy bana li hai, 
+toh aap yahan "Add Provisioning Policy" par click karke use link kar sakte hain, ya ise khali chhod sakte hain agar aap default application policy use karna chahte hain.
+
+3. Checkboxes (Upar waale screenshot mein):-
+Provision both profiles and policies: Ise CHECK (Tick) kar dein. Isse account creation process fast trigger hota hai.
+Elevated Access: Ise khali chhod dein (Ye sirf admin roles ke liye hota hai).
+Disabled: Ise UNCHECK rehne dein (nahi toh role kaam nahi karega).
+
+4. Inherited Roles:-
+Ise abhi ke liye khali chhod dein. Inheritance tab use karte hain jab ek IT role dusre IT role ki khubiyan leta hai. Hum ise Business Role ke zariye handle karenge.
+
+()Agla Step: Business Role se Link karna:-
+Jab aap ye IT Role Save kar lenge, tab aapko ek Business Role banana hoga:-
+Manage > Roles > Create New Role (Type: Business).
+
+
+
+1. IT Role ko khali "Save" karein
+Abhi jo popup khula hai use Cancel kar dein. Main Role page par sirf:
+
+Name: MySQL-Target-IT-Role
+
+Type: IT
+Ye dono bhar kar niche ja kar Save ya Submit kar dein. IT Role bina entitlement ke bhi save ho jata hai.
+
+2. Business Role mein magic karein
+Ab hum saara logic Business Role mein dalenge jo identities ko force karega account banane ke liye:
+
+New Role > Role par jayein.
+
+Name: MySQL-Bulk-Provisioning-Role.
+
+Type: Business chunein.
+
+Permits Roles tab mein apna upar wala MySQL-Target-IT-Role select kar lein.
+
+1. IT Role ko Select karke Save karein
+Jo row mein MySQL-Target-IT-Role dikh raha hai, uske bagal wale Checkbox par tick karein.
+
+Niche blue color ka "Save" button dabayein.
+
+Isse ye IT Role aapke Business Role se link ho jayega.
+
+2. Business Role ka Logic (Assignment) set karein
+Ab jab popup band ho jaye, toh usi page par upar "Assignment Rule" ya "Assignment Tab" dekhiye:-
+a. Rule Option (Beanshell Way):-
+Agar aapko filter nahi mil raha ya filter kaam nahi kar raha, toh dropdown se "Rule" chunein.
+Wahan "..." (dots) par click karke Beanshell editor kholiye.
+Ye simple line likh dijiye:-
+Java
+return true;
+Iska matlab: SailPoint har ek identity ko ye role de dega.
+
+->Entitlements section mein jo "Create" button hai, us par click karein:->
+->New Profile par click karenge->
+->Application: Dropdown se apni jdbcworkbench select karo.->
+->1. Filter Logic Set Karein:-
+()IT Role ke liye Filter:
+Field: Dropdown se unique id (ya username) select karo.
+Search Type: Is Not Null chuno.
+Value: Bilkul khali (blank) chhod do. Kuch mat likhna.
+Ab Final Steps follow karo:-
+-Add filter karo aur save and submit->
+->Refresh Identity Cube task ko edit karo.
+
+In do boxes ko tick ✅ karo:
+
+Refresh assigned, detected and exception roles (Isse identities ko role milega).
+
+Provision assignments (Isse SailPoint aapki MySQL query trigger karega).
+
+Save and Execute kar do.
+
+->workbench->SELECT * FROM target_users;->
+->table khali-provisioning nahi hui->
+
+->rule likho->global setting-import->select rule in application ka rule tab-provisionrule->refresh identitycube->
+->wokbench me-SELECT * FROM target_users;-run->nahi hua->
+->global setting se identity mapping karle->
+->Schema mein ye setting check karo:
+Application > Schema tab mein jao.
+
+username, firstname, lastname, email, aur status—in pancho ke aage Managed wale column mein tick ✅ hona chahiye.
+->
+->Step 1: Provisioning Policy mein Mapping (Direct Action)
+Jo aapne image_866013.png dikhayi hai (Provisioning Policies tab), 
+wahan "Create" ke aage Add Policy dabao aur ye mapping karo:-
+->create form->
+->
+
+1. Settings (Basic Detail):-
+--Name (username): Ye backend variable name hai. Aapne rule mein accReq.getNativeIdentity() ya getAttributeRequest("username") likha hoga, toh ye naam database column se match hona chahiye.
+--Display Name (Username): Ye sirf dikhaane ke liye hai. Agar koi manual account banayega, toh use screen par ye naam dikhega.
+--Type (String): Database mein username text hota hai, isliye humne String rakha hai.
+
+2. Type Settings (Rules & Validation):-
+--Required (Checked ✅): Iska matlab hai ki bina username ke account nahi ban sakta. 
+Database mein Primary Key khali nahi ho sakti, isliye ise hamesha tick rakho.
+--Read Only (True): Iska matlab hai ki koi insan ise manual change nahi kar sakta. 
+Data hamesha Identity Cube se automatic aayega. Ise True rakhna safe hai.
+--Hidden (False): Agar ise True kar doge toh ye form par dikhega hi nahi. 
+Abhi testing ke liye False rakho taaki aap dekh sako ki sahi data aa raha hai ya nahi.
+
+1. Type Settings (Niyam aur Shartein)
+Inka kaam hai ye decide karna ki field kaise behave karegi.
+Option	                       Kya karta hai?	                                                                Aapko kya bharna hai?
+Multi-Valued:--------Agar ek field mein ek se zyada values daalni hon (jaise Roles ya Groups).:-------------Uncheck rakho (username ek hi hota hai).
+Authoritative:-------Agar aap chahte ho ki is form ki value Identity Cube ki value ko overwrite kar de.:---------Uncheck rakho.
+Refresh on Change:---Agar is field ki value badalne par pura form dobara load hona chahiye.:---------------------Uncheck rakho.
+Display Only:--------Ye field sirf dikhayi degi, database mein save nahi hogi.:------------------------Uncheck rakho (humein save karni hai).
+
+2. Visibility & Access (Kaun dekh sakta hai):-
+Ye decide karta hai ki form user ko kaisa dikhega.
+Option	                    Kya karta hai?	                                              Matlab
+Read Only------User ise dekh toh sakta hai par badal nahi sakta.:--------Username ke liye True rakho (Identity se aana chahiye).
+Hidden---------Field backend mein chalegi par screen par gayab rahegi.:--Testing ke liye False rakho.
+Owner----------Kaunsa user is field ki value bharne ka zimmedar hai.:----None rakho.
+
+3. Value & Validation (Asli Logic):-
+Ye sabse important section hai data ki accuracy ke liye.
+Option                           Kya karta hai?                                                                                                                                                                                                                                                                                                      Aapko kya bharna hai?
+Dynamic:----------Dynamic" checkbox ka matlab hota hai ki jab insan form bharta hai,tab ek field ki value badalne par doosri field apne aap refresh ho jaye. Aapka kaam toh Automatic Provisioning hai, jahan koi insan form nahi dekh raha, seedha script chal rahi hai.Aapne Source: Script select kar liya hai, wahi kaafi hai..:--Uncheck rakho (agar mapping use kar rahe ho).
+Allowed Values------------------Ek dropdown list banane ke liye (jaise: Active, Inactive).----None rakho (Username unique hota hai list nahi).
+Validation---------------------Ek script jo check karegi ki data sahi format mein hai ya nahi.-----None rakho (Filhal testing ke liye).
+
+4. Help Text:-
+Matlab: Ye ek chota sa tooltip ya message hota hai jo field ke bagal mein dikhta hai.
+Kya bharna hai: Aap likh sakte ho "Unique employee identifier". Ye user ki help ke liye hota hai.
+
+()user:-value setting->value->script->return identity.getName();
+()First Name ke liye code: return identity.getFirstname();
+()Last Name ke liye code: return identity.getLastname();
+()Email ke liye code: return identity.getEmail();
+--------------------------------------------------------------------------------------------------------------------------------------
+()1. Direct Provisioning Rule Se
+Ye mostly JDBC applications me hota hai.
+Developer:
+JDBC Provisioning Rule likhta hai
+SQL INSERT/UPDATE/DELETE chalata hai
+Workbench se XML import/run karta hai. 
+()SQL INSERT/UPDATE/DELETE kaha dete hai? 
+--Mostly SQL yaha likha jata hai:
+->Provisioning Rule
+
+
+()Before Provisioning Rule:-ye provision ko verify karega.
+()After Provisioning Rule:-email/logging aur audit ke liye hota hai.
+
+()insert/update/delete script kis rule tab(provision rule/before provision rule/after provision rule) me likhte hai? 
+Real JDBC Project Me Mostly
+Provisioning Rule
+Yaha actual:-
+INSERT
+UPDATE
+DELETE
+queries hoti hain.
+
+()Before Provisioning Rule
+Optional.
+Use cases:
+validation
+preprocessing
+
+()After Provisioning Rule
+Optional.
+Use cases:
+audit
+logging
+email
+
+().Kya provisioning rule se naya identity create kar sakte hai? 
+Nahi , Provisioning Rule se sirf target system me account create karte hai.
+Example:-
+Text id="cbv6zr"
+Copy code
+AD account
+DB account
+SAP account
+LDAP account
+Identity nahi kyuki identity iiq aggregate karta hai target system se. 
+
+()kya provision rule se attributes ko add update remove kar sakte hai application account ka? 
+SailPoint IdentityIQ haan, provisioning rule se application account ke attributes:
+add
+update
+remove
+kar sakte ho.
+
+()Exception Handling:-
+Exception Handling is used to handle runtime errors and prevent application failure.
+()Collection:-
+Collection Framework is used to store and manage multiple objects dynamically.
+()HashMap:-
+HashMap stores data in key-value pair format and allows fast retrieval.
+()Static Keyword:-
+Static keyword belongs to class instead of object and can be accessed using class name.
+
+()IAM (Identity and Access Management) is a framework/process used to manage user identities and their access to applications, 
+systems, roles, and entitlements securely.
+
+()Workflow is a sequence of automated tasks used for provisioning, approvals, certifications, notifications, and lifecycle processes.
+

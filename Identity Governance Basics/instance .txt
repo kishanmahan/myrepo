@@ -1,0 +1,16 @@
+Haan bhai 👍 instance ka matlab aksar server/system hota hai, lekin thoda exact samajh le:
+
+Instance kya hota hai (Link me)?
+
+Instance = specific system / environment / server jahan account exist karta hai
+
+🔹 Easy samajh:
+
+Agar ek hi application multiple jagah pe installed hai, to unko differentiate karne ke liye instance use hota hai
+
+Example:
+Application	      Instance	           Matlab
+ActiveDirectory	 AD-Server-1	    Pehla server
+ActiveDirectory	 AD-Server-2	    Dusra server
+SAP	             SAP-DEV	        Dev environment
+SAP	             SAP-PROD	        Production environment

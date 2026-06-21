@@ -1,0 +1,22 @@
+()9️⃣ Policy
+Policy policy:-
+Kya hai: Ye rules ka set hai jo access aur entitlements ko govern karta hai.
+Kya karta hai:-
+Access reviews, SoD, Least Privilege enforce karta hai
+Violations detect karta hai.
+
+1️⃣ Identity/Access Policy:-
+Ye define karti hai ki ek user ko kaunse system, application ya data ka access milega.
+Example: "Finance team ke employees sirf finance application access kar sakte hain."
+
+2️⃣ Entitlement Policy:-
+Ye specific permissions ya roles ke liye rules define karti hai.
+Example: "Manager role wale users ko payroll data read karne ki permission milegi, write nahi."
+
+3️⃣ Password/Authentication Policy:-
+Ye security rules define karti hai login ke liye.
+Example: "Password kam se kam 8 characters ka ho, aur 90 din me change karna mandatory ho."
+
+4️⃣ Policy Violation:-
+Jab koi user defined rules ko violate karta hai, to system usko detect karta hai.
+Example: Agar koi employee sensitive data ko unauthorized share karta hai, to Policy Violation trigger hoti hai.

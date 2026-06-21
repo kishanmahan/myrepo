@@ -1,0 +1,206 @@
+📘 ACCESS REQUEST & WORKFLOW – COMPLETE CHAPTERS
+🟢 CHAPTER 1: Access Request Overview
+
+Access Request kya hota hai?
+👉 Jab user khud ke liye ya kisi aur ke liye access maangta hai.
+
+Types:-
+Self-request
+Request for others
+Bulk request
+
+🟢 CHAPTER 2: Access Request Flow (High Level):-
+User → Add to cart → Submit → Approval → Policy check → Provisioning → Notification
+
+🟢 CHAPTER 3: Access Catalog
+Catalog me kya hota hai?
+Roles
+Entitlements
+Applications
+Managed attributes
+
+Flags:-
+Requestable
+Approval required
+Expiry allowed
+
+🟢 CHAPTER 4: Request Center UI
+Features:-
+Search access
+Add to cart
+Justification mandatory
+Expiry date selection
+View request history
+
+🟢 CHAPTER 5: Request Types
+1️⃣ Role Request
+2️⃣ Entitlement Request
+3️⃣ Application Access Request
+4️⃣ Account Creation Request
+
+🟢 CHAPTER 6: Request Submission Process
+Steps:
+1️⃣ Select access
+2️⃣ Add justification
+3️⃣ Select duration
+4️⃣ Submit
+System generate karta hai:
+Access Request ID
+Workflow instance
+
+🟢 CHAPTER 7: Approval Workflow Basics
+Approval types:-
+Manager approval
+Application owner approval
+Security team approval
+Auto approval
+Sequential ya Parallel approval possible.
+
+🟢 CHAPTER 8: Default LCM Workflow
+LCM = Lifecycle Manager
+Default workflow handle karta hai:
+Approval routing
+Policy check
+Provisioning plan creation
+Execution
+
+🟢 CHAPTER 9: Custom Workflow Design
+Workflow me components:-
+Start node
+Approval step
+Script step
+Condition step
+Provisioning step
+End node
+Workflow XML based hota hai.
+
+🟢 CHAPTER 10: Approval Modes
+1️⃣ Serial (Ek ke baad ek)
+2️⃣ Parallel (Sab ek saath)
+3️⃣ First responder wins
+4️⃣ Majority based
+
+🟢 CHAPTER 11: Policy Check During Request
+Before provisioning:-
+SoD violation detect
+Risk score calculate
+Violation show
+Options:-
+Block
+Allow with approval
+Allow with mitigation
+
+🟢 CHAPTER 12: Justification & Comments
+Mandatory fields:-
+Business justification
+Risk acceptance comment
+Audit trail me store hota hai.
+
+🟢 CHAPTER 13: Delegation & Escalation
+If approver unavailable:-
+Delegate approval
+Escalate after X days
+Auto-approve after SLA
+
+🟢 CHAPTER 14: Rejection Handling
+If rejected:-
+Request close
+Notification send
+No provisioning
+
+🟢 CHAPTER 15: Expiry-Based Access
+Temporary access:-
+Expiry date define
+Auto revoke after expiry
+Certification track
+
+🟢 CHAPTER 16: Bulk Access Request
+Multiple users ke liye:-
+CSV upload
+Manager bulk approval
+Batch provisioning
+
+🟢 CHAPTER 17: Emergency Access (Break Glass)
+High privilege access
+Limited time
+Extra approval
+Mandatory review
+
+🟢 CHAPTER 18: Workflow Variables
+Common variables:-
+identityName
+application
+approver
+requestId
+plan
+Used in scripts and conditions.
+
+🟢 CHAPTER 19: Workflow Customization
+Custom logic add kar sakte ho:-
+Custom approver logic
+Dynamic approval routing
+Risk-based routing
+Auto-approval condition
+
+🟢 CHAPTER 20: Notifications
+System send karta hai:-
+Request submitted
+Approval pending
+Approved
+Rejected
+Provisioned
+Email templates customizable hote hain.
+
+🟢 CHAPTER 21: Audit & Reporting
+Track kar sakte ho:-
+Who requested
+Who approved
+When approved
+What justification
+Provisioning status
+Compliance ke liye critical.
+
+🟢 CHAPTER 22: Integration with Provisioning
+After approval:-
+Provisioning plan generate
+Connector execute
+Status update
+
+If provisioning fail:-
+Workflow error state
+
+🟢 CHAPTER 23: Access Review Integration
+Temporary access:-
+Next certification me visible
+Revoke possible
+
+🟢 CHAPTER 24: Performance & Scaling
+Large org me:-
+High request volume
+Workflow optimization
+Async provisioning
+Approval batching
+
+🟢 CHAPTER 25: Troubleshooting
+Scenario 1:-
+Approval stuck
+→ Check workflow state
+
+Scenario 2:-
+Wrong approver
+→ Check owner mapping
+
+Scenario 3:-
+Provisioning not triggered
+→ Check workflow condition
+
+Scenario 4:-
+Policy not detected
+→ Check policy config
+
+🟢 CHAPTER 26: Advanced Topics
+REST API based access request
+Service account approval flow
+Conditional approval skip
+Multi-level dynamic approval
+External ticket integration (ServiceNow)

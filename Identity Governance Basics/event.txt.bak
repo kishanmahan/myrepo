@@ -1,0 +1,624 @@
+()🔥 Event kya hota hai?
+👉 Event = “kuch hua system me”
+Aur uske baad → rule / workflow / task trigger hota hai.
+👉 Event = system ka heartbeat ❤️
+Har choti-badi cheez ek event hai — aur har event kisi action ko trigger karta hai
+❌ SailPoint me “Event” koi direct class nahi hoti
+👉 Matlab:-
+Event naam ki koi standard class (jaise Task, WorkflowCase, ApprovalSet) SailPoint API me nahi hoti
+Ye ek concept (trigger/occurrence) hai.
+
+⚙️ Event ka use kaha hota hai?
+Rule trigger karne me
+Workflow start karne me
+Notification bhejne me
+Provisioning execute karne me
+
+🎯 Common Events in SailPoint:-
+1️⃣ Identity Events:-
+Identity create hua
+Identity update hua
+Identity delete hua
+
+👉 Example:-
+User create hua → Event trigger → Provisioning start
+
+2️⃣ Provisioning Events:-
+Account create / update / delete
+Entitlement assign / remove
+
+👉 Example:-
+Role assign hua → Event → AD account create
+
+3️⃣ Certification Events:-
+Access review start
+Approval / rejection
+
+👉 Example:-
+Manager ne reject kiya → Event → access remove
+
+4️⃣ Workflow Events;-
+Workflow start / complete
+Approval step trigger
+
+5️⃣ Policy Events:-
+Policy violation detect hua
+👉 Example:-
+User ke paas 2 conflicting roles → Event → violation alert
+
+6️⃣ Account Lifecycle Events:-
+Account Enable
+Account Disable
+Account Lock / Unlock
+Password Reset
+👉 Example:-
+User ka account disable hua → Event → access revoke
+
+7️⃣ Role / Entitlement Events:-
+Role Assigned
+Role Removed
+Entitlement Granted
+Entitlement Revoked
+👉 Example:-
+Role assign → Event → provisioning start
+
+8️⃣ Aggregation Events:-
+Account Aggregation Start
+Account Aggregation Complete
+Identity Refresh
+👉 Example:-
+HR system se data aaya → Event → identities update
+
+9️⃣ Task Events:-
+Task Start
+Task Complete
+Task Failed
+👉 Example:-
+Certification task complete → Event → report generate
+
+🔟 Approval Events:-
+Approval Requested
+Approval Approved
+Approval Rejected
+Approval Escalated
+👉 Example:-
+Manager ne approve kiya → Event → next step
+
+1️⃣1️⃣ WorkItem Events:-
+WorkItem Created
+WorkItem Assigned
+WorkItem Completed
+WorkItem Expired
+👉 Example:-
+Approval workitem create hua → Event → email notification
+
+1️⃣2️⃣ Audit Events:-
+Login Success / Failure
+Access Change
+Data Modification
+👉 Example:-
+User login fail → Event → alert
+
+1️⃣3️⃣ Connector Events:-
+Connection Success
+Connection Failed
+Provisioning Sent
+Provisioning Response Received
+👉 Example:-
+AD connection fail → Event → retry / alert
+
+1️⃣4️⃣ Policy Violation Events:-
+Violation Created
+Violation Updated
+Violation Mitigated
+👉 Example:-
+Toxic role detect → Event → approval required
+
+1️⃣5️⃣ Certification Campaign Events:-
+Campaign Launched
+Campaign Completed
+Campaign Signed Off
+👉 Example:-
+Campaign complete → Event → revoke unapproved access
+
+1️⃣6️⃣ Custom Events:-
+Developer khud define karta hai
+👉 Example:-
+System.out.println("Custom Event Triggered");
+
+1️⃣7️⃣ Identity Lifecycle Events (Advanced):-
+Identity Activated
+Identity Deactivated
+Identity Terminated
+Identity Rehired
+👉 Example:-
+Employee terminate → Event → sab access revoke
+
+1️⃣8️⃣ Joiner-Mover-Leaver (JML) Events:-
+Joiner (New Hire)
+Mover (Department change)
+Leaver (Exit)
+👉 Example:-
+Department change → Event → old role remove + new role assign
+
+1️⃣9️⃣ Password Policy Events:-
+Password Expired
+Password Changed
+Password Violates Policy
+👉 Example:-
+Password expire → Event → force reset
+
+2️⃣0️⃣ Access Request Events:-
+Access Request Submitted
+Access Request Approved
+Access Request Rejected
+Access Request Cancelled
+👉 Example:-
+User ne access manga → Event → approval workflow start
+
+2️⃣1️⃣ Provisioning Plan Events:-
+Plan Created
+Plan Executed
+Plan Failed
+👉 Example:-
+Provisioning fail → Event → retry / rollback
+
+2️⃣2️⃣ Reconciliation Events:-
+Data Mismatch Detected
+Account Not Found
+Orphan Account Found
+👉 Example:-
+Orphan account mila → Event → disable account
+
+2️⃣3️⃣ Delegation Events:-
+Approval Delegated
+Delegation Expired
+👉 Example:-
+Manager leave pe → approval kisi aur ko delegate
+
+2️⃣4️⃣ Escalation Events:-
+Escalation Triggered
+Escalation Level Increased
+👉 Example:-
+Manager ne approve nahi kiya → Event → escalate to senior
+
+2️⃣5️⃣ Scheduler Events:-
+Job Scheduled
+Job Triggered
+Job Missed Schedule
+👉 Example:-
+Night job run → Event → aggregation start
+
+2️⃣6️⃣ Integration Events:-
+API Called
+API Response Received
+Integration Timeout
+👉 Example:-
+External API fail → Event → retry
+
+2️⃣7️⃣ Security Events:-
+Suspicious Activity Detected
+Multiple Login Failures
+Privilege Escalation Attempt
+👉 Example:-
+Multiple login fail → Event → account lock
+
+2️⃣8️⃣ Data Change Events:-
+Attribute Changed
+Role Changed
+Manager Changed
+👉 Example:-
+Manager change → Event → new approval chain
+
+2️⃣9️⃣ Notification Events:-
+Email Sent
+Email Failed
+Reminder Sent
+👉 Example:-
+Approval pending → reminder mail
+
+3️⃣0️⃣ System Health Events
+High Load Detected
+System Error
+Memory Threshold Exceeded
+👉 Example:-
+System slow → alert trigger
+
+3️⃣1️⃣ Certification Decision Events
+Decision Approved
+Decision Revoked
+Decision Signed-off
+👉 Example:
+Manager ne revoke kiya → Event → access remove
+
+3️⃣2️⃣ Access Review Events
+Review Started
+Review Reminder Sent
+Review Overdue
+👉 Example:
+Review overdue → Event → escalation
+
+3️⃣3️⃣ Entitlement Lifecycle Events
+Entitlement Created
+Entitlement Updated
+Entitlement Deleted
+👉 Example:
+New entitlement → Event → role update
+
+3️⃣4️⃣ Application Lifecycle Events
+Application Onboarded
+Application Updated
+Application Decommissioned
+👉 Example:
+App remove → Event → sab accounts delete
+
+3️⃣5️⃣ Schema Change Events
+Schema Updated
+Attribute Added
+Attribute Removed
+👉 Example:
+New attribute add → Event → aggregation update
+
+3️⃣6️⃣ Connector Lifecycle Events
+Connector Installed
+Connector Updated
+Connector Disabled
+👉 Example:
+Connector disable → Event → provisioning stop
+
+3️⃣7️⃣ Batch Processing Events
+Batch Started
+Batch Completed
+Batch Failed
+👉 Example:
+Bulk user import → Event → identity creation
+
+3️⃣8️⃣ Queue / Async Events
+Message Queued
+Message Processed
+Message Failed
+👉 Example:
+Async provisioning → Event → retry
+
+3️⃣9️⃣ Retry Events
+Retry Attempted
+Retry Failed
+Retry Succeeded
+👉 Example:
+Provisioning fail → retry event trigger
+
+4️⃣0️⃣ Timeout Events
+Operation Timeout
+Approval Timeout
+👉 Example:
+Approval delay → auto reject / escalate
+
+4️⃣1️⃣ Compliance Events
+Compliance Check Started
+Compliance Failed
+Compliance Passed
+👉 Example:
+Policy fail → violation create
+
+4️⃣2️⃣ Risk Events
+High Risk Access Detected
+Risk Score Increased
+👉 Example:
+Admin role mila → risk high → approval strict
+
+4️⃣3️⃣ Session Events
+Session Started
+Session Expired
+Session Terminated
+👉 Example:
+Session expire → logout
+
+4️⃣4️⃣ Delegated Admin Events
+Admin Access Granted
+Admin Access Revoked
+👉 Example:
+Temporary admin access → event → revoke later
+
+4️⃣5️⃣ Import / Export Events
+Data Import Started
+Data Import Completed
+Export Generated
+👉 Example:
+CSV import → Event → identity update
+
+4️⃣6️⃣ Backup / Restore Events
+Backup Started
+Backup Completed
+Restore Initiated
+👉 Example:
+Restore → system rollback
+
+4️⃣7️⃣ License / Limit Events
+License Limit Reached
+User Limit Exceeded
+👉 Example:
+Limit exceed → alert
+
+4️⃣8️⃣ AI / Analytics Events (Modern Systems)
+Anomaly Detected
+Behavior Change Detected
+👉 Example:-
+Unusual login → event → block access
+
+4️⃣9️⃣ Zero Trust / Security Events
+Continuous Verification Triggered
+Device Trust Failed
+👉 Example:-
+Unknown device → re-authentication
+
+5️⃣0️⃣ Custom Business Events
+Salary Change
+Location Change
+Promotion Event
+👉 Example:-
+Promotion → Event → new role assign
+---------------------------------------------------------------------------------------------------------------------------------------
+🔥 Event ka real meaning code me:-
+Event directly nahi hota, but condition se represent hota hai 👇
+
+if(identity.isNew()){   // ye hi "Event" hai (Identity Created)
+    System.out.println("Event Triggered");
+}
+👉 Yaha:-
+identity.isNew() = Event detect kar raha hai,agar detect hua toh true aur nahi toh false return karta hai.
+Ye koi method of Event nahi hai.
+---------------------------------------------------------
+🚀 FULL REAL CODE (Rule + Workflow Trigger)
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.Workflow;
+import java.util.Map;
+import java.util.HashMap;
+
+public class EventRule {
+
+    public static void execute(SailPointContext context, String identityName) throws Exception {
+
+        Identity identity = context.getObjectByName(Identity.class, identityName);
+
+        if (identity != null) {
+
+            // 🔥 1. Identity Created Event
+            if (identity.isNew()) {
+                System.out.println("Event: Identity Created");
+
+                Map<String, Object> args = new HashMap<String, Object>();
+                args.put("identityName", identity.getName());
+
+                Workflow wf = context.getObjectByName(Workflow.class, "IdentityCreationWorkflow");
+                context.startWorkflow(wf, args);
+            }
+
+            // 🔥 2. Identity Updated Event
+            else if (identity.isModified()) {
+                System.out.println("Event: Identity Updated");
+
+                Map<String, Object> args = new HashMap<String, Object>();
+                args.put("identityName", identity.getName());
+
+                Workflow wf = context.getObjectByName(Workflow.class, "IdentityUpdateWorkflow");
+                context.startWorkflow(wf, args);
+            }
+
+            // 🔥 3. Identity Deleted Event
+            else if (identity.isDeleted()) {
+                System.out.println("Event: Identity Deleted");
+
+                Map<String, Object> args = new HashMap<String, Object>();
+                args.put("identityName", identity.getName());
+
+                Workflow wf = context.getObjectByName(Workflow.class, "IdentityDeleteWorkflow");
+                context.startWorkflow(wf, args);
+            }
+        }
+    }
+}
+🔥 Workflow XML (Real SailPoint Style)
+<Workflow name="IdentityCreationWorkflow">
+    <Step name="Start">
+        <Transition to="Provision"/>
+    </Step>
+
+    <Step name="Provision">
+        <Action>Provision Identity</Action>
+        <Transition to="End"/>
+    </Step>
+
+    <Step name="End">
+        <End/>
+    </Step>
+</Workflow>
+✅ Output (Real Scenario)
+👉 Case 1: New Identity
+Event: Identity Created
+👉 Case 2: Modified Identity
+Event: Identity Updated
+👉 Case 3: Deleted Identity
+Event: Identity Deleted
+///////////////*
+()1️⃣ context.getObjectByName(Workflow.class, "IdentityDeleteWorkflow"):-
+👉 “SailPoint se naam ke basis pe workflow object le aa”
+
+2️⃣ context.startWorkflow(wf, args);:-
+🔹 startWorkflow:-
+👉 Method hai jo workflow ko run/execute karta hai
+
+🔹 wf:-
+👉 Ye actual Workflow object hai jo upar fetch kiya
+
+🔹 args:-
+👉 Ye input data (Map) hai jo workflow ko diya jaata hai
+Example:-
+args.put("identityName", "Kishan");
+✅ Simple samajh:-
+👉 “Workflow start karo aur usko input data do”
+
+🔹 <Workflow name="IdentityCreationWorkflow">:-
+👉 Ye poora workflow ka container hai
+👉 name = workflow ka unique naam
+
+🔹 <Step name="Start">:-
+👉 Step = ek stage / phase workflow ka
+👉 "Start" = first step
+
+🔹 <Transition to="Provision"/>:-
+👉 Transition = next step kaha jayega
+👉 "Provision" = next step ka naam
+
+🔹 <Step name="Provision">:-
+👉 Ye next step hai jaha actual kaam hota hai
+
+🔹 <Action>Provision Identity</Action>:-
+👉 Action = jo kaam perform hoga
+👉 Yaha → Identity ka provisioning (account create/update)
+
+🔹 <Transition to="End"/>:-
+👉 Kaam hone ke baad → next step "End"
+
+🔹 <Step name="End">:-
+👉 Final step (workflow khatam hone wala stage)
+
+🔹 <End/>:-
+👉 Workflow ko terminate (finish) kar deta hai.
+------------------------------------------------------
+()“Provision Identity ka real code kaha hai?”
+🚀 Answer (REAL SAILPOINT TRUTH)
+👉 <Action>Provision Identity</Action>
+ye sirf ek instruction / keyword hai
+
+❌ Iske andar direct Java code nahi hota
+✅ Ye internally SailPoint engine ko bolta hai:
+👉 “Provisioning engine ko call karo”
+*//////////////
+-----------------------------------------------------------------------------------------------------------------------------------
+🚀 1️⃣ Identity Events (Object = Identity):
+Event	               Condition	       Method (kis object ka)
+Identity Created----identity.isNew()-----------Identity
+Identity Updated----identity.isModified()------Identity
+Identity Deleted----identity.isDeleted()-------Identity
+Attribute Changed---!oldVal.equals(newVal)-----Identity (getAttribute())
+Manager Changed-----!oldMgr.equals(newMgr)-----Identity
+Role Assigned-------identity.getAssignedRoles()compare-----Identity
+Role Removed--------old vs new roles compare---------------Identity
+
+🚀 2️⃣ Account / Provisioning Events (Object = AccountRequest / AttributeRequest)
+Event	                  Condition	                          Method (kis object ka)
+Account Created	    accReq.getOperation().equals("Create")	     AccountRequest
+Account Updated	    accReq.getOperation().equals("Modify")	     AccountRequest
+Account Deleted	    accReq.getOperation().equals("Delete")	     AccountRequest
+Entitlement Added	attrReq.getOperation().equals("Add")	     AttributeRequest
+Entitlement Removed	attrReq.getOperation().equals("Remove")      AttributeRequest
+
+🚀 3️⃣ Approval Events (Object = ApprovalSet / WorkItem)
+Event	               Condition	                  Method (kis object ka)
+Approval Pending	set.isPending()	                        ApprovalSet
+Approval Approved	set.isApproved()	                     ApprovalSet
+Approval Rejected	set.isRejected()	                     ApprovalSet
+WorkItem Created	workItem.getState().equals("Pending")	WorkItem
+WorkItem Completed	workItem.getState().equals("Completed")  WorkItem
+
+🚀 4️⃣ Task / Job Events (Object = TaskResult):-
+Event	              Condition	                         Method (kis object ka)
+Task Started	taskResult.getStatus().equals("Running")	TaskResult
+Task Completed	taskResult.getStatus().equals("Completed")	TaskResult
+Task Failed	    taskResult.getStatus().equals("Failed")	    TaskResult
+
+🚀 5️⃣ Workflow Events (Object = WorkflowCase):-
+Event	                  Condition	                    Method (kis object ka)
+Workflow Started	wfCase.getState().equals("Running")	    WorkflowCase
+Workflow Completed	wfCase.getState().equals("Completed")	WorkflowCase
+Workflow Rejected	wfCase.getState().equals("Rejected")	WorkflowCase
+
+🚀 6️⃣ Certification Events (Object = Certification / CertificationItem):-
+Event	                     Condition	                    Method (kis object ka)
+Certification Started	  cert.getPhase().equals("Active")	   Certification
+Certification Completed   cert.isComplete()	                   Certification
+Access Approved	          item.isApproved()                    CertificationItem
+Access Revoked	          item.isRevoked()	                   CertificationItem
+
+🚀 7️⃣ Policy / Violation Events (Object = PolicyViolation):-
+Event	                   Condition	           Method (kis object ka)
+Violation Created	    violation != null	        PolicyViolation
+Violation Mitigated	    violation.isMitigated()	    PolicyViolation
+
+🚀 8️⃣ WorkItem / Escalation Events (Object = WorkItem):-
+Event	                      Condition	                 Method (kis object ka)
+WorkItem Escalated	workItem.getEscalationLevel() > 0	      WorkItem
+Reminder Triggered	currentDate.after(reminderDate)	          WorkItem
+
+🚀 9️⃣ Aggregation / Refresh Events (Object = TaskResult / Identity):-
+Event	                      Condition	                            Method (kis object ka)
+Aggregation Completed	taskResult.getStatus().equals("Completed")	   TaskResult
+Identity Refreshed	    identity.isModified()	                       Identity
+
+🚀 🔟 Access Request Events (Object = AccessRequest / ApprovalItem)
+Event	                           Condition	                        Method (kis object ka)
+Access Request Submitted	    request.getState().equals("Submitted")	    AccessRequest
+Access Request Approved	        item.isApproved()	                        ApprovalItem
+Access Request Rejected	        item.isRejected()	                        ApprovalItem
+Access Request Cancelled	    request.getState().equals("Cancelled")	    AccessRequest
+
+🚀 1️⃣1️⃣ Role / Entitlement Events (Object = Identity / RoleAssignment)
+Event	                        Condition	                        Method (kis object ka)
+Role Assigned	        identity.getAssignedRoles().contains(role)	Identity
+Role Removed	        !identity.getAssignedRoles().contains(role)	Identity
+Entitlement Granted	     identity.getEntitlements().contains(ent)	Identity
+Entitlement Revoked	     !identity.getEntitlements().contains(ent)	Identity
+
+🚀 1️⃣2️⃣ Password / Account Security Events (Object = Identity / Link)
+Event	                    Condition	                 Method (kis object ka)
+Password Changed	identity.getPasswordLastSet() != null	Identity
+Password Expired	identity.isPasswordExpired()	        Identity
+Account Locked	     link.isLocked()	                     Link
+Account Unlocked	 !link.isLocked()	                     Link
+
+🚀 1️⃣3️⃣ Connector / Integration Events (Object = Application / ConnectorResult)
+Event	                Condition	          Method (kis object ka)
+Connection Success	 result.isSuccess()	        ConnectorResult
+Connection Failed	 !result.isSuccess()	    ConnectorResult
+Provisioning Sent	 plan != null	            ProvisioningPlan
+Provisioning Failed	 result.getErrors()!= null	ConnectorResult
+
+🚀 1️⃣4️⃣ Audit / Logging Events (Object = AuditEvent):-
+Event	             Condition	                          Method (kis object ka)
+Login Success	audit.getAction().equals("loginSuccess")	AuditEvent
+Login Failed	audit.getAction().equals("loginFailed")	    AuditEvent
+Access Changed	audit.getAction().equals("accessChange")	AuditEvent
+
+🚀 1️⃣5️⃣ Delegation Events (Object = WorkItem):-
+Event	                   Condition	                            Method (kis object ka)
+Approval Delegated	workItem.getDelegatedTo() != null	                WorkItem
+Delegation Expired	currentDate.after(workItem.getDelegationExpiry())	WorkItem
+
+🚀 1️⃣6️⃣ Escalation Events (Object = WorkItem):-
+Event	                         Condition	               Method (kis object ka)
+Escalation Triggered	workItem.getEscalationLevel() > 0	WorkItem
+Escalation Increased	level > oldLevel	                WorkItem
+
+🚀 1️⃣7️⃣ Scheduler / Job Events (Object = TaskSchedule / TaskResult):-
+Event	                Condition	                Method (kis object ka)
+Job Scheduled	      schedule != null	                TaskSchedule
+Job Triggered	      taskResult.getLaunched() != null	TaskResult
+Job Missed	          currentTime.after(scheduleTime)	TaskSchedule
+
+🚀 1️⃣8️⃣ Data Change Events (Object = Identity):-
+Event	                  Condition	              Method (kis object ka)
+Email Changed	    !oldEmail.equals(newEmail)	      Identity
+Department Changed	!oldDept.equals(newDept)	      Identity
+Location Changed	!oldLoc.equals(newLoc)	          Identity
+
+🚀 1️⃣9️⃣ Risk / Compliance Events (Object = Identity / RiskScore):-
+Event	                        Condition	                   Method (kis object ka)
+High Risk Detected	           risk.getScore() > threshold	          RiskScore
+Risk Increased	               newScore > oldScore	                  RiskScore
+
+🚀 2️⃣0️⃣ System / Performance Events (Object = SystemMonitor):-
+Event	        Condition	                   Method (kis object ka)
+High Load	system.getLoad() > limit	          SystemMonitor
+Memory High	system.getMemoryUsage() > limit	      SystemMonitor
+

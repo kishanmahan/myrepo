@@ -1,0 +1,42 @@
+1. Kiska Kya Kaam Hai?
+(1)JDK (Java Development Kit) - The Creator 🛠️
+Kaam: Code ko compile karna aur development tools dena.
+Iske paas kya hota hai? Iske andar javac (Java Compiler) hota hai. 
+Jab aap command chalate hain javac MyProgram.java, toh JDK ka yahi compiler aapke source code ko Bytecode (.class file) mein badalta hai.
+Note: JDK ke andar JRE aur JVM dono pehle se maujood hote hain.
+
+()JRE (Java Runtime Environment) - The Provider 📦Kaam: Code ko chalane ke liye mahool (environment) dena.  
+Iske paas kya hota hai? Iske paas saari supporting libraries (jaise java.lang, java.util) aur JVM hota hai. 
+JRE ke paas compiler nahi hota, isiliye ye code ko compile nahi kar sakta, sirf bane-banaye code ko chala sakta hai.
+
+(2)JVM (Java Virtual Machine) - The Executer ⚙️
+Kaam: Bytecode ko line-by-line padhna aur use machine code (0s and 1s) mein badal kar run karna.
+Iske paas kya hota hai? Just-In-Time (JIT) compiler aur Interpreter. Ye JRE ka ek hissa hai jo actually aapke program ko execute karta hai.
+
+1. Execution Ka Pura Process:-
+Compilation: Sabse pehle compiler (javac) aapke code ko bytecode (.class file) mein badalta hai.
+
+JVM ki Entry: Jab aap java ClassName command dete hain, toh JVM active hota hai.
+
+Class Loader: JVM ka ek hissa jise Class Loader kehte hain, wo aapki .class file ko memory mein load karta hai.
+
+Main Thread: JVM program shuru karte hi ek special thread banata hai jise Main Thread kehte hain.
+
+Method Call: Ye main thread seedhe aapke program ke public static void main(String[] args) method ko dhoondhta hai aur use execute kar deta hai.
+
+
+(2)JRE Asal Mein Karta Kya Hai? (Core Functions):-
+Jab aap kisi Java program ko chalate hain, toh JRE parde ke peeche ye teen bade kaam karta hai:-
+
+Libraries Aur Files Provide Karna (The Blueprint):-
+Java mein jab aap System.out.println() ya ArrayList jaisi cheezon ka istemal karte hain, 
+toh inka asli code pehle se bani-banayi libraries mein hota hai (jaise rt.jar file). 
+JRE aapke program ko ye saari standard libraries aur configuration files deta hai taaki aapka code inka use kar sake.
+
+JVM Ko Load Aur Start Karna (The Engine):-
+JRE ke paas apna khud ka dimag nahi hota, uske paas JVM (Java Virtual Machine) hota hai. 
+JRE ka kaam hai JVM ko memory mein load karna aur use active karna taaki wo aapke bytecode ko machine code mein badal sake.
+
+Resources Aur Memory Manage Karna (The Manager):-
+Program chalte waqt use kitni memory chahiye, kaun se system resources chahiye, 
+ye sab arrange karne ka kaam JRE ka runtime environment hi sambhalta hai.

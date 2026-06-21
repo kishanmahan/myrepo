@@ -1,0 +1,91 @@
+()QueryOptions SailPoint me database query ko filter karne ke liye use hota hai.
+Matlab jab hum getObjects() ya search() use karte hain, tab QueryOptions batata hai ki kaunsa data chahiye. 😎
+
+1️⃣ QueryOptions kya hai?
+QueryOptions = query ke rules / filters
+Ye decide karta hai:-
+Kaunsa object chahiye
+Kaunsa condition apply karna hai
+Kitne records chahiye
+Sorting kaise hogi
+
+one line:-QueryOptions class SailPoint me database query ko control karne ke liye use hoti hai.
+Isme kuch important methods hote hain jisse hum filter, limit, sorting, pagination control karte hain.
+
+1️⃣ addFilter(Filter filter):-
+Query me filter condition add karta hai.
+QueryOptions qo = new QueryOptions();
+qo.addFilter(Filter.eq("department","Finance"));
+
+2️⃣ setFilters(List filters):-
+Multiple filters ek saath set karta hai.
+List filters = new ArrayList();
+filters.add(Filter.eq("department","IT"));
+filters.add(Filter.eq("status","Active"));
+qo.setFilters(filters);
+
+3️⃣ getFilters():-
+Jo filters lagaye gaye hain unki list return karta hai.
+List filters = qo.getFilters();
+
+4️⃣ setDistinct(boolean distinct):-
+Duplicate results remove karta hai.
+qo.setDistinct(true);
+
+5️⃣ setPageSize(int size):-
+Ek baar me kitne records fetch honge.
+qo.setPageSize(50);
+Meaning:-
+50 records per page
+
+6️⃣ setFirstRow(int row):-
+Pagination ke liye start row define karta hai.
+qo.setFirstRow(10);
+Meaning:-
+10th record se data lana
+
+7️⃣ setResultLimit(int limit):-
+Maximum kitne records return honge.
+qo.setResultLimit(100);
+Meaning:-
+Maximum 100 records
+
+8️⃣ addOrdering(String field, boolean ascending):-
+Sorting apply karta hai.
+qo.addOrdering("name", true);
+Meaning:-
+name ascending order me
+
+9️⃣ setCacheResults(boolean cache):-
+Kya karta hai:-
+Ye decide karta hai ki query ka result cache me store hoga ya nahi.
+Agar cache enable hai to next time same query run hogi to database se nahi, cache se result milega.
+Example:-
+QueryOptions qo = new QueryOptions();
+qo.setCacheResults(true);
+
+🔟 setCloneResults(boolean clone)
+Kya karta hai?
+Ye result objects ka clone copy return karta hai.
+Matlab:-
+Original object safe rahega
+Returned object ek copy hoga
+
+1️⃣1️⃣ setIgnoreCase(boolean ignore)
+Kya karta hai?
+Ye case sensitive search ko ignore karta hai.
+Matlab:-
+Rahul
+rahul
+RAHUL
+sab match ho jayenge.
+
+Example:-
+QueryOptions qo = new QueryOptions();
+qo.setIgnoreCase(true);
+qo.addFilter(Filter.eq("name","rahul"));
+
+Result:-
+rahul
+Rahul
+RAHUL

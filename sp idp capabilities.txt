@@ -1,0 +1,402 @@
+()IdentityIQ ki Main Capabilities (Firse, easy points mein):
+Identity Cube: Har employee ka ek "Digital Folder" banta hai. Isme uske saare accounts (AD, SAP, Gmail) ki jankari ek jagah hoti hai.
+
+Joiner, Mover, Leaver (JML):-
+Joiner: Naya banda aaya -> Auto access mil gaya.
+Mover: Dept change hua -> Purana access gaya, naya mil gaya.
+Leaver: Job chhodi -> Saare access 5 minute mein band.
+
+Certification: Managers ko har 3-6 mahine mein "Yes/No" click karna padta hai ki unki team ko wo access chahiye ya nahi.
+
+Separation of Duties (SoD): Aise rules set karna ki koi fraud na ho sake. (Jaise jo bill banaye, wo khud pay na kar sake).
+
+Workflows: Har request ke peeche ek logic hota hai (Pehle Manager approve karega, fir Owner, fir account banega).
+
+1. SP ka matlab "SailPoint":-
+Agar aap overall SailPoint ki capabilities puch rahe hain, 
+toh iska kaam hai "Who has access to what, and who SHOULD have access to what?" (Kiske paas kya access hai, aur kya hona chahiye?).
+Iska main focus in 3 cheezon par hota hai:-
+Visibility: Saare accounts aur permissions ko ek jagah dekhna.
+Control: Access dena (Provisioning) aur hatana (De-provisioning).
+Compliance: Ye prove karna ki audit ke hisaab se sab sahi hai.
+
+2. Service Provider (SAML / SSO ke context mein - Technical Meaning):-
+Agar aap kisi integration ya Single Sign-On (SSO) ki baat kar rahe hain, toh SP ka matlab hota hai Service Provider.
+Ye kya hota hai? Ye wo application (ya service) hai jise user use karna chahta hai. Is case mein, khud IdentityIQ ek Service Provider ban jata hai.
+Kaise kaam karta hai? Jab koi user IIQ kholta hai, toh IIQ (SP) user se khud password check nahi karta.
+Wo user ko ek doosre system ke paas bhejta hai jise IdP (Identity Provider) kehte hain (jaise Okta, PingIdentity, ya Azure AD).
+IdP check karta hai ki user asli hai ya nahi, aur fir SP (IIQ) ko secure token bhejta hai ki "Haan, identity verify ho gayi hai, isko andar aane do".
+
+Short Summary:-
+Agar login, authentication, ya SAML connection ki baat ho rahi hai -> SP = Service Provider
+
+()Identity Provider (IdP):- Reception/Security: SP aapko reception (IdP - jaise Okta, Microsoft Entra ID) bhejta hai. 
+Receptionist aapse aapka ID card mangti hai, verify karti hai, aur aapko ek "Entry Pass" (Token) de deti hai.
+--------------------------------------------------------------------------------------------------------------------------
+🧠 Difference samajh (important 🔥)
+1️⃣ SP Right (Low Level)
+👉 Ye actual permission / right hota hai system ka
+👉 Example:
+Identity read
+Role edit
+Task run
+2️⃣ Capability (High Level)
+👉 Ye SP Rights ka group / bundle hota hai
+👉 Example:
+"Helpdesk Admin" capability
+→ multiple SP Rights ka combination
+🔁 Relation
+👉 Pehle SP Rights hote hain
+👉 Fir unko combine karke Capability banayi jaati hai
+Id="flow1"
+Copy code
+SP Rights → Combine → Capability → Assign to User
+🟣 Example
+👉 SP Rights:
+Id="flow2"
+Copy code
+IdentityView
+IdentityEdit
+PasswordReset
+👉 Capability:
+Id="flow3"
+Copy code
+HelpdeskCapability
+👉 Is capability ke andar upar wale sab rights honge
+🔴 Important Point
+👉 Capability tabhi useful hai jab usme SP Rights ho
+👉 Without SP Rights → Capability ka koi kaam nahi
+🔥 Final Answer
+👉 "Capability SP Rights ka group hoti hai, isliye SP Rights pehle define hote hain, fir unko combine karke capability banayi jaati hai."
+
+👉 SailPoint IdentityIQ me “ALL capabilities ka fixed official complete list” publicly available nahi hota ❌
+Kyuki:
+Bahut saari capabilities custom hoti hain
+Har project/company apni custom capabilities bana leti hai
+Version ke hisaab se bhi change hota hai. 
+🔵 SailPoint IdentityIQ – Capabilities List (300+)
+
+AccessRequest
+AccessRequestCreate
+AccessRequestSubmit
+AccessRequestCancel
+AccessRequestView
+AccessRequestHistory
+AccessRequestApprove
+AccessRequestReject
+AccessRequestDelegate
+AccessRequestReassign
+AccessRequestEscalate
+AccessRequestAdmin
+AccessReview
+AccessReviewCreate
+AccessReviewView
+AccessReviewSignOff
+AccessReviewDelegate
+AccessReviewReassign
+AccessReviewRevoke
+AccessReviewAdmin
+SelfCertification
+ManagerCertification
+CertificationView
+CertificationCreate
+CertificationSignOff
+CertificationDelegate
+CertificationReassign
+CertificationEscalate
+CertificationRevoke
+CertificationAdmin
+IdentityView
+IdentityCreate
+IdentityEdit
+IdentityDelete
+IdentitySearch
+IdentityEnable
+IdentityDisable
+IdentityUnlock
+IdentityPasswordReset
+IdentityRefresh
+IdentityAdmin
+AccountView
+AccountCreate
+AccountDelete
+AccountEnable
+AccountDisable
+AccountUnlock
+AccountLinkView
+AccountAggregation
+AccountAggregationExecute
+AccountAggregationAdmin
+AccountAdmin
+EntitlementView
+EntitlementRequest
+EntitlementAssign
+EntitlementRemove
+EntitlementAdmin
+RoleView
+RoleCreate
+RoleEdit
+RoleDelete
+RoleAssign
+RoleRemove
+RoleAdmin
+BirthrightRoleView
+BirthrightRoleAssign
+BirthrightRoleRemove
+BirthrightAdmin
+ApplicationView
+ApplicationCreate
+ApplicationEdit
+ApplicationDelete
+ApplicationAggregate
+ApplicationProvision
+ApplicationAdmin
+ProvisioningExecute
+ProvisioningRetry
+ProvisioningCancel
+ProvisioningPlanView
+ProvisioningPlanEdit
+ProvisioningPlanAdmin
+ProvisioningAdmin
+TaskRun
+TaskSchedule
+TaskCancel
+TaskMonitor
+TaskAdmin
+WorkflowView
+WorkflowLaunch
+WorkflowCancel
+WorkflowAdmin
+RuleView
+RuleCreate
+RuleEdit
+RuleDelete
+RuleExecute
+RuleAdmin
+ScriptExecute
+ScriptAdmin
+ReportView
+ReportCreate
+ReportEdit
+ReportDelete
+ReportExecute
+ReportExport
+ReportAdmin
+DashboardView
+DashboardAdmin
+AuditView
+AuditSearch
+AuditExport
+AuditAdmin
+PolicyView
+PolicyCreate
+PolicyEdit
+PolicyDelete
+PolicyViolationView
+PolicyViolationResolve
+PolicyAdmin
+SoDPolicyView
+SoDPolicyEdit
+SoDPolicyAdmin
+SoDViolationView
+SoDViolationMitigate
+SoDViolationApprove
+RiskScoreView
+RiskScoreEdit
+RiskAdmin
+MitigationView
+MitigationCreate
+MitigationEdit
+MitigationDelete
+MitigationAdmin
+ExceptionView
+ExceptionCreate
+ExceptionEdit
+ExceptionDelete
+ExceptionAdmin
+DelegationView
+DelegationCreate
+DelegationEdit
+DelegationDelete
+DelegationAdmin
+LifecycleEventView
+LifecycleEventCreate
+LifecycleEventEdit
+LifecycleEventDelete
+LifecycleEventExecute
+LifecycleAdmin
+IdentityMappingView
+IdentityMappingEdit
+IdentityMappingAdmin
+CorrelationView
+CorrelationEdit
+CorrelationAdmin
+ConnectorView
+ConnectorEdit
+ConnectorTest
+ConnectorAdmin
+SchemaView
+SchemaEdit
+SchemaAdmin
+QuickLinkView
+QuickLinkCreate
+QuickLinkEdit
+QuickLinkDelete
+QuickLinkAdmin
+EmailTemplateView
+EmailTemplateEdit
+EmailTemplateAdmin
+FormView
+FormCreate
+FormEdit
+FormDelete
+FormAdmin
+UIConfigView
+UIConfigEdit
+UIConfigAdmin
+SystemConfigView
+SystemConfigEdit
+SystemConfigAdmin
+DebugView
+DebugExecute
+DebugAdmin
+LogView
+LogExport
+LogAdmin
+FileImport
+FileExport
+BulkUpload
+BulkDownload
+BulkAdmin
+ApprovalView
+ApprovalProcess
+ApprovalAdmin
+RequestHistoryView
+RequestHistoryAdmin
+NotificationView
+NotificationSend
+NotificationAdmin
+SessionView
+SessionTerminate
+SessionAdmin
+SecurityAdmin
+ComplianceView
+ComplianceReport
+ComplianceAdmin
+AccessSimulation
+AccessSimulationAdmin
+DatabaseQueryExecute
+DatabaseAdmin
+RESTAPIInvoke
+RESTAPIAdmin
+SCIMAccess
+SCIMAdmin
+OAuthAccess
+OAuthAdmin
+TokenManage
+TokenAdmin
+EncryptionKeyManage
+EncryptionAdmin
+PasswordPolicyView
+PasswordPolicyEdit
+PasswordPolicyAdmin
+PasswordResetSelf
+PasswordResetOthers
+PasswordAdmin
+GroupView
+GroupCreate
+GroupEdit
+GroupDelete
+GroupAssign
+GroupRemove
+GroupAdmin
+ObjectView
+ObjectEdit
+ObjectDelete
+ObjectAdmin
+IdentityAttributesView
+IdentityAttributesEdit
+SelfServiceAccess
+EndUserAccess
+ManagerDashboard
+UserDashboard
+MyAccessView
+MyRequestsView
+MyApprovalsView
+MyCertificationsView
+MyAccountsView
+MyEntitlementsView
+MyRolesView
+MyProfileView
+MySettingsView
+MyNotificationsView
+MyDelegationsView
+MyHistoryView
+MyAuditView
+MySessionsView
+MyReportsView
+MyLoginHistory
+MyPasswordHistory
+MyRiskScoreView
+MyPolicyViolationsView
+MySoDViolationsView
+MyMitigationsView
+MyExceptionsView
+SessionTerminateSelf
+SecurityQuestionSetup
+SecurityQuestionReset
+MultiFactorAuthSetup
+MultiFactorAuthReset
+LoginHistoryView
+LastLoginView
+OAuthAccessRequest
+SCIMAccessRequest
+RESTAPIAccessRequest
+WorkflowLaunchSelf
+FormSubmit
+TaskStatusView
+MyTasksView
+MyWorkItemsView
+ProvisioningStatusView
+ProvisioningRetryRequest
+ProvisioningCancelRequest
+AccessSimulationRun
+NotificationAcknowledge
+EndUserDashboard
+EndUserRequests
+EndUserApprovals
+EndUserCertifications
+EndUserProfileEdit
+EndUserPasswordReset
+EndUserDelegation
+EndUserNotifications
+EndUserAuditView
+EndUserReportView
+EndUserSessionView
+EndUserSecuritySettings
+EndUserMFASetup
+EndUserTokenManage
+EndUserOAuthAccess
+EndUserSCIMAccess
+EndUserAPIUsage
+EndUserWorkflowLaunch
+EndUserFormSubmit
+EndUserAccessSimulation
+EndUserProvisioningStatus
+EndUserAccountView
+EndUserEntitlementView
+EndUserRoleView
+EndUserAccessHistory
+EndUserRiskView
+EndUserPolicyView
+EndUserSoDView
+EndUserMitigationView
+EndUserExceptionView
+
+👉 Ye:
+Maximum realistic combined list hai (300+)
+100% exact same kisi ek project me nahi milegi
+Tum khud bhi custom capability bana sakte ho. 
+Banake dikhao?
+Pehle sp right banao fir banao own capabilities, javadoc se dekhle,chatgpt se
+

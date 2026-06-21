@@ -1,0 +1,734 @@
+🚀 TaskResult kya hai?
+👉 Ye object hota hai jo task/job run hone ke baad uska result store karta hai
+💡 Simple Definition:-
+👉 TaskResult = “Task chalne ke baad kya hua uska full report”
+
+🔥 Isme kya-kya hota hai?
+Task success ya fail hua,
+Kitna time laga
+Output kya aaya
+Errors aaye ya nahi.
+
+🚀 TaskResult – Correct Methods List:-
+getId()
+getName()
+getStatus()
+setStatus(String status)
+getCompletionStatus()
+setCompletionStatus(String status)
+
+getStartTime()
+setStartTime(Date date)
+getEndTime()
+setEndTime(Date date)
+getLaunched()
+setLaunched(Date date)
+getCompleted()
+setCompleted(Date date)
+getMessages()
+addMessage(Message message)
+clearMessages()
+
+getErrors()
+addError(Message message)
+clearErrors()
+getWarnings()
+addWarning(Message message)
+clearWarnings()
+getProgress()
+setProgress(int progress)
+
+getPercentComplete()
+setPercentComplete(int percent)
+getAttributes()
+setAttributes(Map attributes)
+getAttribute(String key)
+setAttribute(String key, Object value)
+getArguments()
+setArguments(Map args)
+
+getHost()
+setHost(String host)
+getPartition()
+setPartition(String partition)
+getRetryCount()
+setRetryCount(int count)
+getMaxRetries()
+setMaxRetries(int max)
+
+isSuccess()
+isCompleted()
+isRunning()
+isFailed()
+toXml()
+fromXml(String xml)
+toMap()
+fromMap(Map map)
+
+validate()
+
+clone()
+equals(Object obj)
+hashCode()
+toString()
+-----------------------------------------------------------------------------------------------------------------
+()🚀 1️⃣ getStatus() ke Status (Execution Status)
+👉 Ye batata hai task abhi kis state me hai
+Pending
+Running
+Completed
+Failed
+Cancelled
+Terminated
+Paused
+Queued
+Retrying
+🚀 2️⃣ getCompletionStatus() ke Status (Final Result)
+👉 Ye batata hai task ka final outcome kya hua
+Success
+Error
+Warning
+PartialSuccess
+Completed
+Failed
+----------------------------------------------------------------
+()🔹 Pending:-
+👉 Task create ho gaya hai but abhi start nahi hua,
+Example: Schedule kiya hai, time aane ka wait ho raha hai.
+
+()🔹 Running:-
+👉 Task abhi execute ho raha hai,
+Example: Identity aggregation chal raha hai.
+
+()🔹 Completed:-
+👉 Task successfully finish ho gaya (execution complete)
+Example: Aggregation pura ho gaya.
+
+()🔹 Failed:-
+👉 Task run hua but beech me error aaya aur ruk gaya,
+Example: DB connection fail ho gaya.
+
+()🔹 Cancelled:-
+👉 User ya system ne task ko manually stop kar diya,
+Example: Admin ne cancel button dabaya.
+
+()🔹 Terminated:-
+👉 Forcefully system ne task ko kill kar diya,
+Example: Server crash ya timeout.
+
+()🔹 Paused:-
+👉 Task temporarily rok diya gaya hai,
+Example: Maintenance ke liye pause.
+
+()🔹 Queued:-
+👉 Task queue me hai, run hone ka wait kar raha hai,
+Example: Multiple tasks line me lage hain.
+
+()🔹 Retrying:-
+👉 Task fail hua tha, ab dobara try ho raha hai,
+Example: Provisioning retry ho raha hai.
+
+🔹 Success:-
+👉 Task successfully complete ho gaya bina error ke
+Example: Sab accounts successfully create ho gaye
+
+🔹 Error:-
+👉 Task complete hua but errors aaye
+Example: Kuch accounts create hue, kuch fail ho gaye
+
+🔹 Warning:-
+👉 Task complete hua but minor issues aaye
+Example: Kuch optional data missing tha
+
+🔹 PartialSuccess:-
+👉 Task ka kuch part successful hua, kuch fail
+Example: 100 me se 70 users ka provisioning success
+
+🔹 Completed:-
+👉 Generic completion (kabhi-kabhi success ke jagah use hota hai)
+Example: Task finish ho gaya (detail status alag check karna padega)
+
+🔹 Failed:-
+👉 Task final me fail ho gaya
+Example: Task pura hi fail ho gaya
+-----------------------------------------------------------------------------------------------------------------
+1️⃣ getId():-
+👉 TaskResult ka unique ID deta hai
+System.out.println(result.getId());
+Output:-
+TR123456789
+
+2️⃣ getName():-
+👉 Task ka naam (result ka naam) deta hai
+System.out.println(result.getName());
+Output:-
+Identity Aggregation Task Result
+
+3️⃣ getStatus():-
+👉 Current execution status deta hai
+System.out.println(result.getStatus());
+Output:-
+Completed
+(aur ho sakta hai: Running, Failed)
+
+4️⃣ setStatus(String status):-
+👉 Status ko manually set karta hai
+result.setStatus("Failed");
+System.out.println(result.getStatus());
+Output:-
+Failed
+
+5️⃣ getCompletionStatus():-
+👉 Final result ka detail status deta hai
+System.out.println(result.getCompletionStatus());
+Output:-
+Success
+(ya: Error, Warning)
+
+6️⃣ setCompletionStatus(String status):-
+👉 Final completion result set karta hai
+result.setCompletionStatus("Error");
+System.out.println(result.getCompletionStatus());
+Output:-
+Error
+
+1️⃣ getStartTime():-
+👉 Task kab start hua
+
+System.out.println(result.getStartTime());
+Output:-
+Thu Mar 19 10:00:00 IST 2026
+
+2️⃣ setStartTime(Date date):-
+👉 Task ka start time manually set karta hai
+
+result.setStartTime(new Date());
+System.out.println(result.getStartTime());
+Output:-
+Thu Mar 19 10:05:00 IST 2026
+
+3️⃣ getEndTime():-
+👉 Task kab finish hua
+
+System.out.println(result.getEndTime());
+Output:-
+Thu Mar 19 10:10:00 IST 2026
+
+4️⃣ setEndTime(Date date):-
+👉 Task ka end time set karta hai
+
+result.setEndTime(new Date());
+System.out.println(result.getEndTime());
+Output:-
+Thu Mar 19 10:15:00 IST 2026
+
+5️⃣ getLaunched():-
+👉 Task kab trigger/start hua (launch time)
+
+System.out.println(result.getLaunched());
+Output:-
+Thu Mar 19 09:59:00 IST 2026
+
+6️⃣ setLaunched(Date date):-
+👉 Launch time set karta hai
+
+result.setLaunched(new Date());
+System.out.println(result.getLaunched());
+Output:-
+Thu Mar 19 10:20:00 IST 2026
+
+7️⃣ getCompleted():-
+👉 Task kab complete mark hua
+
+System.out.println(result.getCompleted());
+Output:-
+Thu Mar 19 10:10:00 IST 2026
+
+8️⃣ setCompleted(Date date):-
+👉 Completion time set karta hai
+
+result.setCompleted(new Date());
+System.out.println(result.getCompleted());
+Output:-
+Thu Mar 19 10:25:00 IST 2026
+
+🚀 9️⃣ getMessages():-
+👉 Task ke logs / messages list deta hai
+
+System.out.println(result.getMessages());
+Output:-
+[Task started, Processing users, Task completed]
+
+🔟 addMessage(Message message):-
+👉 Ek naya log/message add karta hai
+
+result.addMessage(new Message("Task started"));
+System.out.println(result.getMessages());
+Output:-
+[Task started]
+
+1️⃣1️⃣ clearMessages():-
+👉 Saare messages delete kar deta hai
+
+result.clearMessages();
+System.out.println(result.getMessages());
+Output:-
+[]
+----------------------------------------------------------------------------------------------------------------------------------
+🔴 1️⃣ getErrors():-
+👉 Task ke saare error messages deta hai
+System.out.println(result.getErrors());
+Output:-
+[DB connection failed, User create failed]
+
+🔴 2️⃣ addError(Message message):-
+👉 Ek naya error add karta hai
+result.addError(new Message("DB connection failed"));
+System.out.println(result.getErrors());
+Output:-
+[DB connection failed]
+
+🔴 3️⃣ clearErrors():-
+👉 Saare errors remove kar deta hai
+result.clearErrors();
+System.out.println(result.getErrors());
+Output:-
+[]
+
+🟡 4️⃣ getWarnings():-
+👉 Task ke warning messages deta hai
+System.out.println(result.getWarnings());
+Output:-
+[Email missing, Optional field skipped]
+
+🟡 5️⃣ addWarning(Message message):-
+👉 Ek warning add karta hai,
+result.addWarning(new Message("Email missing"));
+System.out.println(result.getWarnings());
+Output:-
+[Email missing]
+
+🟡 6️⃣ clearWarnings():-
+👉 Saari warnings delete kar deta hai
+result.clearWarnings();
+System.out.println(result.getWarnings());
+Output:-
+[]
+
+📊 7️⃣ getProgress():-
+👉 Task kitna complete hua (% me ya count me)
+System.out.println(result.getProgress());
+Output:-
+60
+
+📊 8️⃣ setProgress(int progress):-
+👉 Progress manually set karta hai
+result.setProgress(80);
+System.out.println(result.getProgress());
+Output:-
+80
+--------------------------------------------------------------------------------------------------------------------
+📊 1️⃣ getPercentComplete():-
+👉 Task kitna % complete hua,
+System.out.println(result.getPercentComplete());
+Output:-
+75
+
+📊 2️⃣ setPercentComplete(int percent):-
+👉 Completion % set karta hai
+result.setPercentComplete(90);
+System.out.println(result.getPercentComplete());
+Output:-
+90
+
+🗂️ 3️⃣ getAttributes():-
+👉 TaskResult ke extra data (key-value) deta hai
+System.out.println(result.getAttributes());
+Output:-
+{processedUsers=100, failedUsers=5}
+
+🗂️ 4️⃣ setAttributes(Map attributes):-
+👉 Pura attributes map set karta hai
+Map map = new HashMap();
+map.put("processedUsers", 100);
+result.setAttributes(map);
+System.out.println(result.getAttributes());
+Output:-
+{processedUsers=100}
+
+🗂️ 5️⃣ getAttribute(String key):-
+👉 Specific key ka value deta hai
+System.out.println(result.getAttribute("processedUsers"));
+Output:-
+100
+
+🗂️ 6️⃣ setAttribute(String key, Object value):-
+👉 Ek key-value add/update karta hai
+result.setAttribute("failedUsers", 5);
+System.out.println(result.getAttributes());
+Output:-
+{processedUsers=100, failedUsers=5}
+
+🧾 7️⃣ getArguments():-
+👉 Task ko diye gaye input arguments deta hai
+System.out.println(result.getArguments());
+Output:-
+{application=AD, limit=50}
+
+🧾 8️⃣ setArguments(Map args):-
+👉 Input arguments set karta hai
+Map args = new HashMap();
+args.put("application", "AD");
+result.setArguments(args);
+System.out.println(result.getArguments());
+Output:-
+{application=AD}
+-----------------------------------------------------------------------------------------------------------------------
+🖥️ 1️⃣ getHost():-
+👉 Task kis server/machine pe run hua
+System.out.println(result.getHost());
+Output:-
+server-01
+
+🖥️ 2️⃣ setHost(String host):-
+👉 Host manually set karta hai
+result.setHost("server-02");
+System.out.println(result.getHost());
+Output:-
+server-02
+------------------------------------------------------------------------------------------------------------------------
+🔀 3️⃣ getPartition():-
+👉 Task ka partition (distributed execution part)
+System.out.println(result.getPartition());
+Output:-
+partition-1
+
+🔀 4️⃣ setPartition(String partition):-
+👉 Partition set karta hai
+result.setPartition("partition-2");
+System.out.println(result.getPartition());
+Output:-
+partition-2
+
+🔁 5️⃣ getRetryCount():-
+👉 Task kitni baar retry hua
+System.out.println(result.getRetryCount());
+Output:-
+2
+
+🔁 6️⃣ setRetryCount(int count):-
+👉 Retry count set karta hai
+result.setRetryCount(3);
+System.out.println(result.getRetryCount());
+Output:-
+3
+
+🔁 7️⃣ getMaxRetries():-
+👉 Maximum retry limit kya hai
+System.out.println(result.getMaxRetries());
+Output:-
+5
+
+🔁 8️⃣ setMaxRetries(int max):-
+👉 Max retry limit set karta hai
+result.setMaxRetries(4);
+System.out.println(result.getMaxRetries());
+Output:-
+4
+--------------------------------------------------------------------------------------------------
+🚀 Partition kya hai?
+👉 Partition = task ka chhota hissa (part)
+👉 Jab ek bada task hota hai, usko multiple parts me tod diya jata hai taaki wo fast run ho
+
+💡 Simple Definition:-
+👉 Partition = “task ka ek piece jo alag se execute hota hai”
+
+🔥 Real Example:-
+👇 Without Partition:-
+1000 users process karne hain
+→ ek hi thread me chalega
+→ slow hoga
+
+👇 With Partition:-
+1000 users
+→ 4 partitions
+
+Partition 1 → 250 users
+Partition 2 → 250 users
+Partition 3 → 250 users
+Partition 4 → 250 users
+👉 Sab parallel chalenge = 🔥 fast execution
+-------------------------------------------------------------------------------------------------------------------------
+✅ 1️⃣ isSuccess():-
+👉 Check karta hai task successful hua ya nahi
+System.out.println(result.isSuccess());
+Output:-
+true
+
+✅ 2️⃣ isCompleted():-
+👉 Check karta hai task complete hua ya nahi
+System.out.println(result.isCompleted());
+Output:-
+true
+
+🔄 3️⃣ isRunning():-
+👉 Check karta hai task abhi chal raha hai ya nahi
+System.out.println(result.isRunning());
+Output:-
+false
+
+❌ 4️⃣ isFailed():-
+👉 Check karta hai task fail hua ya nahi
+System.out.println(result.isFailed());
+Output:-
+false
+
+📄 5️⃣ toXml():-
+👉 Object ko XML format me convert karta hai
+System.out.println(result.toXml());
+Output:-
+<TaskResult>
+  <status>Completed</status>
+</TaskResult>
+
+📄 6️⃣ fromXml(String xml):-
+👉 XML se object create karta hai
+TaskResult r = new TaskResult();
+r.fromXml("<TaskResult><status>Failed</status></TaskResult>");
+System.out.println(r.getStatus());
+Output:-
+Failed
+
+🗂️ 7️⃣ toMap():-
+👉 Object ko Map (key-value) me convert karta hai
+System.out.println(result.toMap());
+Output:-
+{status=Completed}
+
+🗂️ 8️⃣ fromMap(Map map):-
+👉 Map se object data set karta hai
+Map m = new HashMap();
+m.put("status", "Failed");
+result.fromMap(m);
+System.out.println(result.getStatus());
+Output:-
+Failed
+
+🧬 9️⃣ clone():-
+👉 Object ka copy banata hai
+TaskResult copy = (TaskResult) result.clone();
+System.out.println(copy.getStatus());
+Output:-
+Completed
+
+⚖️ 🔟 equals(Object obj):-
+👉 Compare karta hai 2 objects same hain ya nahi
+System.out.println(result.equals(copy));
+Output:-
+true
+
+🔢 1️⃣1️⃣ hashCode():-
+👉 Object ka unique hash number deta hai
+System.out.println(result.hashCode());
+Output:-
+12345678
+
+📝 1️⃣2️⃣ toString():-
+👉 Object ko readable string me convert karta hai
+System.out.println(result.toString());
+Output:-
+TaskResult[status=Completed]
+-------------------------------------------------------------------------------------------
+🚀 TaskResult validate() kya karta hai?
+👉 validate() check karta hai ki object valid state me hai ya nahi
+👉 Agar koi problem hai → error throw karega
+💡 Simple Definition:-
+👉 validate() = “object sahi hai ya nahi check karo”
+----------------------------------------------------------------------------------------------
+🔥 validate() kya-kya check karta hai?
+1️⃣ Required Fields Check:-
+👉 Important fields null na ho
+
+result.setName(null);
+result.validate(); // ❌ error
+
+Output:-
+Validation Error: name is required
+
+2️⃣ Status Valid hai ya nahi:-
+👉 Invalid status allow nahi
+
+result.setStatus("XYZ");
+result.validate();
+
+Output:-
+Validation Error: invalid status
+
+3️⃣ Time Consistency Check:-
+👉 Start time < End time hona chahiye
+
+result.setStartTime(new Date(2000));
+result.setEndTime(new Date(1000));
+result.validate();
+
+Output:-
+Validation Error: endTime before startTime
+
+4️⃣ Completion Logic Check:-
+👉 Completed hai to end time hona chahiye
+
+result.setStatus("Completed");
+result.setEndTime(null);
+result.validate();
+
+Output:-
+Validation Error: endTime required for completed task
+
+5️⃣ Progress Range Check:-
+👉 0–100 ke beech hona chahiye
+
+result.setPercentComplete(150);
+result.validate();
+
+Output:-
+Validation Error: percent out of range
+
+6️⃣ Retry Logic Check:-
+👉 retryCount <= maxRetries
+
+result.setRetryCount(5);
+result.setMaxRetries(3);
+result.validate();
+
+Output:-
+Validation Error: retry exceeded
+
+7️⃣ Attributes / Arguments Format Check:-
+👉 Map sahi format me ho
+
+result.setAttributes(null);
+result.validate();
+
+Output:-
+Validation Error: attributes invalid.
+-------------------------------------------------------------------------------------------------------------------------
+✅ TaskResult – Real Project Code (SailPoint)
+import sailpoint.api.SailPointContext;
+import sailpoint.object.TaskResult;
+
+import java.util.Map;
+
+public class TaskResultExample {
+
+    public static void main(String[] args) {
+
+        SailPointContext context = null;
+
+        try {
+            // 🔹 Get SailPoint Context
+            context = SailPointFactory.createContext();
+
+            // 🔹 Load TaskResult by ID
+            String resultId = "TR12345";
+            TaskResult result = context.getObject(TaskResult.class, resultId);
+
+            if (result == null) {
+                System.out.println("TaskResult not found: " + resultId);
+                return;
+            }
+
+            // ============================================
+            // 1️⃣ Basic Info
+            // ============================================
+            System.out.println("Result ID: " + result.getId());
+            System.out.println("Result Name: " + result.getName());
+            System.out.println("Status: " + result.getStatus());
+
+            // ============================================
+            // 2️⃣ Status Update
+            // ============================================
+            result.setStatus(TaskResult.STATUS_RUNNING);
+            System.out.println("Updated Status: " + result.getStatus());
+
+            result.setCompletionStatus(TaskResult.STATUS_COMPLETED);
+            System.out.println("Completion Status: " + result.getCompletionStatus());
+
+            // ============================================
+            // 3️⃣ Boolean Checks
+            // ============================================
+            System.out.println("Is Success? " + result.isSuccess());
+            System.out.println("Is Completed? " + result.isCompleted());
+            System.out.println("Is Running? " + result.isRunning());
+            System.out.println("Is Failed? " + result.isFailed());
+
+            // ============================================
+            // 4️⃣ Convert to XML
+            // ============================================
+            String xml = result.toXml();
+            System.out.println("TaskResult XML:");
+            System.out.println(xml);
+
+            // ============================================
+            // 5️⃣ Convert from XML
+            // ============================================
+            TaskResult newResult = new TaskResult();
+            newResult.fromXml(xml);
+            System.out.println("Recreated TaskResult from XML");
+
+            // ============================================
+            // 6️⃣ Convert to Map
+            // ============================================
+            Map map = result.toMap();
+            System.out.println("TaskResult Map: " + map);
+
+            // ============================================
+            // 7️⃣ Convert from Map
+            // ============================================
+            TaskResult mapResult = new TaskResult();
+            mapResult.fromMap(map);
+            System.out.println("Recreated TaskResult from Map");
+
+            // ============================================
+            // 8️⃣ Validation
+            // ============================================
+            boolean valid = result.validate();
+            System.out.println("Is TaskResult Valid? " + valid);
+
+            context.commitTransaction();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+        } finally {
+            if (context != null) {
+                context.decache(true);
+                context.close();
+            }
+        }
+    }
+}
+🔥 Sample Output
+Result ID: TR12345
+Result Name: Certification Result
+Status: Pending
+
+Updated Status: Running
+Completion Status: Completed
+
+Is Success? true
+Is Completed? true
+Is Running? false
+Is Failed? false
+
+TaskResult XML:
+<TaskResult id="TR12345" status="Completed">
+   <Name>Certification Result</Name>
+</TaskResult>
+
+Recreated TaskResult from XML
+
+TaskResult Map: {id=TR12345, name=Certification Result, status=Completed}
+
+Recreated TaskResult from Map
+
+Is TaskResult Valid? true

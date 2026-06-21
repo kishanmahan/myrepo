@@ -1,0 +1,175 @@
+7. Access Request Management;-
+User portal
+Access request flow
+Approval process
+Request policies
+
+1️⃣ User Portal:-
+User Portal wo interface hota hai jaha user login karke access request karta hai.
+Features:-
+Access request submit karna
+Apne accounts dekhna
+Roles aur entitlements browse karna
+Approval status check karna
+Certifications review karna
+
+Typical portal sections:-
+Dashboard
+My Access
+Request Access
+My Requests
+Approvals
+Certifications
+
+Example flow:-
+User login → Request Access → Role select → Submit request
+User portal generally LCM (Lifecycle Manager) module ka part hota hai.
+
+2️⃣ Access Request Flow:-
+Access request ka full flow kuch is tarah hota hai:
+User Portal
+     ↓
+Access Request Submit
+     ↓
+Request Policy Check
+     ↓
+Approval Workflow
+     ↓
+Provisioning Plan Create
+     ↓
+Application Provisioning
+     ↓
+Access Granted
+
+Steps detail me:-
+User portal se access request karta hai
+SailPoint request validate karta hai
+Policies check hoti hain
+Approvals generate hote hain
+Provisioning system ko request bheja jata hai
+Account / entitlement assign ho jata hai
+
+3️⃣ Approval Process:-
+Approval process define karta hai kaun request approve karega.
+
+Common approval types:-
+
+1️⃣ Manager Approval
+User ka manager approve karta hai.
+Example:-
+User → Manager → Approved
+
+2️⃣ Application Owner Approval
+Application owner approve karta hai.
+Example:-
+User → App Owner → Approved
+
+3️⃣ Role Owner Approval
+Role ka owner approval deta hai.
+
+4️⃣ Multi-Level Approval
+Multiple approvals required hote hain.
+Example:-
+User → Manager → Application Owner → Approved
+
+5️⃣ Parallel Approval:-
+Multiple approvers ek saath approve karte hain.
+Example:-
+Manager + Security Team
+
+4️⃣ Approval Workflow (Technical):-
+Workflow XML me approval define hota hai.
+Example:-
+<Step name="Manager Approval">
+   <Approval owner="manager"/>
+</Step>
+Developer custom workflow bhi bana sakta hai.
+---------------------------------------------------
+5️⃣ Request Policies:-
+Request policies control karte hain ki kaun sa access request allowed hai ya nahi.
+Types:-
+
+1️⃣ Access Request Policy:-
+Define karta hai kaun request kar sakta hai.
+Example:-
+Only IT users can request Database access
+
+2️⃣ Approval Policy;-
+Define karta hai kaun approve karega.
+Example:-
+Manager + Application Owner
+
+3️⃣ SoD Policy (Separation of Duties):-
+Conflict check karta hai.
+Example:-
+Payment Create + Payment Approve not allowed
+
+4️⃣ Request Limit Policy:-
+Limit karta hai kitna access request ho sakta hai.
+Example:-
+User ek time me 5 roles hi request kar sakta hai
+--------------------------------------------------------
+6️⃣ Access Request Types:-
+Users request kar sakte hain:-
+Application access
+Role access
+Entitlement access
+Account creation
+Example:-
+User → Request SAP role
+User → Request Database entitlement
+
+7️⃣ Access Request Status
+Request ke different statuses hote hain:-
+Pending Approval
+Approved
+Rejected
+Provisioned
+Completed
+
+8️⃣ Access Request Objects (Developer):-
+Developer in objects ke saath kaam karta hai:-
+Identity
+Role
+Entitlement
+ProvisioningPlan
+
+Example code:-
+ProvisioningPlan plan = new ProvisioningPlan();
+plan.setIdentity(identity);
+
+9️⃣ Access Request Security
+Security controls:-
+Policy validation
+Approval checks
+Audit logging
+
+🔟 Access Request Real Example:-
+Example scenario:-
+Employee wants SAP access
+        ↓
+User portal me request
+        ↓
+Manager approval
+        ↓
+Application owner approval
+        ↓
+Provisioning
+        ↓
+SAP access granted
+
+1️⃣1️⃣ Access Request Audit
+Audit me store hota hai:-
+Kisne request kiya
+Kisne approve kiya
+Kab access mila
+
+1️⃣2️⃣ Access Request Troubleshooting
+Common problems:-
+Approval pending
+Policy violation
+Provisioning error
+
+Solution:-
+Logs check karo
+Workflow debug karo

@@ -1,0 +1,33 @@
+()🔹 Delegate (Simple me):-
+👉 Delegate = ek user ko kuch specific admin rights dena
+Jaise manager ko power de sakta hai:-
+User requests approve karne
+Password reset karne
+Access review complete karne
+✔️ Full admin nahi banta
+✔️ Sirf limited tasks ke liye permission milta hai.
+
+🔹 SailPoint me Delegate ka actual purpose:-
+👉 Large organizations me:-
+Har chhota kaam admin se nahi ho sakta
+Business users ko kuch rights dene padte hain
+Par full admin rights dena safe nahi
+Isliye SailPoint me Delegate option hota hai
+
+🔹 Delegate kis cheez ke liye de sakte hain?
+Common use cases:-
+
+✅ 1. Password / Account requests
+Manager ko allow karna:-
+Password reset approve karne
+Unlock account
+
+✅ 2. Access requests approval
+Manager approval
+Team lead approval
+
+✅ 3. Role/Entitlement assignments
+Limited role assignment
+
+✅ 4. Access Review
+Specific users ko review tasks dena

@@ -1,0 +1,65 @@
+-- =========================
+-- 1. MAIN DB
+-- =========================
+CREATE DATABASE identityiq CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE USER 'identityiq'@'localhost' IDENTIFIED BY 'root';
+ALTER USER 'identityiq'@'localhost'
+IDENTIFIED WITH mysql_native_password BY 'root';
+
+GRANT ALL PRIVILEGES ON identityiq.* TO 'identityiq'@'localhost';
+
+
+-- =========================
+-- 2. PLUGIN DB
+-- =========================
+CREATE DATABASE identityiqPlugin CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE USER 'identityiqPlugin'@'localhost' IDENTIFIED BY 'root';
+ALTER USER 'identityiqPlugin'@'localhost'
+IDENTIFIED WITH mysql_native_password BY 'root';
+
+GRANT ALL PRIVILEGES ON identityiqPlugin.* TO 'identityiqPlugin'@'localhost';
+
+
+-- =========================
+-- 3. ACCESS HISTORY DB
+-- =========================
+CREATE DATABASE identityiqah CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE USER 'identityiqah'@'localhost' IDENTIFIED BY 'root';
+ALTER USER 'identityiqah'@'localhost'
+IDENTIFIED WITH mysql_native_password BY 'root';
+
+GRANT ALL PRIVILEGES ON identityiqah.* TO 'identityiqah'@'localhost';
+
+
+-- Apply changes
+FLUSH PRIVILEGES;
+
+CREATE DATABASE IF NOT EXISTS provisioning_db;
+USE provisioning_db;
+
+CREATE DATABASE provisioning_db;
+
+USE provisioning_db;
+
+CREATE TABLE target_users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    firstname VARCHAR(50),
+    lastname VARCHAR(50),
+    email VARCHAR(100),
+    status VARCHAR(20) DEFAULT 'Active'
+);
+
+-- IdentityIQ user ko naye database ka pura access de dein
+GRANT ALL PRIVILEGES ON provisioning_db.* TO 'identityiq'@'localhost';
+
+-- Permissions ko turant refresh karein
+FLUSH PRIVILEGES;
+
+SELECT * FROM target_users;
+
+TRUNCATE TABLE target_users;
+

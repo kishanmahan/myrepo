@@ -1,0 +1,237 @@
+🔥 GroupDefinition kya hota hai?
+👉 GroupDefinition = ek rule/definition hoti hai jisse group dynamically banta hai
+👉 Matlab:-
+“Kaun log group me aayenge — ye condition define karta hai”
+one line:-
+GroupDefinition ek dynamic rule-based group hota hai jo filter ke basis pe users ko automatically include karta hai.
+
+🧠 Simple Example:-
+Group Name: India_Employees
+Rule:-
+country = India
+👉 Jo bhi user ka country = India
+👉 Wo automatically group me aa jayega 🔥
+
+🔥 Static vs Dynamic Group:-
+Type	            Kaise banta
+Static Group:------manually add
+GroupDefinition:---rule se auto
+
+🔥 GroupDefinition me kya hota hai?
+👉 Ye cheeze hoti hain:-
+Name
+Description
+Filter / Rule
+Application
+Owner
+Attributes
+
+1️⃣ Name Methods:-
+getName()
+setName(String name)
+👉 Group ka naam set/get karta hai
+
+2️⃣ Description:-
+getDescription()
+setDescription(String description)
+👉 Group ka detail
+
+3️⃣ Filter / Population (MOST IMPORTANT 🔥)
+getFilter()
+setFilter(Filter filter)
+👉 Ye decide karta hai:-
+kaun group me aayega
+
+💻 Example:-
+Filter filter = Filter.eq("country", "India");
+groupDef.setFilter(filter);
+
+4️⃣ Application:-
+getApplication()
+setApplication(Application app)
+👉 Kis system ka group hai.
+
+4️⃣ Application:-
+getApplication()
+setApplication(Application app)
+👉 Kis system ka group hai.
+
+6️⃣ Attributes:-
+getAttributes()
+setAttributes(Attributes attrs)
+👉 Extra data store karta hai
+
+7️⃣ Created / Modified:-
+getCreated()
+getModified()
+👉 kab bana / update hua
+
+8️⃣ ID:-
+getId()
+setId(String id)
+👉 unique identifier
+
+9️⃣ toString():-
+toString()
+👉 object print karta hai
+
+🔟 equals() & hashCode():-
+equals(Object obj)
+hashCode()
+👉 compare aur hashing
+----------------------------------------------------------------
+5️⃣ Owner:-
+getOwner()
+setOwner(Identity owner)
+👉 Group ka owner kaun hai
+👉 Owner = wo banda (Identity) jo us group ka zimmedar hota hai,
+Matlab: “Is group ka boss / responsible person”
+
+🔥 Owner kya kya karta hai (real system)
+1️⃣ Approval:-
+👉 User Group / Role / Entitlement / Access request karta hai
+aur owner approve ya reject karega.
+
+2️⃣ Governance / Audit:-
+Audit me pucha jayega:-
+"Is group ka owner kaun hai?"
+
+3️⃣ Certification
+👉 Access review ke time:
+Owner bolega:
+✔️ ye user rehna chahiye
+❌ hata do
+
+4️⃣ Responsibility
+👉 Agar kuch galat hua:
+Blame → Owner 😅
+---------------------------------------------
+🔥 User kya request karta hai?
+👉 User Group / Role / Entitlement / Access request karta hai
+
+🎯 Example (Group case):-
+User: Ramesh
+Request: India_Employees group join karna hai
+👉 Matlab:-
+“Mujhe is group ka member bana do”
+
+🔥 Flow ka breakdown:-
+🧠 Step 1️⃣ User request karta hai
+User portal me jaata hai
+↓
+Search karta hai: India_Employees
+↓
+Click: Request Access
+
+🧠 Step 2️⃣ System check karta hai
+Kya group requestable hai?
+Kya policy allow karti hai?
+
+🧠 Step 3️⃣ Owner ke paas jata hai
+Request → Group Owner
+👉 Owner decide karega:-
+✔️ Approve
+❌ Reject
+
+🧠 Step 4️⃣ Agar approve hua
+User → group me add ho jayega
+----------------------------------------------------------------
+()groupdefinition me Role / Entitlement / Access request ka matlab ?
+---
+🔥 Sabse pehle clear kar le:-
+👉 User direct “GroupDefinition” ko request nahi karta ❌
+👉 User actually request karta hai:-
+Role
+Entitlement
+Access
+👉 GroupDefinition bas backend me decide karta hai ki user automatically group me aaye ya nahi ✅
+
+🔥 Example:-
+User: Amit
+Request: Developer Role
+
+👉 Role me kya hai:-
+Department = IT set ho gaya
+
+👉 GroupDefinition:-
+If department = IT → IT_Group
+
+👉 Final:-
+Amit → IT_Group me auto add 🔥
+----------------------------------------------------
+👉 “Agar user group me aa jaye toh kya usko group ke entitlements mil jate hain?”
+
+🔥 1️⃣ Case: Group → Entitlement mapping hai,
+👉 Agar group ke andar entitlements defined hain
+
+🎯 Example:-
+Group: IT_Group
+
+Entitlements:-
+- DB_READ
+- SERVER_ACCESS
+
+👉 Agar user group me add hua:-
+User → IT_Group
+
+👉 To automatically:-
+User → DB_READ ✅
+User → SERVER_ACCESS ✅
+👉 🔥 YES mil gaya
+-------------------------------------------------
+🔥 2️⃣ Case: Group sirf grouping ke liye hai:-
+👉 Kabhi group sirf UI/filter ke liye hota hai
+
+Group: India_Employees
+(no entitlement mapping)
+
+👉 User group me aaya:-
+User → India_Employees
+
+👉 But:-
+No access ❌
+---------------------------------------------------------
+🔥 3️⃣ Case: Group → Role → Entitlement:-
+👉 Real system me mostly indirect flow hota hai
+
+🎯 Example:-
+Group: IT_Group
+        ↓
+Role: Developer
+        ↓
+Entitlements:
+- DB_READ
+- GIT_ACCESS
+
+👉 Flow:-
+User → Group
+        ↓
+Role assign
+        ↓
+Entitlements milte hain 🔥
+-------------------------------------------------------------
+🔥 4️⃣ GroupDefinition wala case:-
+👉 Agar user auto group me aaya:-
+Rule: department = IT
+👉 User IT hai → group me add
+👉 Phir:-
+✔️ Agar mapping hai → access milega
+❌ Nahi hai → nahi milega
+------------------------------------------------------------
+GroupDefinition group = new GroupDefinition();
+
+// Name
+group.setName("IT_Group");
+
+// Description
+group.setDescription("All IT employees");
+
+// Filter (RULE 🔥)
+Filter filter = Filter.eq("department", "IT");
+
+// Apply rule
+group.setFilter(filter);
+
+// Save (context me)
+context.saveObject(group);
+context.commitTransaction();

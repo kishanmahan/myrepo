@@ -1,0 +1,220 @@
+Java me ek class ko bina inherit (extends) kiye dusre class me use karne ke kai tareeke hote hain.
+1. Object bana ke use karna (Most Common)
+Agar inheritance nahi chahiye, toh dusre class ka object bana lo.
+Example:
+Java
+Copy code
+class Engine {
+
+    void start() {
+        System.out.println("Engine Start");
+    }
+}
+
+class Car {
+
+    public static void main(String[] args) {
+
+        Engine e = new Engine(); // object create
+
+        e.start(); // method call
+    }
+}
+Output:
+Plain text
+Copy code
+Engine Start
+Yaha kya hua?
+Car ne Engine ko inherit nahi kiya.
+Bas Engine ka object banaya.
+Fir method use kiya.
+2. Composition (Class ke andar dusri class ka object)
+Ye OOP me bahut use hota hai.
+Example:
+Java
+Copy code
+class Address {
+
+    String city = "Delhi";
+}
+
+class Employee {
+
+    Address address = new Address(); // dusri class ka object
+
+    void show() {
+        System.out.println(address.city);
+    }
+}
+
+public class Test {
+
+    public static void main(String[] args) {
+
+        Employee e = new Employee();
+
+        e.show();
+    }
+}
+Output:
+Plain text
+Copy code
+Delhi
+Yaha:
+Employee HAS-A Address
+Inheritance nahi hua.
+3. Static method use karna
+Agar method static hai toh object bhi nahi banana padta.
+Example:
+Java
+Copy code
+class MathUtil {
+
+    static void add() {
+        System.out.println(10 + 20);
+    }
+}
+
+public class Test {
+
+    public static void main(String[] args) {
+
+        MathUtil.add();
+    }
+}
+Output:
+Plain text
+Copy code
+30
+Syntax:
+Java
+Copy code
+ClassName.methodName();
+4. Constructor me object pass karna (Dependency Injection)
+Example:
+Java
+Copy code
+class Engine {
+
+    void start() {
+        System.out.println("Start");
+    }
+}
+
+class Car {
+
+    Engine engine;
+
+    Car(Engine engine) {
+        this.engine = engine;
+    }
+
+    void run() {
+        engine.start();
+    }
+}
+
+public class Test {
+
+    public static void main(String[] args) {
+
+        Engine e = new Engine();
+
+        Car c = new Car(e);
+
+        c.run();
+    }
+}
+Output:
+Plain text
+Copy code
+Start
+5. Method parameter me object pass karna
+Example:
+Java
+Copy code
+class Student {
+
+    String name = "Rahul";
+}
+
+class School {
+
+    void display(Student s) {
+
+        System.out.println(s.name);
+    }
+}
+
+public class Test {
+
+    public static void main(String[] args) {
+
+        Student s = new Student();
+
+        School sc = new School();
+
+        sc.display(s);
+    }
+}
+Output:
+Plain text
+Copy code
+Rahul
+--------------------------------------------------------
+class Student {
+
+    String name = "Rahul";
+
+    void show() {
+        System.out.println("Student Method Call Hua");
+    }
+}
+
+class School {
+
+    void display(Student s) {
+
+        System.out.println(s.name);
+
+        s.show();   // Student class ka method call
+    }
+}
+
+public class Test {
+
+    public static void main(String[] args) {
+
+        Student s = new Student();
+
+        School sc = new School();
+
+        sc.display(s);
+    }
+}
+--------------------------------------------------------------------
+class Panda {
+
+    public void p1() {
+        System.out.println("P1 Method Call Hua");
+    }
+}
+
+class Ashutosh {
+
+    Panda pq = new Panda();
+
+    void display() {
+        pq.p1();      // Panda ka method call
+    }
+}
+
+public class Motu {
+
+    public static void main(String[] args) {
+
+        Ashutosh A1 = new Ashutosh();
+
+        A1.display();
+    }
+}

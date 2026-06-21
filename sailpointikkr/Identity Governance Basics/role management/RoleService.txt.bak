@@ -1,0 +1,222 @@
+()Role kya hai?
+--"RoleService = Role ka manager + operations ka executor"
+RoleService ek service layer ka component hai jo roles ke management ke liye use hota hai.
+Yani:-
+Ye system me roles create, read, update, delete (CRUD) karta hai.
+Ye user aur roles ke beech assignment manage karta hai.
+Ye roles ke rules, permissions, aur hierarchy handle karta hai.
+💡 Ek tarike se socho:-
+"RoleService = system ka role manager" — ye ensure karta hai ki kaunse user ke paas kaunse role hai aur roles properly manage ho rahe hain.
+
+()2️⃣ RoleService kya karta hai?
+Ye service mostly ye operations handle karta hai:-
+()Role CRUD Operations:-
+createRole(Role role) → Naya role create kare.
+updateRole(Role role) → Role ke attributes update kare.
+deleteRole(String roleId) → Role delete kare.
+getRole(String roleId) → Role details fetch kare.
+getAllRoles() → System me saare roles fetch kare.
+
+()Role Assignment / Removal:-
+assignRole(User user, Role role) → User ko role assign kare.
+removeRole(User user, Role role) → User se role remove kare.
+
+()Role Validation / Checking:-
+isRoleAssigned(User user, Role role) → Check kare ki user ke paas role hai ya nahi.
+validateRole(Role role) → Role ke rules / constraints check kare.
+
+()Role Search / Filtering:-
+findRolesByAttribute(String attr, String value) → Attribute ke basis pe roles search kare.
+getRolesByUser(User user) → User ke assigned roles fetch kare.
+
+()Role Metadata / Hierarchy:-
+getRolePermissions(Role role) → Role ke permissions fetch kare.
+getChildRoles(Role role) → Role hierarchy me child roles fetch kare.
+
+3️⃣ RoleService ke andar kya hota hai?
+Typically, RoleService ke andar ye cheeze hoti hain:-
+()Dependencies / DAOs
+()RoleRepository / RoleDAO → Database ya identity engine se roles fetch/update.
+
+()UserService → Users ke sath link handle karne ke liye.
+
+()Core Methods (as explained above):-
+--CRUD, Assign/Remove, Search, Validate.
+
+()Business Logic:-
+Role ko kisi user pe assign karne se pehle validate karna (eligibility check).
+Role deletion se pehle dependencies check karna (e.g., agar role kisi user pe assigned hai toh delete na ho).
+
+()Cache / Optimization (optional):-
+RoleService kabhi roles ko memory me cache karke performance improve kar sakta hai.
+---------------------------------------------------------------------------------------------------------------------------
+createRole(Role role)
+updateRole(Role role)
+deleteRole(String roleId)
+getRole(String roleId)
+getAllRoles()
+assignRole(User user, Role role)
+removeRole(User user, Role role)
+isRoleAssigned(User user, Role role)
+findRolesByAttribute(String attribute, String value)
+getRolesByUser(User user)
+getRolePermissions(Role role)
+getChildRoles(Role role)
+getParentRoles(Role role)
+searchRoles(String keyword)
+existsRole(String roleId)
+
+countRoles()
+validateRole(Role role)
+-----------------------------------------------------------------------------------
+1️⃣ createRole(Role role):-
+Kya karta hai: Naya role system me create karta hai.
+Output: Naya Role object return hota hai, jo database me save ho chuka hota hai.
+Role newRole = roleService.createRole(new Role("Admin"));
+System.out.println(newRole.getName()); // Output: Admin
+
+2️⃣ updateRole(Role role):-
+Kya karta hai: Existing role ke attributes update karta hai.
+Output: Updated Role object return hota hai.
+Role role = roleService.getRole("1");
+role.setName("SuperAdmin");
+roleService.updateRole(role);
+System.out.println(role.getName()); // Output: SuperAdmin
+
+3️⃣ deleteRole(String roleId):-
+Kya karta hai: Role ko delete karta hai.
+Output: Void (kuch return nahi hota), lekin role system se remove ho jata hai.
+roleService.deleteRole("1");
+// Role "1" system me ab nahi hai
+
+4️⃣ getRole(String roleId):-
+Kya karta hai: Specific role fetch karta hai.
+Output: Role object return hota hai.
+Role role = roleService.getRole("1");
+System.out.println(role.getName()); // Output: Admin
+
+5️⃣ getAllRoles():-
+Kya karta hai: System me saare roles return karta hai.
+Output: List<Role>
+List<Role> roles = roleService.getAllRoles();
+roles.forEach(r -> System.out.println(r.getName()));
+// Output: Admin, User, Manager
+
+6️⃣ assignRole(User user, Role role):-
+Kya karta hai: User ko role assign karta hai.
+Output: Assigned Role object return hota hai.
+Role role = roleService.assignRole(user, adminRole);
+System.out.println(user.getRoles()); // Output: [Admin]
+
+7️⃣ removeRole(User user, Role role):-
+Kya karta hai: User se role remove karta hai.
+Output: Void, lekin user ke roles update ho jate hain.
+roleService.removeRole(user, adminRole);
+System.out.println(user.getRoles()); // Output: []
+
+8️⃣ isRoleAssigned(User user, Role role):-
+Kya karta hai: Check karta hai ki role user ke paas hai ya nahi.
+Output: Boolean (true/false)
+boolean assigned = roleService.isRoleAssigned(user, adminRole);
+System.out.println(assigned); // Output: false
+
+1️⃣5️⃣ existsRole(String roleId):-
+Kya karta hai: Check karta hai ki role exist karta hai ya nahi.
+Output: Boolean (true/false)
+boolean exists = roleService.existsRole("1");
+System.out.println(exists); // Output: true
+-----------------------------------------------------------------------------
+9️⃣ findRolesByAttribute(String attribute, String value):-
+List<Role> roles = roleService.findRolesByAttribute("department", "IT");
+for(int i = 0; i < roles.size(); i++) {
+    System.out.println(roles.get(i).getName());
+}
+// Output (example): 
+// Admin
+// Developer
+
+1️⃣0️⃣ getRolesByUser(User user):-
+List<Role> roles = roleService.getRolesByUser(user);
+for(int i = 0; i < roles.size(); i++) {
+    System.out.println(roles.get(i).getName());
+}
+// Output (example): 
+// Admin
+// Manager
+
+1️⃣1️⃣ getRolePermissions(Role role):-
+List<Permission> perms = roleService.getRolePermissions(adminRole);
+for(int i = 0; i < perms.size(); i++) {
+    System.out.println(perms.get(i).getName());
+}
+// Output (example):
+// READ_USER
+// WRITE_USER
+
+1️⃣2️⃣ getChildRoles(Role role):-
+List<Role> children = roleService.getChildRoles(managerRole);
+for(int i = 0; i < children.size(); i++) {
+    System.out.println(children.get(i).getName());
+}
+// Output (example):
+// TeamLead
+// Supervisor
+
+1️⃣3️⃣ getParentRoles(Role role):-
+List<Role> parents = roleService.getParentRoles(teamLeadRole);
+for(int i = 0; i < parents.size(); i++) {
+    System.out.println(parents.get(i).getName());
+}
+// Output (example):
+// Manager
+
+1️⃣4️⃣ searchRoles(String keyword):-
+List<Role> roles = roleService.searchRoles("Admin");
+for(int i = 0; i < roles.size(); i++) {
+    System.out.println(roles.get(i).getName());
+}
+// Output (example):
+// Admin
+// SuperAdmin
+
+1️⃣ countRoles():-
+Kya karta hai:-
+Ye method system me total roles count karta hai.
+Database ya identity engine me stored roles ka number return karta hai.
+
+Output example:-
+int totalRoles = roleService.countRoles();
+System.out.println(totalRoles); // Output: 15
+-------------------------------------------------------------------------------------------------------------------
+2️⃣ validateRole(Role role):-
+Kya karta hai:-
+Ye method role ke rules aur constraints check karta hai, jaise:-
+()Name validation:-
+Role ka name empty ya null na ho.
+Duplicate role name na ho.
+
+()Permissions validation:-
+Assigned permissions valid aur existing honi chahiye.
+
+()Hierarchy validation:-
+Parent/Child roles me circular dependency na ho.
+
+()Attribute validation:-
+Required attributes (jaise department, costCenter) set honi chahiye.
+
+Output:-
+Agar sab valid hai → true ya role object wapas aa sakta hai.
+Agar invalid hai → Exception throw kar sakta hai (jaise ValidationException)
+
+Example:-
+Role role = new Role("Admin");
+role.setDepartment("IT");
+
+try {
+    roleService.validateRole(role);
+    System.out.println("Role valid hai!");
+} catch (ValidationException e) {
+    System.out.println("Validation failed: " + e.getMessage());
+}
+// Output: Role valid hai! 
+--------------------------------------------------------------------------------------------------------------------------

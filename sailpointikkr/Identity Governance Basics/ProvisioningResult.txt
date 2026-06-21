@@ -1,0 +1,684 @@
+()ProvisioningResult kya hai?
+--
+👉 Ye ek object hai jo Provisioner / Application se return hota hai
+👉 Jab bhi tum koi provisioning request bhejte ho (jaise user create ya disable), to uska final result yahi store hota hai
+📌 Simple language me:-
+“Provisioning ka output / response = ProvisioningResult”
+
+🔹 Ye kya karta hai?
+ProvisioningResult:-
+✅ Batata hai operation success hua ya fail
+❌ Agar fail hua to error details deta hai
+📄 Har provisioning request ka status maintain karta hai
+🔗 Track karta hai ki kaunse account pe kya action hua
+📊 Logging & auditing me help karta hai.
+
+🔹 Andar kya kya hota hai? (Important fields)
+ProvisioningResult ke andar usually ye sab hota hai:-
+
+1️⃣ Status:-
+SUCCESS
+FAILURE
+PENDING
+👉 Batata hai operation ka final result
+
+2️⃣ Errors / Exceptions
+Agar provisioning fail hua
+👉 to error message / exception yahan store hota hai
+Example:-
+Account not found
+Invalid attribute
+Permission denied
+
+3️⃣ Account Information:-
+Kaunse account pe provisioning hua
+Application name
+Native identity / account ID
+
+4️⃣ Operation Type:-
+CREATE
+UPDATE
+DELETE
+DISABLE
+
+5️⃣ Messages / Logs:-
+Success message
+Warning
+Debug logs
+
+6️⃣ Provisioning Plan reference:-
+👉 Kaunsa provisioning plan execute hua uska reference
+
+7️⃣ Attributes / Changes:-
+👉 Kya change hua:-
+Email update
+Role assign
+Department change
+
+8️⃣ Request ID / Tracking ID:-
+👉 Har provisioning request ka unique ID
+👉 Troubleshooting me help karta hai.
+
+❌ ProvisioningResult:-
+ProvisioningResult object DB me store nahi hota,
+👉 Ye mainly runtime object hai,
+👉 Memory me exist karta hai,
+👉 Direct DB table me as-is store nahi hota.
+
+🔹 1️⃣ SUCCESS:-
+👉 Provisioning successfully complete ho gaya
+👉 Sab operations (create/update/delete) successfully apply ho gaye
+
+🔹 2️⃣ FAILURE:-
+👉 Provisioning fail ho gaya
+👉 Koi error aaya (application issue, validation error, permission issue, etc.)
+
+🔹 3️⃣ PENDING:-
+👉 Request abhi process nahi hua hai
+👉 Queue me hai ya wait kar raha hai
+
+🔹 4️⃣ IN_PROGRESS / PROCESSING:-
+👉 Provisioning chal raha hai
+👉 Abhi complete nahi hua
+
+🔹 5️⃣ PARTIAL_SUCCESS:-
+👉 Kuch operations success hue, kuch fail
+👉 Mixed result
+Example:-
+5 attributes update karne the
+3 success, 2 fail
+
+🔹 6️⃣ RETRY / RETRYING:-
+👉 Fail hone ke baad system dubara try kar raha hai
+👉 Temporary issue (like network / timeout)
+
+🔹 7️⃣ NOT_APPLICABLE:-
+👉 Provisioning apply hi nahi hua
+👉 Rule ya condition match nahi hua
+Example:-
+Agar kisi user pe provisioning rule apply nahi hota
+
+🔹 8️⃣ SKIPPED:-
+👉 Ye operation intentionally skip kar diya gaya
+👉 Koi rule ya condition ki wajah se
+
+🔹 9️⃣ CANCELLED:-
+👉 Provisioning request cancel ho gaya
+👉 Admin ya system ne rok diya
+
+🔹 🔟 UNKNOWN / ERROR:-
+👉 Status clear nahi hai ya unexpected error aaya
+👉 Debugging me use hota hai.
+-------------------------------------------------------
+getStatus()
+setStatus(Status status)
+
+getMessage()
+setMessage(String message)
+
+getErrors()
+setErrors(List errors)
+addError(String error)
+
+getWarnings()
+setWarnings(List warnings)
+addWarning(String warning)
+
+getRequestId()
+setRequestId(String id)
+
+getAccount()
+setAccount(Account account)
+
+getApplication()
+setApplication(Application app)
+
+getPlan()
+setPlan(ProvisioningPlan plan)
+
+getChanges()
+setChanges(List changes)
+
+getTaskResult()
+setTaskResult(TaskResult result)
+
+isSuccess()
+isFailure()
+isComplete()
+
+getException()
+setException(Exception e)
+
+getResults()
+setResults(List results)
+addResult(Object result)
+
+toString()
+-----------------------------------------
+🔹 Status Methods:-
+
+()getStatus():-
+👉 Provisioning ka final status return karta hai
+System.out.println(result.getStatus());
+Output:-
+SUCCESS
+
+()setStatus(Status status);-
+👉 Status set karta hai
+result.setStatus(Status.FAILURE);
+Output (after get):
+FAILURE
+
+🔹 Message Methods:-
+getMessage():-
+👉 Success ya error message deta hai
+System.out.println(result.getMessage());
+Output:-
+Account created successfully
+
+()setMessage(String message):-
+👉 Custom message set karta hai
+result.setMessage("User disabled");
+Output:-
+User disabled
+
+🔹 Error Methods:-
+getErrors():-
+👉 Errors ki list deta hai
+System.out.println(result.getErrors());
+Output:-
+[Account not found, Invalid role]
+
+()setErrors(List errors):-
+👉 Errors ki list set karta hai
+result.setErrors(Arrays.asList("Error1", "Error2"));
+Output:-
+[Error1, Error2]
+
+()addError(String error):-
+👉 Ek error add karta hai
+result.addError("Permission denied");
+Output:-
+[Permission denied]
+
+🔹 Warning Methods:-
+getWarnings():-
+👉 Warning messages deta hai
+System.out.println(result.getWarnings());
+Output:-
+[Password weak]
+
+()setWarnings(List warnings):-
+👉 Warnings set karta hai
+result.setWarnings(Arrays.asList("Low quota"));
+Output:-
+[Low quota]
+
+()addWarning(String warning):-
+👉 Ek warning add karta hai
+result.addWarning("Profile incomplete");
+Output:-
+[Profile incomplete]
+
+🔹 Request ID:-
+()getRequestId():-
+👉 Unique request ID return karta hai
+System.out.println(result.getRequestId());
+Output:-
+REQ12345
+
+()setRequestId(String id):-
+👉 Request ID set karta hai
+result.setRequestId("REQ999");
+Output:-
+REQ999
+
+🔹 Account Methods:-
+()getAccount():-
+👉 Account object return karta hai
+System.out.println(result.getAccount());
+Output:-
+Account[id=john123]
+
+()setAccount(Account account):-
+👉 Account set karta hai
+result.setAccount(account);
+Output:-
+Account assigned
+
+🔹 Application Methods:-
+getApplication():-
+👉 Application return karta hai
+System.out.println(result.getApplication());
+Output:-
+Active Directory
+
+()setApplication(Application app):-
+👉 Application set karta hai
+result.setApplication(app);
+
+🔹 Plan Methods:-
+()getPlan():-
+👉 Provisioning plan deta hai
+System.out.println(result.getPlan());
+Output:-
+ProvisioningPlan[CREATE user]
+
+()setPlan(ProvisioningPlan plan)
+👉 Plan set karta hai
+result.setPlan(plan);
+
+🔹 Changes:-
+()getChanges():-
+👉 Kya changes hue wo batata hai
+System.out.println(result.getChanges());
+Output:-
+[email updated, role assigned]
+
+()setChanges(List changes):-
+👉 Changes set karta hai
+result.setChanges(Arrays.asList("Dept changed"));
+
+🔹 Boolean Check Methods:-
+()isSuccess():-
+👉 Check karta hai success hai ya nahi
+System.out.println(result.isSuccess());
+Output:-
+true
+
+()isFailure():-
+👉 Check karta hai fail hai ya nahi
+System.out.println(result.isFailure());
+Output:-
+false
+
+()isComplete():-
+👉 Complete hua ya nahi
+System.out.println(result.isComplete());
+Output:-
+true
+
+🔹 Exception Methods:-
+()getException():-
+👉 Exception deta hai
+System.out.println(result.getException());
+Output:-
+java.lang.Exception: Connection failed
+
+()setException(Exception e):-
+👉 Exception set karta hai
+result.setException(new Exception("Timeout"));
+
+🔹 Utility:-
+()toString():-
+👉 Object ka readable format deta hai
+System.out.println(result);
+Output:-
+ProvisioningResult[status=SUCCESS, message=Done]
+
+()getTaskResult():-
+👉 ProvisioningResult kis TaskResult se linked hai wo deta hai
+System.out.println(result.getTaskResult());
+Output:-
+TaskResult[id=task123, status=Completed]
+👉 Matlab:-
+Ye provisioning kisi task (jaise LCM Provisioning, Aggregation, etc.) ke through chali thi
+Uska result yaha linked hai
+
+()setTaskResult(TaskResult result):-
+👉 ProvisioningResult ko kisi TaskResult se attach karta hai
+TaskResult task = new TaskResult();
+task.setId("task999");
+result.setTaskResult(task);
+Output (get ke baad):
+TaskResult[id=task999]
+
+()getRequestId():-
+👉 Unique provisioning request ID deta hai
+System.out.println(result.getRequestId());
+Output:-
+REQ-45678
+👉 Matlab:-
+Har provisioning request ka ek tracking number hota hai
+Debugging / logs me use hota hai
+
+()setRequestId(String id):-
+👉 Request ID set karta hai
+result.setRequestId("REQ-99999");
+Output:-
+REQ-99999
+
+()getResults():-
+👉 Multiple provisioning operations ke results deta hai
+System.out.println(result.getResults());
+Output:-
+[Account Created, Role Assigned]
+👉 Matlab:-
+Ek hi provisioning me multiple actions ho sakte hain
+Sabka result list me aata hai
+
+()setResults(List results):-
+👉 Poora result list set karta hai
+result.setResults(Arrays.asList("User Created", "Email Updated"));
+Output:-
+[User Created, Email Updated]
+
+()addResult(Object result):-
+👉 Ek single result add karta hai
+result.addResult("Role Removed");
+Output:-
+[Role Removed]
+👉 Agar pehle se values hain:-
+[User Created, Email Updated, Role Removed]
+
+()🔥 2️⃣ setChanges() ke andar kya hota hai?
+❓ Tera doubt:-
+kya sirf output define karte hai?
+👉 Answer: YES ✅ (100% correct)
+🔹 Example:-
+List<String> changes = new ArrayList<String>();
+changes.add("Email updated");
+changes.add("Role assigned");
+result.setChanges(changes);
+🔹 Output:-
+Changes: [Email updated, Role assigned]
+--------------------------------------------------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointContextFactory;
+
+import sailpoint.object.Identity;
+import sailpoint.object.Application;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningResult;
+
+import sailpoint.provisioning.Provisioner;
+
+import java.util.List;
+import java.util.ArrayList;
+
+public class FullProvisioningDemo {
+
+    public static void main(String[] args) {
+
+        SailPointContext context = null;
+
+        try {
+            // 🔹 1. Context login
+            SailPointContextFactory factory = new SailPointContextFactory();
+            context = factory.getContext("spadmin", "admin123");
+
+            // 🔹 2. Identity fetch
+            Identity identity = context.getObjectByName(Identity.class, "john.doe");
+
+            // 🔹 3. Application fetch
+            Application app = context.getObjectByName(Application.class, "Active Directory");
+
+            // 🔹 4. Plan create
+            ProvisioningPlan plan = new ProvisioningPlan();
+            plan.setIdentity(identity);
+
+            // 🔹 5. AccountRequest
+            ProvisioningPlan.AccountRequest accountRequest =
+                    new ProvisioningPlan.AccountRequest();
+
+            accountRequest.setApplication(app.getName());
+            accountRequest.setNativeIdentity("john.doe");
+            accountRequest.setOperation(
+                    ProvisioningPlan.AccountRequest.Operation.Modify
+            );
+
+            // 🔹 6. AttributeRequest
+            ProvisioningPlan.AttributeRequest attr1 =
+                    new ProvisioningPlan.AttributeRequest(
+                            "email",
+                            ProvisioningPlan.Operation.Set,
+                            "john@gmail.com"
+                    );
+
+            ProvisioningPlan.AttributeRequest attr2 =
+                    new ProvisioningPlan.AttributeRequest(
+                            "department",
+                            ProvisioningPlan.Operation.Set,
+                            "IT"
+                    );
+
+            ProvisioningPlan.AttributeRequest attr3 =
+                    new ProvisioningPlan.AttributeRequest(
+                            "role",
+                            ProvisioningPlan.Operation.Add,
+                            "Developer"
+                    );
+
+            // 🔹 7. Add attributes
+            accountRequest.add(attr1);
+            accountRequest.add(attr2);
+            accountRequest.add(attr3);
+
+            // 🔹 8. Add to plan
+            plan.add(accountRequest);
+
+            // 🔹 9. Execute
+            Provisioner provisioner = new Provisioner(context);
+            ProvisioningResult result = provisioner.execute(plan);
+
+            // 🔹 10. Manual changes list (NO Arrays.asList)
+            List<String> changes = new ArrayList<String>();
+            changes.add("Email updated to john@gmail.com");
+            changes.add("Department changed to IT");
+            changes.add("Role Developer added");
+
+            result.setChanges(changes);
+
+            // 🔹 11. Output
+            System.out.println("===== FINAL OUTPUT =====");
+            System.out.println("Status: " + result.getStatus());
+            System.out.println("Success: " + result.isSuccess());
+            System.out.println("Errors: " + result.getErrors());
+            System.out.println("Warnings: " + result.getWarnings());
+            System.out.println("Changes: " + result.getChanges());
+            System.out.println("RequestId: " + result.getRequestId());
+            System.out.println("Application: " + result.getApplication());
+            System.out.println("Account: " + result.getAccount());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (context != null) {
+                context.close();
+            }
+        }
+    }
+}
+🔥 ✅ REAL OUTPUT:-
+===== FINAL OUTPUT =====
+Status: SUCCESS
+Success: true
+Errors: null
+Warnings: null
+Changes: [Email updated to john@gmail.com, Department changed to IT, Role Developer added]
+RequestId: REQ-123456
+Application: Active Directory
+Account: Account[john.doe]
+--------------------------------------------------------------------------------------------------------------------------------
+🔥 🔹 CASE 1: SAME NAME (Identity = NativeIdentity):-
+🧠 Real Situation:-
+IdentityIQ user      = john.doe
+AD account username = john.doe
+🔹 Code:-
+plan.setIdentity(identity);                  // john.doe
+accountRequest.setNativeIdentity("john.doe"); // same
+
+/////////////*
+()factory.getContext("spadmin", "admin123");:-
+
+🔹 1. Ye return kya karta hai?
+👉 Ye return karta hai:-
+SailPointContext object
+Example:-
+SailPointContext context = factory.getContext("spadmin", "admin123");
+📌 Matlab:-
+👉 Tumhe ek authenticated session milta hai IdentityIQ ka
+👉 Jisse tum DB aur SailPoint ke objects access kar sakte ho
+
+🔹 2. Andar kya kya hota hai (Behind the Scenes):-
+Jab tum ye call karte ho, internally ye steps hote hain:-
+
+✅ Step 1: Authentication
+"spadmin" username check hota hai
+"admin123" password verify hota hai
+👉 Agar galat hua:-
+LoginException / Authentication Failed.
+
+✅ Step 2: Session create hota hai:-
+IdentityIQ ek session banata hai,
+Ye session ek logged-in user session jaisa hota hai.
+
+✅ Step 3: Context object ban jata hai:-
+👉 Ye context ke andar hota hai:-
+DB connection (Hibernate session)
+Logged-in user (spadmin)
+Permissions / roles
+SailPoint APIs ka access
+
+🔹 3. Context se kya kya kar sakte ho?
+👉 Ye sab powerful kaam kar sakte ho:-
+()🔸Identity fetch:-
+Identity id = context.getObjectByName(Identity.class, "john.doe");
+()🔸Application fetch:-
+Application app = context.getObjectByName(Application.class, "HR System");
+()🔸Provisioning:-
+Provisioner p = new Provisioner(context);
+p.execute(plan);
+()🔸Query run:-
+context.search(Identity.class, queryOptions);
+----------------------------------------------------------
+()🔥 🔹 1️⃣ plan.setIdentity(identity):-
+👉 ✔️ Ye db me store nahi hota balki store hota hai:-
+ProvisioningPlan object (memory me - runtime)
+
+()🔥 🔹 2️⃣ accountRequest.setNativeIdentity("jdoe123"):-
+🧠 Ye karta kya hai?
+accountRequest.setNativeIdentity("jdoe123");
+👉 Ye batata hai:-
+"Target system (AD / DB) me kaunsa account modify karna hai"
+👉 Target account hota hai:-
+accountRequest.setNativeIdentity("jdoe123");
+👉 ✔️ Ye bhi store hota hai:-
+ProvisioningPlan → AccountRequest (memory)
+
+🔹 1️⃣ plan.setIdentity(identity):-
+👉 Ye hai:-
+IdentityIQ ka INTERNAL USER
+Example:-
+Identity = john.doe
+email = john@gmail.com
+
+🔹 2️⃣ accountRequest.setNativeIdentity("jdoe123"):-
+👉 Ye hai:-
+External system ka ACCOUNT ID
+Example:-
+AD username = jdoe123
+email = john@gmail.com
+
+🔥 🔹 Kab dono same ho sakte hain?
+👉 Sirf tab jab spt_link me:-
+IdentityIQ username = john.doe
+AD username        = john.doe
+👉 Tab:-
+Identity == NativeIdentity kyuki
+email se farak nahi aur compare bhi nahi hota.
+
+👉 ✔️ Sirf isse hota hai:-
+LINK TABLE (spt_link) in db:-
+🔹 Real Mapping:-
+Identity (IdentityIQ)  →  john.doe
+Application            →  Active Directory
+NativeIdentity         →  jdoe123
+👉 Ye entry hoti hai DB me:-
+spt_link table
+
+🔹 5. spt_link table ka role:-
+👉 spt_link kya karta hai:-
+👉 Identity aur Account ko link karta hai.
+📌 Matlab:-
+👉 Ye table batata hai:-
+Kaunsa user (Identity)
+Kis application me
+Kaunsa account use kar raha hai
+
+🔹 3. spt_link ke andar kya kya fields hote hain? 🧠
+Main important columns 👇
+
+🔸 1. id:-
+👉 Unique ID (primary key)
+UUID (auto-generated)
+
+🔸 2. identity_id:-
+👉 Ye kis user ka record hai
+Reference to spt_identity table
+✔ Ye link karta hai:-
+👉 SailPoint user → account
+
+🔸 3. application:-
+👉 Kaunsa application
+AD / SAP / DB / HR System
+
+🔸 4. native_identity 🔥 (MOST IMPORTANT):-
+👉 External system ka username
+jdoe123
+✔ Ye hi use hota hai provisioning me
+
+🔸 5. display_name:-
+👉 User-friendly name
+John Doe Account
+
+🔸 6. instance:-
+👉 Application instance (optional)
+Production / Test
+
+🔸 7. attributes:-
+👉 Account ke saare attributes (JSON/XML format me)
+Example:-
+{
+  "email": "john@example.com",
+  "department": "IT",
+  "role": "Admin"
+}
+
+🔸 8. created:-
+👉 Account kab create hua
+
+🔸 9. modified:-
+👉 Last update kab hua
+
+🔸 10. disabled:-
+👉 Account active hai ya disabled
+true / false
+
+🔸 11. locked:-
+👉 Account locked hai ya nahi
+
+🔸 12. entitlements:-
+👉 Roles / permissions jo user ke paas hain
+------------------------------------------------------
+(2)2nd comparision:-
+👉 Tu kya karna chahta hai:-
+Ek user (base user) lo  
+aur baaki multiple users ko usse compare karo
+
+Example:-
+Base User = john.doe
+Compare with:-
+- ram.kumar
+- shyam.verma
+- alex.john
+
+🔥 🔹 Compare kis basis pe?
+Tu compare kar sakta hai custom logic se:-
+Email
+Department
+Role / Entitlements
+Application Accounts
+Attributes
+-----------------------------------------------------------
+*//////////

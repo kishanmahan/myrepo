@@ -1,0 +1,72 @@
+🔥 Sensitivity kya hoti hai?
+👉 Sensitivity = koi access/data  kitna critical/secret/dangerous hai.
+
+1️⃣ Example (Real Life):-
+Company me different types ka data hota hai.
+Data	          Sensitivity
+Company news---------Low
+Employee email------Medium
+Salary details------High
+Bank account-------Very High
+Matlab:-
+Jitna important data
+utni high sensitivity
+
+🧠 1. Sensitivity kaise decide karte hai?
+🔹 (1) Data type pe:-
+Bank / salary / personal data → HIGH sensitivity
+Normal info (name, email) → LOW sensitivity
+
+🔹 (2) Access type pe:-
+Admin / Root access → HIGH
+Read-only → LOW
+
+🔹 (3) Application pe:-
+SAP / DB / Finance system → HIGH
+Email / Portal → MEDIUM
+
+🔹 (4) Impact pe:-
+Agar misuse se company ko loss ho → HIGH
+No major impact → LOW
+
+
+--------------------------------------------------------------
+📊 Formula weight:-
+Weight = (Individual Risk / Total Risk) × 100
+🧠 Example:-
+Entitlement Risk = 80
+Role Risk        = 40
+Policy Risk      = 20
+Total = 140
+
+👉 Weight nikalo:-
+Entitlement = (80/140) × 100 ≈ 57%
+Role        = (40/140) × 100 ≈ 29%
+Policy      = (20/140) × 100 ≈ 14%
+
+⚖️ 1. Weight kaise niklega?
+👉 Weight formula se nahi nikalta
+👉 Weight tum decide karte ho (config/business rule se)
+
+🧠 2. Decide kaise karte hai?
+👉 Ye depend karta hai:-
+
+🔹 (1) Sensitivity
+High sensitive → weight zyada
+Low sensitive → weight kam
+
+🔹 (2) Business Impact
+DB Admin access → high impact → high weight
+Normal user → low weight
+
+🔹 (3) Security Risk
+Privileged access → 60–80%
+Normal access → 10–20%
+
+🎯 3. Practical Example
+Company decide karti hai:-
+Entitlement → 50%
+Role        → 30%
+Policy      → 20%
+👉 Ye hi weight hai (ye nikala nahi, set kiya)
+----------------------------------------------------------------------

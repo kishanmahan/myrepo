@@ -1,0 +1,528 @@
+🔷 WorkItemConfig kya hai?
+👉 WorkItemConfig = WorkItem ka UI + behavior control object
+Approval screen ka design + rules + options
+👉 Ye decide karta hai:-
+Approver ko kya dikhega
+Kaise approve/reject karega
+Kaunse buttons honge
+Comments mandatory hai ya nahi
+
+()📦 Work Item kya hota hai? (Quick recap):-
+👉 Work Item = ek task/approval/action jo kisi user ko diya jata hai
+Example:-
+Approval request
+Access request
+Manual task
+
+()🧠 WorkItemConfig me UI + Design kaun banata hai?
+--
+1️⃣ Developer ka role (Main):-
+👉 Developer decide karta hai:-
+Kaunse fields dikhenge
+Kaunse buttons (Approve/Reject) honge
+Layout kaisa hoga
+Logic kya hoga
+💡 Ye sab XML / configuration / code me define hota hai
+
+2️⃣ SailPoint System ka role:-
+👉 SailPoint ka UI engine:-
+Automatically screen generate karta hai
+Config ke basis pe form dikha deta hai
+💡 Matlab:-
+Developer rule deta hai → SailPoint UI bana deta hai
+
+3️⃣ WorkItemConfig ka role:-
+👉 Ye control karta hai:-
+UI me kya show hoga
+Buttons ka behavior
+Approval options
+Comments required hai ya nahi
+Work item kisko assign hoga
+Kab expire hoga
+Reminder kab jayega
+Escalation hoga ya nahi
+
+
+🔷 Default (Non-Custom) WorkItemConfig me kya hota hai:-
+👉 SailPoint already kuch default config deta hai (tum custom define nahi karte):-
+
+🔹 1. Approval Buttons:-
+Approve
+Reject
+👉 Ye config decide karta hai ki:-
+Kaunse actions allowed hain
+
+🔹 2. Comments Requirement:-
+Reject → comment required
+Approve → optional
+👉 Config control karta hai:-
+Comment mandatory hai ya nahi
+
+🔹 3. WorkItem Type:-
+Approval
+ManualAction
+👉 UI ka behavior change hota hai type ke hisaab se
+
+🔹 4. Form / Fields:-
+👉 Approval screen pe fields dikhti hain:-
+Identity Name
+Requested Role
+Application
+Comments box
+👉 Ye sab config define karta hai
+
+🔹 5. Auto Complete Behavior:-
+👉 Config decide karta hai:-
+Approve → next step pe jao
+Reject → workflow stop ya rollback
+
+🔹 6. Escalation Settings:-
+👉 Agar approver action nahi leta:-
+Reminder bhejo
+Escalate karo
+👉 Ye bhi config me hota hai.
+---------------------------------------------------------------------------------------------------------------------------------------
+🔷 1. WorkItem State (with description):-
+State	                    Description
+Pending:----------Work item create ho gaya hai, abhi kisi action ka wait kar raha hai
+Assigned:---------Kisi specific user ko assign ho chuka hai
+InProgress:-------User ne kaam start kar diya hai
+Completed:--------Task successfully complete ho gaya
+Approved:---------Approval request approve ho gaya
+Rejected:---------Approval reject ho gaya
+Cancelled:--------Manually cancel kar diya gaya
+Expired	Time:-----limit cross ho gaya (timeout)
+Escalated:--------Original user ne action nahi liya → next level pe bhej diya
+Suspended:--------Temporarily rok diya gaya
+Terminated:-------Forcefully band kar diya gaya (workflow end)
+
+🔷 2. WorkItem Type (with description):-
+Type	                  Description
+Approval:----------------Kisi request ko approve/reject karne ke liye
+ManualAction:------------User ko manually koi task perform karna hai
+Notification:------------Sirf info dene ke liye (no action needed)
+Remediation	Issue:-------fix karne ke liye task
+Certification:-----------Access review / certification process
+Provisioning:------------Account create/update/delete related
+Request	User:------------request process ka part
+PolicyViolation:---------Policy break hone par action required
+
+🔷 3. WorkItem Status (with description):-
+Status	           Description
+Open:-------------Work item abhi active hai
+Closed:-----------Complete ho gaya ya band ho gaya
+Pending:----------Action ka wait kar raha hai
+Finished:---------Successfully complete ho gaya
+Error:------------Execution me problem aayi
+Waiting:----------Kisi dependency ka wait kar raha hai
+Delegated:--------Kisi aur user ko de diya gaya
+Forwarded:--------Next user ko forward kiya gaya
+Expired:----------Time khatam ho gaya
+Cancelled:--------Manually cancel kiya gaya
+Completed:--------Final complete state
+---------------------------------------------------------------------------------------------------------------------------------------
+
+removeApprovalItem(ApprovalItem item)
+removeAttribute(String name)
+
+🔹 WorkItemConfig
+getConfig()
+setConfig(WorkItemConfig config)
+
+getName()
+setName(String name)
+
+getType()
+setType(String type)
+
+getOwner()
+setOwner(String owner)
+
+getOwnerRule()
+setOwnerRule(String rule)
+------------------------------
+getExpiration()
+setExpiration(int days)
+
+getReminderInterval()
+setReminderInterval(int days)
+
+getEscalationOwner()
+setEscalationOwner(String owner)
+
+getEscalationRule()
+setEscalationRule(String rule)
+-----------------------------------
+getPriority()
+setPriority(String priority)
+
+getLevel()
+setLevel(String level)
+
+getApprovalMode()
+setApprovalMode(String mode)
+
+getCommentsRequired()
+setCommentsRequired(boolean required)
+
+getShowComments()
+setShowComments(boolean show)
+
+getNotificationTemplate()
+setNotificationTemplate(String template)
+
+getAttributes()
+setAttributes(Attributes attributes)
+
+getAttribute(String name)
+setAttribute(String name, Object value)
+---------------------------------------------------------------------------------------------------------------------------------------------
+🧠 1. getOwner() / setOwner(Identity owner):-
+👉 Concept:
+Owner = final responsible person (decision maker)(current assignee)
+🔹 setOwner(Identity owner):-
+Ye user hi normally approve/reject karega
+Identity manager = context.getObjectByName(Identity.class, "manager");
+item.setOwner(manager);
+
+🧠 2. getAssignee() / setAssignee(Identity identity):-
+👉 Concept:-
+Assignee = jo currently task handle kar raha hai
+🔹 setAssignee(Identity identity):-
+WorkItem ko kisi user ko assign karta hai
+Ye change ho sakta hai (delegation / reassignment)
+Identity lead = context.getObjectByName(Identity.class, "teamlead");
+item.setAssignee(lead);
+
+🧠 3. getTarget() / setTarget(String target):-
+👉 Concept:-
+Target = jis object pe work ho raha hai (context of work)
+🔹 setTarget(String target):-
+WorkItem kis cheez ke liye bana hai wo define karta hai
+item.setTarget("Identity:john.doe");
+🔥 Real Examples of Target:-
+User ID
+Account ID
+Role Name
+Request ID
+Application Name
+---------------------------------------------------------------------------------------
+🧠 1. setOwner(String owner) (WorkItemConfig):-
+👉 Kya karta hai?
+Ye default owner define karta hai WorkItem ke liye
+Matlab: jab WorkItem create hoga → ye config decide karega kisko assign karna hai.
+🔹 Example:-
+WorkItemConfig config = new WorkItemConfig();
+config.setOwner("manager");
+
+👉 Iska matlab:-
+Har WorkItem ka owner = "manager" hoga (default).
+
+🔥 Real Flow (Most Important):-
+Workflow start
+   ↓
+WorkItemConfig check
+   ↓
+Owner (String) resolve hota hai
+   ↓
+Identity object fetch hota hai
+   ↓
+WorkItem.setOwner(Identity)
+-----------------------------------------------------------------------------------------
+🧠 Step-by-Step Real Flow (Under the Hood):-
+🔷 Step 1: WorkItemConfig
+config.setOwner("manager");
+👉 Yaha sirf string "manager" store hota hai
+👉 Ye ek instruction hai, actual user nahi
+
+🔷 Step 2: Workflow / Engine start
+👉 Jab workflow run hota hai:
+System padhta hai → owner = "manager"
+
+🔷 Step 3: Identity Resolve hota hai
+Identity manager = context.getObjectByName(Identity.class, "manager");
+👉 System database se actual user object nikalta hai
+
+🔷 Step 4: WorkItem create hota hai
+WorkItem item = new WorkItem();
+item.setOwner(manager);
+👉 Ab:
+String → convert ho gaya real Identity object me
+
+🔷 Step 5: UI me show hota hai
+👉 Manager login karega → usko WorkItem dikhega.
+-------------------------------------------------------------------------------------------
+🧠 1. setOwnerRule(String rule):-
+👉 Kya karta hai?
+Ye dynamic owner assign karne ke liye rule set karta hai
+Static "manager" dene ki jagah → logic se decide hota hai kaun owner hoga
+🔹 Example:-
+config.setOwnerRule("managerRule");
+
+👉 Matlab:-
+System bolega → “owner directly fix mat karo”
+“Rule run karo aur decide karo kaun owner hoga”
+
+✅ Real Working Owner Rule (Manager Based)
+import sailpoint.object.Identity;
+import sailpoint.api.SailPointContext;
+import sailpoint.tools.GeneralException;
+
+public Identity managerOwnerRule(SailPointContext context, Identity identity) throws GeneralException {
+
+    // Check if identity null hai
+    if (identity == null) {
+        return null;
+    }
+
+    // Manager nikalna
+    Identity manager = identity.getManager();
+
+    // Agar manager exist karta hai
+    if (manager != null) {
+        return manager;
+    }
+
+    // Fallback: Agar manager nahi hai to admin assign karo
+    Identity admin = context.getObjectByName(Identity.class, "spadmin");
+
+    return admin;
+}
+------------------------------------------------------------------------------------------------------------------
+🧠 1. getName() / setName(String name):-
+👉 setName(String name):-
+Ye WorkItemConfig ka naam set karta hai
+Ye naam mostly configuration identify karne ke liye hota hai (UI/internal use)
+WorkItemConfig config = new WorkItemConfig();
+config.setName("AccessApprovalConfig");
+👉 Matlab:-
+Ye ek config ka naam hai
+Multiple configs me differentiate karne ke liye use hota hai.
+
+🧠 2. getType() / setType(String type):-
+👉 setType(String type)
+Ye batata hai ki ye config kis type ke WorkItem ke liye apply hoga
+config.setType("Approval");
+👉 Matlab:-
+Ye config sirf Approval type WorkItems pe apply hoga.
+----------------------------------------------------------------------------------------------------------------------
+🧠 1. setExpiration(int days):-
+👉 Kya karta hai?
+Ye define karta hai ki WorkItem kitne din me expire hoga
+Matlab: user agar itne din me action nahi leta → WorkItem expire ho jayega
+🔹 Example:
+WorkItemConfig config = new WorkItemConfig();
+config.setExpiration(3);
+
+👉 Matlab:-
+WorkItem create hone ke baad
+3 din ke andar action lena hoga
+
+🧠 2. getExpiration():-
+👉 Kya karta hai?
+Config me set kiya hua expiration days return karta hai
+int days = config.getExpiration();
+System.out.println(days); // 3
+------------------------------------------------------------------------------------------------------------------------
+🧠 1. setReminderInterval(int days):-
+👉 Kya karta hai?
+Ye define karta hai ki kitne din ke gap me reminder bhejna hai
+Matlab: user ne action nahi liya → system usko regular reminder bhejega
+🔹 Example:-
+WorkItemConfig config = new WorkItemConfig();
+config.setReminderInterval(1);
+👉 Matlab:-
+Har 1 din me reminder jayega
+
+🧠 2. getReminderInterval():-
+👉 Kya karta hai?
+Reminder interval (days) return karta hai
+int days = config.getReminderInterval();
+System.out.println(days); // 1
+-------------------------------------------------------------------------------------------------------------------------
+🧠 1. setEscalationOwner(String owner):-
+👉 Kya karta hai?
+Ye define karta hai ki agar WorkItem time pe complete nahi hua (expire ya delay)
+→ to kisko escalate karna hai (next person)
+🔹 Example:-
+WorkItemConfig config = new WorkItemConfig();
+config.setEscalationOwner("admin");
+👉 Matlab:-
+Original owner ne kaam nahi kiya
+To WorkItem admin ko transfer ho jayega
+
+🧠 2. getEscalationOwner():-
+👉 Kya karta hai?
+Jo escalation owner set hai wo return karta hai
+String owner = config.getEscalationOwner();
+System.out.println(owner); // admin
+---------------------------------------------------------------------------------------------------------------------------
+🧠 1. setEscalationRule(String rule)
+👉 Kya karta hai?
+Ye dynamic escalation define karta hai
+Matlab: fixed "admin" dene ki jagah → rule decide karega kisko escalate karna hai.
+
+🧠 2. getEscalationRule()
+👉 Kya karta hai?
+Jo rule name set hai wo return karta hai
+String rule = config.getEscalationRule();
+System.out.println(rule); // escalationRule
+
+✅ Multi-Level Escalation Rule (Working Code):-
+import sailpoint.object.Identity;
+import sailpoint.api.SailPointContext;
+import sailpoint.tools.GeneralException;
+
+public Identity escalationRule(SailPointContext context, Identity currentOwner) throws GeneralException {
+
+    // 1️⃣ Agar current owner null hai → admin
+    if (currentOwner == null) {
+        return context.getObjectByName(Identity.class, "spadmin");
+    }
+
+    // 2️⃣ Current owner ka manager
+    Identity manager = currentOwner.getManager();
+    if (manager != null) {
+        return manager;
+    }
+
+    // 3️⃣ Manager ka manager (2nd level escalation)
+    if (manager != null && manager.getManager() != null) {
+        return manager.getManager();
+    }
+
+    // 4️⃣ Final fallback → admin
+    return context.getObjectByName(Identity.class, "spadmin");
+}
+----------------------------------------------------------------------------------------------------------------------------------------
+🔷 1. Priority
+👉 setPriority(String priority)
+WorkItem ki importance set karta hai
+config.setPriority("High");
+👉 Values:-
+Low
+Medium
+High
+Critical
+
+👉 getPriority()
+String p = config.getPriority();
+----------------------------------------
+🔷 2. Level
+👉 setLevel(String level)
+WorkItem ka hierarchy / stage level define karta hai
+config.setLevel("Level1");
+
+👉 Mostly use hota hai:-
+Multi-step approvals me
+
+👉 getLevel()
+String level = config.getLevel();
+---------
+🧠 🔷 1. Level kya hota hai?
+👉 Level = approval ka stage / hierarchy step
+Matlab:-
+WorkItem ek hi nahi hota
+Multiple approvals ho sakte hain
+Har step = ek level
+🔥 Simple Example:-
+Level1 → Manager Approval
+Level2 → Director Approval
+Level3 → Admin Approval
+👉 Ye sab alag-alag WorkItems ho sakte hain.
+
+🔷 2. Common Levels (Real Project):-
+⚠️ Note:-
+👉 SailPoint me levels fixed enum nahi hote
+👉 Ye mostly custom define hote hain.
+
+✅ Common Naming Convention:-
+Level	       Description
+Level1	First approval (Manager)
+Level2	Second approval (Senior Manager / Director)
+Level3	Final approval (Admin / Security)
+Level4	Special approval (Audit / Compliance)
+----------------------------------------------------------
+🔷 3. Approval Mode (Very Important)
+👉 setApprovalMode(String mode)
+Decide karta hai approval ka logic kaise chalega
+config.setApprovalMode("serial");
+
+👉 Common modes:-
+serial   → ek ke baad ek
+parallel → sab ek sath
+any      → kisi ek ka approval enough
+
+👉 getApprovalMode()
+String mode = config.getApprovalMode();
+---------------------------------------------
+🔷 4. Comments Required:-
+👉 setCommentsRequired(boolean required)
+User ko comment dena mandatory hai ya nahi
+config.setCommentsRequired(true);
+👉 true → bina comment approve nahi kar sakta
+
+👉 getCommentsRequired():-
+boolean required = config.getCommentsRequired();
+------------------------------------------------
+🔷 5. Show Comments:-
+👉 setShowComments(boolean show):-
+UI me comment box dikhana hai ya nahi
+config.setShowComments(true);
+
+👉 getShowComments():-
+boolean show = config.getShowComments();
+------------------------------------------------------
+🔷 6. Notification Template:-
+👉 setNotificationTemplate(String template):-
+Kaunsa email template use hoga
+config.setNotificationTemplate("ApprovalEmailTemplate");
+👉 getNotificationTemplate():-
+String template = config.getNotificationTemplate();
+-------
+🔥 4. NotificationTemplate kya hai?
+👉 NotificationTemplate = email / notification ka design + content
+Matlab:-
+Jab WorkItem create hota hai
+System email bhejta hai
+Wo email ka format = template
+🧠 NotificationTemplate kisse banta hai?
+
+👉 Ye banta hai:-
+XML configuration
+Ya SailPoint UI me define hota hai
+🔷 Basic Notification Template Example
+<NotificationTemplate name="ApprovalTemplate">
+    <Subject>Approval Required</Subject>
+
+    <Body>
+        Hello $identity.name,
+
+        You have a pending approval request.
+
+        Please review and take action.
+
+        Thanks,
+        SailPoint System
+    </Body>
+</NotificationTemplate>
+
+🔥 Dynamic Variables (Important):-
+$identity.name
+$workItem.name
+$request.id
+👉 Ye runtime pe replace ho jate hain.
+---------------------------------------------------------
+👉 setAttributes(Attributes attributes):-
+Custom data store karne ke liye
+
+👉 getAttributes():-
+Attributes attrs = config.getAttributes();
+
+👉 setAttribute(String name, Object value):-
+config.setAttribute("region", "India");
+config.setAttribute("maxLimit", 5000);
+
+👉 getAttribute(String name):-
+Object region = config.getAttribute("region");
+---------------------------------------------------------------

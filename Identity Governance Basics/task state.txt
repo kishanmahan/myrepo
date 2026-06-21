@@ -1,0 +1,89 @@
+1️⃣ Pending
+
+👉 Task create ho gaya hai but abhi execute nahi hua
+➡️ System ya scheduler ka wait kar raha hai
+
+2️⃣ Queued
+
+👉 Execution queue me add ho gaya
+➡️ Jaldi hi run hone wala hai
+
+3️⃣ Running
+
+👉 Task abhi execute ho raha hai
+➡️ execute() method chal raha hota hai
+
+4️⃣ Waiting
+
+👉 Task kisi condition ka wait kar raha hai
+➡️ Example: resource response, approval, ya dependency
+
+5️⃣ Suspended
+
+👉 Task temporarily pause ho gaya
+➡️ System ya user ne rok diya
+
+6️⃣ Paused
+
+👉 Manual pause kiya gaya
+➡️ Resume hone ka wait karega
+
+7️⃣ Resumed
+
+👉 Pause ke baad dobara start hua
+➡️ Wapas execution continue
+
+8️⃣ Success
+
+👉 Task successfully complete ho gaya
+➡️ Koi major issue nahi
+
+9️⃣ Completed
+
+👉 Execution finish ho gaya (success ya warning ke sath)
+➡️ General completion state
+
+🔟 Warning
+
+👉 Task complete hua but kuch minor issues aaye
+➡️ Errors nahi, but warnings hain
+
+1️⃣1️⃣ Error
+
+👉 Execution me problem aayi
+➡️ Exception ya failure hua
+
+1️⃣2️⃣ Failed
+
+👉 Task properly complete nahi ho paya
+➡️ Error ke baad fail mark hota hai
+
+1️⃣3️⃣ Cancelled
+
+👉 User ne manually task cancel kiya
+➡️ Beech me hi rok diya
+
+1️⃣4️⃣ Terminated
+
+👉 Forcefully stop kiya gaya
+➡️ System ya admin ne kill kiya
+
+1️⃣5️⃣ Rejected
+
+👉 Approval ya validation me reject ho gaya
+➡️ Workflow based tasks me use hota hai
+
+1️⃣6️⃣ Retrying
+
+👉 Task fail hone ke baad dobara try ho raha hai
+➡️ Retry mechanism use hota hai
+
+1️⃣7️⃣ TimedOut
+
+👉 Task ka time limit cross ho gaya
+➡️ Auto stop ho jata hai
+
+1️⃣8️⃣ Archived
+
+👉 Old task store ho gaya archive me
+➡️ History ke liye save

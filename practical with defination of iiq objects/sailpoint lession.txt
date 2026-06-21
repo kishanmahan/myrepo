@@ -1,0 +1,27 @@
+Agar SailPoint seekhna hai to ye order follow karo:
+Java Core
+Collections
+Exception Handling
+JDBC
+XML
+BeanShell
+SailPoint IdentityIQ Basics
+Rules
+Workflows
+Provisioning
+Aggregation
+Certifications
+REST APIs
+github
+New Text Compare - Text Compare - Beyond app ko download karo
+servicenow
+workbench
+Sql server management system
+ldap and ad
+workday
+
+​3. SailPoint Ke Andar Custom REST API Banana:-
+​Agar SailPoint ki pehle se bani-banayi (OOTB) APIs aapke kaam nahi aa rahi hain aur aapko ek custom logic chahiye, toh aap SailPoint ke andar khud ki REST API bhi likh sakte hain:
+​SailPoint Java par chalta hai, isliye aap iske andar Custom Resource classes (JAX-RS / Jersey annotations jaise @Path, @GET, @POST ka use karke) likhte hain.
+​Is custom Java class ko aap SailPoint ke backend plugin structure mein deploy kar dete hain. Iske baad aapka SailPoint ek poore web server ki tarah custom API endpoints handle karne lagta hai.
+

@@ -1,0 +1,99 @@
+()GenericJDBCException: could not get next iterator result:-
+👉 Matlab:-
+Identity search chal raha hai
+DB se next record load nahi ho pa raha
+Iterator break ho gaya.
+
+solution:-
+⚠️ REAL PRODUCTION RULE:-
+NEVER DO THIS:-
+context.search(Identity.class, new QueryOptions());
+
+ALWAYS DO:-
+Filter.eq("inactive", false)
+AND batch limit
+-----------------------------------------------------------------
+()Error in method invocation: Static method notNull(java.lang.String) not found in class'sailpoint.object.Filter':-
+->Tumhare SailPoint IIQ version me Filter.notNull() exist nahi karta ❌ not in your version.
+
+solution:-
+✅ FINAL FIX (WORKING IN ALL IIQ VERSIONS):-
+👉 REMOVE this line:-
+Filter.notNull("name")
+
+🚀 CORRECT FILTER (SAFE VERSION):-
+QueryOptions qo = new QueryOptions();
+qo.addFilter(Filter.eq("inactive", false));
+---------------------------------------------------------------------------
+()The application script threw an exception: org.hibernate.exception.GenericJDBCException: 
+could not get next iterator result BSF info: Financialforecastngworkflowrule:-
+
+->ye SailPoint IIQ ke database (IdentityIQ backend MySQL/Oracle DB) ki taraf se aa rahi hai, na ki aapke naye financial database se.
+Iska asli kaaran ye hai ki jab aap context.search(Identity.class, qo) chalate hain aur loop ke andar workflower.launch() call karte hain, toh SailPoint background mein bohot saare naye workflow cases, tasks, aur auditing rows usi main IdentityIQ database mein insert karne lagta hai. Isse database ki connection pool exhaust ho jaati hai ya lock ho jaati hai, aur aapka context.search ka chalna beech mein hi toot jata hai (Hibernate session closed ya socket timeout ho jata hai).
+Isko fix karne ka ekdum solid aur professional tarika hai "ID-based Batching". Hum pehle saari identities ke sirf ID (ya Names) nikal kar ek safe Java ArrayList mein rakh lenge, uske baad database ka iterator close kar denge, aur phir us list par loop chalayenge. Isse Hibernate par koi load nahi aayega.
+Niche diya gaya code use karein, ye is issue ko 100% solve kar dega:
+Fully Fixed & Safe Launcher Code:-
+solve:-
+🛠️ Code Me Kya-Kya Fix Kiya? (Comparison Table):-
+()Purana Code (Failed ❌):-                                                 
+context.search(Identity.class, qo)
+Isse pura Identity Cube (Attributes, Roles, Links) memory me load ho raha tha.
+
+()Iterator ke chalte-chalte hi beech me workflower.launch() ho raha tha, jisse Hibernate connection lock ho gaya.	
+
+()Database Cursor (while(it.hasNext())) par loop chal raha tha.	
+
+1. Purana Code (Jo fail ho raha tha)
+Java
+try {
+    it = context.search(Identity.class, qo); // ❌ Pura object DB cursor me open hai
+
+    while (it.hasNext()) {
+        Identity identity = (Identity) it.next();
+        
+        // ❌ Is line ke chalte hi Main IdentityIQ DB par bohot saara load aata hai.
+        // Kyunki DB cursor abhi bhi open hai, Hibernate confuse ho jata hai aur crash kar deta hai.
+        workflower.launch(wf, "WF-" + identity.getName(), args); 
+    }
+} finally {
+    Util.flushIterator(it); // ❌ Sab khatam hone ke baad end me close ho raha tha (Too late!)
+}
+
+---------------------------------------------------------------------------------------------------------------------------
+()Naya Code (Fixed & Safe ):-
+context.search(Identity.class, qo, "name")
+Isse sirf username (String) load ho raha hai, jo memory me 100 guna halka hai.
+
+()Iterator ko sirf naam fetch karne ke liye use kiya aur fauran close (flushIterator) kar diya, workflow chalne se pehle.
+
+()Pure Java Memory List (for (String name : identityNames)) par loop chal raha hai.
+
+2. Naya Code (Jo fully safe hai):-
+Java
+// Step 1: Ek khali paper (List) liya
+List identityNames = new ArrayList();
+
+try {
+    it = context.search(Identity.class, qo, "name"); // 🚀 Sirf Name uthaya, bohot fast
+    while (it.hasNext()) {
+        Object[] row = (Object[]) it.next();
+        identityNames.add((String) row[0]); // List me naam likh liya
+    }
+} finally {
+    if (it != null) {
+        Util.flushIterator(it); // 🚀 Pehle hi Database connection ko flush aur close kar diya! DB free!
+    }
+}
+
+// Step 2: Ab database se koi lena-dena nahi hai, list par aaram se workflow launch karo
+for (String identityName : identityNames) {
+    // 🚀 Ab ye line jitna chahe background me DB utilize kare, purana cursor block nahi hoga
+    workflower.launch(wf, "WF-" + identityName + "-" + System.currentTimeMillis(), args);
+}
+-------------------------------------------------------------------------------------------------------------------------------------
+()heap area size:-
+
+
+-----------------------------------------------------------------------------
+()resolve method in file ka matlab wo file ka path sailpoint ko nahi mil raha hai.file/folder rename karna hoga.
+-------------------------------------------------------------------------------------------------------------------

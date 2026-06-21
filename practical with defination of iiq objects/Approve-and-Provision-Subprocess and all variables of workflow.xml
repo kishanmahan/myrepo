@@ -1,0 +1,1321 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE sailpoint PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<sailpoint>
+<Workflow explicitTransitions="true" name="Approve and Provision Subprocess" type="Subprocess">
+  <Variable input="true" name="identityName">
+    <Description>The name of the identity being updated.</Description>
+  </Variable>
+  <Variable initializer="false" input="true" name="endOnManualWorkItems">
+    <Description>Option to skip requests with manual work items.</Description>
+  </Variable>
+  <Variable initializer="false" input="true" name="endOnProvisioningForms">
+    <Description>Option to skip requests with provisioning forms.</Description>
+  </Variable>
+  <Variable initializer="script:(identityDisplayName != void) ? identityDisplayName : resolveDisplayName(identityName)" input="true" name="identityDisplayName">
+    <Description>
+            The displayName of the identity being updated.
+            Query for this using a projection query and fall back to the name.
+        </Description>
+  </Variable>
+  <Variable input="true" name="plan">
+    <Description>The provisioning plan ready to execute.</Description>
+  </Variable>
+  <Variable input="true" name="flow">
+    <Description>
+            The name of the LCM flow that launched this workflow.
+
+            This is one of these three values:
+
+            AccountsRequest
+            EntitlementsRequest
+            RolesRequest
+        </Description>
+  </Variable>
+  <Variable editable="true" initializer="false" name="optimisticProvisioning">
+    <Description>
+            Set to true to enable optimistic provisioning.  This will cause
+            changes to the entitlements compiled from role assignments to be
+            applied immediately to the identity cube rather than waiting
+            for the next refresh/reaggregation after the provisioning system
+            completes the request.
+        </Description>
+  </Variable>
+  <Variable editable="true" initializer="true" name="foregroundProvisioning">
+    <Description>
+            Normally provisioning is done in a step that uses the "background"
+            option to force the workflow to be suspend and be resumed in a
+            background task thread.  This prevents the browser session from
+            hanging since provision can sometimes take a long time.  For demos
+            and testing it can be better to do this in the foreground so that
+            provisioning will have been performed when control is returned to the
+            user.  This prevents having to run the Perform Maintenance task to
+            see the results of the request.
+        </Description>
+  </Variable>
+  <Variable input="true" name="batchRequestItemId">
+    <Description>
+            Used by the batch interface to record back individual request item status. The specific item id for the individual request in the batch file.
+        </Description>
+  </Variable>
+  <Variable initializer="LCM User Notification" input="true" name="userEmailTemplate">
+    <Description>
+            The email template to use for user notification.
+        </Description>
+  </Variable>
+  <Variable initializer="LCM Requester Notification" input="true" name="requesterEmailTemplate">
+    <Description>
+            The email template to use for requester notification.
+        </Description>
+  </Variable>
+  <Variable initializer="LCM Manager Notification" input="true" name="managerEmailTemplate">
+    <Description>
+            The email template to use for manager notification.
+        </Description>
+  </Variable>
+  <Variable input="true" name="securityOfficerEmailTemplate">
+    <Description>
+            The email template to use for security officer notification.
+        </Description>
+  </Variable>
+  <Variable initializer="parallel" input="true" name="approvalMode">
+    <Description>
+            A string that specifies how we should handle the approvals.
+
+            By default this is serial since most of these request with
+            the exception of manager transfers will have only one approver.
+
+            parallel
+            Approvals are processed concurrently and there must be consensus,
+            we wait for all approvers to approve.  The first approver that
+            rejects terminates the entire approval.
+
+            parallelPoll
+            Approvals are processed concurrently but consensus is not required.
+            All approvals will be processed, we don't stop if there are any
+            rejections.
+
+            serial
+            Approvals are processed one at a time and there must be consensus.
+            The first approver that rejects terminates the entire approval.
+
+            serialPoll
+            Approvals are processed in order but consensus is not required.
+            All approvals will be processed, we don't stop if there are any
+            rejections.  In effect we are "taking a poll" of the approvers.
+
+            any
+            Approvals are processed concurrently, the first approver to
+            respond makes the decision for the group.
+        </Description>
+  </Variable>
+  <Variable initializer="owner" input="true" name="approvalScheme">
+    <Description>
+            A csv string that specifies how approval items should be generated
+            for the incoming request.
+
+            The value can be "none", in which case approvals are disabled.
+
+            The value can also be a combination of any of the values below
+            in any order, separated by commas. The order in which they are
+            specified is the order in which they are processed:
+
+            owner
+            The object owner gets the approval item.
+            For Role approvals this is the Role object owner.
+            For Entitlement approvals this is the Entitlement object owner.
+
+            manager
+            The manager gets the approval item.
+
+            securityOfficer
+            The identity in the variable securityOfficerName gets the approval item.
+
+            identity
+            The identities/workgroups in the variable approvingIdentities get the approval item.
+        </Description>
+  </Variable>
+  <Variable initializer="LCM Identity Update Approval" input="true" name="approvalEmailTemplate">
+    <Description>
+            The email template to use for approval notifications.
+        </Description>
+  </Variable>
+  <Variable initializer="Normal" input="true" name="workItemPriority">
+    <Description>
+            The String version of a WorkItem.Priority. This variable is
+            used to set the priority on all of the workitems generated
+            as part of this workflow and also set on the IdentityRequest
+            object.
+        </Description>
+  </Variable>
+  <Variable input="true" name="securityOfficerName">
+    <Description>
+            The name of the identity that will be sent approvals
+            during security officer approvals.
+        </Description>
+  </Variable>
+  <Variable initializer="spadmin" input="true" name="fallbackApprover">
+    <Description>
+            A String that specifies the name of the Identity that will
+            be assigned any approvals where the owner of the approver
+            can't be resolved. Example if the scheme is "owner" and the
+            application doesn't specify and owner.
+        </Description>
+  </Variable>
+  <Variable initializer="false" input="true" name="enableRetryRequest">
+    <Description>
+            When set to true it will disable the workflow retry loop and let the
+            Provision step launch requests to handle the retries.  Enabling
+            this flag will enable some older functionality.
+        </Description>
+  </Variable>
+  <Variable initializer="LCM" input="true" name="source">
+    <Description>
+            String version of sailpoint.object.Source to indicate
+            where the request originated.  Defaults to LCM.
+        </Description>
+  </Variable>
+  <Variable initializer="false" name="trace">
+    <Description>
+            Used for debugging this workflow and when set to true trace
+            will be sent to stdout.
+        </Description>
+  </Variable>
+  <Variable name="approvalSet">
+    <Description>
+            This attributes is set during the "Build Approval Set" step,
+            which builds this list by going through the ProvisioningPlan
+            to build the line items that need to be approved,
+
+            This variable includes all ApprovalItems that are part of
+            the request process and is updated during the AfterScript
+            of the approval process by assimilating the decisions
+            and comments from the Approvals copy of the ApprovalItem.
+        </Description>
+  </Variable>
+  <Variable input="true" name="approvalAssignmentRule"/>
+  <Variable name="project">
+    <Description>
+            ProvisioningProject which is just a compiled version of the ProvisioningPlan.
+        </Description>
+  </Variable>
+  <Variable name="policyViolations">
+    <Description>
+            List of policy violations that were found during our initial policy scan.
+            This list is passed into each work item so the approvers can see
+            pending violations.
+        </Description>
+  </Variable>
+  <Variable name="identityRequestId" output="true">
+    <Description>
+            The sequence id of the Identity request object which is stored in
+            the name field of the identity request and auto-incremented.
+        </Description>
+  </Variable>
+  <Variable name="workItemComments">
+    <Description>
+            Global comments accumulated during the workflow which should be shared
+            with other approvals. When a new approval is created, the comments in this
+            list will be added to the work item.
+        </Description>
+  </Variable>
+  <Variable input="true" name="ticketManagementApplication">
+    <Description>
+            Name of the application that can handle ticket requests.
+            When non-null the Manage Ticket Steps will be visited to open
+            tickets during the workflow lifecycle.
+        </Description>
+  </Variable>
+  <Variable input="true" name="managerElectronicSignature">
+    <Description>
+            The name of the electronic signature object that should be used when workitems
+            are completed by a manager.
+        </Description>
+  </Variable>
+  <Variable input="true" name="ownerElectronicSignature">
+    <Description>
+            The name of the electronic signature object that should be used when workitems
+            are completed by object owners.
+        </Description>
+  </Variable>
+  <Variable input="true" name="securityOfficerElectronicSignature">
+    <Description>
+            The name of the electronic signature object that should be used when workitems
+            are completed by the security officer.
+        </Description>
+  </Variable>
+  <Variable initializer="true" input="true" name="filterRejects">
+    <Description>True to filter rejected items when running in Serial/SerialPoll mode.</Description>
+  </Variable>
+  <Variable initializer="false" input="true" name="setPreviousApprovalDecisions">
+    <Description>True to pre-populate approval decisions from previous approvals.</Description>
+  </Variable>
+  <Variable input="true" name="approvalSplitPoint">
+    <Description>Approval Scheme to split on.</Description>
+  </Variable>
+  <Variable input="true" name="clearApprovalDecisions">
+    <Description>
+            True to clear any decisions on approvals built with buildCommonApprovals
+        </Description>
+  </Variable>
+  <Variable input="true" name="approvingIdentities">
+    <Description>
+            List of identities and/or workgroups names/ids that should be involved in the approval
+            process.
+        </Description>
+  </Variable>
+  <Variable input="true" name="formTemplate"/>
+  <Variable input="true" name="manualActionsEmailTemplate"/>
+  <Variable initializer="LCM Identity Update Approval" input="true" name="ownerEmailTemplate">
+    <Description>
+            Name of the email template to use when notifying the owner of pending approvals.
+        </Description>
+  </Variable>
+  <Variable initializer="false" input="true" name="splitProvisioning">
+    <Description>
+            True to tell IdentityRequest Provisioning subprocess that this is a subset of the initial provisioning plan
+        </Description>
+  </Variable>
+  <Description>Subprocess to approve and provision immediately. This is used after splitting an ApprovalSet into individual items to run in parallel.</Description>
+  <RuleLibraries>
+    <Reference class="sailpoint.object.Rule" name="LCM Workflow Library"/>
+  </RuleLibraries>
+  <Step icon="Start" name="Start" posX="20" posY="20">
+    <Transition to="Compile Project"/>
+  </Step>
+  <Step action="call:compileProvisioningProject" condition="script:(!isNull(approvalSplitPoint))" icon="Task" name="Compile Project" posX="120" posY="20" resultVariable="project">
+    <Arg name="identityName" value="ref:identityName"/>
+    <Arg name="plan" value="ref:plan"/>
+    <Arg name="requester" value="ref:launcher"/>
+    <Arg name="source" value="ref:source"/>
+    <Arg name="optimisticProvisioning" value="ref:optimisticProvisioning"/>
+    <Arg name="noApplicationTemplates">
+      <Script>
+        <Source>
+                    boolean ignoreForms = false;
+                    if ("ForgotPassword".equals(flow) || "ExpirePassword".equals(flow)) {
+                    ignoreForms = true;
+                    }
+                    return ignoreForms;
+                </Source>
+      </Script>
+    </Arg>
+    <Transition to="Build Approval Set"/>
+  </Step>
+  <Step action="call:buildSplitApprovalSet" condition="script:(!isNull(approvalSplitPoint))" icon="Task" name="Build Approval Set" posX="220" posY="20" resultVariable="approvalSet">
+    <Arg name="plan" value="ref:plan"/>
+    <Return name="approvalSet" to="approvalSet"/>
+    <Transition to="Approve"/>
+  </Step>
+  <Step condition="script:((flow == null) ||  (!&quot;UnlockAccount&quot;.equals(flow)))" configForm="Provisioning Approval Step Form" icon="Approval" name="Approve" posX="320" posY="20">
+    <Arg name="approvalMode" value="ref:approvalMode"/>
+    <Arg name="approvalScheme" value="ref:approvalScheme"/>
+    <Arg name="approvalSet" value="ref:approvalSet"/>
+    <Arg name="approvalSplitPoint" value="ref:approvalSplitPoint"/>
+    <Arg name="approvalAssignmentRule"/>
+    <Arg name="approvingIdentities"/>
+    <Arg name="fallbackApprover" value="ref:fallbackApprover"/>
+    <Arg name="filterRejects" value="ref:filterRejects"/>
+    <Arg name="flow" value="ref:flow"/>
+    <Arg name="identityName" value="ref:identityName"/>
+    <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+    <Arg name="identityElectronicSignature"/>
+    <Arg name="identityEmailTemplate"/>
+    <Arg name="identityRequestId" value="ref:identityRequestId"/>
+    <Arg name="launcher" value="ref:launcher"/>
+    <Arg name="managerEmailTemplate" value="ref:approvalEmailTemplate"/>
+    <Arg name="managerElectronicSignature" value="ref:managerElectronicSignature"/>
+    <Arg name="ownerEmailTemplate" value="ref:approvalEmailTemplate"/>
+    <Arg name="ownerElectronicSignature" value="ref:ownerElectronicSignature"/>
+    <Arg name="project" value="ref:project"/>
+    <Arg name="plan" value="ref:plan"/>
+    <Arg name="policyViolations" value="ref:policyViolations"/>
+    <Arg name="priority" value="ref:workItemPriority"/>
+    <Arg name="securityOfficerName" value="ref:securityOfficerName"/>
+    <Arg name="securityOfficerEmailTemplate" value="ref:approvalEmailTemplate"/>
+    <Arg name="securityOfficerElectronicSignature" value="ref:securityOfficerElectronicSignature"/>
+    <Arg name="setPreviousApprovalDecisions" value="ref:setPreviousApprovalDecisions"/>
+    <Arg name="trace" value="ref:trace"/>
+    <Arg name="workItemReminderTemplate"/>
+    <Arg name="workItemHoursBetweenReminders"/>
+    <Arg name="workItemMaxReminders"/>
+    <Arg name="workItemEscalationTemplate"/>
+    <Arg name="workItemHoursTillEscalation"/>
+    <Arg name="workItemEscalationRule"/>
+    <Arg name="workItemComments"/>
+    <Arg name="clearApprovalDecisions" value="script:(!isNull(approvalSplitPoint) &amp;&amp; csvToList(approvalScheme).contains(approvalSplitPoint))"/>
+    <Return name="approvalSet"/>
+    <Return name="workItemComments"/>
+    <Return name="project"/>
+    <WorkflowRef>
+      <Reference class="sailpoint.object.Workflow" name="Provisioning Approval Subprocess"/>
+    </WorkflowRef>
+    <Transition to="Update Ticket Post Approval"/>
+  </Step>
+  <Step condition="script:(ticketManagementApplication != null)" icon="Task" name="Update Ticket Post Approval" posX="470" posY="20">
+    <Arg name="action" value="postApproval"/>
+    <Arg name="priority" value="ref:workItemPriority"/>
+    <Arg name="project" value="ref:project"/>
+    <Arg name="source" value="ref:source"/>
+    <Arg name="ticketManagementApplication" value="ref:ticketManagementApplication"/>
+    <Arg name="identityRequestId" value="ref:identityRequestId"/>
+    <Arg name="ticketDataGenerationRule" value=""/>
+    <Arg name="trace" value="ref:trace"/>
+    <Description>
+            Call a subprocess to update the ticket in the ticketManagementApplication is non-null.
+
+            You can specify a specific 'ticketDataGenerationRule' here or you can also specify
+            it on the application.  It'll be read from the argument first and fall back to the '
+            application config.
+
+        </Description>
+    <WorkflowRef>
+      <Reference class="sailpoint.object.Workflow" name="Manage Ticket"/>
+    </WorkflowRef>
+    <Transition to="Provision"/>
+  </Step>
+  <Step icon="Provision" name="Provision" posX="600" posY="20">
+    <Arg name="approvalScheme" value="ref:approvalScheme"/>
+    <Arg name="approvalSet" value="ref:approvalSet"/>
+    <Arg name="fallbackApprover" value="ref:fallbackApprover"/>
+    <Arg name="foregroundProvisioning" value="ref:foregroundProvisioning"/>
+    <Arg name="formTemplate" value="Identity Update"/>
+    <Arg name="flow" value="ref:flow"/>
+    <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+    <Arg name="identityName" value="ref:identityName"/>
+    <Arg name="identityRequestId" value="ref:identityRequestId"/>
+    <Arg name="launcher" value="ref:launcher"/>
+    <Arg name="manualActionsEmailTemplate" value="Pending Manual Changes"/>
+    <Arg name="optimisticProvisioning" value="ref:optimisticProvisioning"/>
+    <Arg name="policyViolations" value="ref:policyViolations"/>
+    <Arg name="project" value="ref:project"/>
+    <Arg name="policyScheme" value="ref:policyScheme"/>
+    <Arg name="priority" value="ref:workItemPriority"/>
+    <Arg name="trace" value="ref:trace"/>
+    <Arg name="workItemComments" value="ref:workItemComments"/>
+    <Arg name="splitProvisioning" value="ref:splitProvisioning"/>
+    <Description>
+            Call the standard subprocess that will process the
+            approval decisions and do provisioning.  This
+            includes calling any configured provisioning
+            connectors and building manual actions.
+        </Description>
+    <Return name="project" to="project"/>
+    <WorkflowRef>
+      <Reference class="sailpoint.object.Workflow" name="Identity Request Provision"/>
+    </WorkflowRef>
+    <Transition to="Update Ticket Post Provision"/>
+  </Step>
+  <Step condition="script:(ticketManagementApplication != null)" icon="Task" name="Update Ticket Post Provision" posX="700" posY="20">
+    <Arg name="action" value="postProvisioning"/>
+    <Arg name="source" value="ref:source"/>
+    <Arg name="priority" value="ref:workItemPriority"/>
+    <Arg name="project" value="ref:project"/>
+    <Arg name="ticketManagementApplication" value="ref:ticketManagementApplication"/>
+    <Arg name="identityRequestId" value="ref:identityRequestId"/>
+    <Arg name="ticketDataGenerationRule" value=""/>
+    <Arg name="trace" value="ref:trace"/>
+    <Description>
+            Call a subprocess to update the ticket in the ticketManagementApplication is non-null.
+
+            You can specify a specific 'ticketDataGenerationRule' here or you can also specify
+            it on the application.  It'll be read from the argument first and fall back to the '
+            application config.
+
+        </Description>
+    <WorkflowRef>
+      <Reference class="sailpoint.object.Workflow" name="Manage Ticket"/>
+    </WorkflowRef>
+  </Step>
+</Workflow>
+</sailpoint>
+///////////////*
+()explicitTransitions="true" kya karta hai?
+Iska matlab:-
+Workflow automatically next step pe nahi jayega.
+Jo <Transition> tum manually likhoge, workflow sirf usi path pe chalega.
+
+()SailPoint me commonly ye workflow types milte hain:-
+1. type="Identity":-
+Identity lifecycle se related workflow.
+Example:-
+Joiner
+Mover
+Leaver
+Identity update.
+
+2. type="Approval":-
+Approval based workflow.
+Manager approval, app owner approval etc.
+Use:-
+Access request approval
+Role approval
+Certification approval
+
+3. type="Provisioning":-
+Provisioning operations ke liye.
+Example:-
+<Workflow name="Provision Access"
+          type="Provisioning">
+Use:-
+Create account
+Disable account
+Modify account
+
+4. type="LCM":-
+LCM = Lifecycle Manager workflow.
+Access request process.
+Example:-
+<Workflow type="LCM">
+Use:-
+Request access
+Shopping cart request
+Role request
+
+5. type="Alert":-
+Alert trigger hone par run hota.
+Tumhare code me:-
+<Workflow
+name="Alert - Disable Account"
+type="Alert">
+Use:-
+Alert detect hua →
+workflow execute.
+Example:-
+Inactive account alert.
+
+6. type="Certification"
+Certification campaigns/reviews.
+Access review process.
+
+7. type="Subprocess":-
+Bahut important.
+Ye reusable child workflow hota hai.
+Example:-
+SendEmailWorkflow
+Multiple workflows ise call kar sakte.
+
+8. type="Role":-
+Role related workflows.
+Use:-
+Role assignment / removal.
+
+9. type="Password":-
+Password management workflows.
+Example:-
+<Workflow type="Password">
+Use:-
+Password reset
+Password sync
+Password change
+
+10. type="Lifecycle":-
+Identity lifecycle events.
+Use:-
+Joiner / Mover / Leaver flows.
+
+11.type="Subprocess":-Ek workflow jo dusre workflow ke andar call/use kiya jata hai.
+Example of Subprocess;-
+Parent workflow:-
+<Step action="call:SendMailWF"/>
+
+Child workflow:-
+<Workflow
+name="SendMailWF"
+type="Subprocess">
+Purpose:-
+Common logic reuse.
+
+()resolveDisplayName(identityName):-
+Yeh function user ka Unique ID (username) leta hai aur badle mein us user ka ka Display Name (asli naam) dhundh kar de deta hai.
+ye context object ka method mana jata hai.
+ex:-
+Identity Name (Unique ID/Username): jdoe123
+Display Name (Asli Naam): John Doe
+Agar aap code mein likhenge:-
+Java
+String realName = resolveDisplayName("jdoe123");
+
+()owner
+--The object owner gets the approval item.
+--For Role approvals this is the Role object owner.
+--For Entitlement approvals this is the Entitlement object owner.
+----------------------------------------------------------------------
+()<Step action="call:compileProvisioningProject" condition="script:(!isNull(approvalSplitPoint))">:-
+-->compileProvisioningProject() action/method call karo.
+--call: ka matlab:-
+Kisi method / workflow library function / callable action ko invoke (call) karo.
+
+--condition code:-
+condition="script:(!isNull(approvalSplitPoint))"
+Ye decide karta hai:-Step chalega ya skip hoga?
+
+Example:-
+condition="script:true" ho toh step ko run karde.
+
+Example:-
+condition="script:false" ho toh step ko run mat karo.
+
+()script:-
+!isNull(approvalSplitPoint)
+Meaning:-
+approvalSplitPoint null nahi hona chahiye.
+
+()approvalSplitPoint ek workflow variable / marker / checkpoint hota hai jo batata hai:-
+Approval process me workflow ko kaha split / pause / continue karna hai.
+matlab workflow kis step pe hai approval ke:-
+-->toh yeh 3 main kaam karta hai:-
+--Plan ko todna (Splitting): Yeh poore request plan ko check karta hai aur alag-alag applications ke mutabik unhe alag-alag 
+sub-plans mein divide kar deta hai.
+--Approvers dhundhna (Approver Identification): Yeh har ek sub-plan ke liye sahi approver ka pata lagata hai 
+(jaise AD ke liye IT team, Salesforce ke liye Sales team).
+--Parallel Approvals banana: Yeh in sabhi approvals ko ek sath generate kar deta hai taaki teeno managers ke pass 
+unke screen par ek hi time par approval request chali jaye. Isse approval ka process bahut fast ho jata hai.
+
+
+()approvalSplitPoint ko value koun deta hai?
+-->Parent workflow / caller workflow pass karta hai
+Example:-
+()Parent workflow dega:-
+<Step action="call:MySubProcess">
+
+    <Arg name="approvalSplitPoint"
+         value="ManagerApproval"/>
+
+</Step>
+
+()Child workflow dega:-
+<Variable input="true"
+          name="approvalSplitPoint"/>
+Yaha value calling workflow de raha.
+
+4. Workflow input se aa sakta,Workflow start hote waqt.
+<Variable
+   input="true"
+   name="approvalSplitPoint"/>
+Workflow launch time:-
+approvalSplitPoint=SecurityApproval,sailpint dega.
+
+()Short answer:-
+variable-approvalSplitPoint ko value de sakta hai ye following 5:-
+1. Developer script
+2. Workflow variable initialization
+3. Parent/child workflow Arg passing
+4. SailPoint built-in approval/workflow library
+5. Workflow input
+*///////////
+--------------------------------------------------------------------------------------
+()<Arg name="identityName" value="ref:identityName"/>
+    <Arg name="plan" value="ref:plan"/>
+    <Arg name="requester" value="ref:launcher"/>
+    <Arg name="source" value="ref:source"/>
+    <Arg name="optimisticProvisioning" value="ref:optimisticProvisioning"/>
+    <Arg name="noApplicationTemplates"> ye sare kisko bhej aur kar kya raha hai?
+-->
+1. Saare  apni values kisko bhej rahe hain?
+Jaise humne pehle baat ki thi, is step mein action="call:compileProvisioningProject" define hai. 
+Isliye, is step ke andar jitne bhi  (Arguments) hain,
+woh sab apni values compileProvisioningProject naam ke inbuilt Java function/handler ko bhej rahe hain taaki 
+woh ek final execution project taiyar kar sake.
+
+()<Arg name="noApplicationTemplates"> kya kar raha hai aur ishke ye noApplicationTemplates kya hai 
+
+-->2. noApplicationTemplates kya hai?
+noApplicationTemplates is compileProvisioningProject action ka ek input parameter (argument) hai.
+Iska kaam kya hai? SailPoint mein jab bhi koi access request aati hai, 
+toh system check karta hai ki kya us application ke liye koi user input form (Template/Form) fill karwana hai ya nahi.
+Agar is argument ki value true ho jaye, toh SailPoint applications ke un forms/templates ko ignore (skip) kar deta hai—yaani
+user ya manager ke samne koi extra form pop-up nahi hota. Agar value false ho, toh forms dikhai dete hain.
+
+:--<Arg name="noApplicationTemplates">
+      <Script>
+        <Source>
+                    boolean ignoreForms = false;
+                    if ("ForgotPassword".equals(flow) || "ExpirePassword".equals(flow)) {
+                    ignoreForms = true;
+                    }
+                    return ignoreForms;
+                </Source>
+      </Script>
+    </Arg>
+aur ForgotPassword aur flow aur ExpirePassword aur ignoreForms kya hai kya karta hai?
+-->
+()flow kya hai?
+flow SailPoint ka ek global workflow variable hai jo yeh batata hai ki user abhi SailPoint mein kaun sa kaam (process) kar raha hai.
+Example: Agar user apna password bhool gaya hai aur use reset kar raha hai, toh flow ki value background mein "ForgotPassword" hogi. Agar koi manager naya access request kar raha hai, toh flow ki value "AccessRequest" hogi.
+
+()"ForgotPassword" aur "ExpirePassword" kya hain?
+Yeh dono SailPoint ke standard flow names (values) hain:-
+-->ForgotPassword: Jab koi user login page par "Forgot Password" par click karke apna password khud reset karne ki koshish karta hai.
+-->ExpirePassword: Jab system kisi user ka password expire kar deta hai aur use naya password set karne par majboor karta hai.
+
+()compileProvisioningProject:-SailPoint mein resultVariable="project" ka matlab hota hai ki 
+is step ka kaam khatam hone ke baad jo bhi output ya result nikal kar aayega, use "project" naam ke ek variable(container) mein
+save kar diya jaye.
+*//////////
+////////////*
+()buildSplitApprovalSet:-
+Aasan bhasha mein kahein toh: Jab approvalSplitPoint ek bade provisioning plan ko alag-alag chote plans (sub-plans) mein tod deta
+hai, tab buildSplitApprovalSet ka kaam un sabhi chote plans ke liye alag-alag approval requests (Approval Items/Sets) ka ek 
+poora group taiyar karna hota hai.
+Yeh Kaise Kaam Karta Hai? (Workflow Flow):-
+-->Maan lijiye user ne ek sath Active Directory (AD) aur Salesforce ka access manga tha.
+approvalSplitPoint ne kya kiya? Usne is request ko do hisso mein baant diya:
+Sub-Plan A: Active Directory Access
+Sub-Plan B: Salesforce Access
+-->buildSplitApprovalSet ab kya karega? Yeh in dono sub-plans ko uthayega aur 
+inke liye background mein Approval Set (Approval Objects) banayega:-
+Approval Set 1: AD Access ke liye -> Iska approver IT Manager hoga.
+Approval Set 2: Salesforce Access ke liye -> Iska approver Sales Head hoga.
+*/////////////
+///////////////*
+()condition="script:((flow == null) ||  (!&quot;UnlockAccount&quot;.equals(flow)))" configForm="Provisioning Approval Step Form" 
+:--flow == null: Agar SailPoint ko yeh pata hi nahi hai ki abhi kaun sa kaam chal raha hai (yaani flow variable khali/null hai).
+:--!"UnlockAccount".equals(flow): Yahan ! ka matlab hai NOT (nahi).Yeh line check kar rahi hai ki: Kya current chal raha kaam "UnlockAccount" NAHI hai?
+
+()Yeh step har ek case mein chalega, bas ek case mein NAHI chalega—jab user apna account Unlock (UnlockAccount) kar raha ho.
+Kyunki jab koi apna locked account unlock karwa raha hai, toh use kisi extra approval step se nahi guzarna chahiye, 
+use turant access milna chahiye. Isliye unlock ke time par yeh step skip ho jata hai.
+
+()2. configForm="Provisioning Approval Step Form":-
+SailPoint mein configForm ka use tab kiya jata hai jab hume us specific step ke kaam(behave) karne ke tarike ko control karne 
+ke liye dynamic settings (ya UI fields) chahiye hoti hain.
+
+-->Yeh kya hai? "Provisioning Approval Step Form" SailPoint ke andar pehle se bana-banaya ek Form object (System Form) hai.
+-->Yeh kya karta hai? Jab yeh workflow back-end mein chal raha hota hai, 
+toh yeh form system administrators ko Business Process ke configuration page par kuch fields/options dikhata hai. Jaise:-
+Kya is approval ke liye reminder bhejni hai?
+Agar manager approve na kare, toh kitne din mein automatic escalate (aage badh) ho jaye?
+Approval ka template kaun sa hoga?
+
+()<Return name="approvalSet" to="approvalSet"/>:-
+1.  kisko value bhejta hai?
+1. name="approvalSet" kya hai?
+Ye return hone wali value ka source/output name hai.
+Yaha:-
+"approvalSet" approval decisions object hai.
+Jaise:-
+Approve
+Reject
+Comments
+WorkItem decision
+
+()2. to="approvalSet" kya hai?
+Ye receiver side / caller side variable mapping hai.
+Matlab:-
+caller ke kis variable me value jayegi?
+
+Important: Kis kisko value bhejta hai?
+Caller ko.
+Usually:-
+Approval Step caller
+Main workflow= parent workflow / outer workflow / top-level workflow.
+*///////////////
+-------------------------------------------
+////////////////*
+()1. Master Variable (Global Variable):-
+Yeh woh variable hota hai jo poore workflow ka main variable hota hai. Yeh kisi ek step ke andar band nahi hota, balki poore workflow ke liye khula hota hai.
+Aukaat (Scope): Isko workflow ka har ek step dekh sakta hai aur use kar sakta hai.
+Life (Lifetime): Yeh tab tak zinda rehta hai jab tak poora workflow shuru se lekar khatam (Stop) nahi ho jata.
+XML mein yeh kahan hota hai? Yeh workflow ke bilkul upar, steps shuru hone se pehle hi define ho jata hai.
+
+()2. Local Variable:-
+Yeh woh variable hota hai jo kisi ek specific <Step> ya uske andar ki <Script> ke andar paida hota hai 
+aur us step ke khatam hote hi mar jata hai.
+Code Example:-
+XML
+<Step name="Check Password">
+  <Script>
+    <Source>
+      // Yeh ek local variable hai, sirf is script ke andar chalega
+      boolean ignoreForms = false; 
+      return ignoreForms;
+    </Source>
+  </Script>
+</Step>
+*////////////////
+-------------------------------------------------------------------------------
+<Return> vs resultVariable?
+-->2. <Return>;-
+Ye WORKFLOW LEVEL / SUBPROCESS LEVEL pe use hota hai.
+Meaning:-
+Workflow khatam hote waqt caller(parent workflow) ko kya value bhejni hai.
+workflow khatam hone pe "caller" ko value bhejta hai — kaun caller?
+Caller = jisne workflow ko start / call kiya hai.
+
+example:-
+-->Child Workflow:-
+<Workflow name="ChildWF" type="Subprocess">
+<Return name="status" value="Success"/>
+
+-->1. Parent Workflow:-
+<Step action="call:ChildWF" resultVariable="childResult"/> aur yaha variable "childResult" ko Success value mil gayi.
+ye variable("childResult") Workflow ka main variable hai jo define hai workflow me globaly.jo upar me variable tag me define hai waha store hoga Success value.
+
+
+2. Workflow Launcher / Workflow Engine
+Kabhi workflow directly SailPoint engine launch karta.
+Example:-
+LCM request.
+User Request Access
+     ↓
+SailPoint Workflow Engine
+     ↓
+Workflow Start
+Yaha caller ho sakta:-Workflow Engine.
+
+3. Rule / Java Code caller ho sakta:-
+Example:-
+Rule:-
+WorkflowService.launch("MyWorkflow");
+
+Yaha:-
+Rule caller hai.
+Workflow return karega.
+
+4. API / UI caller
+Example:-
+UI button.
+UI Action
+   ↓
+Launch Workflow
+UI side caller ban sakta.
+---------------------------
+()aur resultVariable kisko value bhejta hai kya workflow ke  master variable(Global variable) ko?
+-->haan — resultVariable usually current workflow ke variable (workflow scope / master variable bol lo) me value store karta hai.
+ye wahi variable me store karega jo "<Variable>" se declare hua hai upar.
+
+ex:-
+<Step action="buildAlertPlan"
+      resultVariable="plan">
+Meaning:-
+Step/action jo value return karega, usko current workflow ke variable plan me store karo.
+-------------------------------------------------------------------------------------------------
+*///////////
+/////////////*
+()flow == null: Agar SailPoint ko yeh pata hi nahi hai ki abhi kaun sa kaam chal raha hai (yaani flow variable khali/null hai).
+
+()configForm="Provisioning Approval Step Form":-
+SailPoint mein configForm ka use tab kiya jata hai jab hume us specific step ke kaam(behave) karne ke tarike ko control karne 
+ke liye dynamic settings (ya UI fields) chahiye hoti hain.
+Kyunki configForm HAI: Aapko code touch karne ki koi zaroorat nahi hai. 
+Aap seedhe SailPoint ke UI par (Business Process Configuration page par) jayenge. 
+Wahan aapko ek sunder sa page dikhega jiska naam hoga "Provisioning Approval Step Form". 
+Aap wahan "Reminder Days" ke dabbe mein 2 likhenge aur Save kar denge.
+Parde ke peeche yeh step apne aap us 2 din ke rule ko manna shuru kar dega.
+
+()1. Yeh "Provisioning Approval Step Form" asal mein kya hai?
+SailPoint IdentityIQ ke andar pehle se bana-banaya ek standard Form object hai. 
+Jab SailPoint ka product design kiya gaya tha, toh unhone is form ke andar kuch standard fields pehle se fix kar di thi, jaise:-
+Approval Mode (Serial ya Parallel?)
+Escalation Style (Reminder bhejna hai ya direct aage badhana hai?)
+Notification Template (Manager ko kaun sa email jana chahiye?)
+*/////////////
+//////////////*
+<Step condition="script:((flow == null) ||  (!&quot;UnlockAccount&quot;.equals(flow)))" configForm="Provisioning Approval Step Form" icon="Approval" name="Approve" posX="320" posY="20">
+   <Arg name="approvalMode" value="ref:approvalMode"/>
+   <Arg name="approvalScheme" value="ref:approvalScheme"/>
+   <Arg name="approvalSet" value="ref:approvalSet"/>
+   <Arg name="approvalSplitPoint" value="ref:approvalSplitPoint"/>
+    <Arg name="approvalAssignmentRule"/>
+    <Arg name="approvingIdentities"/>
+   <Arg name="fallbackApprover" value="ref:fallbackApprover"/>
+    <Arg name="filterRejects" value="ref:filterRejects"/>
+   <Arg name="flow" value="ref:flow"/>
+   <Arg name="identityName" value="ref:identityName"/>
+   <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+    <Arg name="identityElectronicSignature"/>
+    <Arg name="identityEmailTemplate"/>
+    <Arg name="identityRequestId" value="ref:identityRequestId"/>
+   <Arg name="launcher" value="ref:launcher"/>
+   <Arg name="managerEmailTemplate" value="ref:approvalEmailTemplate"/>
+   <Arg name="managerElectronicSignature" value="ref:managerElectronicSignature"/>
+   <Arg name="ownerEmailTemplate" value="ref:approvalEmailTemplate"/>
+    <Arg name="ownerElectronicSignature" value="ref:ownerElectronicSignature"/>
+    <Arg name="project" value="ref:project"/>
+    <Arg name="plan" value="ref:plan"/>
+    <Arg name="policyViolations" value="ref:policyViolations"/>
+    <Arg name="priority" value="ref:workItemPriority"/>
+    <Arg name="securityOfficerName" value="ref:securityOfficerName"/>
+   <Arg name="securityOfficerEmailTemplate" value="ref:approvalEmailTemplate"/>
+    <Arg name="securityOfficerElectronicSignature" value="ref:securityOfficerElectronicSignature"/>
+    <Arg name="setPreviousApprovalDecisions" value="ref:setPreviousApprovalDecisions"/>
+    <Arg name="trace" value="ref:trace"/>
+   <Arg name="workItemReminderTemplate"/>
+   <Arg name="workItemHoursBetweenReminders"/>
+   <Arg name="workItemMaxReminders"/>
+   <Arg name="workItemEscalationTemplate"/>
+    <Arg name="workItemHoursTillEscalation"/>
+   <Arg name="workItemEscalationRule"/>
+    <Arg name="workItemComments"/>
+    <Arg name="clearApprovalDecisions" value="script:(!isNull(approvalSplitPoint) &amp;&amp; csvToList(approvalScheme).contains(approvalSplitPoint))"/>
+    <Return name="approvalSet"/>
+    <Return name="workItemComments"/>
+    <Return name="project"/>
+    <WorkflowRef>
+      <Reference class="sailpoint.object.Workflow" name="Provisioning Approval Subprocess"/>
+    </WorkflowRef>
+    <Transition to="Update Ticket Post Approval"/>
+  </Step> yaha sare argument kisko bheje ja rahe hai aur wo sare argument kya hai kya karte hai aur koun unhe value de raha hai aur return ke sare value koun de raha hai aur return ke value kisko pass ho raha hai?
+
+()1. Yeh saare Arguments kisko bheje ja rahe hain?
+Yeh saare ke saare <Arg> (Arguments) <Reference class="sailpoint.object.Workflow" name="Provisioning Approval Subprocess"/> ko bheje ja rahe hain.
+
+()2. In saare Arguments ko Value kaun de raha hai?
+In arguments ko value dene ke do alag-alag tarike use ho rahe hain:-
+--Master Variables (value="ref:..."): Jinke aage ref: laga hai (jaise ref:identityName, ref:plan), unhe value Main Workflow ke Master Variables se mil rahi hai jo pichle steps mein save hui thi.
+--Inbuilt Script (value="script:..."): Kuch arguments (jaise clearApprovalDecisions) ko value unke andar turant chalne wali ek choti si logical script se mil rahi hai.
+--Khaali/Blank Arguments: Jin arguments ke aage koi value="..." nahi likha hai (jaise approvingIdentities ya workItemMaxReminders), unhe shuruat mein koi value nahi di ja rahi hai (wo khali hain), ya fir unki value configForm ke settings page se automatic uthakar pass kar di jayegi.
+
+()approvalMode: Yeh batata hai ki approvals kaise chalenge—Serial (ek ke baad ek) ya Parallel (sabko ek sath).
+ishko value configForm ke settings page se automatic uthakar pass kar di jayegi.
+
+()approvalScheme: Yeh batata hai ki approver kaun hoga (jaise manager, owner, ya securityOfficer).
+
+()approvalSet & approvalSplitPoint: Isme un saari items ki list hoti hai jinhe approve karna hai, 
+aur split point unhe alag-alag tukdo mein todta hai.
+value koun dega ishe toh:-
+-->Maan lijiye user ne ek sath Active Directory (AD) aur Salesforce ka access manga tha.
+approvalSplitPoint ne kya kiya? Usne is request ko do hisso mein baant diya:
+Sub-Plan A: Active Directory Access
+Sub-Plan B: Salesforce Access
+-->buildSplitApprovalSet ab kya karega? Yeh in dono sub-plans ko uthayega aur 
+inke liye background mein Approval Set (Approval Objects) banayega:-
+Approval Set 1: AD Access ke liye -> Iska approver IT Manager hoga.
+Approval Set 2: Salesforce Access ke liye -> Iska approver Sales Head hoga.
+--value koun dega approvalSet ko:-Iska bhi koi initializer nahi hai kyunki "Build Approval Set" step chalne par resultVariable="approvalSet" ke zariye isme line items ki value store hoti hai.
+--value koun deta hai buildSplitApprovalSet ko:-Value Kaun Deta Hai: Parent (Main) Workflow
+Kaise/Kab: Main workflow jab requests ko alag-alag tukdo mein todta hai, toh current split ki positioning is variable ko bhejta hai.
+
+()fallbackApprover: Agar system ko asli approver (jaise user ka manager) nahi mila, 
+toh backup ke taur par approval kiske paas jayega.admin ke pass.
+
+()identityName & identityDisplayName: Jis employee ke liye access manga gaya hai, uska unique-username(id) 
+aur uska asli naam(displayName) dega.
+--identityName:-
+Value Kaun Deta Hai: Parent (Main) Workflow,
+Kaise/Kab: Jab main workflow is subprocess ko start karta hai, 
+toh jis user ke liye request bani hai uska unique username/ID isme bhej deta hai.
+--identityDisplayName:-
+Value Kaun Deta Hai: Inbuilt Script,
+Kaise/Kab: Yeh variable chalte hi ek chota sa code run karta hai. 
+Agar system ke paas display name pehle se hai, toh wahi rakh leta hai, 
+nahi toh resolveDisplayName(identityName) function ko call karke user ka asli naam database se nikal leta hai.
+
+()launcher: Jisne yeh request shuru ki hai (jaise koi HR, Manager ya user khud).wo identity dega.
+
+()managerEmailTemplate / ownerEmailTemplate / securityOfficerEmailTemplate: Jab Manager, 
+Application Owner ya Security Officer ke paas approval jayega, toh unhe jo email notification dikhega uska design/template kya hoga.
+--managerEmailTemplate / ownerEmailTemplate/ securityOfficerEmailTemplate ko Value Kaun Deta Hai? Parent Workflow ya Business Process Configuration UI.
+Admin UI settings se jo template select hota hai,wahi value isko milti hai.
+
+()managerElectronicSignature...: Kya manager ko approve karte waqt apna password daal kar digital sign karna compulsory hai ya nahi.
+
+()workItemReminderTemplate & workItemHoursBetweenReminders: Approver ko bheje jaane wale reminder email ka template, 
+aur kitne ghanton ke baad baar-baar reminder bhejna hai.
+
+()workItemMaxReminders: Ek approver ko maximum kitne reminder bheje ja sakte hain.
+
+()workItemEscalationTemplate & workItemEscalationRule: Agar manager fix time tak approve na kare, 
+toh request aage kiske paas bhejni (escalate karni) hai aur uska rule kya hoga.
+
+()1. clearApprovalDecisions:-
+Kya hai? Yeh ek boolean (true/false) switch hai.
+Kya karta hai? Agar ek hi request mein alag-alag level par approvals chal rahe hain 
+(jaise pehle Manager, fir Security Officer),toh yeh check karta hai ki kya naye approval round ke shuru hone par purane 
+approvers ke decisions ko saaf (clear) karna hai ya nahi. Is code mein ek script lagi hai jo split points ke hisab se ise
+auto-manage karti hai.Value Kaun Deta Hai: Parent Workflow / Approve Step Script dega.
+
+()2. identityRequestId:-
+Kya hai? Yeh Access Request ka unique ticket number (Tracking ID) hota hai.
+Kya karta hai? SailPoint ke LCM (Lifecycle Manager) mein jab bhi koi access maanga jata hai, 
+toh ek ticket generate hota hai (jaise 0000000123). 
+Yeh ID approver ko uske dashboard par dikhata hai ki woh kis ticket number ko approve kar raha hai.
+--value koun dega:---identityRequestId: Main workflow isme ticket id (jaise 000000123) bhejta hai, 
+taaki is pooray subprocess ki tracking us main ticket se judi rahe.
+
+()3. plan aur project:-
+Kya hain? Yeh SailPoint ke core provisioning objects hain.
+Kya karte hain?
+--plan (ProvisioningPlan): Isme raw request hoti hai ki user ko kya chahiye 
+(e.g., "Active Directory mein John ko Administrator group do").
+--project (ProvisioningProject): Isme SailPoint ki saari compiled logic hoti hai 
+(e.g., Roles, Policies aur Forms check karne ke baad final execution plan). 
+Approval subprocess is project ko dekhta hai taaki approver ko exact pata chale ki background mein kya badlav hone wale hain.
+--plan ka value kaha se aayega:-Jo original ProvisioningPlan access request ke time bana tha, 
+woh main workflow(parent workflow jisne ish workflow ko call kiya hai) isko as an input saunp deta hai.
+----project: Iska apna koi initializer nahi hai kyunki "Compile Project" step chalne par resultVariable="project" 
+ke zariye SailPoint ka core engine isme compiled project ki value daalta hai.
+
+4. workItemHoursTillEscalation:-
+Kya hai? Yeh ek timing (hours) parameter hai.
+Kya karta hai? Yeh SailPoint ko batata hai ki approval request aane ke baad, manager ke paas kitne ghante ka time hai action lene ke liye. Agar manager ne diye gaye ghanto (hours) ke andar approve nahi kiya, toh request automatic agle level ke approver ya admin ke paas chali jayegi (Escalate ho jayegi).
+
+()workItem kya hai?
+--1. workItem kya hai?
+Definition: workItem aur kuch nahi, balki SailPoint ke andar ka ek "In-box Task" ya "Ticket" hota hai jise kisi insaan (User, Manager, ya Admin) ko poora karna hota hai.
+Jab bhi workflow ko chalne ke liye kisi insaan ke action ki zaroorat hoti hai, toh SailPoint background mein ek WorkItem object (ticket) generate karta hai aur us insaan ke SailPoint Dashboard par bhej deta hai.
+SailPoint mein main roop se do tarah ke Work Items hote hain:-
+Approval Work Item: Jo Manager ya Application Owner ke paas jata hai access request ko Approve ya Reject karne ke liye.
+Manual Work Item: Jo IT Helpdesk ke paas jata hai kisi user ka account haath se (manually) banane ke liye.
+--workItem ke internal fields ko value kahan se milti hai?
+Aapne pichle codes mein jo arguments dekhe, wahi is workItem ke andar values bante hain:
+Priority (workItemPriority): Ise value milti hai "Normal", "High", ya "Low" ke roop mein.
+Target User (identityName): Kis employee ke liye yeh ticket bana hai, uski details isme aati hain.
+Assignee (approvingIdentities): Yeh ticket kiske inbox mein dikhega (jaise Manager ki ID), yeh SailPoint ka engine calculate karke isme daalta hai.
+Reminders & Escalations (workItemMaxReminders, workItemHoursTillEscalation): Yeh saari timings aur rules is work item ke upar apply kar diye jaate hain.
+
+2. Isko Value kaun deta hai?
+workItem ko koi ek akela variable value nahi deta, balki SailPoint ka Workflow Engine ise dynamic tarike se runtime par create karta aur bharta hai.
+
+5. workItemComments:-
+Kya hai? Yeh ek text container (notes/remarks) hota hai.
+Kya karta hai? Jab manager kisi request ko Approve ya Reject karta hai, 
+toh woh jo bhi wajah ya comment likhta hai (e.g., "Approved for Project X"), 
+woh isi variable mein save hota hai aur audit log mein record ho jata hai.
+--value koun dega:---workItemComments: Shuru mein khali hota hai, par jaise hi koi approver comment likhta hai, child subprocess is variable ko upar ki taraf update kar deta hai.
+
+6. trace:-
+Kya hai? Yeh ek debugging tool/switch hai.
+Kya karta hai? Agar iski value true set ho, toh SailPoint is pooray approval step ke ek-ek internal movement ka data system logs (sailpoint.log) mein print karta hai. Yeh developers ke liye troubleshooting mein kaam aata hai agar workflow kahin phas jaye.
+
+7. setPreviousApprovalDecisions:-
+Kya hai? Yeh ek history checker variable hai.
+Kya karta hai? Agar yeh request pehle bhi kisi approver ke paas ja chuki hai (Multi-stage approval), toh yeh argument pichle approvers ke saare decisions (kisne kab approve kiya) ko agle approver ke samne dashboard par show karta hai taaki use poori history pata ho.
+--Value Kaun Deta Hai: Inbuilt Initializer (false)
+
+8. securityOfficerName aur securityOfficerElectronicSignature:-
+securityOfficerName: Agar approval scheme mein "SecurityOfficer" set hai, toh us security head/officer ki Identity ka naam isme pass hota hai.
+securityOfficerElectronicSignature: Agar yeh activated hai, toh Security Officer ko approval ka button dabane ke sath-sath apna SailPoint password daal kar verify (Digital Sign) karna padta hai, jo audit purpose ke liye secure maana jata hai.
+--securityOfficerName ki value koun deta hai yaha:-
+Agar company ke global settings mein kisi standard Security Officer ka naam map kiya gaya hai, 
+toh SailPoint wahan se uthakar isme bhejta hai.
+
+9. priority:-
+Kya hai? Yeh ticket ki importance level (Priority) hoti hai.
+Kya karta hai? Yeh work item ko Normal, High, ya Low ranking deta hai. Agar koi urgent request hai (High Priority), toh manager ke inbox mein yeh sabse upar chamkega.
+
+10. policyViolations:-
+Kya hai? Yeh SoD (Separation of Duties) ya koi aur policy violation ki list hoti hai.
+Kya karta hai? Agar is access request ki wajah se koi company policy break ho rahi hai, toh woh violation details isme hoti hain. Approver ko screen par bada-bada warning dikhta hai ki: "Ise approve karne se policy violate hogi, kya aap fir bhi aage badhna chahte hain?"
+--value kaha se:---policyViolations: Shuruat mein poora khali rehta hai. Agar main workflow ne pehle se koi policy violation scan ki hui hai, toh woh list isme bhej di jaati hai taaki approver ko warning dikhe.
+
+
+11. ownerElectronicSignature:-
+Kya hai? Digital signature option for Application Owner.
+Kya karta hai? Bilkul Security Officer ki tarah, agar kisi specific Application ka Owner (e.g., Salesforce Admin) approve kar raha hai, toh use apna password confirm karna padega ya nahi, yeh isse control hota hai.
+
+12. identityEmailTemplate:-
+Kya hai? Email configuration design.
+Kya karta hai? Jab approval ka process chal raha ho ya khatam ho jaye, toh jis employee ke liye request lagayi gayi hai (Target Identity), use jo email updates jayenge, us email ka format kya hoga, woh yeh tay karta hai.
+
+13. identityElectronicSignature:-
+Kya hai? Digital signature option for Target User.
+Kya karta hai? Kuch sceanrios mein user ko khud ka access pehle sign/accept karna padta hai. Yeh us case mein user ke verification ko handle karta hai.
+
+14. filterRejects:-
+Kya hai? Ek filter switch (true/false).
+Kya karta hai? Maan lijiye aapne 5 access mange the, aur manager ne 2 ko reject kar diya aur 3 ko approve. 
+Agar filterRejects true hai, toh yeh provisioning plan se un 2 rejected items ko turant hata dega,
+taaki aage ke system mein sirf wahi 3 items jayein jo approve hui hain.
+Value Kaun Deta Hai: Inbuilt Initializer (true).
+
+15. approvingIdentities:-
+Kya hai? Actual approvers ki dynamic list.
+Kya karta hai? Workflow runtime par calculate karta hai ki is approval ko kiske inbox mein bhejna hai (e.g., user ke manager ki exact Identity ID kya hai). Woh saari dynamic list isme populate hoti hai.
+--value koun dega toh sailpoint dega.
+
+16. approvalAssignmentRule:-
+Kya hai? Ek SailPoint Rule (Script).
+Kya karta hai? Agar aapko koi seedha-saadha approver nahi chahiye, balki koi complex condition lagani hai (e.g., "Agar request $10,000 se upar ki hai toh Finance VP ko bhejo, warna Manager ko"), toh us complex logic ka Custom Rule is argument ke zariye call kiya jata hai.
+
+()flow:-
+Main workflow pehle se jaanta hai ki kaun sa flow chal raha hai (AccountsRequest, EntitlementsRequest, ya RolesRequest), 
+wahi value yahan bhej di jaati hai.
+
+()2. endOnManualWorkItems:-
+Value Kaun Deta Hai: Inbuilt Initializer (false) aur Admin UI Settings
+Kaise/Kab: Shuruat mein iski value false set hoti hai.Agar Admin ne SailPoint ke configuration page par is setting ko change kiya hai, 
+toh wahan se nayi value milti hai.
+
+3. endOnProvisioningForms:-
+Value Kaun Deta Hai: Inbuilt Initializer (false) aur Admin UI Settings
+Kaise/Kab: Bilkul upar wale variable ki tarah, shuru mein false rehta hai aur zaroorat padne par Admin UI se iski value badli jaati hai.
+
+()7. optimisticProvisioning:-
+Value Kaun Deta Hai: Inbuilt Initializer (false) aur Admin UI Settings
+Kaise/Kab: Default value false hoti hai. Agar admin chahta hai ki badlav turant user ke account par dikhein, 
+toh woh UI se ise true kar deta hai.
+
+()8. foregroundProvisioning:-
+Value Kaun Deta Hai: Inbuilt Initializer (true) aur Admin UI Settings.
+
+9. batchRequestItemId:-
+Value Kaun Deta Hai: Batch Excel/CSV File Process
+Kaise/Kab: Agar request bulk file ke zariye aayi hai,toh batch processing engine us individual line ki ID isme bhejta hai.
+Normal single request mein yeh hamesha khali (null) rehta hai.
+ 
+10. userEmailTemplate:-
+Value Kaun Deta Hai: Inbuilt Initializer ("LCM User Notification")
+Kaise/Kab: Workflow shuru hote hi isme standard email template ka naam set ho jata hai, 
+jiska use user ko mail bhejne ke liye hota hai.
+
+11. requesterEmailTemplate:-
+Value Kaun Deta Hai: Inbuilt Initializer ("LCM Requester Notification")
+Kaise/Kab: Workflow shuru hote hi isme requester (request dalne wale) 
+ke email template ka naam set ho jata hai.
+
+12. managerEmailTemplate:-
+Value Kaun Deta Hai: Inbuilt Initializer ("LCM Manager Notification")
+Kaise/Kab: Workflow shuru hote hi isme manager ke email template ka naam set ho jata hai.
+
+()14. approvalMode:-
+Value Kaun Deta Hai: Inbuilt Initializer ("parallel")
+Kaise/Kab: Default roop se isme "parallel" set hota hai taaki saare approvals ek sath chal sakein.
+Agar admin chahe toh ise badal kar "serial" kar sakta hai.
+
+()15. approvalScheme:-Value Kaun Deta Hai: Inbuilt Initializer ("owner").
+
+()16. approvalEmailTemplate:-
+Value Kaun Deta Hai: Inbuilt Initializer ("LCM Identity Update Approval")
+
+17. workItemPriority:-Value Kaun Deta Hai: Inbuilt Initializer ("Normal")
+
+18. securityOfficerName
+Value Kaun Deta Hai: Business Process Configuration UI.
+
+20. enableRetryRequest:-
+Value Kaun Deta Hai: Inbuilt Initializer (false)
+Kaise/Kab: Shuruat mein yeh loop mechanism ko handle karne ke liye false par set rehta hai.
+
+21. source:-
+source: Yeh sirf ek tag (label) hai jo record mein likhta hai ki yeh request kahan se shuru hui thi. 
+Standard LCM workflows mein isme hamesha "LCM" likha hota hai taaki auditing mein pehchanna aasan ho.
+Value Kaun Deta Hai: Inbuilt Initializer ("LCM")
+Kaise/Kab: Yeh batata hai ki request kahan se aayi hai. Default value hamesha "LCM" (Lifecycle Manager) milti hai.
+
+1. identityName:-
+Value Kaun Deta Hai: Parent (Main) Workflow
+Kaise/Kab: Jab main workflow is subprocess ko start karta hai, toh jis user ke liye request bani hai uska unique username/ID isme bhej deta hai.
+
+2. endOnManualWorkItems:-
+Value Kaun Deta Hai: Inbuilt Initializer (false) aur Admin UI Settings
+Kaise/Kab: Shuruat mein iski value false set hoti hai. Agar Admin ne SailPoint ke configuration page par is setting ko change kiya hai, toh wahan se nayi value milti hai.
+
+3. endOnProvisioningForms:-
+endOnProvisioningForms: Agar kisi application mein access dete waqt user ya manager ke samne koi extra form (input pop-up) 
+aane wala hai, toh kya workflow ko wahin rok kar khatam kar dena chahiye? (Default false).
+Value Kaun Deta Hai: Inbuilt Initializer (false) aur Admin UI Settings
+Kaise/Kab: Bilkul upar wale variable ki tarah, shuru mein false rehta hai aur zaroorat padne par Admin UI se iski value badli jaati hai.
+
+6. flow:-
+Value Kaun Deta Hai: Parent (Main) Workflow / SailPoint UI Context
+Kaise/Kab: Main workflow shuruat mein hi isme batata hai ki user kya kaam kar raha hai (AccountsRequest, EntitlementsRequest, ya RolesRequest).
+
+7. optimisticProvisioning:-
+optimisticProvisioning: Agar ise true kar dein, toh SailPoint manager ke approve karte hi user ke profile (Identity Cube) par
+naya access turant dikhana shuru kar deta hai, bina target system se confirmation ka wait kiye.
+Value Kaun Deta Hai: Inbuilt Initializer (false) aur Admin UI Settings
+Kaise/Kab: Default value false hoti hai. Agar admin chahta hai ki badlav turant user ke account par dikhein, toh woh UI se ise true kar deta hai.
+
+8. foregroundProvisioning:-
+foregroundProvisioning: Yeh speed badhane ka switch hai. Agar true hai, 
+toh saari provisioning user ke samne (screen par load hote hue) turant hoti hai. 
+Agar false ho, toh SailPoint use background thread mein daal deta hai taaki browser session hang na ho.
+Value Kaun Deta Hai: Inbuilt Initializer (true) aur Admin UI Settings
+Kaise/Kab: Shuruat mein true rehta hai taaki testing/demo ke waqt provisioning turant screen ke samne ho jaye. Ise bhi UI se change kiya ja sakta hai.
+
+9. batchRequestItemId:-
+Value Kaun Deta Hai: Batch Excel/CSV File Process
+Kaise/Kab: Agar request bulk file ke zariye aayi hai, toh batch processing engine us individual line ki ID isme bhejta hai. Normal single request mein yeh hamesha khali (null) rehta hai.
+
+10. userEmailTemplate:-
+Value Kaun Deta Hai: Inbuilt Initializer ("LCM User Notification")
+Kaise/Kab: Workflow shuru hote hi isme standard email template ka naam set ho jata hai, jiska use user ko mail bhejne ke liye hota hai.
+
+11. requesterEmailTemplate:-
+Value Kaun Deta Hai: Inbuilt Initializer ("LCM Requester Notification")
+Kaise/Kab: Workflow shuru hote hi isme requester (request dalne wale) ke email template ka naam set ho jata hai.
+
+12. managerEmailTemplate:-
+Value Kaun Deta Hai: Inbuilt Initializer ("LCM Manager Notification")
+Kaise/Kab: Workflow shuru hote hi isme manager ke email template ka naam set ho jata hai.
+
+13. securityOfficerEmailTemplate:-
+Value Kaun Deta Hai: Parent Workflow ya Business Process Configuration UI
+Kaise/Kab: Iska koi default initializer nahi hai. Admin UI settings se jo template select hota hai, wahi value isko milti hai.
+
+14. approvalMode:-
+Value Kaun Deta Hai: Inbuilt Initializer ("parallel")
+Kaise/Kab: Default roop se isme "parallel" set hota hai taaki saare approvals ek sath chal sakein. Agar admin chahe toh ise badal kar "serial" kar sakta hai.
+
+15. approvalScheme:-
+Value Kaun Deta Hai: Inbuilt Initializer ("owner")
+Kaise/Kab: Default value "owner" milti hai. Iska matlab approval application/role ke owner ke paas jata hai. 
+Zaroorat padne par isme manager ya securityOfficer bhi bhejha ja sakta hai.
+
+16. approvalEmailTemplate
+Value Kaun Deta Hai: Inbuilt Initializer ("LCM Identity Update Approval")
+
+Kaise/Kab: Standard approval notification bhejte waqt is text value ka use kiya jata hai.
+
+17. workItemPriority
+Value Kaun Deta Hai: Inbuilt Initializer ("Normal")
+
+Kaise/Kab: Ticket ki priority standard set karne ke liye shuruat mein hi isme "Normal" value chali jaati hai.
+
+18. securityOfficerName
+Value Kaun Deta Hai: Business Process Configuration UI
+
+Kaise/Kab: Agar company ka koi specific security head hai, toh admin uska naam settings page par dalta hai, jahan se yeh variable value uthata hai.
+
+19. fallbackApprover
+Value Kaun Deta Hai: Inbuilt Initializer ("spadmin")
+
+Kaise/Kab: Agar koi approver nahi mila, toh backup ke liye isme system administrator (spadmin) ka naam pehle se set hota hai.
+
+20. enableRetryRequest:-
+enableRetryRequest: Agar target application (jaise Active Directory) temporary down hai, 
+toh kya workflow ko baar-baar try (retry) karna chahiye ya request ko error handle karne ke liye chod dena chahiye.
+Value Kaun Deta Hai: Inbuilt Initializer (false)
+Kaise/Kab: Shuruat mein yeh loop mechanism ko handle karne ke liye false par set rehta hai.
+
+21. source
+Value Kaun Deta Hai: Inbuilt Initializer ("LCM")
+Kaise/Kab: Yeh batata hai ki request kahan se aayi hai. Default value hamesha "LCM" (Lifecycle Manager) milti hai.
+
+22. trace
+Value Kaun Deta Hai: Inbuilt Initializer (false)
+Kaise/Kab: Logs ko deep debug karne ka switch hai, jo shuru mein false hota hai. 
+Developer testing ke waqt ise true kar dete hain.
+
+29. ticketManagementApplication:-
+ticketManagementApplication: Agar aapki company ServiceNow ya Jira ka use karti hai ticketing ke liye, 
+toh us ticketing tool ki application ka naam isme hota hai, taaki SailPoint wahan automatic ticket open/close kar sake.
+Value Kaun Deta Hai: Parent Workflow / Global Settings
+
+
+()formTemplate:-
+Jab user ko access diya ja raha ho aur koi form dikhana ho, 
+toh us form ka standard look/design (Template) kaun sa hoga (jaise "Identity Update").
+Value Kaun Deta Hai: Provision Step:-
+Kaise/Kab: Shuru mein khali hota hai, par jab niche Provision step execute hota hai, 
+toh woh khud isme "Identity Update" pass kar deta hai.
+
+37. manualActionsEmailTemplate:-
+manualActionsEmailTemplate
+Definition: Yeh us Email Template ka naam hota hai jo SailPoint tab use karta hai jab kisi application ka access manually (haath se) dena ho.
+Yeh email automatic IT Helpdesk ya us application ke admin ke paas jata hai, 
+jisme user ki details aur use kya access dena hai (jaise: "Pending Manual Changes") saaf-saaf likha hota hai, 
+taaki woh use padhkar kaam shuru kar sakein.
+value koun deta hai;-<Arg name="manualActionsEmailTemplate" value="Pending Manual Changes"/>
+
+1. endOnManualWorkItems
+Definition: Yeh ek aisa switch hai jo SailPoint ko batata hai ki agar access dene ke liye kisi IT person ko haath se (manual) 
+kaam karna padne wala hai, toh workflow unke kaam khatam karne ka wait kare agar ye false hai,ya ticket bante hi workflow turant khatam ho jayega agar ye endOnManualWorkItems true hai.
+Value Kaun Deta Hai: Provision Step
+Kaise/Kab: formTemplate ki tarah, ise bhi Provision step chalne par "Pending Manual Changes" ki value milti hai.
+
+38. splitProvisioning:-
+Yeh ek Flag/Tag ki tarah hai jo niche chalne wale Identity Request Provision subprocess ko yeh batata hai ki: "Suno, abhi tumhare paas jo provisioning plan aaya hai, woh poora main request nahi hai. Woh ek bada request ka ek chota sa tukda (Subset/Split Part) hai, jise parallelly process kiya ja raha hai."
+Ise true karne se SailPoint ka engine un chote-chote plans ko aapas mein mix nahi karta aur har ek split part ki provisioning ko safely aur independently handle karta hai.
+Value Kaun Deta Hai: Inbuilt Initializer (false)
+
+()LCM Requester Notification: Yeh us standard Email Template ka naam hai jo us insaan ko bheja jata hai jisne request lagayi
+hai (Requester), taaki use pata rahe ki uski request approve hui ya reject.
+*////////////
+//////////////*
+()1. ticketManagementApplication kya hai?
+Definition: Yeh us External Ticketing Tool (jaise ServiceNow, Remedy, ya Jira) ka naam hota hai jise company use karti hai.
+Maan lijiye aapki company mein niyam hai ki SailPoint mein kuch bhi approve hoga, 
+toh uska ek ticket ServiceNow mein bhi update hona chahiye taaki IT teams ke paas record rahe.
+Yeh kaam kaise karta hai? Agar is variable mein kisi application ka naam (e.g., "ServiceNow") likha hai, 
+toh yeh step active ho jata hai. Agar yeh null (khali) hai, 
+toh step ke upar lagi condition condition="script:(ticketManagementApplication != null)" is pooray step ko skip (pass) kar deti hai.
+1. ticketManagementApplication kyun use hota hai? (The "Why")
+Iska use SailPoint ko company ke doosre IT ticketing systems (jaise ServiceNow ya Jira) se jodne ke liye kiya jata hai.
+Kyun zaroori hai?
+Badi companies mein audit aur tracking ke liye ek central ticketing tool hota hai (aamtaur par ServiceNow). 
+Agar koi employee access maangta hai, toh company chahti hai ki uska ek official ticket record ServiceNow mein bhi banna chahiye.
+Iska kaam: Yeh variable SailPoint ko batata hai ki hume kis ticketing app (e.g., "ServiceNow") ke andar jaakar badlav karne hain.
+Fayda: Agar yeh variable set hai, toh SailPoint automatic us system se baat karega. 
+Agar company koi external ticketing tool use nahi karti, toh is variable ko null (khali) chhod diya jata hai, 
+aur SailPoint bina kisi ticket ke seedhe apna kaam karta hai.
+
+()2. Saare values kisko bheje ja rahe hain?
+Yeh saare arguments (values) Manage Ticket naam ke ek doosre Child Workflow (Subprocess) ko bheje ja rahe hain.
+Agar aap code ke bottom mein dekhenge:-
+XML
+<WorkflowRef>
+  <Reference class="sailpoint.object.Workflow" name="Manage Ticket"/>
+</WorkflowRef>
+Iska matlab hai ki SailPoint yahan se ek naya subprocess call kar raha hai jiska naam "Manage Ticket" hai, 
+aur yeh saare inputs usi ko diye ja rahe hain taaki woh parde ke peeche ServiceNow/Jira se baat kar sake.
+
+()4. ticketDataGenerationRule kya hai?
+Kya hai: Yeh ek SailPoint ka Rule (Java/BeanShell Script) hota hai.
+Kya karta hai: Jab SailPoint ServiceNow ko data bhejta hai, 
+toh ServiceNow ko kis format mein data chahiye (jaise short_description kya hoga, assignment_group kaun sa hoga),
+us data ko taiyar (format) karne ka kaam yeh rule karta hai.Yahan value kya hai: Is code mein value="" (khali) hai. 
+Iska matlab hai ki agar aapne yahan koi custom rule nahi diya,
+toh SailPoint is global configuration se ya direct us application (ServiceNow) ke configuration page par jo default rule set hai, 
+wahan se data generation logic utha lega.
+
+()5. Manage Ticket kya hai?
+Definition: Yeh SailPoint ka ek Standard Out-of-the-Box (OOTB) Subprocess hai.
+Kaam: Iska akela maqsad yeh hai ki SailPoint ke paas jo bhi data (project, priority, identityRequestId) hai, 
+use uthaye aur Integration Network ke zariye aapke IT Helpdesk tool(ServiceNow/Jira) mein bhej kar wahan ka 
+ticket create ya update kare.
+
+2. action="postApproval" kya hai aur kya karta hai? 
+(The "What")Yeh ek Command/Signal (Ishara) hai jo Manage Ticket subprocess ko batata hai ki ticket ke sath is samay kya karna 
+hai.Yeh kya karta hai?Ek ticket ke alag-alag phases hote hain:-
+Open hona $\rightarrow$ Manager Approval milna $\rightarrow$ Access milna (Close hona).
+postApproval ka matlab hai: "Manager ne SailPoint mein request ko 'Approve' kar diya hai.
+"Asli Action:-Jaise Manage Ticket ko yeh postApproval ka signal milta hai, 
+woh ServiceNow/Jira ke paas jata hai aur wahan chal rahe ticket ka status badal kar "Approved" ya "Work In Progress" set kar 
+deta hai, aur sath hi agar manager ne koi comments likhe hain, toh unhe ticket ke notes mein update kar deta hai.
+
+1. "postApproval" ka Asli Matlab
+Post = Baad mein (After)
+Approval = Manager ka haan bolna
+Yaani, "Manager ke approve karne ke baad ka action."
+
+()preApproval vs postApproval me antar kya hai?
+-->preApproval aur postApproval dono SailPoint IdentityIQ mein ticketing system (jaise ServiceNow ya Jira) ko bheje jaane wale Commands (Actions) hain.
+-->1. Timing ka Antar (Kab chalte hain?):-
+preApproval (Approval se Pehle): Yeh tab chalta hai jab kisi employee ne access request just submit ki ho aur abhi tak Manager ya Owner ke paas approval ka notification gaya bhi na ho.
+aur agar ye action="preApproval" ManageTicket workflow ko pass ho,ye ServiceNow/jira me ja kar new ticket create kar deta hai pending approval etc ke naam se.
+postApproval (Approval ke Baad): Yeh tab chalta hai jab Manager ya Approver ne request ko check karke "Approve" (haan) ya "Reject" (naa) ka button daba diya ho.
+*///////////
+///////////*
+1. "Identity Request Provision" prebuilt workflow sach mein karta kya hai?
+Definition: Yeh SailPoint ka ek standard, pehle se bana-banaya child workflow (Subprocess) hai, 
+jiska akele kaam hai faisle ko haqeeqat mein badalna (Actual Access Deploy Karna).
+Iska kaam kya hai, point-by-point dekhiye:-
+Approval Decisions Check Karna: Yeh sabse pehle approvalSet ko khol kar dekhta hai ki manager ne kis item ko Approve kiya hai
+aur kisko Reject. Jo reject ho chuki hain, unhe yahin chhod deta hai.
+Connectors ko Call Karna (Automated Provisioning): Jin items ko approval mila hai 
+(jaise Active Directory mein Administrator group dena), yeh SailPoint ke automatic connectors ko instruction bhejta hai.
+Connector turant AD ke server se baat karta hai aur user ka account update kar deta hai.
+Manual Tickets Banana (Manual Provisioning): Agar koi aisi application hai jiska direct connector nahi hai, 
+toh yeh un ke liye Manual Work Items taiyar karta hai aur IT Helpdesk ko email bhejta hai 
+(manualActionsEmailTemplate="Pending Manual Changes" use karke) ki "Bhai, tum haath se access do."
+
+()<Return name="project" to="project"/> :-
+Aasan shabdo mein kahein toh: "Yeh line Child Workflow (Identity Request Provision) ke kaam khatam karne ke baad, 
+uske final result (updated project) ko wapas khinchkar Main Workflow(Approve and Provision Subprocess) ke variable mein save karti hai."
+*//////////
+/////////////*
+Post = Baad mein
+Provisioning = Access dene ka kaam
+Yaani "Access milne ke baad ka final action."
+Jab Manage Ticket subprocess ko yeh command milti hai, 
+toh woh ServiceNow/Jira mein chal rahe us ticket par jata hai aur uska status badal kar "Closed / Resolved" ya "Completed" set kar deta hai.
+
+2. Isko project variable ki zaroorat kyun hai?
+Aapne pichle hi turn par dekha ki Provision step ne apna final result wapas project mein daal diya tha. 
+Yeh step isi project ko check karta hai:-
+Agar project kehta hai ki access safely mil gaya, toh ticket ko Success ke sath close karega.
+Agar project mein koi error ya failure likhi hai, toh yeh ServiceNow ke ticket ko "Failed" status ya 
+custom notes ke sath close/update karega taaki IT team ko pata rahe ki access nahi mil paya.
+*/////////////

@@ -1,0 +1,15 @@
+----------------------------------------------------------------------------------------------------------
+7️⃣ Role Mining:-
+Role Mining ka use hota hai roles automatically discover karne ke liye.
+
+System check karta hai:-
+Kis department ke users ke paas same access hai.
+
+Fir suggest karta hai:-
+➡ Isko ek role bana do
+
+Example:-
+HR department ke sab users ke paas same access hai.
+
+System bolega:-
+Create role = HR Role

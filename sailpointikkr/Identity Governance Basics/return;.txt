@@ -1,0 +1,2 @@
+Haan bhai, agar if condition true ho jaye aur uske andar return; likha ho, to method wahi par ruk jata hai.
+ Uske baad ka code execute nahi hota.

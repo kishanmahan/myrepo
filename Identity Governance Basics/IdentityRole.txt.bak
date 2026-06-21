@@ -1,0 +1,148 @@
+1️⃣ IdentityRole kya hai?
+👉 IdentityRole = user ko assigned role ka object
+Matlab:-
+User ko directly access dene ke bajay
+Role assign karte hain
+Aur role ke andar already permissions hoti hain
+
+✅ Example:-
+User: Rahul
+Assigned Role:-
+Admin Role
+HR Role
+➡ Ye roles hi IdentityRole ke through represent hote hain
+
+🔹 2️⃣ Ye kya karta hai?
+👉 Ye manage karta hai:-
+user ke roles
+role ke andar ke entitlements
+role assignment / removal
+
+🔹 3️⃣ Kya ye DB me store hota hai?
+✅ Haan bhai,DB me store hota hai,
+📦 Structure:-
+Identity
+   ↓
+IdentityRole (Admin)
+   ↓
+Entitlements (Read, Write, Delete)
+
+🔹 4️⃣ IdentityRole ke andar kya hota hai?
+Field	 Meaning
+name	       role ka naam
+description	   role ka detail
+type	       business / IT role
+entitlements	role ke andar ke permissions
+assignments	   kis user ko diya gaya
+owner	       role ka owner
+
+🔹 5️⃣ Important Methods:-
+🔸 Basic:-
+getName()
+setName(String name)
+getDescription()
+setDescription(String description)
+
+🔸 Type:-
+getType()
+setType(String type)
+
+🔸 Entitlements:-
+getEntitlements()
+setEntitlements(List entitlements)
+addEntitlement(Object ent)
+
+🔸 Assignment:-
+getAssignments()
+addAssignment(Object assignment)
+removeAssignment(Object assignment)
+
+🔸 Owner:-
+getOwner()
+setOwner(String owner)
+
+🔸 Utility:-
+toString()
+equals(Object obj)
+hashCode()
+
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointFactory;
+import sailpoint.object.IdentityRole;
+import java.util.ArrayList;
+import java.util.List;
+
+public class RoleExample {
+
+    public static void main(String[] args) throws Exception {
+
+        SailPointContext context = SailPointFactory.getCurrentContext();
+
+        IdentityRole role = new IdentityRole();
+
+        // Basic
+        role.setName("Admin Role");
+        role.setDescription("Full access role");
+
+        // Type
+        role.setType("IT");
+
+        // Entitlements
+        List<String> ents = new ArrayList<String>();
+        ents.add("READ");
+        ents.add("WRITE");
+        role.setEntitlements(ents);
+
+        // Owner
+        role.setOwner("Manager");
+
+        // Print
+        System.out.println(role.getName());
+        System.out.println(role.getDescription());
+        System.out.println(role.getType());
+        System.out.println(role.getEntitlements());
+        System.out.println(role.getOwner());
+
+        // Save
+        context.saveObject(role);
+        context.commitTransaction();
+
+        System.out.println("✅ Role Saved");
+    }
+}
+📤 Output:-
+Admin Role
+Full access role
+IT
+[READ, WRITE]
+Manager
+✅ Role Saved
+-----------------------------------------------------------------------------------------------------------------------------------------
+🔥 🔸 Basic Methods:-
+getName() → role ka naam return karta hai
+setName(String name) → role ka naam set karta hai
+getDescription() → role ka detail / explanation deta hai
+setDescription(String description) → role ka description set karta hai
+
+🔥 🔸 Type Methods:-
+getType() → role ka type deta hai (IT / Business role)
+setType(String type) → role ka type set karta hai
+
+🔥 🔸 Entitlement Methods:-
+getEntitlements() → role ke andar ke sare permissions (entitlements) return karta hai
+setEntitlements(List entitlements) → role ke entitlements ek saath set karta hai
+addEntitlement(Object ent) → ek naya entitlement role me add karta hai
+
+🔥 🔸 Assignment Methods:-
+getAssignments() → kis-kis user ko ye role assign hai wo list deta hai
+addAssignment(Object assignment) → kisi user ko role assign karta hai
+removeAssignment(Object assignment) → kisi user se role remove karta hai
+
+🔥 🔸 Owner Methods:-
+getOwner() → role ka owner (responsible person) deta hai
+setOwner(String owner) → role ka owner set karta hai
+
+🔥 🔸 Utility Methods:-
+toString() → role object ko readable string format me convert karta hai (debugging/logging ke liye)
+equals(Object obj) → check karta hai ki do role objects same hain ya nahi (usually name/id ke basis pe compare karta hai)
+hashCode() → object ka unique hash value generate karta hai (collections jaise HashMap/HashSet me use hota hai)

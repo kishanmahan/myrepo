@@ -1,0 +1,78 @@
+()Action vs task vs provisioning:-
+
+🔷 🧠 1️⃣ Action kya hota hai?
+👉 Action = ek chhota kaam (single step)
+📌 Simple:-
+👉 “ek specific operation jo system perform karta hai”
+
+🔥 Examples of Action:-
+account create karna
+attribute update karna
+role assign karna
+password reset
+
+💡 Real Code Level:-
+accountRequest.setOperation(AccountRequest.Operation.Create);
+👉 Ye ek Action hai (Create)
+---------------------------------------------------------------------
+🔷 🧠 2️⃣ Task kya hota hai?
+👉 Task = multiple actions ka group (batch / job)
+
+📌 Simple:-
+👉 “bahut saare kaam ek saath chalana”
+
+🔥 Examples of Task:-
+Aggregation Task
+Identity Refresh Task
+Certification Task
+Provisioning Task
+
+💡 Real Life Example:-
+👉 “Identity Refresh Task” kya karta hai?
+identity update
+role recalc
+provisioning trigger
+👉 Ye sab alag-alag actions hain
+👉 Inka group = Task
+------------------------------------------------------------
+🔷 🧠 3️⃣ Provisioning kya hota hai?
+👉 Provisioning = actual external system me change karna
+📌 Simple:-
+👉 “target system me account create/update/delete karna”
+🔥 Examples:-
+Active Directory me user create
+Database me access dena
+Email system me account banana.
+👉 Provisioning = real world execution,
+👉 System ke bahar change hota hai.
+------------------------------------------------------------------------------------------------
+🔷 🔥 Real Flow (Sabko connect karo):-
+👉 Maan le scenario:-
+💻 New employee join hua
+
+Step 1️⃣ Task run hota hai:-
+👉 Identity Refresh Task.
+
+Step 2️⃣ Task ke andar actions hote hain,
+role assign (Action)
+account create (Action)
+
+Step 3️⃣ Provisioning hota hai,
+👉 AD me account create ho jata hai.
+----------------------------------------------------------------------------------
+()Action kya hai?
+--AccountRequest.Operation.Operation:-
+Create = Action
+Modify = Action
+Delete = Action
+Enable = Action
+Disable = Action
+Lock = Action
+Unlock = Action
+
+--AttributeRequest.Operation.Add:-
+Add
+Remove
+Set
+-----------------------------------------------------------------------------------
+

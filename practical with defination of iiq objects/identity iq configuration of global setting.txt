@@ -1,0 +1,385 @@
+()global setting:-
+->identity iq configuration->
+
+()snapshot kaise dekhe:-
+agar hum csv se department 4 user ka hata dete hai fir aggregation karte hai toh
+iiq ke debug page me still wo purana department 4 users ka rahega,search1stbox-Identity aur 2ndbox-username 
+and click and see.ye hi identity ka snapshot hai.refresh identity cube ke baad remove ho jayega snapshot.
+
+
+-----------------------------------------------------------------------------------
+///////////*
+()SailPoint IdentityIQ mein Assignee woh vyakti (user) ya group hota hai jise koi kaam (Task/Work Item) karne ki zimmedari di gayi hai.
+Jab bhi system koi notification Assignee ko bhejta hai, toh uska matlab neeche diye gaye points se hota hai:-
+
+--Assignee Kaun Ho Sakta Hai?
+Individual User: Jaise aapka Manager jo kisi access request ko approve karega.
+Workgroup: Ek puri team (jaise IT Helpdesk) jise koi technical task pura karna ho.
+
+--Assignee Ko Notifications Kyun Jaate Hain?
+()Naya Kaam Milne Par (Assignment): Jab system mein koi naya task banta hai, toh Assignee ko email jata hai taaki use pata chale ki uske dashboard mein naya kaam aaya hai.
+
+()Yaad Dilane Ke Liye (Reminder): Agar Assignee ne apna kaam samay par pura nahi kiya, toh system unhe "Reminder" email bhejta hai.
+
+()Kaam Wapas Lene Par (Removal): Agar woh task unse wapas le liya jaye ya kisi aur ko de diya jaye, toh bhi Assignee ko inform kiya jata hai.
+*/////////////
+/////////////*
+Delegatee Kaun Hota Hai?
+Jab koi user (jaise aapka Manager) chhutti par ja raha ho ya bahut busy ho, toh woh apna kaam (approvals, certifications) kisi aur ko transfer kar deta hai. Jis naye insaan ko yeh kaam milta hai, use Delegatee kehte hain.
+
+Delegatee Ko Notifications Kab Jaate Hain?
+Delegation Assignment: Jab delegation shuru hoti hai, toh Delegatee ko "Delegation" template wala email jata hai taaki unhe pata chale ki ab unhe kisi aur ke badle kaam karna hai.
+
+Work Items: Ab se jo bhi naye tasks (approvals) original user ke paas aane waale the, woh seedhe Delegatee ko milenge.
+
+Delegation Finished: Jab delegation ka time khatam ho jata hai, toh Delegatee ko bataya jata hai ki unki yeh extra zimmedari ab khatam ho gayi hai.
+
+Revocation: Agar beech mein hi delegation cancel kar di jaye, toh bhi Delegatee ko notification jata hai.
+*/////////////
+
+---------------------------------------------------------------------------------------
+1. Email Notification Type (Dropdown Options):-
+Yeh decide karta hai ki IdentityIQ emails kaise bhejega:-
+
+--SMTP/Basic: Sabse common option. Yeh normal email server (jaise Gmail ya Office 365) ka use karke mail bhejta hai.
+
+--HTTP/OAuth: Agar aapka email server modern authentication (OAuth) mangta hai, toh iska use hota hai.
+
+--Redirect to Email: Saare system emails kisi ek specific email address par redirect ho jaayenge (Testing ke liye best hai).
+
+--Redirect to File: Emails bhejane ke bajaye system unhe ek file mein save kar dega.
+
+2. Email Server Details:-
+--Encryption: Aapka connection secure hai ya nahi (jaise SSL/TLS).
+--Default SMTP Host: Aapke email server ka address (e.g., smtp.office365.com).
+--Default SMTP Port: Server ka port number (jaise 25, 465, ya 587).
+--Default From Address: Woh email id jo "Sender" ke naam se dikhegi (e.g., noreply@company.com).
+
+3. Authentication (Login):-
+--Username & Password: Email server mein login karne ke liye credentials.
+--Confirm Password: Password verify karne ke liye dobara type karna hota hai.
+
+4. Advanced Settings:-
+--Maximum Email Retries: Agar mail send nahi hua, toh system kitni baar koshish (try) karega.
+--Connection Timeout: Mail server se connect hone ke liye system kitni der wait kare.
+--Read Timeout: Server se response aane ka maximum intezar kitna hoga.
+--Suppress Duplicate Emails: Agar ek hi tarah ka email baar-baar ja raha hai, toh yeh use rok dega taaki user ka inbox bhar na jaaye.
+
+()Server Root Path: Yeh aapke IdentityIQ ka URL hai (jaise http://localhost:8080/identityiq).
+Jab email mein koi link jaata hai (jaise "Click here to approve"), toh woh link isi path ka use karke banta hai.
+
+()For reminder notices: Jab koi task pending ho aur user ko yaad dilana ho, toh yeh template use hota hai.
+
+()For escalation notices: Agar koi task samay par pura nahi hota aur woh kisi senior ya manager ke paas bhej diya jaata hai (escalation),
+toh yeh notification jaata hai.
+Recipient: Assignee(Woh user jise kaam pura karna hai).
+Recipient:Manager ko notification jata hai Escalation ka.
+
+()For work item comment notices:-Jab koi admin ya user kisi task par koi comment ya clarification likhta hai, 
+toh uska alert bheja jata hai.Recipient: Assignee ya woh user jo task track kar raha hai.
+
+()For work item forwarding notices: Jab ek user apna task kisi dusre user ko transfer/forward karta hai, 
+toh naye assignee ko "Work Item Forward" email milta hai.
+Recipient: New Assignee (Jise kaam mila hai).
+
+()For work item assignment notices: Naya kaam (Work Item) assign hote hi user ko batane ke liye ki "Aapke liye ek naya task hai".
+Recipient: Assignee(jise kaam mila hai) ko jayega email.
+
+()For task and report signoff notices: Jab report ya task final approval (sign-off) ke liye ready ho.
+Recipient: Approver/Signer ko email jayega.
+
+()For work item assignment removal notices: Agar koi task user se wapas le liya jaaye ya remove kar diya jaaye,
+toh uski suchna dene ke liye.Recipient: Previous Assignee(jisse kaam wapas liya gaya) ko jayega email.
+
+()For policy violation notices: Jab koi security rule (jaise SoD) toot-ta hai.
+Recipient: Policy Owner ya user ka Manager ko email jayega.
+
+()For policy violation delegation notices: Jab kisi policy violation ke review ka kaam kisi dusre ko delegate kiya jaata hai.
+Recipient: Delegatee (Jise review ka kaam mila hai) ko email template jayega.
+
+()Remediation Notifications:-
+Remediation ka matlab hai kisi galat access ko hatane ya theek karne ka process:-
+
+()For remediation item assignment/removal notices: Violation ko theek karne ka task assign ya remove hone par.
+Recipient: Work Item Owner (Technical team ya Admin) ko email jayega.
+
+()For remediation work item notices: Remediation process ke updates ke liye.
+Recipient: Assignee.(jisse kaam mila hai) ushko email jayega.
+
+()For delegation notices: Jab aap apna kaam kisi ko saunpte hain.
+Recipient: Delegatee (Woh person jo aapke badle kaam karega) ko email jayega.
+
+()For delegation finished notices: Delegation ka samay pura hone par.
+Recipient: Original User aur Delegatee ko email jayega.
+
+()For delegation revocation notices: Jab delegation beech mein hi cancel kar di jaye.
+Recipient: Delegatee ko email jayega.
+
+()For certification reminder notices: Access review pura karne ka reminder.
+Recipient: Certifier (Aksar Manager ya App Owner) ko email jayega.
+
+()For open certifications notices: Naya certification campaign shuru hone ka alert.
+Recipient: Certifier ko email jayega.
+
+()For access request reminder notices:Agar kisi user ne access manga hai aur manager ne abhi tak approve nahi kiya, 
+toh uske liye "Access Request Reminder" bheja jata hai. Pending access request ko approve karne ka reminder.
+Recipient: Approver ko email jata hai.
+
+()For notice of deprovisioning (End Date): For notice of deprovisioning (End Date):-Agar kisi role ya entitlement ki expiry date(End Date) 
+set hai, toh uske khatam hone se pehle user ko "End Date Expiration Reminder" jata hai.
+Recipient: User ya unka Manager ko email jayega.
+
+()Email Task Alerts:-
+Email Notification: Is dropdown se aap pure system ke liye email notifications ko "Enabled" ya "Disabled" kar sakte hain.
+Agar yeh Disabled hai, toh system koi bhi automatic email nahi bhejega.
+
+()Microsoft Teams Notification Settings:-
+Enable Microsoft Teams Notification: Yeh ek checkbox hai.Agar aap chahte hain ki SailPoint ke alerts (jaise approval requests)
+direct user ke Microsoft Teams chat mein dikhayi dein, toh ise check karna hoga.
+
+--For access request approval work item notices: Jab koi user access request mangta hai aur uska approval notification Teams par bhejna ho,
+toh yeh template use hota hai. Isme request ki detail (kisne manga, kya manga) dikhayi deti hai.
+
+--For access request approval work item forwarding notices: Agar koi approval task ek approver se dusre ko forward kiya jaye,
+toh naye approver ko Teams par batane ke liye yeh template use hota hai.
+
+--For access request approval work item assignment notices: Jaise hi koi naya approval task kisi ko assign hota hai,
+use turant Teams par notification bhejne ke liye iska use hota hai.
+
+--For access request approval work item assignment removal notices: Agar kisi user se koi approval task wapas 
+le liya jaye(remove kar diya jaye), toh use Teams par inform karne ke liye yeh template use hota hai.
+
+()Summary Table: Kise jata hai?
+Option:---------------------Recipient (Kise milega)-------------------Kaam kya hai?
+Approval Notice-------------Approver:-------------------------------Request approve karne ke liye interactive card bhejna.
+Forwarding Notice:----------New Approver:---------------------------Bataana ki task aapko forward kiya gaya hai.
+Assignment Notice:-----------Assignee:------------------------------Naya task milne ka alert dena.
+Removal Notice:-------------Previous Assignee:----------------------Bataana ki ab yeh task aapki list mein nahi hai.
+
+()Days before expiration: Ek task (work item) kitne dino mein expire ho jayega. Default yahan 30 din set hai.
+
+()Days before expiration to send first reminder: Deadline khatam hone se kitne din pehle pehla reminder email bheja jaye.
+
+()Days between expiration reminders: Pehle reminder ke baad, har kitne din par dobara reminder bheja jaye (yahan har 1 din set hai).
+
+()Number of notices before escalation: Kitne reminder bhejne ke baad kaam ko senior (manager) ke paas bhej diya jaye (Escalate kar diya jaye).
+
+()Send notification email on work item assignment: Agar ise check karenge, toh jaise hi kisi ko kaam milega, use turant email chala jayega.
+
+()Send notification email on work item assignment removal: Agar kisi se kaam wapas liya jata hai, toh use email jayega.
+
+()Allow priority editing on work items: Kya user task ki priority (High, Low, Medium) khud badal sakta hai.
+
+()Check self certification on manual work item forward: Agar koi apna hi access review kisi aur ko forward karta hai, 
+toh system check karega ki yeh allow hona chahiye ya nahi.
+
+()Work Item Archives:-
+Jab koi kaam (Work Item) khatam ho jata hai, toh IdentityIQ use "Archive" (save) kar leta hai taaki future mein report nikali ja sake.
+--Work item types to archive: Yahan aap select karte hain ki kis tarah ke tasks ko archive karna hai (jaise Access Review, Approval, Remediation, etc.).
+
+()Inactive user work item escalation rule: Agar koi user company chhod gaya hai ya inactive hai aur uska kaam pending hai, 
+toh woh kaam kise jana chahiye, yeh rule woh decide karta hai.
+
+()Global work item forwarding rule: Pure system ke liye ek rule jo decide karta hai ki agar koi task forward karna hai toh uske conditions kya honge.
+
+()Self-certification work item forwarding rule:-Agar koi khud ka access review kar raha hai aur use forward karna chahta hai, 
+toh yeh rule decide karega ki woh kise forward ho sakta hai.
+
+()Identity Attributes:-
+Number of searchable attributes:-Yeh set karta hai ki kitne Identity Attributes (jaise Employee ID, Email, Department) 
+ko database mein "index" kiya jaye taaki unhe search karna fast ho sake.
+
+()Always Sync using workflow:-Agar ise check karte hain,toh jab bhi koi identity update hogi, 
+system use workflow ke zariye sync karega taaki agar koi approval ya extra logic chahiye toh woh apply ho sake.
+
+()Identity Snapshots:-
+Snapshot frequency in days: Identity snapshot ka matlab hai user ke data ka us waqt ka "photo" ya record save karna.
+1 ka matlab hai har din snapshot liya jayega.
+Yeh audits aur history dekhne ke liye kaam aata hai ki kisi user ka access pehle kya tha.
+
+()Identity History: Identity mein hone wale badlavon (changes) ka record kis level par save ho (jaise Month, Week, ya Day).
+Group History: Groups ya Workgroups mein hone wale badlavon ka history record level.
+
+()Account Attributes:-
+Number of searchable account attributes:-Jaise identity ke liye hota hai, waise hi yeh target applications (jaise Active Directory) 
+ke accounts ke kitne attributes ko search-friendly banana hai, woh set karta hai.
+
+()Business Processes:-
+Yeh sabse important section hai kyunki yahan aap batate hain ki system mein koi bada event hone par kaun sa Workflow chalna chahiye:
+
+--Identity update: Jab kisi user ki profile update ho (jaise name change), toh kaun sa business process trigger ho.
+
+--Identity refresh: Jab Identity Refresh task chale, toh logic handle karne ke liye kaun sa workflow use ho.
+
+--Identity Correlation: Jab system naye accounts ko existing identities se jodta hai (Correlation), toh us dauran agar koi custom process chalana ho.
+
+--Attribute Sync: Agar kisi application ka attribute (jaise phone number) change hone par use dusri jagah sync karna ho,
+toh uske liye workflow yahan select karte hain.
+
+()Enable Start/End Dates on Role and Entitlement Assignment: Agar ise check karte hain,
+toh kisi user ko role dete waqt aap set kar sakte hain ki woh access kab shuru hoga aur kab khatam.
+
+()Enable Activation/Deactivation Dates on Roles: Yeh pure "Role" par apply hota hai.
+Aap set kar sakte hain ki ek naya role system mein kis date se active mana jaye.
+
+()Days before End Date expiration to send notification: Access khatam hone se kitne din pehle user ya manager ko notification bhejna hai.
+
+()Role create, update, and delete: Jab bhi koi naya role banaya jaye, badla jaye, ya delete kiya jaye, toh kaun sa workflow (jaise approval ya impact analysis) chalna chahiye.
+
+()Scheduled role activation: Jab kisi role ki "activation date" aaye, toh use active karne ke liye kaun sa buisness process(workflow) chale.
+
+()Scheduled role/entitlement assignment: Agar koi assignment future date ke liye schedule hai, toh use execute karne wala buisness process(workflow).
+
+()Show user interface option to allow multiple application accounts:-
+Kya UI par option dikhe ki ek hi role ke liye user ke paas multiple accounts ho sakte hain.
+
+()Show user interface option to allow multiple assignments: Kya ek hi role ek user ko do baar assign kiya ja sakta hai.
+
+()Allow multiple assignment for all assignable roles: Saare roles ke liye multiple assignment enable kar deta hai.
+
+()Allow propagation of role changes: Agar role ke andar koi change ho,
+toh kya woh un sabhi users par turant apply ho jana chahiye jinhe woh role pehle se mila hua hai.
+
+()Force all role provisioning policies to be merged with profiles: Yeh provisioning policies aur profiles ko aapas mein merge karne ke liye use hota hai.
+
+()Retain assigned entitlements when detected/assigned roles are removed: Agar kisi user se role hataya jaye, 
+toh kya unhe us role ke zariye mila hua access (entitlements) phir bhi milna chahiye ya nahi.
+
+()note:-Kise Notification Jata Hai?
+Role Expiration Notification: Yeh aksar User ko (taki unhe pata ho access ja raha hai) ya unke Manager ko jata hai.
+Role Create/Update for select Workflow: Yeh Role Owners ya Security Admins ko approval ke liye bheja jata hai.
+
+()Enable one-way hashing of secret values: Agar ise check karte hain, 
+toh security answers jaise "secret values" ko system hash karke save karega, jise koi (admin bhi) dobara read nahi kar payega.
+
+()Number of hashing iterations: Hashing ko kitna strong banana hai (e.g., 1000 baar). Jitna zyada number, utni zyada security.
+
+()Require users to enter their current password...: Naya password set karne se pehle user ko apna purana (current) password daalna 
+zaroori hoga. Yeh "Self-Service" security ke liye best hai.
+
+()Password Policy (Complexity Rules):-
+Yahan aap password ke niyam set karte hain:-
+--Minimum/Maximum number of characters: Password kitna chhota ya bada ho sakta hai.
+--Minimum number of letters/digits: Password mein kam se kam kitne alphabets aur numbers hone chahiye.
+--Minimum uppercase/lowercase letters: Bade aur chhote aksharon ki sankhya.
+--Minimum special characters: @, #, $ jaise symbols kitne hone chahiye.
+--Number of repeated characters allowed: Ek hi akshar kitni baar repeat ho sakta hai (e.g., 'aaaa' ko rokne ke liye).
+
+()Password history length: User apne pichle kitne purane passwords dobara use nahi kar sakta (e.g., last 5 passwords).
+()Triviality check against old password: Check karta hai ki naya password purane waale se bahut milta-julta toh nahi hai.
+()Days until expiration (Manual/Generated): Password kitne dino baad expire ho jayega aur user ko badalna padega.
+()Minimum Hours between password changes: Ek baar badalne ke baad user kitni der tak dobara password nahi badal sakta.
+()Validate passwords against identity's list of attributes: User apna naam, employee ID, 
+ya date of birth password mein use na kar sake, yeh usse rokta hai.
+()Validate passwords against the password dictionary: Common passwords (jaise 'Password123') 
+ko block karne ke liye dictionary ka use karna.
+
+1. Other Object Expirations (Cleanup Settings):-
+Iska kaam purane data ko delete karke database ki performance banaye rakhna hai.
+
+--Days before snapshot deletion: Purane identity snapshots kitne din baad delete honge. (0 ka matlab hai kabhi nahi delete honge).
+
+--Days before task result deletion: Task results (jaise aggregation ya refresh reports) kitne din baad hataye jayenge.
+
+--Days before certifications are archived: Jab ek access review khatam hota hai, toh kitne din baad use archive (history mein save) kiya jaye.
+
+--Days before certification archive deletion: Archive ki gayi certification history ko kitne din baad hamesha ke liye delete kiya jaye.
+
+--Minutes before object locks are released: Agar koi user kisi identity ya role par kaam kar raha hai aur session disconnect ho jaye,
+toh kitne minute baad woh object unlock ho jaye.
+
+--Days before provisioning request logs expire: Provisioning requests (accounts banana/mitana) ki history kitne din tak save rahegi.
+
+2. Syslog aur Transaction Logs (Audit Settings):-
+--Level at which syslog events are stored: Yeh option tai karta hai ki system ke syslog mein kis tarah ki jaankari ya 
+"severity" save ki jayegi. Is dropdown mein aap alag-alag levels select kar sakte hain (jaise ERROR, WARN, ya INFO). 
+Agar aap 'ERROR' select karte hain, toh system sirf vahi events record karega jahan koi badi dikkat aayi ho, 
+taaki logs faltu ki jaankari se na bharein.
+--Enable syslog: System ke internal events aur errors ko record karne ke liye.
+--Days before syslog event deletion: System logs kitne din baad delete honge.
+--Enable Provisioning Transaction Log: Target systems (jaise Active Directory) mein hone wale har badlav ka detail record rakhna.
+--Maximum Log Level: Logs ki kitni detail chahiye.
+
+3. UI Preferences:-
+--Disable Role Modeler Tree View: Roles ko tree structure mein dekhne ka option band karna.
+--Maximum Roles Page Size: Ek page par ek saath kitne roles dikhayi dein (yahan 50 set hai).
+--Show unsupported browser message: Agar koi user purana browser use kare toh use alert dikhana.
+--Accessibility: Color Contrast: Low vision users ke liye screen ka color contrast badhana.
+
+4. Localized Object Attributes & Multi-Language:-
+--Enable multi-language descriptions: Inhe check karne se aap Applications, Roles, aur Policies ke naam/description
+alag-alag bhashaon (jaise Hindi aur English) mein likh sakte hain.
+--Default Language: System ki main bhasha (jaise en_US).
+--Supported Languages: Woh saari bhashayein jo aap apne users ke liye system mein allow karna chahte hain.
+
+5. File & System Settings:-
+-Temporary Directory:Yeh woh folder ka rasta(path) hota hai jahan IdentityIQ files ko process karte waqt temporary taur par save karta hai.
+Jab aap koi badi file upload karte hain ya koi report generate karte hain, toh system pehle us data ko isi directory mein rakhta hai. Agar yeh khali chhod diya jaye, toh system apne default temporary folder ka use karta hai.
+--Maximum Upload Size (MB): System mein upload ki jaane wali file ka maximum size (yahan 1000MB set hai).
+--Help Contact Email Address: Agar users ko help chahiye toh woh kis email par contact karein.
+
+1. Business Processes(workflow):-
+Yeh workflows define karte hain jo specific events par trigger hote hain:-
+--Entitlement Update: Jab kisi application ki entitlement (access level) mein badlav hota hai, toh kaun sa process chalna chahiye.
+--Password Intercept: Jab system kisi password change event ko "intercept" ya pakadta hai, toh use aage kaise process karna hai (e.g., sync karna ya approve karna).
+
+2. Caches:-
+--Enable asynchronous policy and role cache refresh: Agar ise check karte hain,
+toh policy aur role ka cache background mein refresh hoga.
+Isse system ki performance behtar hoti hai kyunki users ko refresh khatam hone ka intezar nahi karna padta.
+
+3. Reports:-
+--CSV Delimiter: Jab aap CSV format mein report export karte hain, 
+toh columns ko alag karne ke liye kaun sa character (jaise , ya ;) use ho.
+--Filter searches by: Search karte waqt default behavior kya ho (e.g., "contains" ya "starts with").
+
+4. Edit Preferences Settings:-
+Yeh settings decide karti hain ki ek normal user apne "My Settings" ya profile page par kya-kya badlav kar sakta hai:
+
+--Enable edit forwarding preferences:-
+Kaam: Kya user apni approvals kisi aur ko "Forward" karne ka option khud set kar sakta hai?
+Zaroorat: Yeh tab kaam aata hai jab user chhutti par ho aur apna kaam apne colleague ko saunpna chahe.
+
+--Enable change password:-
+Kaam: Kya user ko IdentityIQ ka login password badalne ka button dikhna chahiye. 
+Agar aapki company Single Sign-On (SSO) use karti hai, toh ise aksar band rakha jata hai.
+
+5.Attachment Settings:-
+IdentityIQ mein users ko files (jaise approval ke proofs) upload karne ki permission dene ke liye yeh settings hoti hain:
+()Enable Attachments: Kya users ko system mein files attach karne ka option milna chahiye? Ise check karne par hi baaki options khulenge.
+
+()Attachments Per Item: Ek single request (jaise Access Request) mein ek user maximum kitni files upload kar sakta hai. Yahan image ke mutabik limit 5 set hai.
+
+()Maximum file size (MB): Har ek file ka size kitna ho sakta hai. Agar aap 5 set karte hain, toh 6MB ki file upload nahi hogi.
+
+()Supported file types: Aap security ke liye restrict kar sakte hain ki sirf txt, jpg, png hi allow ho, taaki koi khatarnak .exe file upload na kar de.
+
+()Supported characters: File ke naam mein kaun se symbols (jaise @, #, -) allow karne hain.
+
+()Configuration Rules: Agar aap chahte hain ki sirf manager hi attachment lagaye ya sirf specific roles ke liye mangi jaye, toh uske liye yahan ek Rule likha ja sakta hai.
+
+6. Edit Preferences Settings:-
+Yeh users ke "My Settings" page ko control karta hai:-
+--Enable edit forwarding preferences: Kya user apni approvals kisi aur ko forward karne ki setting khud badal sakta hai.
+--Enable change password: Kya user ko apna system password badalne ki permission hai.
+
+7. Native Identity Change Event Propagation Settings:-
+Enable Native Identity Change Event propagation: Agar kisi target application (jaise Active Directory) mein direct koi badlav ho, 
+toh kya woh badlav IdentityIQ mein turant "propagate" (bheja) jana chahiye.
+
+8. Manage User Access Require Comments Settings:-
+--Require comments for all access items: Ise check karne par user ko har access request ke liye ek comment ya 
+justification dena compulsory ho jayega.
+--Configuration Rules: Aap yahan rule likh sakte hain ki comments kab mangne hain aur kab nahi (e.g., sirf high-security roles ke liye).
+
+()Prohibit scripts from accessing plugin-loaded classes:-
+Kaam: Yeh ek security feature hai. Agar ise check karte hain, toh IdentityIQ ke normal scripts (jaise Rules ya Workflows) 
+un files aur codes (classes) ko nahi dekh payenge jo kisi plugin ne load ki hain.
+Kyun use karein: Yeh plugins aur system ke baaki hisson ke beech ek diwar bana deta hai taaki koi plugin system ke core functions mein interfere na kar sake.
+
+()Relax strict declaration enforcement:-
+Kaam: Purane ya custom-built plugins kabhi-kabhi naye security standards ko follow nahi karte. 
+Ise check karne se system thoda "liberal" (narm) ho jata hai aur un plugins ko chalne ki ijaazat de deta hai jo 
+shayad strict rules par fail ho jate.
+Kyun use karein: Agar aapka koi purana plugin error de raha hai, toh ise enable karke use chalaya ja sakta hai.
+

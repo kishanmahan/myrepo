@@ -1,0 +1,52 @@
+()global-setting->Configure Scoping->
+
+()Scoping Kyun Zaroori Hai?
+Socho aapki company ke do bade offices hain: India aur USA.
+Aap chahte hain ki India ka HR manager sirf India ke employees ka data dekhe.
+Aap "India" naam ka ek scope banayenge aur us HR manager ko assign kar denge.
+Ab scoping ki wajah se woh manager USA ke employees ka data nahi dekh payega.
+
+()Scoping ka upyog yeh control karne ke liye kiya jata hai ki kaunsa user system ke kin objects 
+(jaise Identities, Applications, ya Roles) ko dekh sakta hai ya manage kar sakta hai.
+
+()Enable Scoping:-
+Kya hai?: Yeh main master switch hai.
+Kaam: Jab tak ise check nahi karenge, system mein scoping lagu nahi hogi. 
+Ise on karne ke baad hi niche diye gaye baaki options kaam karenge.
+
+()Scope Identity Attribute:-
+Kya hai?: Yeh batata hai ki identity profile ka kaunsa attribute tay karega ki woh user kis scope mein aata hai.
+Example: Agar aap assignedScope attribute chunte hain, toh user ki profile mein jo scope likha hoga,wahi uska access level tay karega.
+
+()Scope Selection Rule:-
+Kya hai?: Yeh rule tab kaam aata hai jab koi admin manually kisi object ko scope assign kar raha ho.
+Kaam: Yeh rule un scopes ki list ko filter kar sakta hai jo admin ko dikhayi denge, taaki galti se galat scope assign na ho jaye.
+
+()Unscoped Objects Globally Accessible:-
+Kya hai?: Yeh ek safety setting hai.
+Kaam: Agar kisi object (jaise koi application) ko koi bhi scope assign nahi kiya gaya hai, 
+toh kya har koi use dekh sakta hai? Agar yeh Checked hai, toh unscoped objects sabke liye visible honge.
+Agar Unchecked hai, toh woh sirf system admin ko dikhenge.
+
+()Can Access Assigned Scope:-
+Kya hai?: Yeh user ki khud ki permission ke baare mein hai.
+Kaam: Ise check karne par user ko un sabhi objects ka access mil jata hai jo uske apne assigned scope ke andar aate hain.
+
+
+()SailPoint IdentityIQ mein Scope Correlation Rule ek Beanshell rule hota hai 
+jo automatic tarike se objects(jaise Identities ya Applications) ko unke sahi organizational scope mein assign karne ka kaam karta hai.
+
+Yahan is rule ke mukhya pahlu diye gaye hain:-
+Maqsad (Purpose): Jab system mein naye objects(jaise naya account) aggregate hote hain ya bante hain, 
+toh yeh rule tay karta hai ki unhe kis scope (e.g., 'India', 'USA', 'Finance') ke under rakha jana chahiye.
+
+Automation: Iska sabse bada fayda yeh hai ki admin ko manually har identity ya application par jaakar scope set nahi karna padta;
+yeh kaam logic ke aadhar par apne aap ho jata hai.
+
+Kaise Kaam Karta Hai: Rule identity ke kisi attribute (jaise location ya department) 
+ko read karta hai aur use system mein maujood scopes se match karta hai.
+
+--Example Logic:-
+Agar user ka location attribute "Mumbai" hai, toh rule ise "India" scope se correlate kar dega.
+Agar location "New York" hai, toh naya object "USA" scope mein chala jayega.
+Configuration: Is rule ko aap Configure Scoping screen (image_841f37.png) se select kar sakte hain.

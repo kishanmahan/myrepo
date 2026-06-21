@@ -1,0 +1,162 @@
+()flow kya hai?
+flow SailPoint ka ek global workflow variable hai jo yeh batata hai ki user abhi SailPoint mein kaun sa kaam (process) kar raha hai.
+Example: Agar user apna password bhool gaya hai aur use reset kar raha hai, toh flow ki value background mein "ForgotPassword" hogi. 
+Agar koi manager naya access request kar raha hai, toh flow ki value "AccessRequest" hogi.
+
+one line:-flow kaam nahi karta, flow sirf batata hai ki sailpoint me abhi kaunsa process chal raha hai.
+
+()"ForgotPassword" aur "ExpirePassword" kya hain?
+Yeh dono SailPoint ke standard flow names (values) hain:-
+-->ForgotPassword: Jab koi user login page par "Forgot Password" par click karke apna password khud reset karne ki koshish karta hai.
+-->ExpirePassword: Jab system kisi user ka password expire kar deta hai aur use naya password set karne par majboor karta hai.
+
+()flow variable = "SailPoint me currently chalne wale process ka naam":-
+Common flow values:-
+ForgotPassword
+ExpirePassword
+AccessRequest
+Certification
+LifecycleEvent
+Joiner
+Mover
+Leaver
+PasswordReset
+RoleRequest
+AccessRequest
+AccessReview
+Approval
+BulkAccessRequest
+Certification
+CertificationChallenge
+CertificationSignOff
+CreateIdentity
+DeleteIdentity
+ForgotPassword
+ExpirePassword
+PasswordReset
+ChangePassword
+ResetPassword
+IdentityRefresh
+IdentityUpdate
+IdentityCreate
+IdentityEdit
+Joiner
+Mover
+Leaver
+LifecycleEvent
+LifecycleManager
+LCMCreate
+LCMUpdate
+LCMDelete
+LCMManagePassword
+LCMProvisioning
+ManageAccounts
+ManagePassword
+ManageUser
+ManageIdentity
+Provisioning
+Provision
+ReProvision
+RetryProvisioning
+RoleRequest
+RoleApproval
+RoleManagement
+RequestAccess
+SelfServiceAccessRequest
+QuickLink
+QuickLinkLaunch
+PolicyViolation
+PolicyReview
+ManualAction
+ManualWorkItem
+WorkItem
+WorkflowLaunch
+Subprocess
+TaskExecution
+TaskResult
+Aggregation
+AccountAggregation
+GroupAggregation
+ApplicationOnboarding
+IdentityArchive
+IdentityCorrelation
+IdentityProcessing
+RefreshIdentity
+RefreshRole
+UnlockAccount
+LockAccount
+EnableAccount
+DisableAccount
+CreateAccount
+DeleteAccount
+ModifyAccount
+UpdateAccount
+EntitlementRequest
+EntitlementRemove
+PasswordManagement
+ForgotUserName
+Registration
+SelfRegistration
+AccountUnlock
+IdentityRequest
+IdentityApproval
+OwnerApproval
+ManagerApproval
+SecurityOfficerApproval
+HelpDesk
+AdminResetPassword
+AdminProvisioning
+CertificationRemediation
+ViolationRemediation
+
+()Remediation: Agar certification me access revokes (remove) kiya jaye, 
+to ye flow automatically provisioning engine ko trigger karta hai access hatane ke liye.
+
+()Policy Violation: Violation detect hone par manager ya compliance team ko alert karne aur remediation approval chalane ke liye.
+
+()Access Request: End-user ya manager dwara roles/entitlements request karne ka entry flow.
+
+()Approval: Multi-stage ya single-stage manager/owner approvals ko handle karne ke liye.
+
+()Notification: Flow ke alag-alag stages par users aur managers ko emails bhejne ke liye.
+
+()LCM Passwords: Password reset aur password management activities ke liye.
+
+()LCM Provisioning: Kisi bhi target system me access provision (create/update/delete) karne ka core flow.
+
+()Joiner, Mover, Leaver: Jab koi naya employee aata hai, department badalta hai, ya company chhodta hai, tab ye standard business processes trigger hoti hain.
+
+()LCM Create, Update, Delete: Identity ya accounts ko manage karne ke backend flows.
+
+()RequestAccess, RoleRequest, BulkAccessRequest: Users ke liye access maangne ke entry points.
+
+()ManagerApproval, OwnerApproval, SecurityOfficerApproval: Workflow ke andar step-by-step approval levels jo decide karte hain ki access milega ya nahi.
+
+()Provision, RetryProvisioning, ManualWorkItem: Agar connector automatic hai to provision chalega, aur agar manual application hai to HelpDesk ya admin ke liye WorkItem create hoga.
+
+()EnableAccount, DisableAccount, LockAccount, UnlockAccount: Target systems par hone wale specific actions.
+
+() AccessReview:-
+Jab company me audit ya compliance campaign chalta hai(har 6 mahine me managers ko apne employees ka access review karna ho), 
+tab AccessReview workflow trigger hota hai. Ye manager ya owner ke samne ek dashboard generate karta hai 
+jahan unhe decide karna hota hai ki user ka access Approve (Keep) karna hai ya Revoke (Remove).
+
+() CertificationSignOff:-
+Jab reviewer (manager/owner) saare users ka access review kar leta hai, 
+to wo is flow ko trigger karta hai. SignOff ka matlab hai formal digital signature dena, 
+jo ye confirm karta hai ki "Maine poora access check kar liya hai aur mai is report ko freeze kar raha hoon." 
+Iske baad us certification campaign me koi changes nahi kiye ja sakte.
+
+() CertificationRemediation:-
+SignOff hone ke baad ye background flow active hota hai. 
+Agar kisi manager ne AccessReview ke dauran kisi employee ka koi access Revoke kiya tha, 
+to CertificationRemediation workflow automatically us application ka provisioning engine trigger karega aur 
+user ke us access ya account ko target system se remove (de-provision) kar dega.
+
+() Registration (Self-Registration):-
+Ye baaki teeno se alag, user onboarding ka part hai. Jab koi naya external user, contractor, 
+ya employee pehli baar system me aata hai aur uski identity pehle se IIQ me nahi hoti, 
+tab Registration flow chalte hain. Isme user apni details khud fill karta hai, 
+jo manager ya admin ke approval ke baad SailPoint me ek nayi Identity create karti hai.
+
+*////////////

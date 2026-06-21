@@ -1,0 +1,57 @@
+()SailPoint mein Severity ka matlab hota hai ki koi Policy Violation kitna khatarnak ya "risky" hai.
+Yeh ek ranking system hai jo security team ko batati hai ki unhe sabse pehle kis violation ko fix karna chahiye.
+
+1. Severity Levels (Types):-
+SailPoint mein standard 4 levels hote hain:-
+
+()Critical(Highest):-
+Kab use hota hai:-Jab koi aisa access mil jaye jisse company ko turant bada nuksan ho sakta ho 
+(e.g., Direct Database Access ya Admin rights).
+Impact: Iska violation hote hi user ka Risk Score drastically badh jata hai.
+
+()High:-
+Kab use hota hai: Serious SoD violations (e.g., ek hi person Paisa transfer bhi kar sakta hai aur approve bhi).
+Impact: Inhe 24-48 hours ke andar resolve karna mandatory hota hai.
+
+()Medium:-
+Kab use hota hai: Aise violations jo policy ke khilaf hain par turant bada khatra nahi hain (e.g., Department mismatch).
+
+()Low:-
+Kab use hota hai: Minor compliance issues ya informational alerts.
+
+2.Severity ka Risk Score par Asar:-
+SailPoint mein Severity seedha Identity Risk Score se judi hoti hai.
+Iska calculation kuch is tarah chalta hai:-
+
+()Total\ Risk\ Score = (Base Score) + (Policy Violation Score * times Severity Weight)
+
+()1. Base Score (The Foundation):-
+Base Score user ki Identity Attributes aur Roles par depend karta hai, bina kisi violation ke.
+Kya hai: Yeh wo risk hai jo user ke "Job Title" ya "Department" ke saath inherent hota hai.
+Example: Ek "IT Admin" ka Base Score hamesha ek "Receptionist" se zyada hoga,
+kyunki Admin ke paas sensitive systems ka access pehle se hai.
+Calculation: SailPoint ke Risk Configuration mein define kiya jata hai ki kis application ya attribute ka kitna base weight hoga.
+
+()2. Policy Violation Score (The Event):-
+Yeh score tab trigger hota hai jab user koi rule todta hai (e.g., SoD violation).
+Kya hai: Yeh wo "penalty points" hain jo user ke profile par lagte hain 
+jab wo koi aisi combination of access le leta hai jo mana hai.
+Logic: Agar user ne koi policy nahi todi, toh uska Policy Violation Score 0 rahega.
+Jaise hi wo rule todta hai, yeh score active ho jata hai.
+
+3. Severity Weight (The Multiplier):-
+Yeh sabse crucial part hai jo violation ki "gandheerta" (seriousness) batata hai.
+Kya hai: Har Severity level (Critical, High, Medium, Low) ka ek numerical Weight hota hai.
+Example Weights:-
+Critical = 100
+High = 75
+Medium = 50
+Low = 25
+
+()Base Score:-150 (User Manager level par hai).
+Policy Violation:-User ne SoD rule toda(Invoice Create + Approve).
+Violation Score:-Maan lete hain 2 (Standard value).
+Severity Weight:-Kyunki yeh financial fraud risk hai,
+iski Severity "Critical" hai (Weight = 100).
+Calculation:$150 + (2 \times 100) = \mathbf{350}$
+

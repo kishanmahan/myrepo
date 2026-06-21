@@ -1,0 +1,479 @@
+()CertificationCampaign kya hai?
+👉CertificationCampaign = ek poora Access Review Campaign,
+Simple:-
+Ye ek top-level object hai jo define karta hai:
+kaun review karega
+kya review hoga (role/Entitlements/permissions)
+kab tak hoga
+CertificationCampaign = poora system jo access review ko manage karta hai (start → review → complete → audit)
+
+🧠 Real Example:-
+Company ne bola:-
+👉 "Saare employees ke access ka review karo 30 din me"
+→ Ye poora campaign = CertificationCampaign
+
+🔥 Ye kya karta hai?
+👉 Main kaam:-
+✅ 1. Access Review start karta hai
+✅ 2. Users ko assign karta hai reviewers ko
+✅ 3. Deadlines manage karta hai
+✅ 4. Progress track karta hai
+✅ 5. Final result store karta hai.
+
+🔥 Andar kya hota hai?
+CertificationCampaign
+ ├── Id
+ ├── Name
+ ├── Type
+ ├── Status
+ ├── Start Date
+ ├── End Date
+ ├── List<Certification>   ← users ka review 🔥
+
+🔹 Certification kya hota hai?
+👉
+Certification = ek reviewer ke liye assigned review
+Certification
+ ├── Reviewer (Manager)
+ ├── List<AccessReviewItem>
+
+🔥 DB me store hota hai kya?
+👉 ✅ YES — 100% DB me save hota hai.
+
+🗄️ Database Structure:-
+CertificationCampaign  (table)
+   ↓
+Certification         (table)
+   ↓
+AccessReviewItem      (table)
+   ↓
+AccessReviewDecision  (table)
+
+💡 Relation:-
+1 Campaign → Many Certifications  
+1 Certification → Many Review Items  
+1 Item → Many Decisions  
+------------------------------------------------------------------------------------------------------------
+🔥 CertificationCampaign ke Types:-
+1️⃣ Manager Certification:-
+👉 Manager apne team ka review karta hai
+
+2️⃣ Application Owner Certification:-
+👉 App owner access review karta hai
+
+3️⃣ Role Certification:-
+👉 Roles ka review hota hai
+
+4️⃣ Entitlement Certification:-
+👉 Permissions ka review
+
+5️⃣ Identity Certification:-
+👉 Full user access review
+
+6️⃣ Targeted Certification:-
+👉 Specific users / access ka review
+-------------------------------------------------------------------------------------------------------
+🔥 Status (VERY IMPORTANT 🔥):-
+🟡 1. Staged:-
+👉 Campaign create hua hai, start nahi hua
+
+🔵 2. Active:-
+👉 Review chal raha hai
+
+🟠 3. Completed:-
+👉 Sab reviewers ne kaam khatam kar diya
+
+🔴 4. Closed:-
+👉 Campaign officially close ho gaya
+
+⚫ 5. Cancelled:-
+👉 Beech me band kar diya
+
+🟣 6. Expired:-
+👉 Deadline cross ho gayi
+---------------------------------------------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointFactory;
+import sailpoint.object.CertificationCampaign;
+import sailpoint.object.CertificationItem;
+import sailpoint.object.Identity;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+public class AccessReviewFullDemo {
+
+    public static void main(String[] args) throws Exception {
+
+        // 🔹 1. Get SailPoint context
+        SailPointContext context = SailPointFactory.getCurrentContext();
+
+        // 🔹 2. Create new Access Review / CertificationCampaign
+        CertificationCampaign campaign = new CertificationCampaign();
+        campaign.setName("Quarterly Finance Access Review");
+        campaign.setDescription("Finance roles access review");
+        campaign.setStatus("OPEN");
+        campaign.setCreated(new Date());
+        campaign.setModified(new Date());
+
+        // 🔹 3. Set Owner
+        Identity owner = context.getObjectByName(Identity.class, "IAM_Admin");
+        campaign.setOwner(owner);
+
+        // 🔹 4. Set Violation Owner
+        Identity violationOwner = context.getObjectByName(Identity.class, "manager1");
+        campaign.setViolationOwner(violationOwner);
+
+        // 🔹 5. Set Reviewer
+        Identity reviewer = context.getObjectByName(Identity.class, "manager2");
+        campaign.setReviewer(reviewer);
+
+        // 🔹 6. Set Items
+        List<CertificationItem> items = new ArrayList<>();
+        CertificationItem item1 = new CertificationItem();
+        item1.setName("Rahul - Admin Role");
+        CertificationItem item2 = new CertificationItem();
+        item2.setName("Priya - SAP Read Access");
+        items.add(item1);
+        items.add(item2);
+        campaign.setItems(items);
+
+        // 🔹 7. Set Actions
+        List<String> actions = new ArrayList<>();
+        actions.add("Approve");
+        actions.add("Revoke");
+        actions.add("Delegate");
+        campaign.setActions(actions);
+
+        // 🔹 8. Set Mitigations
+        List<String> mitigations = new ArrayList<>();
+        mitigations.add("Manager Approval");
+        campaign.setMitigations(mitigations);
+
+        // 🔹 9. Set Applications
+        List<String> applications = new ArrayList<>();
+        applications.add("SAP");
+        applications.add("Active Directory");
+        campaign.setApplications(applications);
+
+        // 🔹 10. Set Roles
+        List<String> roles = new ArrayList<>();
+        roles.add("Admin");
+        roles.add("Finance");
+        campaign.setRoles(roles);
+
+        // 🔹 11. Set Entitlements
+        List<String> entitlements = new ArrayList<>();
+        entitlements.add("Read");
+        entitlements.add("Write");
+        campaign.setEntitlements(entitlements);
+
+        // 🔹 12. Save to DB
+        context.saveObject(campaign);
+        context.commitTransaction();
+
+        System.out.println("✅ AccessReview saved in DB successfully!");
+    }
+}
+
+🔹 Basic Methods:-
+getId()
+setId(String id)
+hasId()
+getName()
+setName(String name)
+hasName()
+getType()
+setType(String type)
+hasType()
+getStatus()
+setStatus(String status)
+hasStatus()
+
+🔹 Date Methods:-
+getStartDate()
+setStartDate(Date startDate)
+hasStartDate()
+getEndDate()
+setEndDate(Date endDate)
+hasEndDate()
+
+🔹 Status Check Methods:-
+isActive()
+isCompleted()
+isClosed()
+isCancelled()
+isExpired()
+
+🔹 Progress / Count Methods:-
+getCompletedCount()
+setCompletedCount(Integer count)
+hasCompletedCount()
+getTotalCount()
+setTotalCount(Integer count)
+hasTotalCount()
+getProgress()
+setProgress(Integer progress)
+hasProgress()
+
+🔹 Certification List Methods:-
+getCertifications()
+setCertifications(List<Certification> certifications)
+hasCertifications()
+addCertification(Certification certification)
+removeCertification(Certification certification)
+
+🔹 Owner / Creator Methods:-
+getOwner()
+setOwner(String owner)
+hasOwner()
+getCreatedBy()
+setCreatedBy(String createdBy)
+hasCreatedBy()
+
+🔹 Timestamp Methods:-
+getCreatedDate()
+setCreatedDate(Date createdDate)
+hasCreatedDate()
+getModifiedDate()
+setModifiedDate(Date modifiedDate)
+hasModifiedDate()
+
+🔹 Misc / Utility:-
+toString()
+equals(Object o)
+hashCode()
+------------------------------------------------------------------------------------------------------------------------------
+1️⃣ getId():-
+👉 ID return karta hai
+CertificationCampaign c = new CertificationCampaign();
+c.setId("CAMP123");
+System.out.println(c.getId());
+✔️ Output:-
+CAMP123
+
+2️⃣ setId(String id):-
+👉 ID set karta hai
+c.setId("CAMP123");
+✔️ Output:-
+(no output)
+
+3️⃣ hasId():-
+👉 Check karta hai ID set hai ya nahi,
+CertificationCampaign c = new CertificationCampaign();
+System.out.println(c.hasId());
+✔️ Output:-
+false
+c.setId("CAMP123");
+System.out.println(c.hasId());
+✔️ Output:-
+true
+
+4️⃣ getName():-
+c.setName("Quarterly Review");
+System.out.println(c.getName());
+✔️ Output:-
+Quarterly Review
+
+5️⃣ setName(String name):-
+c.setName("Quarterly Review");
+✔️ Output:-
+(no output)
+
+6️⃣ hasName():-
+System.out.println(c.hasName());
+✔️ Output:-
+true / false
+
+7️⃣ getType():-
+c.setType("MANAGER");
+System.out.println(c.getType());
+✔️ Output:-
+MANAGER
+
+8️⃣ setType(String type):-
+c.setType("APPLICATION");
+
+9️⃣ hasType():-
+System.out.println(c.hasType());
+✔️ Output:-
+true / false
+
+🔟 getStatus():-
+c.setStatus("ACTIVE");
+System.out.println(c.getStatus());
+✔️ Output:-
+ACTIVE
+
+1️⃣1️⃣ setStatus(String status):-
+c.setStatus("COMPLETED");
+
+1️⃣2️⃣ hasStatus():-
+System.out.println(c.hasStatus());
+✔️ Output:-
+true / false
+
+1️⃣3️⃣ getStartDate():-
+c.setStartDate(new Date());
+System.out.println(c.getStartDate());
+✔️ Output:-
+Wed Mar 26 12:30:00 IST 2026
+
+1️⃣4️⃣ setStartDate(Date startDate):-
+c.setStartDate(new Date());
+
+1️⃣5️⃣ hasStartDate():-
+System.out.println(c.hasStartDate());
+✔️ Output:-
+true / false
+
+1️⃣6️⃣ getEndDate():-
+c.setEndDate(new Date());
+System.out.println(c.getEndDate());
+✔️ Output:-
+Wed Mar 30 12:30:00 IST 2026
+
+1️⃣7️⃣ setEndDate(Date endDate):-
+c.setEndDate(new Date());
+
+1️⃣8️⃣ hasEndDate():-
+System.out.println(c.hasEndDate());
+✔️ Output:-
+true / false
+
+1️⃣9️⃣ isActive():-
+👉 Check karta hai campaign active hai ya nahi.
+c.setStatus("ACTIVE");
+System.out.println(c.isActive());
+✔️ Output:-
+true
+
+2️⃣0️⃣ isCompleted():-
+c.setStatus("COMPLETED");
+System.out.println(c.isCompleted());
+✔️ Output:-
+true
+
+2️⃣1️⃣ isClosed():-
+c.setStatus("CLOSED");
+System.out.println(c.isClosed());
+✔️ Output:-
+true
+
+2️⃣2️⃣ isCancelled():-
+c.setStatus("CANCELLED");
+System.out.println(c.isCancelled());
+✔️ Output:-
+true
+
+2️⃣3️⃣ isExpired():-
+c.setStatus("EXPIRED");
+System.out.println(c.isExpired());
+✔️ Output:-
+true
+
+🔹 1️⃣ getCompletedCount():-
+👉 Kitne review items complete ho chuke hain
+CertificationCampaign c = new CertificationCampaign();
+c.setCompletedCount(40);
+System.out.println(c.getCompletedCount());
+✔️ Output:-
+40
+
+🔹 2️⃣ setCompletedCount(Integer count)
+👉 Completed items ki value set karta hai
+c.setCompletedCount(40);
+✔️ Output:-
+(no output)
+
+🔹 3️⃣ hasCompletedCount():-
+👉 Check karta hai value set hui hai ya nahi
+System.out.println(c.hasCompletedCount());
+✔️ Output:-
+true / false
+
+🔹 4️⃣ getTotalCount():-
+👉 Total kitne review items hain
+c.setTotalCount(100);
+System.out.println(c.getTotalCount());
+✔️ Output:-
+100
+
+🔹 5️⃣ setTotalCount(Integer count):-
+👉 Total items set karta hai
+c.setTotalCount(100);
+
+🔹 6️⃣ hasTotalCount():-
+👉 Check karta hai total set hai ya nahi
+System.out.println(c.hasTotalCount());
+✔️ Output:-
+true / false
+
+🔹 7️⃣ getProgress():-
+👉 Progress percentage return karta hai
+c.setProgress(40);
+System.out.println(c.getProgress());
+✔️ Output:-
+40
+
+🔹 8️⃣ setProgress(Integer progress):-
+👉 Progress % set karta hai
+c.setProgress(40);
+
+🔹 9️⃣ hasProgress():-
+👉 Check karta hai progress set hai ya nahi
+System.out.println(c.hasProgress());
+✔️ Output:-
+true / false
+
+🔹 1️⃣ getCertifications():-
+👉 Campaign ke andar jitne bhi Certification objects (review assignments) hain unki list return karta hai
+List<Certification> list = c.getCertifications();
+System.out.println(list);
+✔️ Output:-
+[Certification1, Certification2, Certification3]
+
+🔹 2️⃣ setCertifications(List<Certification> certifications):-
+👉 Puri certification list set/replace karta hai
+List<Certification> list = new ArrayList<>();
+list.add(new Certification());
+list.add(new Certification());
+c.setCertifications(list);
+✔️ Output:-
+(no output)
+
+🔹 3️⃣ hasCertifications():-
+👉 Check karta hai ki campaign me certifications exist karte hain ya nahi
+System.out.println(c.hasCertifications());
+✔️ Output:-
+true  // agar list hai
+false // agar empty/null hai
+
+🔹 4️⃣ addCertification(Certification certification):-
+👉 Ek naya certification add karta hai list me
+Certification cert = new Certification();
+c.addCertification(cert);
+System.out.println(c.getCertifications());
+✔️ Output:-
+[Certification@1]
+👉 (Object ka reference print hota hai)
+
+🔹 5️⃣ removeCertification(Certification certification):-
+👉 Specific certification ko remove karta hai
+Certification cert = new Certification();
+c.addCertification(cert);
+c.removeCertification(cert);
+System.out.println(c.getCertifications());
+✔️ Output:-
+[]
+
+🔹 getOwner() / setOwner(String owner) ka matlab:-
+👉 Owner = wo banda jo campaign ka malik hai (campaign creator / responsible person)
+CertificationCampaign c = new CertificationCampaign();
+// Owner set kar rahe hain
+c.setOwner("AdminUser");
+System.out.println(c.getOwner());
+✔️ Output:-
+AdminUser
+

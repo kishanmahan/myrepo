@@ -1,0 +1,354 @@
+1️⃣ SailPointContext
+SailPointContext context
+Kya hai: Ye object SailPoint ke core API ko access karne ke liye use hota hai.
+Kya karta hai:-
+Database se identities, roles, policies fetch karna
+Objects create/update/delete karna
+Rules aur workflows me context provide karta hai.
+
+3️⃣ SailPointContext क्या होता है
+SailPointContext IAM system का main access interface है।
+इससे हम SailPoint के objects access करते हैं जैसे:
+Identity
+Role
+Application
+Entitlement
+Policy
+
+()1️⃣ SailPointContext ka Simple Matlab:-
+Ye ek session handle hai jo SailPoint ke database aur objects ke saath interact karne ke liye use hota hai.
+Iske through tu Identity, Account, Role, Policy, Entitlements, Provisioning sab access aur modify kar sakta hai.
+------------------------------------------------------------------------------------------------------------------
+()sailpoint context ke andar koun koun sailpoint-objects hote hai?
+--🔹 Context Objects (Actual Use)
+Identity
+Application
+Link
+Bundle
+RoleAssignment
+TaskDefinition
+TaskResult
+Rule
+WorkItem
+Workflow
+Policy
+Certification
+CertificationItem
+IdentityRequest
+IdentityRequestItem
+AuditEvent
+Configuration
+Custom
+EmailTemplate
+Form
+GroupDefinition
+Capability
+ManagedAttribute
+PasswordPolicy
+ProvisioningPlan
+ProvisioningProject
+RequestDefinition
+Schedule
+Scope
+------------------------------------------------------------------------------------------------------------------
+2️⃣ SailPointContext Se Kya Kya Kar Sakte Hain.
+
+()Objects Fetch karna:-
+Identity user = context.getObjectByName(Identity.class, "rahul");
+Role role = context.getObject(Role.class, "FinanceRole");
+
+()Objects Create/Update/Remove:-
+user.setDisplayName("Rahul Kumar");
+context.saveObject(user);
+
+()Provisioning Execute Karna:-
+ProvisioningProject project = new ProvisioningProject(plan);
+context.provision(project);
+
+()Policy Check aur Enforcement:-
+PolicyViolation violation = policy.checkViolation(user);
+if(violation != null){
+    context.removeLinkEntitlement(user, violation.getEntitlement());
+}
+
+
+()Search Objects:-
+List<Identity> users = context.search(Identity.class, new Filter());
+
+1️⃣ Transaction Commit:-
+context.commitTransaction();
+Matlab:-
+Ye database me kiye gaye changes ko permanently save karta hai.
+Jab bhi tum SailPoint me koi object change karte ho:
+Identity
+Role
+Application
+Policy
+Link
+to pehle saveObject() use hota hai aur fir commitTransaction().
+
+()2️⃣ Search Objects:-
+List<Identity> users = context.search(Identity.class, new Filter());
+Matlab:-
+Ye SailPoint database se objects search karta hai.
+
+Tum:-
+identities
+roles
+applications
+links
+sab search kar sakte ho.
+
+Example 1 (All identities):-
+Iterator identities = context.search(Identity.class);
+while(identities.hasNext()){
+Identity user = (Identity) identities.next();
+System.out.println(user.getName());
+}
+
+Example 2 (Filter ke saath search):-
+Filter filter = Filter.eq("department","Finance");
+Iterator users = context.search(Identity.class, filter);
+while(users.hasNext()){
+Identity user = (Identity) users.next();
+System.out.println(user.getName());
+}
+Matlab:-
+Finance department ke saare users search karo
+------------------------------------------------------------------------------------------------
+()SailPointContext ke sare methods:-
+SailPointContext = SailPoint database aur objects ko access karne ka gateway.
+
+Iske through developer:-
+objects fetch kar sakta hai
+objects save/update kar sakta hai
+provisioning execute kar sakta hai
+search queries run kar sakta hai
+transactions manage kar sakta hai.
+
+1️⃣ Object Fetch Methods:-
+
+()getObject(Class type, String id):-
+Description:-
+Database se ID ke through object fetch karta hai.
+Example Code:-
+Identity user = context.getObject(Identity.class, "8a80818123456789");
+Use
+Jab object ka internal ID pata ho.
+
+()getObjectByName(Class type, String name):-
+Description:-
+Name ke through object fetch karta hai.
+
+Example Code:-
+Identity user = context.getObjectByName(Identity.class, "rahul");
+Use
+Jab object ka name pata ho.
+
+1️⃣ getObjects(Class type) kya karta hai.
+Ye method SailPoint database se ek specific type ke objects ki list fetch karta hai.
+Example:-
+List identities = context.getObjects(Identity.class);
+Matlab:-
+SailPoint DB
+↓
+Identity objects fetch karo
+↓
+List return karo
+Result:-
+[Identity1, Identity2, Identity3 ...]
+
+2️⃣ Ye object hota kya hai?
+SailPoint me object = ek Java class instance jo SailPoint ke data ko represent karta hai.
+Example objects:-
+Object	              Kya represent karta hai
+Identity-----------------user / employee
+Role-------------------role ya access bundle
+Application--------------target system
+Link-------------------application account
+Policy-------------------security rule
+PolicyViolation---------- policy break
+
+3️⃣ Example:-
+List identities = context.getObjects(Identity.class);
+
+for (Identity id : identities) {
+    System.out.println(id.getName());
+}
+Yaha:-
+Identity object = ek user ka data
+Example object:-
+Identity
+name = rahul
+department = finance
+email = rahul@company.com
+roles = FinanceRole
+
+2️⃣ Search Methods:-
+search(Class type, QueryOptions qo)
+Description:-
+Filter ke saath database search karta hai.
+
+Example Code:-
+QueryOptions qo = new QueryOptions();
+qo.addFilter(Filter.eq("department", "IT"));
+Iterator it = context.search(Identity.class, qo);
+
+()countObjects(Class type, QueryOptions qo)
+Description:-
+Filter ke basis par objects count karta hai.
+Example Code:-
+int count = context.countObjects(Identity.class, qo);
+
+3️⃣ Object Save / Update Methods:-
+
+()saveObject():-
+Description:-
+Object ko database me save ya update karta hai.
+
+Example Code:-
+user.setDisplayName("Rahul Kumar");
+context.saveObject(user);
+
+()deleteObject(SailPointObject obj):-
+Description:-
+Object ko database se delete karta hai.
+Code:-
+context.deleteObject(user);
+
+()7️⃣ Decache Method:-
+()decache():-
+Description:-
+Cache clear karta hai.
+Code:-
+context.decache();
+
+()8️⃣ Identity Related Methods:-
+getUserName()
+Description:-
+Current logged-in user ka name return karta hai.
+Code:-
+String userName = context.getUserName();
+
+1️⃣ commitTransaction():-
+🔹 Description:-
+commitTransaction() database me jo bhi changes kiye gaye hain unko permanently save (commit) karta hai.
+Jab bhi tu:-
+user update karta hai
+role assign karta hai
+entitlement change karta hai
+provisioning execute karta hai
+tab tak changes temporary transaction state me rehte hain.
+commitTransaction() run hone par hi database me save hote hain.
+
+2️⃣ rollbackTransaction():-
+🔹 Description:-
+Agar transaction me error aa jaye ya changes cancel karne ho, tab rollbackTransaction() use hota hai.
+Ye transaction ke saare changes undo kar deta hai.
+Example code:-
+try{
+Identity user = context.getObjectByName(Identity.class,"rahul");
+user.setDisplayName("Rahul Kumar");
+context.saveObject(user);
+context.commitTransaction();
+}catch(Exception e){
+context.rollbackTransaction();
+}
+
+3️⃣ context.provision(project)
+🔹 Description:-
+Ye method ProvisioningProject execute karta hai.
+ProvisioningProject me jo instructions hoti hain:
+account create
+account modify
+entitlement add
+role assign
+wo target application me run hoti hain.
+
+🔹 Example:-
+ProvisioningProject project =
+        new ProvisioningProject(plan);
+
+context.provision(project);
+
+context.commitTransaction();
+
+🔹 Flow:-
+ProvisioningPlan
+       ↓
+ProvisioningProject
+       ↓
+context.provision(project)
+       ↓
+Connector Run
+       ↓
+Target System Update
+
+4️⃣ context.refreshObject(user):-
+🔹 Description:-
+Ye method object ko database se dobara reload / refresh karta hai.
+Kab use hota hai:-
+agar object outdated ho
+agar multiple processes update kar rahe ho
+agar latest data chahiye
+
+🔹 Example:-
+Identity user =
+        context.getObjectByName(Identity.class,"rahul");
+
+context.refreshObject(user);
+
+System.out.println(user.getDisplayName());
+
+5️⃣ search(Class type, QueryOptions qo, String fields)
+🔹 Description:-
+Ye method database me search run karta hai filter ke saath.
+Aur sirf specific fields return karta hai (performance optimization ke liye).
+
+🔹 Parameters:-
+Parameter	        Meaning
+type:---------kaunsa object search karna hai
+qo:-----------query filter conditions
+fields:-------kaun se fields return karne hain
+
+🔹 Example:-
+QueryOptions qo = new QueryOptions();
+
+qo.addFilter(Filter.eq("department","IT"));
+
+Iterator it = context.search(
+        Identity.class,
+        qo,
+        "name"
+);
+-------------------------------------------------------------------------------
+💻 Example:-
+import sailpoint.object.Identity;
+import sailpoint.object.QueryOptions;
+import sailpoint.object.Filter;
+
+QueryOptions qo = new QueryOptions();
+qo.addFilter(Filter.eq("inactive", false));
+
+int count = context.countObjects(Identity.class, qo);
+
+log.info("Total Active Identities: " + count);
+🔥 Output:-
+Total Active Identities: 150
+------------------------------------
+💻 Example:-
+import sailpoint.object.Identity;
+import sailpoint.object.QueryOptions;
+import sailpoint.object.Filter;
+
+QueryOptions qo = new QueryOptions();
+qo.addFilter(Filter.eq("name", "raj"));
+
+Identity identity = (Identity) context.getUniqueObject(Identity.class, qo);
+
+if (identity != null) {
+    log.info("Identity Found: " + identity.getName());
+}
+🔥 Output:-
+Identity Found: raj
+------------------------------------

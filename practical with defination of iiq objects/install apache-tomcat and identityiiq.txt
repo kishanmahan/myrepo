@@ -1,0 +1,287 @@
+()kya download kre?
+->identity=7.2.zip->
+->iiq software.zip->
+->jdk1.8.0_251->
+->jre1.8.0_251.
+
+()create your oracle account->download jre-8u202-windows-x64.exe and downloads->jdk-8u202-windows-x64.exe.
+->first go to cdrive->program-files->if you have java toh control pannel me jao->aur java 16 ko delete kardo->
+->taki naya java 17 ya 11 delete kar paye fir download me jake Jre ko click kare->install kare->ok.
+
+()search->properties->advanced-system settings->environment variable->system variables tab->new->JRE_HOME->browse directory->c:Drive->
+->program-files->Java->JRE select->ok->ok->click path in system variables tab->edit->new->%JRE_home%\bin aur->ok->ok->ok->cmd->java-version->enter.
+
+()search->properties->advanced-system settings->environment variable->system variables tab->new->JAVA_HOME->browse directory->c:Drive->
+->program-files->Java->JDK select->ok->ok->click path in system variables tab->edit->new->%JAVA_home%\bin aur->ok->ok->ok->cmd->java-version->enter.
+
+()mysql->download and setup karo.
+()mysql command line client search->enter password->root->username bhi root.
+
+(Main Steps/Instructions):-
+
+-> Open Microsoft -> Browser ->
+
+https://www.office.com
+
+-> login karo through company
+
+email -> (TCS/Asha24 wala)
+
+-> email डालो -> password daalo
+
+-> login ho jao. ->
+
+-> top left corner me 9 dots
+
+(App launcher) dikhega ->
+
+-> uspe click करो ->
+
+waha list milega ->
+
+Microsoft sharepoint -> uspe click
+
+karo -> Ab Sharepoint open
+
+ho gaya -> "Sites" ya
+
+"following" me jao -> Waha
+
+workday ya Asha24 site dhoondo
+
+-> uspe click karo ->
+
+()Image 1 (First Page):-
+-----------------------------------
+-> Document -> फिर दिखेगा ->
+
+(Star) identity-7.2.zip ->
+
+(Star) iiq software.zip ->
+
+(Star) Smash.zip -> फिर तीनो में किसी पे click करो Toh Top left में Download का button मिलेगा -> उसे Dabao और फिर तो बाकि के भी ऐसे ही Download करलो ।
+
+-> Download -> iiq software (kata hua word) में right click और extract All
+
+-> Double Tap iiq software ->
+
+-> फिर mysql को Extract All
+
+-> फिर mysql-5.5.62-winx64
+
+-> Next -> Next -> complete -> install
+
+-> finish -> Next -> Next -> Next -> Next -> Next -> Next -> Next -> Next -> Next -> root -> root password username डाल फिर -> Back -> port number 3306 -> Next -> Next -> Next -> Next -> Execute .
+
+-> Window search -> mysql command line client -> root -> (kata hua) <Enter/Arrow symbol>
+
+-> show databases
+
+-> show databases ; <Enter/Arrow symbol>
+
+-> (kata hua) अगर error तो -> show databases;
+
+()Image 2 (Second Page):-
+---------------------------------
+(Star) -> Download -> identity-7.2 -> extract All -> फिर एक नया identity-7.2 के copy और उस file को -> This pc में -> C: Drive -> New folder create करो name Sailpoint -> फिर paste करदो इसमें । फिर Sailpoint folder इसी में click करो identityiq-7.2 में और cmd खोलो ->
+
+फिर -> jar -xvf identityiq.war -> <Enter/Arrow symbol> ->
+
+(Ek bada paragraph pen se kata/scribble kiya hua hai)
+
+(Star) -> this pc -> c: Drive -> Sailpoint ->
+
+-> identity-7.2 -> WEBINF ->
+
+-> database -> पुरे path को copy करो और फिर open mysql command line और -> फिर Type करो : Source + selected path paste (kata hua) करो
+
+फिर \ + name of file ->
+
+Ex -> Source C:\Sailpoint\identityiq-7.2\WEB-INF\database\create_identityiq_tables-7.2.mysql <Enter/Arrow symbol>
+
+Image 3 (Third Page)
+-> और scroll करो upssid देखो कि first दो Line error नहीं तो Database काम Perfect कर रहा है।
+
+फिर show databases ; <Enter/Arrow symbol> फिर दो databases दिखेगा पहला है identityiq और दूसरा है identityiqplugin..
+
+(Star) Download -> iiq software folder मे extract All -> फिर New file iiq software पे click -> फिर iiq software मे click -> फिर apache-tomcat-7.0.96-windows-x64 को Extract All -> फिर नये Extracted file apache-tomcat-7.0.96 को copy करो और c: Drive के Sailpoint folder के अंदर paste करदो ।
+
+(Q) -> How to host A web based tool(sailpoint) into the Application server tomcat ?
+
+(A) -> Open apache-tomcat-7.0.96 जो C: Drive के Sailpoint मे है।
+
+(Ek line pen se kaati hui hai)
+
+पहले इस Sailpoint के identity-7.2 file को copy करो और Sailpoint के apache-tomcat-7.0.96 में जाओ ->
+
+Image 1 (First Page)
+-> में webapps -> paste करदो .
+
+webapps के अंदर ।
+
+फिर webapps के अंदर जो
+
+paste किया है identityiq-7.2
+
+को Rename करदो सिर्फ
+
+identityiq .
+
+-> फिर window search में ->
+
+cmd -> Right click -> Run as
+
+administrator -> फिर type cd..
+
+<- cd.. तब-तक जब तक
+
+\window/c> से बाहर निकल जाओ
+
+और जब location C:> .
+
+फिर type ->> C:>cd sailpoint\
+
+apache-tomcat-7.0.96\webapps\ <Enter symbol>
+
+-> C:\sailpoint\apache-tomcat-7.0.96\webapps>cd identityiq 
+
+-> C:\sailpoint\apache-tomcat-7.0.96\webapps\identityiq> cd WEB-INF\
+
+-> C:\sailpoint\apache-tomcat-7.0.96\webapps\identityiq\WEB-INF > cd bin 
+
+-> C:\sailpoint\apache-tomcat-7.0.96\webapps\identityiq\\WEB-INF\bin> iiq console <-
+
+-> import init.xml <-
+
+(chote aksharon mein niche) बस यही लिखना
+
+-> अगर fail हुआ Caused by !!_
+
+और last line (AbstractBatcher.java:21)
+
+तो इस line को पढ़ो -> Caused by:
+
+java.sql.BatchUpdateException:
+
+parameter of prepaid statement
+
+which is set through mysql_
+
+send_long_data() is longer
+
+than 'max_long_data_size'
+
+bytes -> means mysql database
+
+is not able to handle the things
+
+which is provided by the sailpoint-
+
+-identityiq. the memory which is not
+
+able to capture the things so you
+
+should to increase the size of
+
+memory into the mysql .
+
+-> तो फिर c: drive -> program file ->
+
+-> mysql -> MYSQL Server 5.5
+
+-> my को select कर write
+
+click -> Edit notepad++ ->
+
+-> और last में 213 line में
+
+max_allowed_packet = 32M ->
+
+save -> yes -> now save as
+
+again -> yes फिर window search
+
+में जाओ और services -> open को
+
+right click करके run as administrator
+
+(kata hua) ->
+
+Image 3 (Third Page)
+-> फिर MySQL को Right/Left
+
+click करके restart करो ।-
+
+फिर खुले हुए Administrator:
+
+command prompt - iiq console
+
+जहाँ error आया Type करें >
+
+-> या नया cmd खोलो -> cmd ->
+
+Run as administrator -> और
+
+cd.. -> cd.. तब-तक तब-तक
+
+C:> ना आ जाए ।
+
+फिर type c:>cd sailpoint\
+
+apache-tomcat-7.0.96\webapps\
+
+identityiq\WEB-INF\bin -><-
+
+-> iiq console <-
+
+-> > import init.xml <-
+-----------------------------------------------------------------
+Tomcat Server को start करो।
+
+-> This pc. -> windows (c:) ->
+
+-> Sailpoint -> apache-tomcat-7.0.96
+
+-> bin -> startup - window
+
+Batch File -> click और
+
+-> allow access -> INFO: Server startup in 5345ms
+
+-> तो आपका tomcat start हो गया । अब ->
+
+browser -> और http://localhost:8080/identityiq 
+
+/ search -> फिर password
+
+Image 1
+-> spadmin -> admin <-
+
+अब (Star) -> Gear box में जाओ -> global setting में जाओ -> और import from File -> choose File -> C: Drive -> sailpoint -> apache-tomcat-7.0.96 -> webapps -> identityiq -> WEB-INF -> config -> init-lcm -> open -> अब import -> Done -> फिर ≡ में जाओ देखो आ गया MyTasks QuickLinks & (Tab/button/link in identityiq) -> फिर -> Manage identity -> Manage Access तो तुम्हें logout करके login करना होगा ताकी सब दिखने लगे ।
+
+अब http://localhost:8080/identityiq/doc/javadoc और देखो क्या क्या तुमने नहीं पढ़ा है।
+
+eclipse और VS code और notepad++ Download होना चाहिए।
+
+TFS (Azure ADO) and visual studio, visual studio code.
+
+-> visual studio -> close the repo for code, provided by dev env.
+
+-> go to cmd -> run the build.bat -> build.bat. <-
+
+Image 2
+eclipse -> git hub desktop -> application.xml -> base branch ->
+
+dev -> create a branch -> syntax (Feature/bug 10101) -> Application.xml -> push origin -> it will push your code in to github ->
+
+go to github -> create pull request -> you need to assign reviewer -> merge your changes -> your changes will reflect on UI.
+
+इसको chatgpt से समझ ।
+
+-> SVN -
+
+-> Git -
+
+-> TFS -
+
+-> SSb -

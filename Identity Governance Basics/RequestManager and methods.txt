@@ -1,0 +1,366 @@
+1️⃣ RequestManager kya hai?
+RequestManager ek service/utility class hai jo Request objects aur workflows ke operations ko handle karta hai.
+Ye basically RequestContext aur RequestDefinition ke upar kaam karta hai.
+Iska kaam hai request ko system me execute karna, approvals manage karna, workflow cases create karna, aur runtime state handle karna.
+
+2️⃣ RequestManager ka kaam / Responsibilities:-
+()Request Create karna:-
+RequestDefinition ke template ke basis par nayi Request object create karta hai.
+Example: Access request, Service request, Certification request.
+
+()Request Execute karna:-
+Request ko workflow engine ke through execute karna.
+Approvers ko assign karna aur approvals track karna.
+
+()Approval Management:-
+Approval items add/remove/update karna.
+Approver ke decisions (approve/reject) process karna.
+
+()Validation Rules Apply Karna:-
+Request submit hone se pehle validation rules check karta hai.
+
+()RequestContext Generate Karna:-
+Execution ke dauran RequestContext create karta hai aur runtime info store karta hai.
+
+()WorkflowCase Integration:-
+Request ke liye workflowcase create karna aur uske steps track karna.
+
+()Comments & Notifications:-
+Approver comments capture karna
+Notification templates ke through alerts ya emails send karna
+
+()Persistence / DB Operations:-
+Requests aur approvals ka data database me save karna.
+------------------------------------------------------------------------------------------------------------------------------------------
+3️⃣ RequestManager ke Common Methods:-
+Ye methods mostly Request + RequestContext + Approval workflow ke operations ke liye hote hain:
+
+Method	                                                                Purpose
+createRequest(RequestDefinition def):----------------Nayi Request create karta hai template se
+submitRequest(Request request):----------------------Request submit karke workflow start karta hai
+executeRequest(RequestContext context):--------------Runtime me request execute karta hai
+getRequestById(String id):---------------------------DB se request fetch karta hai
+addApprovalItem(Request request, ApprovalItem item):---------Request me approval item add karta hai
+removeApprovalItem(Request request, ApprovalItem item):------Approval item remove karta hai
+getApprovalItems(Request request):---------------------------Approval items fetch karta hai
+validateRequest(Request request):----------------------------Validation rules apply karta hai
+cancelRequest(Request request):------------------------------Request ko cancel karta hai
+completeRequest(RequestContext context):---------------------Request execution complete karna
+getRequestContext(Request request):--------------------------Request ke liye runtime context return karta hai
+escalateRequest(Request request):-------------Agar request pending hai aur time limit cross ho gaya, toh escalate karta hai higher authority ke liye
+getPendingRequests(User user):----------------Kisi particular user ke pending requests fetch karta hai
+getCompletedRequests(User user):--------------User ke completed requests fetch karta hai
+getRequestsByStatus(String status):-----------Status ke basis par requests filter karta hai (Pending, Approved, Rejected)
+archiveRequest(Request request):--------------Old/complete request ko archive me move karta hai
+getRequestHistory(Request request):-----------Request ke poore approval aur workflow history ko fetch karta hai
+resubmitRequest(Request request):-------------Rejected ya cancelled request ko dobara submit karna
+notifyApprovers(Request request):-------------Approvers ko email ya notification send karna
+bulkApprove(List<Request> requests):----------Multiple requests ko ek saath approve karna
+bulkReject(List<Request> requests):-----------Multiple requests ko ek saath reject karna
+assignOwner(Request request, String owner):---Request ke liye specific owner assign karna
+checkRequestPermissions(User user, Request request):--------Ye check karta hai ki user ko request ke liye approve/reject karne ka right hai ya nahi
+deleteRequest(Request request):-----------------------------Request delete karna
+---------------------------------------------------------------------------------------------------------------------------------------------------
+()1️⃣ RequestContext create karna:-
+Method: RequestManager.getRequestContext(Request request)
+Purpose:-
+Ye method nayi RequestContext object generate karta hai runtime me kisi specific Request ke liye.
+RequestContext me automatically RequestDefinition, Attributes, ApprovalItems, Current WorkItem, WorkflowCase attach ho jaate hain.
+
+Example:-
+Request request = requestManager.getRequestById("REQ123");
+
+// Runtime context create
+RequestContext context = requestManager.getRequestContext(request);
+
+System.out.println(context.getRequest().getId());      // REQ123
+System.out.println(context.getState());               // Pending (default)
+
+Output:-
+REQ123
+Pending
+
+Note:-
+Ye method DB se Request fetch karke runtime context ready karta hai.
+Agar workflow execution start karni ho, ye mandatory hota hai.
+------------------------------------------------------------------------------------------------------------------
+2️⃣ WorkflowCase create karna:-
+Method: WorkflowEngine.createWorkflowCase(RequestContext context)
+SailPoint ke internal workflow engine ke methods me hota hai.
+Purpose:-
+Ye method RequestContext ke liye workflow case create karta hai, jisme workflow steps, approvals aur notifications track hote hain.
+Example:-
+WorkflowCase wfCase = workflowEngine.createWorkflowCase(context);
+context.setWorkflowCase(wfCase);
+System.out.println(context.getWorkflowCase().getId());
+Output (example):-
+WFCASE-456
+
+RequestContext aur WorkflowCase ek tight pair hai — RequestContext me WorkflowCase set karna mandatory hai,
+taaki approvals aur workflow steps track ho sake.
+----------------------------------------------------------------------------------------------------------------------
+1️⃣ createRequest(RequestDefinition def):-
+Purpose:-
+Ye method RequestDefinition (template) ke base par naya Request object create karta hai.
+Ye sirf object banata hai, abhi execute nahi karta.
+
+Example:-
+RequestDefinition def = new RequestDefinition();
+def.setName("AccessRequest");
+Request request = requestManager.createRequest(def);
+System.out.println(request.getName());
+
+Output:-
+AccessRequest
+-------------------------------------------------------------------------------------------------
+2️⃣ submitRequest(Request request):-
+Purpose:-
+Ye method request ko submit karta hai aur workflow start karta hai.
+Yahi se actual execution start hota hai (approval, validation, etc).
+
+Example:-
+requestManager.submitRequest(request);
+System.out.println("Request submitted");
+Output:-
+Request submitted
+---------------------------------------------------------------------------------------
+🔥 1️⃣ executeRequest(RequestContext context):-
+📌 Purpose:-
+Runtime me request ko actual execute karta hai
+Workflow steps, approvals, validations sab yahin run hote hain
+⚙️ Internally:-
+RequestContext load hota hai
+WorkflowCase attach hota hai
+Current WorkItem create hota hai
+Approval flow start hota hai
+State update hota hai (Pending → InProgress → Completed)
+🧪 Example:-
+RequestContext context = requestManager.getRequestContext(request);
+requestManager.executeRequest(context);
+
+System.out.println(context.getState());
+✅ Output:-
+Pending / Completed
+-------------------------------------------------------------------------------------
+🔥 2️⃣ getRequestById(String id):-
+📌 Purpose:
+DB se existing request fetch karta hai
+⚙️ Internally:
+Direct DB query chalti hai
+Request object memory me load hota hai
+🧪 Example:
+Request req = requestManager.getRequestById("REQ101");
+System.out.println(req.getId());
+--------------------------------------------------------------
+🔥 3️⃣ addApprovalItem(Request request, ApprovalItem item):-
+📌 Purpose:-
+Request me approval step add karta hai
+⚙️ Internally:
+ApprovalItem list me add hota hai
+Approver assign hota hai
+Workflow me new approval step add hota hai
+🧪 Example:-
+ApprovalItem item = new ApprovalItem("Manager1");
+requestManager.addApprovalItem(request, item);
+System.out.println(requestManager.getApprovalItems(request));
+✅ Output:-
+[ApprovalItem{name=Manager1}]
+--------------------------------------------------------------
+🔥 4️⃣ removeApprovalItem(Request request, ApprovalItem item):-
+📌 Purpose:
+Request se approval step remove karta hai
+⚙️ Internally:
+Approval list se item delete
+Workflow se bhi step remove
+🧪 Example:
+requestManager.removeApprovalItem(request, item);
+System.out.println(requestManager.getApprovalItems(request));
+-----------------------------------------------------------------
+🔥 5️⃣ getApprovalItems(Request request):-
+📌 Purpose:
+Request ke all approval steps fetch karta hai
+⚙️ Internally:
+DB ya memory se approval items load karta hai
+🧪 Example:
+List<ApprovalItem> list = requestManager.getApprovalItems(request);
+System.out.println(list);
+----------------------------------------------------------------------
+🔥 6️⃣ validateRequest(Request request):-
+📌 Purpose:
+Request ke validation rules check karta hai
+⚙️ Internally:
+Attributes check
+Required fields check
+Custom validation rules run
+🧪 Example:
+boolean valid = requestManager.validateRequest(request);
+System.out.println(valid);
+--------------------------------------------------------------------
+🔥 7️⃣ cancelRequest(Request request):-
+📌 Purpose:
+Running ya pending request ko cancel karta hai
+⚙️ Internally:
+State = "Cancelled"
+Workflow stop hota hai
+Pending approvals remove hote hain
+🧪 Example:
+requestManager.cancelRequest(request);
+
+System.out.println(request.getState());
+✅ Output:-
+Cancelled
+--------------------------------------------------------------
+🔥 8️⃣ completeRequest(RequestContext context):-
+📌 Purpose:
+Request execution finish karta hai
+⚙️ Internally:
+Final approval check
+State = "Completed"
+DB update
+🧪 Example:
+requestManager.completeRequest(context);
+System.out.println(context.getState());
+--------------------------------------------------------------
+🔥 9️⃣ getRequestContext(Request request):-
+📌 Purpose:
+Request ke liye runtime context create karta hai
+⚙️ Internally:
+Request + Definition + Attributes combine
+WorkItem & WorkflowCase attach
+🧪 Example:
+RequestContext context = requestManager.getRequestContext(request);
+System.out.println(context.getRequest().getId());
+✅ Output:
+REQ101
+------------------------------------------------------------------------
+🔥 🔟 escalateRequest(Request request):-
+📌 Purpose:
+Delay hone par request ko higher authority ko bhejna
+⚙️ Internally:
+Current approver change
+Notification trigger
+Escalation level increase
+🧪 Example:
+requestManager.escalateRequest(request);
+
+System.out.println("Escalated");
+✅ Output:
+Escalated
+------------------------------------------------------------------------
+🔥 1️⃣1️⃣ getPendingRequests(User user):-
+📌 Purpose:
+User ke pending approvals fetch karta hai
+⚙️ Internally:
+DB filter: state = Pending
+🧪 Example:
+List<Request> list = requestManager.getPendingRequests(user);
+System.out.println(list.size());
+------------------------------------------------------------------------
+🔥 1️⃣2️⃣ getCompletedRequests(User user):-
+📌 Purpose:
+User ke completed requests fetch karta hai
+🧪 Example:
+List<Request> list = requestManager.getCompletedRequests(user);
+
+System.out.println(list.size());
+-------------------------------------------------------------------------
+🔥 1️⃣3️⃣ getRequestsByStatus(String status):-
+📌 Purpose:
+Status ke basis par filter
+🧪 Example:
+List<Request> list = requestManager.getRequestsByStatus("Pending");
+
+System.out.println(list);
+✅ Output:
+[REQ101, REQ102]
+------------------------------------------------------------------------------
+🔥 1️⃣4️⃣ archiveRequest(Request request)
+📌 Purpose:
+Old request ko archive me move karta hai
+⚙️ Internally:
+Active table → Archive table
+🧪 Example:
+requestManager.archiveRequest(request);
+✅ Output:
+Archived
+------------------------------------------------------------
+🔥 1️⃣5️⃣ getRequestHistory(Request request):-
+📌 Purpose:
+Full history (approval, comments, state changes)
+🧪 Example:
+List history = requestManager.getRequestHistory(request);
+
+System.out.println(history);
+✅ Output:
+[Created, Approved by Manager1]
+-------------------------------------------------------------------
+🔥 1️⃣6️⃣ resubmitRequest(Request request):-
+📌 Purpose:
+Rejected request ko dobara submit
+⚙️ Internally:
+State reset
+Workflow restart
+🧪 Example:
+requestManager.resubmitRequest(request);
+✅ Output:
+Resubmitted
+-------------------------------------------------------------
+🔥 1️⃣7️⃣ notifyApprovers(Request request):-
+📌 Purpose:
+Approvers ko notification bhejna
+
+⚙️ Internally:
+Email template use hota hai
+Notification service call hoti hai
+
+🧪 Example:
+requestManager.notifyApprovers(request);
+✅ Output:
+Notification Sent
+-------------------------------------------------------------
+🔥 1️⃣8️⃣ bulkApprove(List<Request> requests):-
+📌 Purpose:
+Multiple requests ek saath approve karta hai.
+🧪 Example:
+requestManager.bulkApprove(requestList);
+✅ Output:
+Bulk Approved
+---------------------------------------------------------
+🔥 1️⃣9️⃣ bulkReject(List<Request> requests):-
+📌 Purpose:
+Multiple requests ek saath reject
+🧪 Example:
+requestManager.bulkReject(requestList);
+✅ Output:
+Bulk Rejected
+-------------------------------------------
+🔥 2️⃣0️⃣ assignOwner(Request request, String owner):-
+📌 Purpose:
+Request ka approver assign/change karta hai
+⚙️ Internally:
+WorkItem owner update hota hai
+🧪 Example:
+requestManager.assignOwner(request, "Manager2");
+✅ Output:
+Owner Assigned
+------------------------------------------------------
+🔥 2️⃣1️⃣ checkRequestPermissions(User user, Request request)
+📌 Purpose:
+Check karta hai user approve kar sakta hai ya nahi
+🧪 Example:
+boolean allowed = requestManager.checkRequestPermissions(user, request);
+
+System.out.println(allowed);
+✅ Output:
+true
+--------------------------------------------------------------
+🔥 2️⃣2️⃣ deleteRequest(Request request)
+📌 Purpose:
+Request permanently delete
+⚙️ Internally:
+DB se record remove
+🧪 Example:
+requestManager.deleteRequest(request);
+✅ Output:
+Deleted
+---------------------------------------------------------------

@@ -1,0 +1,346 @@
+📘 APPLICATION ONBOARDING – COMPLETE CHAPTERS
+🟢 CHAPTER 1: Application Onboarding Overview
+
+Application onboarding kya hota hai
+
+Governance vs Integration difference
+
+Connected vs Disconnected application
+
+Read-only vs Read-write integration
+
+🟢 CHAPTER 2: Pre-Onboarding Analysis (Most Important 🔥)
+
+Onboard karne se pehle:
+
+Application type (AD, DB, SAP, Cloud, Custom)
+
+Authentication method
+
+API available?
+
+Direct DB access?
+
+File-based integration?
+
+Required attributes
+
+Entitlements structure
+
+Account lifecycle process
+
+Security restrictions
+
+Ye phase galat hua to pura onboarding fail ho sakta hai ⚠️
+
+🟢 CHAPTER 3: Connector Selection
+
+In SailPoint IdentityIQ connectors milte hain:
+
+Active Directory connector
+
+JDBC connector
+
+Web Services connector
+
+SAP connector
+
+LDAP connector
+
+Delimited file connector
+
+Connector choose karna depends karta hai:
+
+Target system capability
+
+Real-time provisioning requirement
+
+🟢 CHAPTER 4: Application Creation in IIQ
+
+Steps:
+1️⃣ Applications → New
+2️⃣ Connector select
+3️⃣ Basic configuration
+4️⃣ Connection details
+5️⃣ Test connection
+
+Important:
+
+Hostname
+
+Port
+
+Credentials
+
+SSL config
+
+🟢 CHAPTER 5: Schema Configuration
+
+Schema define karta hai:
+
+🔹 Account Schema
+
+Native Identity
+
+Display attribute
+
+Status attribute
+
+Custom attributes
+
+🔹 Group / Entitlement Schema
+
+Group name
+
+Role name
+
+Permission name
+
+Schema sahi configure nahi hua to provisioning fail 🔥
+
+🟢 CHAPTER 6: Attribute Mapping
+
+Map karte hain:
+
+Identity attribute → Application attribute
+
+Example:
+
+Identity.email → mail
+
+Identity.employeeId → emp_id
+
+Provisioning sahi mapping pe depend karta hai.
+
+🟢 CHAPTER 7: Aggregation Setup
+
+Types:
+
+Full aggregation
+
+Delta aggregation
+
+Configuration:
+
+Schedule
+
+Filter
+
+Timeout
+
+Batch size
+
+Aggregation ke baad:
+
+Accounts import hote hain
+
+Entitlements import hote hain
+
+🟢 CHAPTER 8: Correlation Configuration
+
+Account ko identity se link karna.
+
+Options:
+
+Email based
+
+Employee ID based
+
+Custom rule
+
+Uncorrelated account → Manual review required.
+
+🟢 CHAPTER 9: Provisioning Configuration
+
+Enable:
+
+Create account
+
+Modify account
+
+Delete account
+
+Enable/Disable account
+
+Set:
+
+Provisioning policy
+
+Required attributes
+
+Default values
+
+🟢 CHAPTER 10: Provisioning Policies
+
+Define:
+
+Required fields
+
+Optional fields
+
+Default values
+
+Transform rules
+
+Example:
+Username auto-generate logic.
+
+🟢 CHAPTER 11: Entitlement Management
+
+Import:
+
+Groups
+
+Roles
+
+Permissions
+
+Set:
+
+Managed attribute flag
+
+Requestable flag
+
+Certification flag
+
+🟢 CHAPTER 12: Role Mapping
+
+Application entitlements ko map karo:
+
+IT Roles
+
+Business Roles
+
+RBAC enable hota hai.
+
+🟢 CHAPTER 13: Access Request Configuration
+
+Enable:
+
+Self-service request
+
+Approval workflow
+
+Owner assignment
+
+Expiry date
+
+🟢 CHAPTER 14: Certification Configuration
+
+Configure:
+
+Application owner certification
+
+Entitlement certification
+
+Account certification
+
+🟢 CHAPTER 15: Policy Configuration
+
+Define:
+
+SoD policy
+
+Risk impact
+
+Violation trigger
+
+🟢 CHAPTER 16: Testing Phase
+
+Test cases:
+
+✔ Account create
+✔ Modify attribute
+✔ Add entitlement
+✔ Remove entitlement
+✔ Disable account
+✔ Delete account
+✔ Correlation test
+
+Logs check karna mandatory 🔥
+
+🟢 CHAPTER 17: Performance Tuning
+
+Aggregation batch size
+
+Timeout
+
+Connector pooling
+
+Index optimization (DB apps)
+
+🟢 CHAPTER 18: Error Handling
+
+Common issues:
+
+ConnectorException
+
+Authentication failure
+
+Attribute mapping error
+
+Permission denied
+
+Timeout
+
+Logs: catalina.out
+
+🟢 CHAPTER 19: Go-Live Checklist
+
+Before production:
+
+✔ Connection stable
+✔ Aggregation working
+✔ Correlation correct
+✔ Provisioning tested
+✔ Certification configured
+✔ Backup taken
+
+🟢 CHAPTER 20: Post-Go-Live Monitoring
+
+Aggregation success rate
+
+Provisioning failures
+
+Orphan accounts
+
+Policy violations
+
+Log monitoring
+
+🟢 CHAPTER 21: Advanced Onboarding
+
+Multi-account application
+
+Multi-instance connector
+
+Cloud API integration
+
+Before/After provisioning rule
+
+Custom web service integration
+
+File-based batch provisioning
+
+🟢 CHAPTER 22: Security & Compliance
+
+Service account protection
+
+Credential encryption
+
+Password vault integration
+
+Audit trail verification
+
+🟢 END-TO-END FLOW
+
+Application onboard →
+Schema configure →
+Aggregation run →
+Accounts import →
+Correlation →
+Role mapping →
+Provisioning enable →
+Certification enable →
+Policy apply →
+Go-live

@@ -1,0 +1,2 @@
+attribute.setRequestable(true);
+attribute.setAttribute("certifiable", true);

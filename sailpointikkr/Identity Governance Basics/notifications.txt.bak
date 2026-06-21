@@ -1,0 +1,36 @@
+5️⃣ Notifications kya hai?
+Notification = Email send karne ka mechanism
+
+Notification decide karta hai:-
+kisko email bhejna hai
+kaunsa template use hoga
+kab email bhejna hai
+
+Example:-
+Access approval
+Password reset
+Policy violation
+
+()Notification ke important methods:-
+1️⃣ setTo(String email):-
+Email kis ko bhejna hai.
+notification.setTo("rahul@gmail.com");
+
+3️⃣ setSubject(String subject):-
+Email subject set karta hai.
+notification.setSubject("Access Approved");
+
+4️⃣ setBody(String body):-
+Email ka message set karta hai.
+notification.setBody("Your access request approved");
+
+5️⃣ setTemplate(EmailTemplate template):-
+Email template attach karta hai.
+notification.setTemplate(template);
+
+6️⃣ send():-
+Email send karta hai.
+notification.send();
+Output:-
+Email Sent Successfully
+

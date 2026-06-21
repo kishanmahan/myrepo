@@ -1,0 +1,112 @@
+1️⃣ Access Reports kya hote hain?
+Access Report = kis user ke paas kaunsa access / role / entitlement hai uska report.
+Example:-
+User        Role              Application
+--------------------------------------------
+Rahul       Admin             SAP
+Amit        FinanceUser       OracleDB
+Neha        HRManager         Workday
+
+2️⃣ Access Reports ka use:-
+✔ Security audit
+✔ Compliance check
+✔ Access review
+✔ Risk detection
+
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.QueryOptions;
+import sailpoint.object.AuditEvent;
+import sailpoint.tools.GeneralException;
+
+import java.util.Iterator;
+
+public class AccessReportService {
+
+    public void generateAccessReport(SailPointContext context) throws GeneralException {
+
+        QueryOptions qo = new QueryOptions();
+
+        Iterator<Identity> identities = context.search(Identity.class, qo);
+
+        System.out.println("===== ACCESS REPORT =====");
+
+        int adminCount = 0;
+        int sensitiveCount = 0;
+
+        while (identities.hasNext()) {
+
+            Identity id = identities.next();
+
+            String user = id.getName();
+            String roles = String.valueOf(id.getAssignedRoles());
+
+            System.out.println("User : " + user);
+            System.out.println("Roles : " + roles);
+
+            if (roles.contains("Admin")) {
+                adminCount++;
+            }
+
+            if (roles.contains("DatabaseAdmin") || roles.contains("RootAccess")) {
+                sensitiveCount++;
+            }
+
+            System.out.println("---------------------------");
+        }
+
+        System.out.println("\n===== ANALYTICS =====");
+        System.out.println("Admin Users : " + adminCount);
+        System.out.println("Sensitive Access Users : " + sensitiveCount);
+
+        AuditEvent event = new AuditEvent();
+        event.setAction("AccessReportGenerated");
+        event.setString1("Access report created");
+
+        context.saveObject(event);
+        context.commitTransaction();
+    }
+}
+4️⃣ Rule / Task jo report run karega:-
+import sailpoint.api.SailPointContext;
+
+public Object execute(SailPointContext context) throws Exception {
+
+    AccessReportService report = new AccessReportService();
+
+    report.generateAccessReport(context);
+
+    return "Access Report Generated";
+}
+6️⃣ Example Output:-
+===== ACCESS REPORT =====
+
+User : Rahul
+Roles : [Admin, DatabaseAdmin]
+
+User : Amit
+Roles : [Employee]
+
+User : Neha
+Roles : [HRManager]
+
+===== ANALYTICS =====
+
+Admin Users : 1
+Sensitive Access Users : 1
+///////////*
+1️⃣ Method ka return type?
+Iterator<Identity> identities = context.search(Identity.class, qo);
+()ye method Iterator return karta hai jisme database ke saare matching Identity objects hote hain.
+Matlab:-
+Identity1
+Identity2
+Identity3
+Identity4
+...
+
+1️⃣ Agar qo empty hai:-
+QueryOptions qo = new QueryOptions();
+Iterator<Identity> ids = context.search(Identity.class, qo);
+Toh database ke saare users return ho jayenge.
+*///////////

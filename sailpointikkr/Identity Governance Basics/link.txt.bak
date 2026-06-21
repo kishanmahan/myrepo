@@ -1,0 +1,1089 @@
+()4️⃣ Link
+Link link:-Link – identity ka connection kisi application ke account se,
+Kya hai: Ye ek account ko represent karta hai jo kisi application me identity ke saath linked hai.
+Iske through hum entitlements aur attributes track karte hain.
+
+📦 Link ke andar kya hota hai?
+Ek Link object me ye important cheeze hoti hain 👇
+
+1️⃣ Application info:-
+👉 Kis application ka account hai
+Example: AD, SAP
+
+2️⃣ Native Identity:-
+👉 Account ka username
+Example:-
+rahul123
+
+3️⃣ Attributes (sabse important 🔥):-
+👉 Account ke sare details yahi store hote hain
+Example:-
+email = rahul@gmail.com
+department = IT
+title = Developer
+
+4️⃣ Entitlements:-
+👉 User ke paas kya access hai
+Example:-
+AD group
+SAP role
+
+5️⃣ Status:-
+👉 Account enabled hai ya disabled
+--------------------------------------------------------------------------------------------------------------
+()link object dikhta kaisa hai?teen format deta hu:-
+---------------------------------------------------
+🧾 1️⃣ Java Debug Print (Real Feel Output):-
+Link link = identity.getLinks().get(0);
+
+System.out.println("===== LINK OBJECT =====");
+System.out.println("ID: " + link.getId());
+System.out.println("Application: " + link.getApplicationName());
+System.out.println("Native Identity: " + link.getNativeIdentity());
+System.out.println("Instance: " + link.getInstance());
+System.out.println("Disabled: " + link.isDisabled());
+System.out.println("Created: " + link.getCreated());
+System.out.println("Modified: " + link.getModified());
+
+System.out.println("---- ATTRIBUTES ----");
+Attributes attrs = link.getAttributes();
+for (String key : attrs.getKeys()) {
+    System.out.println(key + " = " + attrs.get(key));
+}
+----------------------------
+3⚡ Real Output (Short Print):-
+===== LINK OBJECT =====
+Application: Active Directory
+Native Identity: rahul123
+Disabled: false
+
+---- ATTRIBUTES ----
+cn = Rahul Kumar
+mail = rahul@gmail.com
+department = IT
+title = Software Engineer
+memberOf = [Admins, Users]
+----------------------------------
+🧾 2️⃣ XML Format (🔥 Most Important – Real SailPoint Structure):-
+Ye exactly waise hi dikhta hai jaise IdentityIQ DB / export me milta hai:-
+
+<Link id="c1234567890" application="Active Directory">
+    <NativeIdentity>rahul123</NativeIdentity>
+    <Instance>AD_Instance</Instance>
+    <Disabled>false</Disabled>
+    <Attributes>
+        <Map>
+            <entry key="cn" value="Rahul Kumar"/>
+            <entry key="mail" value="rahul@gmail.com"/>
+            <entry key="department" value="IT"/>
+            <entry key="title" value="Software Engineer"/>
+            <entry key="memberOf">
+                <List>
+                    <String>CN=Admins,OU=Groups,DC=company,DC=com</String>
+                    <String>CN=Users,OU=Groups,DC=company,DC=com</String>
+                </List>
+            </entry>
+        </Map>
+    </Attributes>
+
+</Link>
+/////////////*
+()🔹 1️⃣ <Link id="c1234567890" application="Active Directory">:-
+👉 <Link>
+Ye main object tag hai
+Matlab: “ye ek account (link) object hai”
+👉 id="c1234567890"
+Ye unique ID hai (database primary key 🔥)
+Har link ka ID alag hota hai
+Backend me isi se object identify hota hai
+👉 application="Active Directory"
+Ye batata hai:
+👉 Ye account kis application ka hai
+Example:-
+Active Directory
+SAP
+Database
+
+🔹 2️⃣ <NativeIdentity>rahul123</NativeIdentity>:-
+👉 NativeIdentity
+Ye username / login ID hota hai
+Jo actual application me use hota hai
+👉 Example:-
+AD me: rahul123
+SAP me: EMP001
+
+🔹 4️⃣ <Disabled>false</Disabled>:-
+👉 Disabled
+Account ka status:-
+Value	    Meaning
+false	Account active hai ✅
+
+🔹 5️⃣ <Attributes>:-
+👉 🔥 Sabse important block
+Yaha account ka pura data store hota hai
+Ye basically ek Map (key-value) structure hai
+
+🔹 6️⃣ <Map>:-
+👉 Java ke Map jaisa:-
+key → value
+
+🔹 1️⃣ <Instance>AD_Instance</Instance>:-
+👉 Ye kya hai?
+Ye application ka environment / instance name hai
+🧠 Simple samajh:-
+Same application ke multiple versions ho sakte hain:-
+Instance	     Meaning
+AD_Prod:------Production server
+AD_Test:------Testing server
+AD_Instance:---Generic ya configured naam
+🔥 Real use:-
+link.getInstance();
+
+👉 Output:-
+AD_Instance
+🎯 Meaning:-
+👉 Ye batata hai account kis specific server ya environment me hai.
+-----------------------------------------------------------
+()🔹 1️⃣ entry, key, value kya hota hai?
+🧠 Basic concept:-
+SailPoint me Attributes = Map (Dictionary) hota hai.
+
+👉 Map matlab:-
+key → value
+
+🔥 Real life example:-
+name → Rahul
+age → 25
+city → Delhi
+
+🔧 XML me kaise likhte hain?
+<entry key="name" value="Rahul"/>
+
+🧠 Breakdown:-
+Word	       Meaning
+entry:-------ek record (ek data item)
+key	naam:----(identifier)
+value:-------actual data
+
+🎯 Simple line:-
+👉 entry = key + value ka pair.
+--------------------------------------
+🔹 2️⃣ Example (Simple entry):-
+<entry key="cn" value="Rahul Kumar"/>
+👉 Matlab:-
+cn → Rahul Kumar
+👉 Java me:-
+attributes.put("cn", "Rahul Kumar");
+-----------------------------------------------
+🔥 3️⃣ Ab main part — memberOf:-
+<entry key="memberOf">
+    <List>
+        <String>CN=Admins,OU=Groups,DC=company,DC=com</String>
+        <String>CN=Users,OU=Groups,DC=company,DC=com</String>
+    </List>
+</entry>
+
+🔸 STEP 2: value kaha hai? 🤔
+👉 Yaha value="..." nahi hai
+👉 Kyunki value ek nahi hai ❌
+👉 Multiple values hain ✅
+➡️ Isliye <List> use hua hai
+
+🔸 STEP 3: <List>:-
+👉 Matlab:-
+value = list (multiple items)
+👉 Java me:-
+List<String> groups;
+
+()🔹 1️⃣ entry key="memberOf":-
+👉 Ye kya karta hai?
+<entry key="memberOf">
+👉 Iska matlab:-
+"memberOf" naam ka ek field hai.
+
+()🔹 <String>CN=Admins,OU=Groups,DC=company,DC=com</String>
+👉 Ye exactly kya hai?
+
+👉 Ye ek DN (Distinguished Name) hai
+➡️ Matlab: LDAP / Active Directory me kisi object ka full address
+
+🧠 Simple analogy (real life):-
+👉 Jaise address hota hai:-
+House No → Street → City → Country
+
+👉 Waise hi ye DN hai:-
+CN → OU → DC → DC
+
+🔍 Full Breakdown (deep understanding):-
+CN=Admins,OU=Groups,DC=company,DC=com
+
+🔸 1️⃣ CN=Admins:-
+👉 CN = Common Name
+👉 Ye actual group ka naam hai
+✅ IMPORTANT:-
+👉 Ye hi main cheez hai jo use hoti hai
+Group Name = Admins
+
+🔸 2️⃣ OU=Groups:-
+👉 OU = Organizational Unit
+👉 Matlab:-
+➡️ Ye group kis folder me rakha hai
+Folder = Groups
+
+🔸 3️⃣ DC=company:-
+👉 DC = Domain Component
+👉 Domain ka part
+
+🔸 4️⃣ DC=com:-
+👉 Domain ka last part
+
+🔥 Combine karke:-
+Admins group → Groups folder → company.com domain
+🎯 Final Meaning:-
+👉 Ye line bol rahi hai:-
+"User Admins group ka member hai jo company.com domain ke Groups folder me hai"
+*///////////////
+--------------------------------------------------------------------------------------------------------------
+()Common Methods & Use:-
+Method	                             Description	             Code Example
+getApplicationName()--------Account ka application name------link.getApplicationName();
+getNativeIdentity()---------System me user ka username-------link.getNativeIdentity();
+getEntitlements()-----------Account ke entitlements list-----link.getEntitlements();
+getAttributes()-------------Account ke custom attributes-----link.getAttributes();
+setApplicationName(String)--Change app name------------------link.setApplicationName("Salesforce");
+setNativeIdentity(String)---Change username------------------link.setNativeIdentity("rahul.sf");
+addEntitlement(String)------Entitlement add------------------link.addEntitlement("Read");
+removeEntitlement(String)---Entitlement remove---------------link.removeEntitlement("Write");
+getStatus()-----------------Account status (Active/Inactive)---link.getStatus();
+
+Code Example:-
+Link link = user.getLinks().get(0);
+System.out.println("App: " + link.getApplicationName());
+System.out.println("Username: " + link.getNativeIdentity());
+System.out.println("Entitlements: " + link.getEntitlements());
+
+// Add/Remove entitlement
+link.addEntitlement("Admin");
+link.removeEntitlement("Read");
+-------------------------------------------------------------------------------
+Code Example: Print Link in SailPoint Workflow
+import sailpoint.workflow.WorkflowContext;
+import java.util.HashMap;
+import java.util.Map;
+
+public class PrintLinkWorkflow {
+
+    public void execute(WorkflowContext context) {
+
+        // 1️⃣ System Property get karna (example: application URL)
+        String appUrl = context.getProperty("sailpoint.application.url");
+        if(appUrl == null) {
+            appUrl = "https://sailpoint.example.com";
+        }
+
+        // 2️⃣ Workflow arguments set karna
+        Map<String, Object> args = new HashMap<>();
+        args.put("userName", "Kishan");
+        context.setArguments(args);
+
+        // 3️⃣ Launch message me link set karna
+        String workflowLink = appUrl + "/workflow/123?user=" + args.get("userName");
+        context.setLaunchMessage(workflowLink);
+
+        // 4️⃣ Console me print karna
+        System.out.println("Workflow Launch Link: " + context.getLaunchMessage());
+
+        // 5️⃣ Message add karna (UI me dikhne ke liye)
+        context.addMessage("Workflow successfully started for user: " + args.get("userName"));
+    }
+}
+Expected Output (Console / Logs)
+Workflow Launch Link: https://sailpoint.example.com/workflow/123?user=Kishan
+UI / Workflow Message
+
+Workflow UI me ye message dikh sakta hai:
+
+Workflow successfully started for user: Kishan
+-----------------------------------------------------------------------------------------------------------------------------
+Example:-
+
+import sailpoint.workflow.WorkflowContext;
+
+public class PrintDefaultLink {
+    public void execute(WorkflowContext context) {
+        // Default launch message ko print karna
+        System.out.println("Workflow Launch Link: " + context.getLaunchMessage());
+    }
+}
+Output Example (jo SailPoint khud generate karta hai)
+Workflow Launch Link: https://sailpoint.example.com/identityiq/workflow/launch?id=5f8d1a2c
+
+Ye SailPoint ka automatic generated link hota hai, custom nahi.
+---------------------------------------------------------------------------------------------------------------------------------
+()Ye raha Link ke saare methods list:-
+getId
+setId
+getIdentity
+setIdentity
+getApplication
+setApplication
+getNativeIdentity
+setNativeIdentity
+getDisplayName
+setDisplayName
+
+getInstance
+setInstance
+
+getAttributes
+setAttributes
+getAttribute
+setAttribute
+removeAttribute
+getEntitlements
+setEntitlements
+addEntitlement
+removeEntitlement
+getPermission
+setPermission
+getPermissions
+setPermissions
+addPermission
+removePermission
+
+isDisabled
+setDisabled
+isLocked
+setLocked
+
+getCreated
+getModified
+getCreatedBy
+getModifiedBy
+getLastRefresh
+setLastRefresh
+getLastLogin
+setLastLogin
+getStatus
+setStatus
+getType
+setType
+getDescription
+setDescription
+
+getCorrelationId
+setCorrelationId
+getExternalId
+setExternalId
+
+toXml
+fromXml
+toMap
+fromMap
+
+validate
+clone
+equals
+hashCode
+toString
+-----------------------------------------------------------------------------------------------------------------------------------
+✅ Code Example
+import sailpoint.object.Link;
+import sailpoint.object.Identity;
+import sailpoint.object.Application;
+
+public class LinkExample {
+
+    public static void main(String[] args) {
+
+        // Link object create
+        Link link = new Link();
+
+        // Dummy objects (normally SailPoint se milte hain)
+        Identity identity = new Identity();
+        identity.setName("Kishan");
+
+        Application app = new Application();
+        app.setName("ActiveDirectory");
+
+        // set methods
+        link.setId("12345");
+        link.setIdentity(identity);
+        link.setApplication(app);
+        link.setNativeIdentity("kishan.ad");
+        link.setDisplayName("Kishan AD Account");
+
+        // get methods + print
+        System.out.println("ID: " + link.getId());
+        System.out.println("Identity: " + link.getIdentity().getName());
+        System.out.println("Application: " + link.getApplication().getName());
+        System.out.println("Native Identity: " + link.getNativeIdentity());
+        System.out.println("Display Name: " + link.getDisplayName());
+    }
+}
+✅ Output
+ID: 12345
+Identity: Kishan
+Application: ActiveDirectory
+Native Identity: kishan.ad
+Display Name: Kishan AD Account
+--------------------------------------------------------------------------------------------------------------
+()setInstance() → kis system/server instance se link hai wo set karta hai.
+()getInstance() →
+
+✅ Code Example:-
+import sailpoint.object.Link;
+
+public class LinkInstanceExample {
+
+    public static void main(String[] args) {
+
+        // Link object create
+        Link link = new Link();
+
+        // setInstance use karna
+        link.setInstance("HR-Server-1");
+
+        // getInstance use karke print karna
+        System.out.println("Instance: " + link.getInstance());
+    }
+}
+✅ Output
+Instance: HR-Server-1
+------------------------------------------------------------------------------------------------------------
+()Haan bhai 👍 instance ka matlab aksar server/system hota hai, lekin thoda exact samajh le:
+Instance kya hota hai (Link me)?
+Instance = specific system / environment / server jahan account exist karta hai
+🔹 Easy samajh:-
+Agar ek hi application multiple jagah pe installed hai, to unko differentiate karne ke liye instance use hota hai
+
+Example:-
+Application	Instance	Matlab
+ActiveDirectory	AD-Server-1	Pehla server
+ActiveDirectory	AD-Server-2	Dusra server
+SAP	SAP-DEV	Dev environment
+SAP	SAP-PROD	Production environment
+----------------------------------------------------------------------------------------------------------------------
+✅ Code (Without * import)
+import sailpoint.object.Link;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
+
+public class LinkFullExample {
+
+    public static void main(String[] args) {
+
+        Link link = new Link();
+
+        // =========================
+        // 🔹 ATTRIBUTES
+        // =========================
+
+        // setAttributes → pura map set karta hai
+        Map<String, Object> attrs = new HashMap<String, Object>();
+        attrs.put("email", "kishan@example.com");
+        link.setAttributes(attrs);
+
+        // getAttributes → saare attributes deta hai
+        System.out.println("All Attributes: " + link.getAttributes());
+
+        // setAttribute → ek single attribute add/update karta hai
+        link.setAttribute("department", "IT");
+
+        // getAttribute → ek specific value deta hai
+        System.out.println("Department: " + link.getAttribute("department"));
+
+        // removeAttribute → attribute hata deta hai
+        link.removeAttribute("email");
+        System.out.println("After Remove Email: " + link.getAttributes());
+
+
+        // =========================
+        // 🔹 ENTITLEMENTS
+        // =========================
+
+        // setEntitlements → pura list set karta hai
+        List<String> ents = new ArrayList<String>();
+        ents.add("ROLE_USER");
+        link.setEntitlements(ents);
+
+        // addEntitlement → ek aur entitlement add karta hai
+        link.addEntitlement("ROLE_ADMIN");
+
+        // getEntitlements → saare roles deta hai
+        System.out.println("Entitlements: " + link.getEntitlements());
+
+        // removeEntitlement → role hata deta hai
+        link.removeEntitlement("ROLE_USER");
+        System.out.println("After Remove Entitlement: " + link.getEntitlements());
+
+
+        // =========================
+        // 🔹 PERMISSIONS
+        // =========================
+
+        // setPermissions → pura permission list set karta hai
+        List<String> perms = new ArrayList<String>();
+        perms.add("READ");
+        link.setPermissions(perms);
+
+        // addPermission → ek permission add karta hai
+        link.addPermission("WRITE");
+
+        // getPermissions → saare permissions deta hai
+        System.out.println("Permissions: " + link.getPermissions());
+
+        // removePermission → permission hata deta hai
+        link.removePermission("READ");
+        System.out.println("After Remove Permission: " + link.getPermissions());
+
+        // getPermission → (single permission access pattern, generally list se)
+        System.out.println("Single Permission (example): " + link.getPermissions().get(0));
+
+        // setPermission → (single permission set karne ka pattern, list replace karke)
+        List<String> singlePerm = new ArrayList<String>();
+        singlePerm.add("EXECUTE");
+        link.setPermissions(singlePerm);
+
+        System.out.println("After setPermission (replace): " + link.getPermissions());
+    }
+}
+✅ Output
+All Attributes: {email=kishan@example.com}
+Department: IT
+After Remove Email: {department=IT}
+
+Entitlements: [ROLE_USER, ROLE_ADMIN]
+After Remove Entitlement: [ROLE_ADMIN]
+
+Permissions: [READ, WRITE]
+After Remove Permission: [WRITE]
+Single Permission (example): WRITE
+After setPermission (replace): [EXECUTE]
+---------------------------------------------------------------------------------------------------------------------------
+()setAttributes(Map):-
+👉 Pure account ke attributes ek baar me set karta hai
+👉 Old values replace ho jaati hain
+
+()getAttributes():-
+👉 Account ke saare attributes ek map me return karta hai
+👉 Jaise: email, department, location
+
+()setAttribute(String key, Object value):-
+👉 Ek single attribute add ya update karta hai
+Example:-
+location = India add kar diya
+
+()getAttribute(String key):-
+👉 Kisi ek attribute ki value deta hai
+Example:-
+email → kishan@example.com
+
+()removeAttribute(String key):-
+👉 Attribute delete kar deta hai
+Example:-
+department hata diya
+
+()Ye high-level access hote hain:-
+👉 Jaise: ROLE_USER, ROLE_ADMIN
+
+()setEntitlements(List):-
+👉 Saare roles ek baar me set karta hai
+👉 Old roles replace ho jaate hain
+
+()getEntitlements():-
+👉 User ke saare roles return karta hai
+
+()addEntitlement(String):-
+👉 Ek naya role add karta hai
+removeEntitlement(String)
+👉 Role hata deta hai.
+
+()Ye fine-grained access hota hai:-
+👉 Jaise: READ, WRITE, EXECUTE
+
+()setPermissions(List):-
+👉 Saare permissions set karta hai
+
+()getPermissions():-
+👉 Saare permissions return karta hai
+
+()addPermission(String):-
+👉 Ek permission add karta hai
+
+()removePermission(String):-
+👉 Permission hata deta hai
+
+()getPermission():-
+👉 Direct method rarely use hota hai
+👉 Generally list se access karte hain
+
+()setPermission():-
+👉 Practically use nahi hota.
+------------------------------------------------------------------------------------------------------------------------------------
+🔹 setDisabled(boolean):-
+👉 Account ko disable / enable karta hai
+true → account disable (login allowed nahi)
+false → account active
+📌 Example:-
+Employee company chhod gaya → account disable
+--------
+🔹 isDisabled():-
+👉 Check karta hai account disabled hai ya nahi
+true → disabled
+false → active
+----------
+🔹 setLocked(boolean):-
+👉 Account ko lock / unlock karta hai
+true → account locked
+false → unlocked
+📌 Example:-
+3 baar wrong password → account lock
+---------------
+🔹 isLocked():-
+👉 Check karta hai account locked hai ya nahi.
+
+✅ Code Example
+import sailpoint.object.Link;
+
+public class LinkStatusExample {
+
+    public static void main(String[] args) {
+
+        Link link = new Link();
+
+        // =========================
+        // 🔹 DISABLED
+        // =========================
+
+        // setDisabled → account disable karna
+        link.setDisabled(true);
+
+        // isDisabled → check account disabled hai ya nahi
+        System.out.println("Is Disabled: " + link.isDisabled());
+
+
+        // =========================
+        // 🔹 LOCKED
+        // =========================
+
+        // setLocked → account lock karna
+        link.setLocked(true);
+
+        // isLocked → check account locked hai ya nahi
+        System.out.println("Is Locked: " + link.isLocked());
+    }
+}
+✅ Output
+Is Disabled: true
+Is Locked: true
+-------------------------------------------------------------------------------------------------------
+()getCreated():-
+👉 Account kab create hua
+👉 System automatically set karta hai
+
+()getModified():-
+👉 Last time account kab update hua
+
+()getCreatedBy():-
+👉 Kis user/system ne create kiya
+
+()getModifiedBy():-
+👉 Kisne last update kiya
+
+()getLastRefresh():-
+👉 Last time SailPoint ne account ko sync/reconcile kiya
+
+()setLastRefresh(Date):-
+👉 Last refresh time manually set kar sakte ho
+
+()getLastLogin():-
+👉 User last time kab login hua
+
+()setLastLogin(Date):-
+👉 Last login time set kar sakte ho.
+
+()getStatus():-
+👉 Account ka current state kya hai
+
+()setStatus(String):-
+👉 Status set karta hai,
+Example:-
+ACTIVE
+INACTIVE
+DISABLED
+
+()getType():-
+👉 Account ka type kya hai
+
+()setType(String):-
+👉 Type set karta hai
+Example:-
+ACCOUNT
+SERVICE
+ADMIN
+
+()getDescription():-
+👉 Account ka description deta hai
+
+()setDescription(String):-
+👉 Description set karta hai.
+
+✅ Code Example
+import sailpoint.object.Link;
+import java.util.Date;
+
+public class LinkAuditExample {
+
+    public static void main(String[] args) {
+
+        Link link = new Link();
+
+        // =========================
+        // 🔹 DATE / AUDIT
+        // =========================
+
+        Date now = new Date();
+
+        link.setLastRefresh(now);
+        link.setLastLogin(now);
+
+        System.out.println("Created: " + link.getCreated());
+        System.out.println("Modified: " + link.getModified());
+        System.out.println("Created By: " + link.getCreatedBy());
+        System.out.println("Modified By: " + link.getModifiedBy());
+        System.out.println("Last Refresh: " + link.getLastRefresh());
+        System.out.println("Last Login: " + link.getLastLogin());
+
+        // =========================
+        // 🔹 STATUS / TYPE / DESC
+        // =========================
+
+        link.setStatus("ACTIVE");
+        link.setType("ACCOUNT");
+        link.setDescription("Kishan AD Account");
+
+        System.out.println("Status: " + link.getStatus());
+        System.out.println("Type: " + link.getType());
+        System.out.println("Description: " + link.getDescription());
+    }
+}
+✅ Output:-
+Created: null
+Modified: null
+Created By: null
+Modified By: null
+Last Refresh: Wed Mar 18 12:30:00 IST 2026
+Last Login: Wed Mar 18 12:30:00 IST 2026
+
+Status: ACTIVE
+Type: ACCOUNT
+Description: Kishan AD Account
+------------------------------------------------------------------------------------------------------
+🔹 setCorrelationId(String):-
+👉 Ye SailPoint aur external system ke beech mapping id set karta hai.
+📌 Use case:-
+Identity ko correct account se match karna
+Reconciliation ke time matching
+
+🔹 getCorrelationId():-
+👉 Wo mapping id return karta hai.
+
+🔹 setExternalId(String):-
+👉 External system ka real unique id store karta hai.
+📌 Example:-
+Active Directory GUID
+SAP user ID
+
+🔹 getExternalId():-
+👉 External system ka id return karta hai.
+
+✅ Code Example (Without * import)
+import sailpoint.object.Link;
+
+public class LinkIdExample {
+
+    public static void main(String[] args) {
+
+        Link link = new Link();
+
+        // =========================
+        // 🔹 CORRELATION ID
+        // =========================
+
+        // setCorrelationId → mapping id set karna
+        link.setCorrelationId("CORR-12345");
+
+        // getCorrelationId → mapping id lena
+        System.out.println("Correlation ID: " + link.getCorrelationId());
+
+
+        // =========================
+        // 🔹 EXTERNAL ID
+        // =========================
+
+        // setExternalId → external system ka id set karna
+        link.setExternalId("EXT-98765");
+
+        // getExternalId → external id lena
+        System.out.println("External ID: " + link.getExternalId());
+    }
+}
+✅ Output
+Correlation ID: CORR-12345
+External ID: EXT-98765
+-------------------------------------------------------------------------------------------
+🔹 toMap():-
+👉 Object ko Map (key-value format) me convert karta hai
+📌 Use:-
+Debugging
+Logging
+Data transfer
+
+🔹 fromMap(Map):-
+👉 Map se data lekar object me set karta hai
+📌 Use:-
+Data restore karna
+API se data load karna
+
+🔹 toXml():-
+👉 Object ko XML format me convert karta hai
+📌 Use:-
+Export
+Config save
+SailPoint XML structure
+
+🔹 fromXml(String xml):-
+👉 XML se data lekar object me convert karta hai
+📌 Use:-
+Import
+Configuration load
+Object recreate
+
+✅ Code Example (Without * import)
+import sailpoint.object.Link;
+import java.util.Map;
+import java.util.HashMap;
+
+public class LinkConvertExample {
+
+    public static void main(String[] args) {
+
+        Link link = new Link();
+
+        // Basic data set
+        link.setDisplayName("Kishan Account");
+        link.setNativeIdentity("kishan.ad");
+
+        // =========================
+        // 🔹 toMap
+        // =========================
+        Map map = link.toMap();
+        System.out.println("Map Output: " + map);
+
+        // =========================
+        // 🔹 fromMap
+        // =========================
+        Link newLink = new Link();
+        newLink.fromMap(map);
+        System.out.println("FromMap DisplayName: " + newLink.getDisplayName());
+
+        // =========================
+        // 🔹 toXml
+        // =========================
+        String xml = link.toXml();
+        System.out.println("XML Output: " + xml);
+
+        // =========================
+        // 🔹 fromXml
+        // =========================
+        Link xmlLink = new Link();
+        xmlLink.fromXml(xml);
+        System.out.println("FromXml DisplayName: " + xmlLink.getDisplayName());
+    }
+}
+✅ Output (Simplified):-
+Map Output: {displayName=Kishan Account, nativeIdentity=kishan.ad}
+
+FromMap DisplayName: Kishan Account
+
+XML Output: <Link>
+              <DisplayName>Kishan Account</DisplayName>
+              <NativeIdentity>kishan.ad</NativeIdentity>
+            </Link>
+
+FromXml DisplayName: Kishan Account
+------------------------------------------------------------------------------------------------------
+✅ Code Example (Without * import)
+import sailpoint.object.Link;
+
+public class LinkCommonMethods {
+
+    public static void main(String[] args) {
+
+        Link link1 = new Link();
+        link1.setDisplayName("Kishan Account");
+
+        // =========================
+        // 🔹 clone
+        // =========================
+        Link link2 = (Link) link1.clone();
+
+        // =========================
+        // 🔹 equals
+        // =========================
+        System.out.println("Equals: " + link1.equals(link2));
+
+        // =========================
+        // 🔹 hashCode
+        // =========================
+        System.out.println("HashCode link1: " + link1.hashCode());
+        System.out.println("HashCode link2: " + link2.hashCode());
+
+        // =========================
+        // 🔹 toString
+        // =========================
+        System.out.println("ToString: " + link1.toString());
+
+        // =========================
+        // 🔹 validate
+        // =========================
+        try {
+            link1.validate();
+            System.out.println("Validation: Success");
+        } catch (Exception e) {
+            System.out.println("Validation: Failed");
+        }
+    }
+}
+✅ Output (Example)
+Equals: true
+HashCode link1: 12345678
+HashCode link2: 12345678
+ToString: Link[Kishan Account]
+Validation: Success
+
+🔹 validate():-
+👉 Object valid hai ya nahi check karta hai
+📌 Check karta hai:-
+Required fields set hain ya nahi
+Data sahi format me hai ya nahi
+👉 Error hua to exception throw karega.
+--------------------------------------------------------------------------------------------------------------------------------
+✅ Link me validate() kya kya check karta hai?
+validate() basically check karta hai ki Link object sahi bana hai ya nahi (usable hai ya nahi).
+
+🔹 1. Application check:-
+👉 Link me Application set hai ya nahi
+link.getApplication() != null
+❌ Nahi hua → invalid
+
+🔹 2. Identity check;-
+👉 Link kisi Identity (user) se linked hai ya nahi
+link.getIdentity() != null
+❌ Nahi hua → invalid
+
+🔹 3. Native Identity check:-
+👉 External system ka account id (username) hai ya nahi
+link.getNativeIdentity() != null
+❌ Nahi hua → invalid
+
+🔹 4. Required fields consistency:-
+👉 Important fields empty ya inconsistent na ho
+displayName empty ho sakta hai (optional)
+but core fields missing nahi hone chahiye
+
+🔹 5. Attribute structure check:-
+👉 Attributes map valid hai ya nahi
+link.getAttributes() instanceof Map
+
+🔹 6. Entitlements validity:-
+👉 Entitlements list valid format me hai ya nahi
+null ho sakta hai
+but wrong type nahi hona chahiye
+
+🔹 7. Permissions validity:-
+👉 Permissions bhi correct structure me ho
+
+🔹 8. Internal object integrity:-
+👉 Object corrupted nahi hai
+duplicate values
+invalid references
+
+✅ Code (Validate Pass + Fail Cases)
+import sailpoint.object.Link;
+import sailpoint.object.Identity;
+import sailpoint.object.Application;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
+
+public class LinkValidateDemo {
+
+    public static void main(String[] args) {
+
+        // =========================
+        // ❌ FAIL CASE
+        // =========================
+        try {
+            Link linkFail = new Link();
+
+            // intentionally kuch set nahi kiya
+            linkFail.validate();
+
+            System.out.println("Fail Case: Passed (unexpected)");
+        } catch (Exception e) {
+            System.out.println("Fail Case: Validation Failed");
+        }
+
+
+        // =========================
+        // ✅ PASS CASE
+        // =========================
+        try {
+            Link link = new Link();
+
+            // 🔹 Identity
+            Identity identity = new Identity();
+            identity.setName("Kishan");
+            link.setIdentity(identity);
+
+            // 🔹 Application
+            Application app = new Application();
+            app.setName("ActiveDirectory");
+            link.setApplication(app);
+
+            // 🔹 Native Identity
+            link.setNativeIdentity("kishan.ad");
+
+            // 🔹 Attributes (valid Map)
+            Map<String, Object> attrs = new HashMap<String, Object>();
+            attrs.put("email", "kishan@example.com");
+            link.setAttributes(attrs);
+
+            // 🔹 Entitlements (valid List)
+            List<String> ents = new ArrayList<String>();
+            ents.add("ROLE_USER");
+            link.setEntitlements(ents);
+
+            // 🔹 Permissions (valid List)
+            List<String> perms = new ArrayList<String>();
+            perms.add("READ");
+            link.setPermissions(perms);
+
+            // 🔹 Validate
+            link.validate();
+
+            System.out.println("Pass Case: Validation Success");
+
+        } catch (Exception e) {
+            System.out.println("Pass Case: Validation Failed");
+        }
+    }
+}
+✅ Output:-
+Fail Case: Validation Failed
+Pass Case: Validation Success

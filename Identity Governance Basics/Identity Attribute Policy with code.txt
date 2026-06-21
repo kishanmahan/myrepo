@@ -1,0 +1,152 @@
+3️⃣ Identity Attribute Policy (Detail):-
+Identity Attribute Policy user के attributes (properties) के basis पर check होती है।
+👉 मतलब policy user कौन है उस पर depend करती है।
+Attributes example:-
+Department
+Role
+Location
+Manager
+Employment type
+Country
+Job title
+
+Example 1 (Department):-
+Policy:-
+Finance department users cannot have HR admin role
+User attributes:-
+Name = Rahul
+Department = Finance
+Role = HR_Admin
+➡ Violation
+
+Example 2 (Location):-
+Policy:-
+Only US employees can access US payroll system
+User attributes:-
+Country = India
+Access = US Payroll
+➡ Violation
+
+Example 3 (Employee Type):-
+Policy:-
+Contract employees cannot have admin access
+User:-
+Employment Type = Contract
+Access = Admin
+➡ Violation
+-----------------------------------------------------
+3️⃣ Identity Attribute Policy (Detail):-
+1️⃣ Enterprise Policy Example:-
+Company Policy:-
+Finance Department के users को HR System access नहीं होना चाहिए
+
+Identity attributes:-
+User
+Department
+Role
+Location
+Access
+
+अगर:-
+Department = Finance
+Access = HR System
+➡ Policy Violation
+
+2️⃣ Project Structure:-
+Enterprise project structure:-
+iam-policy-project
+│
+├── Identity.java
+├── IdentityAttributePolicy.java
+└── PolicyMain.java
+
+3️⃣ Identity Class
+public class Identity {
+
+    private String name;
+    private String department;
+    private String role;
+    private String accessSystem;
+
+    public Identity(String name, String department, String role, String accessSystem) {
+        this.name = name;
+        this.department = department;
+        this.role = role;
+        this.accessSystem = accessSystem;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public String getAccessSystem() {
+        return accessSystem;
+    }
+}
+4️⃣ Identity Attribute Policy Engine
+public class IdentityAttributePolicy {
+
+    public static void evaluatePolicy(Identity identity) {
+
+        String department = identity.getDepartment();
+        String system = identity.getAccessSystem();
+
+        if(department.equals("Finance") && system.equals("HRSystem")) {
+
+            System.out.println("IDENTITY ATTRIBUTE POLICY VIOLATION");
+            System.out.println("User: " + identity.getName());
+            System.out.println("Department: " + department);
+            System.out.println("Access System: " + system);
+            System.out.println("Reason: Finance users cannot access HR System");
+
+        } else {
+
+            System.out.println("Access Allowed for user: " + identity.getName());
+
+        }
+    }
+}
+5️⃣ Main Program (Enterprise Simulation)
+public class PolicyMain {
+
+    public static void main(String[] args) {
+
+        Identity user1 = new Identity(
+                "Rahul",
+                "Finance",
+                "Manager",
+                "HRSystem"
+        );
+
+        Identity user2 = new Identity(
+                "Amit",
+                "IT",
+                "Developer",
+                "HRSystem"
+        );
+
+        IdentityAttributePolicy.evaluatePolicy(user1);
+
+        System.out.println("---------------------");
+
+        IdentityAttributePolicy.evaluatePolicy(user2);
+
+    }
+}
+6️⃣ Output:-
+Case 1 (Violation)
+IDENTITY ATTRIBUTE POLICY VIOLATION
+User: Rahul
+Department: Finance
+Access System: HRSystem
+Reason: Finance users cannot access HR System
+Case 2 (Allowed)
+Access Allowed for user: Amit

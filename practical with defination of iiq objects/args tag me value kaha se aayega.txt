@@ -1,0 +1,4 @@
+()<Arg> step ke liye input parameter/variable hota hai.
+Ye value pass karta hai ek step ko.
+Value hardcode, workflow variable, SailPoint context, ya previous step output se aa sakti hai.
+

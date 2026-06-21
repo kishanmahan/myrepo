@@ -1,0 +1,33 @@
+()Identity aur Account same nahi hote, ye alag concepts hai.
+
+1️⃣ Identity:-
+Definition: Identity = ek real person ya entity jo system me exist karta hai.
+Iska focus who the person is aur unke attributes pe hota hai.
+Example attributes:-
+Name → Rahul Singh
+Employee ID → 12345
+Department → IT
+Email → rahul@example.com
+Key point: Identity ka concept human / real-world entity se linked hai.
+👉 Identity = System me ek user (person) ka representation
+
+
+2️⃣ Account:-
+Definition: Account = ek identity ka system me representation.
+Ye ek specific application ya system me login credentials aur permissions ko represent karta hai.
+Example:-
+AD account → username: rahul123, password: ****
+SAP account → userid: RAHUL_IT, roles: Admin, User
+Key point: Account ka concept system-level identity se linked hai.
+
+()1️⃣ Accounts (User Accounts / System Accounts):-
+Account = ek user ka representation kisi particular application ya system me.
+Matlab agar Rahul naam ka user hai aur uske paas SAP, Salesforce, aur Email system ke credentials hain, to har ek system ke liye ek Account create hoga SailPoint me.
+Structure example:-
+Identity Name	Application	    Account Name	Entitlements
+Rahul-------- -------SAP----------r.rahul--------Read, Write
+Rahul------------Salesforce-------rahul.sf---------Admin
+Rahul---------------Email--------rahul@mail-----Send, Receive
+
+Har account ke saath entitlements / roles / permissions link hote hain.
+Accounts ke through SailPoint track karta hai ki kaun sa user kis system me kya access le raha hai.

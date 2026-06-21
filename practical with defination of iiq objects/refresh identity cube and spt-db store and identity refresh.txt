@@ -1,0 +1,1076 @@
+()Refresh identity cube kya karta hai?
+-> user ke accounts (Applications) update karta hai.
+Entitlements / roles calculate करता है।
+policy violations check karta hai.
+manager, department, Attributes update karta Hai. provisioning changes reflects karta hai
+identity cube ko rebuild/Refresh karta hai.
+
+()Populations (Group definition):-
+Yeh dynamic groups hote hain Jo kisi identity ke attributes pe based par (based hote है)
+-> kya use hota hai?
+-> Agar aapko sailpoint में rule lagana hai Ya report nikalni hai sirf un users ki Jinka Department = IT है और location="UK" hai,
+toh app ek population create कर सकते है, ye automatically un sabhi users ko group me leta hai jo yeh condition meet करते है।
+
+()Workgroups (Governance group):-
+-> Yeh Sailpoint ke andar ke internal groups hote hain Jisme alag-alag identities (users) ko add kiya jata hai.
+mostly Task assign करने के लिए use hoti है
+Ex -> Certifications Reviewers team
+-> access Approvals teams.
+
+Ex -> Agar koi policy violation hota Hai Ya kisi high-risk application ka access Request aati hai, 
+toh app assign aap chahenge ki approval manager के पास ना जाके poori security team ke pas Jaye. 
+Aise me security team ka ek workgroup banaya Jata hai. Us group me sirf koi bhi ek member action ले सकता है।
+
+()provisioning (Access Dena/Hatana) :-
+--Jab app Kisi user ko naya ACCESS assign karte है (via Access Request ya Role assignment),
+toh Sailpoint ek provisioning plan generate karta hai.
+Connector us plan ko target system ki bhasha mein translate करता है) aur user ko ush external group में add kar deta hai.
+AD groups
+LDAP groups / Application roles
+
+()Target system Group (Entitlement / Role Account Groups) :-
+-> ye wo groups hote hai jo aapke External Applications (Jaise AD, LDAP, Ya custom Database) me Exist karte हैं।
+-> Jab hum in groups ko Sailpoint ke andar laate है, Toh unke alag terminology से bulaya Jata hai.
+-> Sailpoint in external groups को apne database में Entitlements Ya Managed Attributes ke roop mein store karta hai.
+-> Application ki configuration (schema) mein, in groups ko usually "Group Ya AccountGroup Object Type ke under define kiya Jata hai.
+
+()Group Aggregation :- Sailpoint khud yeh groups nahi banata.
+sailpoint active directory se puchta hai ki tumhare pass kitna groups hai,fir sailpoint un sab groups ki list apne pass rakh leta hai.
+ish list को sailpoint ki bhasha mein Entitlements kehte hain.
+
+-> Account Aggregation & correlation :-
+Jab aap "Account Aggregation" run karte hai, toh sailpoint target system के users ko pull karta hai. 
+Tab vo sailpoint dekhta hai ki user jo pull hua hai Sailpoint में us user के account में kis group ka reference hai
+matlab kitne groups ki list(Entitlements) hai fir sailpoint un sabhi groups ki list banata hai aur 
+un sabhi groups me ush pull kiye hue user ko  link kar deta hai iiq se.
+और kisi Application में members का Attribute में सारे groups होते है kishi aek user ki.
+
+()Refresh Groups Kya hai?
+-> Ye ek task / process hai Jo Target systems (AD, LDAP, DB etc) se groups ka data sync करता है identity iq में iska main kaam groups को updated रखना है। iiq ke andar.
+
+internally kya karta है?
+
+()Group Aggregation :- Target System se groups fetch karta hai.
+jaise:-
+->Ad groups
+->Ldap groups
+->Application roles
+--Group create/update/Delete :-
+-> Naya group mila -> create
+-> Existing group -> update
+-> System se hata -> delete/inactive
+
+()Membership Sync :-
+Group ke andar kaun kaun user hai,
+-> members add karega
+-> members remove karega
+-> Group ka Entitlement store karta hai.
+-> Har group = ek entitlement है।
+
+()Managed Attribute update:-
+identityiq में groups ke managed Attributes ke form में store hua hota है।
+
+()Refresh identity cube kya hai?
+-> Ye ek processing Task है । har user ki identity profile update karta है।
+->Refresh identity cube internal Deep Flow:-
+
+()Task initialization :- Jab Tu Refresh identity cube run karta है,
+->system check karta hai ki kaun kaun identity process karni hain (All/Filtered/Single identity)
+
+()config flags read karta है:-
+->Re-evaluate roles?, 
+provisioning enable?, 
+Disable optimization?
+-> yahi decide hota hai ki kitna heavy processing hone wala है।
+
+()identity Object Load :- internally:-
+-> DB fetch -> system query chalata hai
+-> SELECT * FROM spt_identity WHERE id=? ; 
+load hote है:-
+-> id -> name -> display_name -> email -> manager_id -> attributes (XML/JSON form)
+
+()identity object Load:-
+-> ye step hai jahan identityiq database se identity ko utha ke runtime memory में ek "working model" banata है। 
+yehi object baad me modify hota hai (roles, entitlements, policies sab isi pe lagengi).
+
+-> Internal working :- Task decide karta hai kaunsi identity load karni hai (single/multiple/filtered)
+-> Ex -> Filter: department = IT AND status = Active
+
+-> System query chalata hai:-
+SQL: SELECT * FROM spt_identity WHERE id=?
+
+-> Data aata hai :-
+identity_id
+name
+display_name
+email
+manager_id
+attributes (XML/JSON blob)
+
+()DB row -> convert hota hai Java identity object में । (internal structure):-
+identity
+{
+id, 
+name, 
+displayName, 
+attributes (Map<String, Object>),
+links (lazy reference), 
+entitlements (lazy reference), 
+roles (lazy reference)
+}
+isko bolte hai Object Hydration.
+
+()identity ke attributes ek Map structure में store hote है।
+-> attributes =
+{ department: "IT", 
+location: "India", 
+title: "Engineer" }
+Ye map baad me rules, policies, role assignment में use hota है!
+---------------------------
+()Lazy loading architecture :- System performance ke liye ek hi baar me sab kuch load nahi karta.
+Links -> tab load hote Jab need ho.
+Entitlements -> tab load hote Jab need ho.
+Roles -> tab load hote Jab need ho.
+
+()sailpoint me aek identity cube(object) me bahut massive(body) ho sakta hai,aek identity ke pass ke pass kya kya hota hai?
+-> Core Attributes : First Name, Last Name, Email, manager.
+-> Links (Accounts) :- Active directory, LDAP, SAP, naiqara lie 10-15 accounts.
+-> Entitlements/Exceptions :- Hazaron permissions Ya groups.
+-> Role Assignments :- Dozens of IT aur Business Roles.
+
+-> Agar Sailpoint database se kisi user ka poora kaccha chittha (Sab-Kuch) memory (RAM) में load kar de to System Out of memory error 
+deke crash ho jayega isiliye sailpoint lazy loading ka use karta है।
+
+-> Jab aapne bola -> identity object = context.getObjectByName(Identity.class, 'Amit kumar');
+
+-> Tab Sailpoint database se identity ki sirf basic attributes (name, Email, Dept) laata hai uske accounts (Links) aur Entitlements abhi database में hi hain. 
+Memory (RAM) में Accounts aur Entitlements ki jagah ek proxy rakha hota hai, Jo ki khali dabba hota है।
+
+-> The Trigger(Hook) :- Ab achanak aapne identity object.getLinks() tab iiqobject RAM में jo khali proxy hai,waha accounts aa jata hai.
+------------------------------
+
+()Cache layer :- Agar identity cache में hai, to DB hit nahi hota!
+
+()identity State initialization wo process hai jahan DB ka kachha data memory me aakar ek Smart, 
+trackable Java object banta hai (XML parsing, lazy load proxies set karna aur Context lock lagana).
+-> Chaliye chaar steps mein samajhte है:-
+
+(a)The core data load (Basic):-
+jab load trigger hota hai toh Hibernate sabse pehle Spt_identity table se basic columns ko memory mein lata hai.
+-> Jaise :- id, name, firstname, lastname, type.
+-> Object abhi aage-aadhura hai, sirf zaroori cheeze memory me aayi hai.
+
+(b)The Extended Attributes Parsing :-
+Sailpoint mein cost center, jobtitle, location, Jaise custom attributes, ke liye alag column nahi hota,
+ye sab ek single column (Jiska naam attributes hai) mein XML format me ek sath compressed hote है!
+-> Initialization ke time Sailpoint is XML ko ek Java Map (Key-value) format me unpackage karta hai.
+->Ex->
+-> <Map><entry key="location" value="India"></Map>
+-> identity.getAttributes("location") mein badal deta है।
+
+(c)Proxy placement (Lazy loading) :-
+Jaise humne pichle lazy loading mein dekha tha ki Sailpoint links,entitlements, Manager ko turant nahi laata
+Hibernate yahan par asli data ki jagah kuch khali dabba (proxies) rakhte hai.
+Taki system ko pata chalta hai ki "Zaroorat padega tab DB se data laenge" Tab proxies me bhar dunga." yahi lazy loading ka hook है।
+
+(d)Hibernate session attachment (clean state lock) :- Aakhiri aur sabse crucial step:- 
+object bankar taiyar hone ke baad, wo SailpointContext(Hibernate Session) se attach hota hai.
+-> Is waqt object ki state ko 'persistent' aur 'clean' kaha Jata है।
+-> Clean ka matlab memory(RAM) aur DB_wale me koi farq(difference) nahi rah jata.
+
+()Pre-Refresh Hooks :-
+MS word Analogy ex:-
+
+Object load (File Kholna) :- Aapke Hard Drive (DB) se Amit_Profile.docx naam ki ek file MS-word mein kholi. 
+Usme likha hai: Department = Sales.
+
+Dirty State (unsaved changes):- Aapne MS word mein 'Sales' ko delete karke 'IT' type kar diya.
+lekin dhyan dijiye apne abhi ctrl+s nahi kiya toh aapko naya data abhi sirf ms-word ke screen par hai.db me purana data(sales) hai toh,
+
+Object Refresh (Revert karna): Maan lijiye aapka lagta hai, "Maine galat type kar diya",
+aur aap (revert to saved) (Ya reload) ka button daba dete hain.
+Ishka matlab hai aap MS word ko bol rahe hain:- screen wale data ko hatao aur Hard drive (DB) se data lao nayi fresh laa kardo.
+
+The pre-Refresh Hook (The warning popup):- Jaise hi aap 'Reload' dabate hain, kya file turant naya aa Jati hai?
+Nahi! MS word ek popup dikhata hai:- Sun lijiye warning aapne kuch changes kiya hain Jo save nahi hue.
+Agar aap Reload karenge toh ye changes delete ho jayenge. Kya reload se pehle aapko inka kuch karna hai?
+Bhai sailpoint ke andar yahi warning popup aapka PRE-REFRESH Hook hai.
+
+
+(A) Pre Refresh Hooks in Sailpoint (identity object load) :-
+-> Jab memory mein kisi identity object mein aapne code ke through changes kiye hon(jo saved nahi hue hain) 
+aur achanak Sailpoint us object ko DB se reload karne ki koshish karta hai, 
+toh purane data overwrite hone se theek ek second pehle system ek internal alarm bajata hai. 
+Is alarm ko sunne ka kaam "pre-refresh hook" karta hai.
+
+-> Developer is alarm ka kya karta hai?
+-> Developer in warning wale waqt par apna custom code chala sakta hai. Jaise:-
+"Achha, object reload ho raha hai? Pehle purane unsaved changes ko kisi log file mein print kar do" taaki baad me pata chale ki humne kya khoya hai."
+
+(B) Post Refresh :- ye flow mein aati hai.
+-> Jab aap identity Refresh task run karte hai, aur system ek-ek karke identity objects ko DB se load karta hai(process karne ke liye) 
+tab Sailpoint aapke un objects ke data me custom code inject karne ki permission deta hai (inhi injections ko hooks kahte hai).
+
+(3) Links (Accounts) Fetch -> core Step:-
+System user ke saare accounts (links) fetch karta hai. Table:- Spt_link.
+Example:- Har account ek link object hota hai!
+USER : Rahul
+ACCOUNTS:-
+AD -> rahul123
+DB -> rahul_db
+SAP -> rahul_sap
+
+(4) Correlation validation :- check karta hai:- koi account galat identity se linked toh nahi? Agar issue mila:-
+-> Re-correlation ho sakta hai
+Ex-> AD account : rahul123 linked to : Aman -> correct identity : Rahul.
+
+(5) Attribute Promotion (Data Sync) :-
+-> Application attributes -> identity attributes
+Ex:- AD.department -> identity.department
+-> AD.title -> identity.title
+-> AD.FirstName -> identity.Firstname
+-> Ye mapping application schema me define hota hai.
+Important:-
+-> Multiple app me conflict ho toh priority decide hoti hai!
+
+(6) Entitlement Extraction :-
+-> Har account se entitlement nikale jaate hain.
+Ex-> AD Groups:-
+-Developers
+-Admin
+DB Roles:-
+ReadAccess
+-> Source:-
+Spt_links
+Spt_managed_attribute.
+
+(7) Spt_managed_attribute kya hai?
+-> Ye Sailpoint identity ki DB table hai, isme store hota hai:-
+-> Entitlements (Groups / Roles / Permissions)
+yaha DB me store ho jata hai. Kya Spt_managed_attribute me sab live store hota hai? 
+-> Direct live nahi hota jab data aata hai Tabhi aggregation ke through managed connector system se data laata hai 
+aur identity me store karta hai. 
+
+(7) identity Entitlement Build :-
+Sab account ke entitlements combine karke identity me store karta hai.
+table:- Spt_identity_entitlement.
+
+(8) Role Assignment Rules :-
+Ab System rules run karta hai:-
+Ex:- if Department = IT 
+AND location = India 
+Assign Role = Developer
+-> Ye dynamic assignment hoti (rule-based)
+
+(9) Role Expansion:-
+Yaha System roles ke andar chupe hue access (entitlements) nikalta hai.
+Role = bundle of access / Expansion = us bundle ko todna.
+
+Internally kya hota hai?
+-> Role fetch -> identity se assigned roles uthata hai.
+-> Table:- Spt_role_assignment
+
+(10) Role Definition Read:-
+Har role ka structure read karta hai.
+-> Table -> Spt_Bundle
+ex:-Role: Developer, Type: IT Role
+
+(11) Role Composition Analysis:-
+-> Role ke andar ho sakta hai:-
+-> Entitlements
+-> profiles
+-> Nested Roles
+-> Table:- Spt_profile 
+-> Spt_profile_constraint
+
+(12) Expansion algorithm Run:-
+-> System internally kuch aisa karta hai:-
+-> for each role:get entitlements for each entitlement:add to identity
+->matlab user ke paas jitne roles hai, Har role ke andar ke entitement nikalo,sab user ko assign kardo entitements.
+
+()Entitlement Extraction :- har role se entitlements nikalo.
+ex->Role:Developer
+contains:
+-AD group->Dev
+-DB Role->Read Access
+-Jira Access
+
+(8) identity Entitlement injection kya hai?
+-> Jo Access nikala (Extraction), wo user ke account me inject karna.
+Aur store hota hai identity ke DB Spt_identity_entitlement me!
+
+(9) Source tracking kya hota hai?
+-> Har entitlement ke Sath system metadata Attach karta hai:-
+-> Type = INDIRECT
+-> Source = Role
+-> Role = Developer
+()Type = INDIRECT :- ye entitlement user ko directly nahi diya gaya. ye kisi Role ke through aaya hai.
+()Source = ROLE :- ye access ka source "Role" hai. Matlab system bol raha hai ye access role ki wajah se mila hai.
+()Role = Developer:- Exactly kaunsa role se mila?
+-> Answer = Developer role.
+
+(11) Duplicate & conflict Handling:-
+-> Same entitlement multiple baar na aaye.
+Ex-> Rahul ke paas:-
+-> Direct -> DevGroup
+-> Role (Developer) -> DevGroup
+
+(a)System kya karega?
+-> 2 entries nahi banayega.
+-> Ek hi entitlement rakhega.
+Priority logic:- System internally Priority follow karta hai:-
+-> Direct -> Highest Priority
+-> Role (indirect) -> lower Priority
+-> Agar role hata diya:-
+-> Direct hai -> access rahega
+-> Sirf role tha -> access remove.
+-> Duplicate ko merge karta hai, repeat nahi hone deta!
+
+(F) Direct vs indirect Access:-
+(1) Direct ACCESS :- user ko manually ya directly diya gaya.
+Ex -> Rahul -> Dev Group (direct)
+-> Source:-
+-> type=Direct
+-> Source=Request/Manual
+
+(2) Indirect Access :-
+-> Role ke through mila access.
+Ex -> Rahul -> Developer Role -> Dev Group
+-> Source :-
+type = INDIRECT
+Source = ROLE
+role = Developer
+
+()Expected Access Modeling Kya hai?
+-> System internally calculate Karta hai :-
+-> user ke pass kya access hona chahiye.
+-> Expected = ideal access (role/policy ke hisab se).
+-> ye banta Kaise hai?
+-> Based on:-
+-> Roles (Developer, Admin, etc).
+-> policies
+-> Business rules
+
+(10) Policy Evaluation (Security Check)
+Policies run hoti hain
+Example:
+User ke paas:
+Admin
+Auditor ❌ (SoD violation)
+
+Result:
+→ Violation object create hota hai
+Table:
+→ spt_policy_violation
+
+(11) Risk Score Calculation:-
+System calculate karta hai ki user kitna risky hai
+Factors:-
+Sensitive access
+Violations
+Role criticality
+
+12) Provisioning Comparison:-
+System check karta hai:-
+Expected→ System ke hisaab se kya hona chahiye
+Actual→ Real me user ke paas kya hai
+Difference→ Kya add/remove karna hai
+
+Example:-
+User: Rahul
+Role: Developer
+
+Expected Access:-
+Dev Group
+Git Access
+Jira Access
+
+Actual Access:
+Dev Group
+Admin Group ❌
+
+Result:
+Missing → Git, Jira (ADD)
+Extra → Admin (REMOVE)
+
+(13) Identity Cube Rebuild:-
+Ye final stage hai
+jahan system naya identity cube dobara banata hai
+Sab calculations ke baad final snapshot banta hai
+Internal:
+Identity Context Initialization
+System ek naya IdentityContext/SailPointContext banata hai
+Internal Engine Working
+
+(1) Stale Data:-
+Purana / outdated data
+Jab application me update ho jaye lekin IdentityIQ me na aaye
+→ mismatch hota hai → isi ko stale data bolte hain
+
+(2) Working Identity Object:-
+Rebuild start hota hai
+Ek working identity object banta hai jisme sab calculate hota hai
+Isme kya hota hai:
+Attributes (promoted)
+Links (accounts)
+Entitlements (direct + indirect)
+Roles
+Violations
+→ Ye sab previous steps (role expansion, policy) se aata hai
+
+(3) Transaction Start
+Saare operations ek transaction me hote hain
+Agar error → rollback
+Agar success → commit
+
+()Rollback Kya Hota Hai?
+Agar provisioning me error aa jaye
+→ jo kaam ho chuka hai usko reverse kar dena
+Example:
+Step 1: AD me access de diya ✅
+Step 2: DB me access dena tha ❌ (fail ho gaya)
+Rollback:
+→ AD wala access bhi hata diya jayega
+
+Full Example Code (Simplified Hinglish)
+import sailpoint.api.SailPointFactory;
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.ManagedAttribute;
+
+public class RollbackExample {
+
+    public static void main(String[] args) {
+
+        SailPointContext context = null;
+
+        try {
+            context = SailPointFactory.createContext();
+
+            Identity identity = context.getObjectByName(Identity.class, "Rahul");
+
+            ManagedAttribute attr = context.getObjectByName(
+                ManagedAttribute.class, "Dev Group"
+            );
+
+            identity.addAttribute("memberOf", attr.getValue());
+
+            context.saveObject(identity);
+            context.commitTransaction();
+
+            System.out.println("Success: Access added");
+
+        } catch (Exception e) {
+            System.out.println("Error aaya: " + e.getMessage());
+
+            if (context != null) {
+                context.rollbackTransaction();
+                System.out.println("Rollback ho gaya");
+            }
+			finally{
+			if(context!=null)
+			{
+			context.close();
+			}
+        }
+    }
+}
+4. Cleanup phase (Hard Reset of calculated Data) :-
+=> purana data Kyu bolte Hai?
+-> Yaha purana ka matlab time nahi hota.
+-> Matlab hota hai ->
+"ab reliable nahi hai. / stale ho sakta hai."
+
+Ex -> Ye data 1 second pehle hi bana ho Tab bhi delete ho sakta hai.
+-> Role abhi change hua
+-> 1 sec pehle expected access bana tha
+-> wo bhi "purana" ban gaya.
+
+(5)Derived/Calculated data kya hota hai?
+-> Jo data directly system me store nahi hota, balki calculate hota hai.
+Ex -> 
+()Source data:-
+Role = Developer
+
+()Derived data:-
+Dev Group
+DB Read
+Jira Access
+-> Ye Derived Data system ne nikala hai Direct Store nahi Hota Hai.
+
+1. Source data Kya hota hai?
+-> Source = asli (original) data jo system se aata hai.
+Ex -> AD / DB / HR System
+-> Accounts
+-> Users
+-> Direct entitlements
+-> Rahul (Identity)
+AD Account
+DB Account
+ye sab = Source DATA
+
+2. Derived data Kya hota Hai?
+-> Derived = system re calculate karke banaya hua Data Derived data hai.
+Ex -> Role expansion
+-> Indirect entitlements
+-> Expected access
+-> Risk Score
+-> Dev Group (From Developer Role)
+-> DB read (From role)
+-> ye sab = Derived Data hai.
+
+Cleanup phase:-
+-> identity cube rebuild ke time purana calculated data hata diya jata hai = cleanup phase.
+Kya delete nahi hota?
+-> Identity basic data
+-> Accounts (links)
+-> Aggregated data
+-> Direct entitlements
+matlab source data safe rehta hai.
+
+Kya Kya delete karta hai?
+-> Sab calculated data delete:-
+-> indirect entitlements (role se aate hai)
+-> Role expansion result
+-> policy violations
+-> RISK scores
+-> Expected access data
+-> Ye sab :- 100% wipe (hard reset)
+
+Ex -> Rahul:
+Role: Developer (1 saal purana)
+Indirect: Dev Group
+
+Cleanup phase:-
+Role-based data delete
+Indirect entitlements delete
+-> chahe kabhi bhi assign hua ho.
+
+(6)Link Rebinding (ACCOUNTS Attach):-
+-> List<Link> links = context.getLinks(identity)
+identity.setLinks(links)
+-> identity ke saare accounts (links) ko dubara identity ke sath attach karna = Link Rebinding.
+->Rebinding kya karta hai?
+-> Rebuild ke time:-
+-> Purane calculated data delete ho chuka hota Hai.
+-> Ab System ko firse samajhna padta hai:
+"Kaun sa account kis identity ka hai?"
+
+Internally kya hota hai?
+System:-
+-> spt_link table scan karta hai.
+-> Account -> Identity match karta Hai.
+-> correlation rules apply karta hai.
+-> Links re-attach karta hai.
+
+()Attribute Finalization:-
+-> promoted attributes apply hote hain:
+-> identity.setAttribute("department", "IT");
+
+()Calculated Data kya hota hai?
+-> Calculated data = wo data joh system ne khud rules, roles aur policies se compute karta hai (direct source se nahi aata).
+system ne jo apne aap banaya wahi calculated data hai.
+-> easy Example :- Rahul Ka source data :-
+-> Role = Developer
+
+-> System Calculate Karega :-
+-> Dev Group
+-> DB Read Access
+-> Jira Access
+-> ye sab = CALCULATED DATA Hai.
+
+Kaise banta hai calculated data?
+-> Based On :-
+-> Roles expansion
+-> policies (SOD, rules)
+-> Access requests
+-> Identity cube logic
+
+()Types of calculated Data?
+Role-based entitlements
+-> Developer role -> Dev Group, Jira Access, DB read Access
+-> indirect access -> Role se mila access.
+-> Expected access ->
+SailPoint system ke hone ke anusar access kis user ke paas kaun sha access hona chahiye.
+-> Risk score
+-> Policy violations
+
+()Source vs Calculated/Derived :-
+Type
+-> Source Data :- Real target system se aaya data.
+-> Calculated/Derived Data :- System ne generate kiya Data.
+Note: -> Calculated == Derived
+
+()Attribute Finalization (identity cube rebuild) :-
+-> Attribute Finalization = last step jahan calculated identity attributes ko final stable identity record me
+commit(lock) - kiya jata hai.
+-> Simple one line -> sab calculated ho gaya -> ab identity ko final form me set kardo.
+----internally kya hota hai?
+-> System :- Calculated attributes read karta hai.
+-> identity object me merge karta Hai.
+-> old values overwrite karta hai.
+-> Final snapshot save karta hai?
+----Kya finalize hota hai?
+-> Roles, Entitlements, Risk score, policy result, Identity attributes.
+One line : Attribute Finalization is the process of committing all recalculated identity attributes into the final identity cube state rebuild processing.
+-> promoted attributes apply hote hain:
+-> identity.setAttribute("department", "IT");
+
+Flow position :-
+-> Cleanup phase
+↓
+Link Rebinding
+↓
+Role Expansion
+↓
+Entitlement Calculation
+↓
+Attribute Finalization
+↓
+Identity cube ready.
+
+
+
+()Direct Entitlement injection :-
+-> Account(Link) se jo direct entitlements aate hain unko identity ke sath attach karna.
+-> Account ke andar jo access hai -> usko identity me inject kar do.
+()Step by step samjh :-
+Step 1 -> Link = user ka account
+Ex -> Rahul -> AD Account -> DB Account
+
+Step 2 -> Entitlements nikale jate hai :-
+Ex -> AD Account -> Dev Group
+-> DB Account -> Read Access
+
+Step 3 -> Managed Attribute Mapping :-
+Ex -> System check karta hai :-
+-> Dev Group exist karta hai kya?
+-> DB ReadAccess valid hai kya?
+Table :- Spt_managed_attribute
+
+Step 4 -> Identity Entitlement create hota hai :-
+-> Identity : Rahul
+-> Entitlement : Dev Group
+-> Type : DIRECT
+-> Source : LINK
+
+Step 5 -> Identity me attach :-
+-> Ab Rahul ke profile me aa gaya
+-> Dev Group, Read Access.
+
+
+()Role-Based Entitlement :-
+-> Role ke through jo entitlements aate hain unko identity me attach karna = Role Based (Indirect) injection.
+
+Flow :-
+-> Identity -> Role assigned
+↓
+-> Role Expansion
+-> Entitlements extracted
+↓
+-> Role - Based injection (indirect)
+↓
+-> Identity Entitlement attach
+
+(9)Identity Entitlement List Finalize (Identity Cube) :-
+-> is step me identity ke sare entitlement ko final clean list me lock kiya jata hai.
+
+What happens here?
+-> System does :-
+• Direct entitlements (from accounts)
+• Indirect entitlements (from roles)
+• Duplicate remove
+• conflicts resolve
+• Final list prepare.
+
+Final output kya hota hai?
+-> Ek complete identity Entitlement set :-
+-> Dev Group (DIRECT)
+-> DB ReadAccess (INDIRECT)
+-> Jira user (INDIRECT)
+
+Step-by-step process :-
+-> Step 1 : collect all entitlements
+-> From Links -> Direct
+-> From Roles -> Indirect
+
+Step 2 -> Merge :- Sab entitlements ko ek list me merge/combine :-
+-> Dev Group
+-> DB ReadAccess
+-> Jira user
+
+Step 3 -> Duplicate handling :-
+-> Agar same entitlement aaye :-
+-> Dev Group (DIRECT + INDIRECT)
+-> merge kardo inko.
+
+Step 4 -> conflict resolution :-
+-> Priority rules :- Direct > Indirect
+-> Latest Role mapping wins (if conflicts)
+
+Step 5 -> Final Freeze :-
+-> Ab system bolta hai.
+-> ye hai final entitlement list identity ki.
+
+Real Example :-
+-> Rahul-> 
+
+Direct :-> 
+-> Dev Group-> 
+-----
+Indirect :->DB read / Access,
+ Jira user
+ 
+()Final list :-
+-> Dev Group (DIRECT)
+-> DB ReadAccess (INDIRECT)
+-> Jira user (INDIRECT)
+
+()Role Assignment Rebuild :-
+-> is step me identity ke andar roles ko dubara calculate karke assign kiya jata hai.
+-> user ko kaun-kaun se roles milne chahiye system ye calculate karke set karta hai.
+-> system bolta hai :- ki ish identity ke paas koun roles valid hain.
+
+Ex -> Before Rebuild :-
+-> Rahul
+-> Roles : Developer (old data)
+
+-> System recalculates :-
+-> Calculated Roles :-
+-> Developer
+-> QA Tester
+
+()After assignment :-
+identity.setRoles([Developer, QA Tester])
+
+()spt_role_assignment kya hai?
+-> ye Table store karta hai :
+-> Identity -> Role mapping
+-> Active role assignments
+-> Recalculated Results
+
+()Table structure idea :-
+-> Spt_role_assignment
+identity_id
+role_id
+assignment_type (calculated/direct)
+source (Rule / request)
+
+()Role Assignment Rebuild kya karta hai.
+-> Old roles clear/replace :-
+purane calculated roles hata deta hai.
+-> new roles calculate :- Rules + policies ke basis pe.
+-> Assign roles again :-
+Identity ke andar set karta hai.
+--------------------------------------------------------------
+(1).Direct vs calculated roles :-
+
+a. Direct Role kya hai?
+-> user ko manually / request se assign kiya gaya role.
+Ex -> Rahul ko admin ne Role diya, jab Rahul ne Request kiya Role ka.
+
+b. Calculated Role kya hai?
+-> System ne Rules/policies/attributes ke basis pe khud assign kiya Role, hi Calculated Role kehlata hai.
+
+Ex -> Rahul :-
+-> Department = IT
+-> Job = Engineer
+-> System Calculate Karega.
+
+-> Role : Developer (calculated)
+-> source : Rule / policy
+--------------------------------------
+()Role kaise purana ho jata hai?
+-> 1. Attribute change :-
+-> Rahul
+-> Dept = IT
+-> Role = Developer
+fir baad me Dept = HR
+-> Now Developer role old and not valid and outdated.
+--------------------------------------------------------------
+().Policy violation injection :-
+->System jo policy violations detect karta hai, unko identity cube me attach karta Hai,
+user ne koi rule break kiya toh uss violation ko system se identity cube me attach kar diya.
+
+Ex -> Rahul :-
+-> Role: Developer
+-> But also has = Finance DB Access
+
+-> SOD policy
+-> Developer + Finance DB = VIOLATION
+
+-> Injection result :- policy Violation
+-> SOD conflict
+-> Finance Access not allowed for developer.
+
+Internally kya hota hai?
+-> System -> for each identity:
+check policies:
+if violation found:
+create policy violation object
+attach to identity cube
+-> Where stored ?
+-> Mostly -> spt_policy_violation identity cube object
+
+()Risk score calculation Attach kya hota hai?
+-> Identity ka overall risk calculate karke identity cube me attach karna.
+-> user kitna dangerous hai / risky hai score me convert karna.
+Ex -> Rahul :-
+Finance access
+Admin rights
+Multiple violations
+----Risk Score kaise banta hai.
+-> Based on :-
+-> policy violations
+-> Sensitive Entitlements
+-> Role critically
+-> Access type (admin > user)
+
+().Consistency engine :-
+-> System verify karta hai ki identity cube ka data internally consistent hai ya nahi.
+-> Consistency engine ek internal validation / correction layer jo identity cube rebuild ke end me ensure karta hai ki poora identity data
+logically sahi, aligned aur conflict free ho.
+-> Jo abhi calculate hua hai -> wo sach me valid hai ya nahi, system verify karta hai.
+
+()Internal working (Engine level logic)
+-> For each Identity:
+Validate Links (accounts)
+Validate Direct Entitlements
+Validate Indirect Entitlements
+Validate Role assignments
+Compare Expected vs Actual
+Check duplicates
+Check orphan data
+Fix inconsistencies
+mark identity as consistent
+
+()Expected vs Actual validation :-
+-> System ka sabse pehla sawal :-
+-> "user ke paas jo hona chahiye (Expected) vs jo actually hai (Actual) - match kar raha hai ?"
+()case 1 : Match :-
+-> Expected: Dev Group ✓
+-> Actual : Dev Group ✓
+-> All good
+()case 2 : Missing :-
+Expected : Dev Group ✓
+Actual : 
+-> problem :- Role hai IIQ me but access nahi in Account Application me.
+toh provisioning trigger ya Flag.
+
+case 3: Extra :-
+Expected : 
+Actual : Finance DB ✓
+-> problem :- unauthorized access
+Toh deprovision ya violation trigger.
+
+()Core logic :- Expected != Actual==inconsistency
+
+()Role Entitlement Dependency check :-
+-> system check karta hai :-
+-> Agar role hai toh uske entitlements bhi hone chahiye.
+Ex -> Role : Developer
+Expected Entitlement : Dev Group
+-> X case :- Role: Developer ✓
+->Dev Group X
+-> Problem -> role incomplete ho gaya, Action Recalculate ya inject.
+
+8. Duplicate Handling :-
+-> system check karta hai :-
+-> same entitlement multiple sources se aa raha hai kya?
+Ex -> Dev Group (Direct)
+Dev Group (Indirect)
+System kya karta hai ?
+-> Duplicate remove nahi karta blindly, merge karta hai + source track karta hai.
+-> Direct > Indirect
+core logic :- Duplicate allowed nahi but source info lost nahi hona chahiye.
+
+
+(9)source integrity check :-
+-> system har entitlement se poochta hai :-
+-> "Tu kaha se aaya ?"
+-> Metadata check :-
+-> type = INDIRECT
+-> source = Role
+-> Role = Developer
+
+X Problem case :- Role hi exist nahi karta :-
+-> Role = Developer X (deleted)
+-> Entitlement still present
+-> Action :- invalid source -> remove/Fix.
+
+(10)Orphan Data detection :-
+-> system check karta hai ki koi aisa access Toh nahi jo kisi source se linked hi nahi hai ?"
+-> Ex -> Entitlement: AdminPanelAccess
+Source : X unknown
+-> Na hi role se aaya, Na hi account se, -> orphan. toh action hoga ki Remove/Flag.
+
+()Link consistency (Account check) Deep :-
+-> system verify karta hai :-
+-> identity ke accounts (links) valid hain ya broken?
+Ex -> Rahul :- AD Account ✓
+-> Rahul :- DB Account X deleted
+-> Problem :- link Broken
+-> Action trigger -> Fix mapping ya detach account.
+
+()Policy & Risk Alignment :-
+-> system check karta hai :-
+violations aur risk score sahi reflect ho rahe hain ?
+-> Ex -> Finance + Developer = Violation ✓
+-> But risk score low hai :-
+-> Risk = 20 
+-> Problem :- Risk mismatch
+-> Action -> Risk score Recalculate.
+-> core logic:- violation high = risk high hona chahiye
+
+()identity object Freeze :-
+-> Jab poora rebuild complete ho jata hai, tab identity ko final stable aur consistent state me lock kar diya jata hai. 
+matlab abb sab sahi hai, ab identity ko freeze kardo.
+
+-> 1. identity.markClean() :-
+-> identity me koi pending change nahi sab calculations complete, object ab clean state me hai.
+
+-> 2. identity.setDirty(false) :-
+-> Dirty = changes pending 
+-> False = no changes left.
+Ex -> Rahul :
+-> Roles : Developer ✓
+-> Entitlements : Dev Group ✓
+-> Risk : medium ✓
+-> Violations : none ✓
+-> Ab system kya karega toh upar ke dono methods perform karega.
+-> freeze ke baad system dobara calculate nahi karta, jab tak next refresh / Rebuild na ho.
+
+15. Persistence Layer :-
+-> identity cube me jo final data bana hai, usko database tables me store karna hi = persistence Layer hai.
+
+()identity update :-
+UPDATE spt_identity SET...WHERE id = ?
+-> kya update hota hai ?
+-> identity attributes
+-> risk score
+-> Flags (dirty = false)
+-> metadata
+Ex -> Rahul :
+-> Risk score = 85
+-> Dirty = false
+-> ye sab spt_identity me update hota hai.
+
+()Entitlement insert :-
+INSERT INTO spt_identity_entitlement(...)
+-> kya insert hota hai ?
+-> Direct entitlements
+-> Indirect entitlements
+-> source tracking
+Ex -> Rahul -> Dev Group (DIRECT)
+-> Rahul -> DB Read (INDIRECT)
+-> Har entitlement ek row banata hai.
+
+11. Role Assignment :-
+-> INSERT INTO spt_role_assignment (...)
+-> kya insert hota hai?
+-> Identity -> role mapping
+-> Direct roles
+-> Calculated roles
+Ex -> Rahul -> Developer role
+Rahul -> IT Access role
+
+12. Policy violations insert :-
+-> INSERT INTO spt_policy_violation (...)
+-> kya insert hota hai?
+-> SOD violations
+-> policy conflicts.
+Ex -> Rahul :
+-> Developer + Finance = Violation
+
+13. commit Transaction :-
+-> context.commitTransaction()
+-> Agar error :-
+-> context.rollbackTransaction()
+
+14. Indexing Engine Trigger :-
+-> Identity ka updated data fast search ke liye index system me push karna.
+-> indexService.update(identity);
+Matlab :- identity ka latest data utho aur ushko indexing engine (Lucene/Elastic type) me update karo.
+()Kaun-Kaun se Fields index hote hai?
+-> mostly :-
+-> Name, Entitlements
+-> Email, Manager
+-> Roles, Risk-Score
+Ex -> Rahul :
+-> Name : Rahul
+-> Role : Developer
+-> Entitlements : Dev Group
+-> Risk : Medium
+Q. Real use case :-
+-> Jab tu UI me search karta hai
+-> identity search
+-> role search
+-> access search
+-> sab indexing pe depend karta hai.
+-> Agar indexing na ho toh search slow, aur New data reflect nahi hoga, UI outdated dikhega.
+
+15. Event / Workflow Trigger :-
+-> post-rebuild Events :-
+-> Certification, workflow, Alert
+
+Q. Flow of identity cube Rebuild :-
+-> Working Identity Object
+-> Start Transaction
+-> Delete Old data
+-> Attach Links
+-> Inject Direct Entitlements
+-> Inject Role Entitlement
+-> Attach Roles + Violations
+-> Validate (Consistency Engine)
+-> Freeze Identity
+-> persist to DB
+-> commit Transaction
+-> Index + Events
+
+14. Database update :-
+-> Sab kuch DB me save hota hai :-
+-> Spt_identity
+-> Spt_identity_entitlement
+-> Spt_role_assignment
+-> Spt_policy_violation
+
+15. UI Reflection + Audit :-
+-> UI me updated data dikhega.
+-> Audit logs store honge.
+
+1. Identity Cube ek central object Jisme ek user ki poori duniya stored hoti hai.
+-> user attributes (name, dept, manager)
+-> Accounts (AD, DB, SAP...)
+-> Entitlements (Groups, Permissions)
+-> Roles (Business + IT)
+-> policy violations
+-> Risk score
+
+Page 145
+
+* Flow of refresh identity Cube :-
+-> Identity load
+↓
+-> Accounts (Link) Fetch
+↓
+-> Correlation check
+↓
+-> Attribute promotion
+↓
+-> Entitlement Extraction
+↓
+-> Identity Entitlement Build
+↓
+-> Role Assignment
+↓
+-> Role Expansion
+↓
+-> Policy Evaluation
+↓
+-> Risk Calculation
+↓
+-> Provisioning compare
+↓
+-> Identity cube rebuild
+↓
+-> DB save + UI update.

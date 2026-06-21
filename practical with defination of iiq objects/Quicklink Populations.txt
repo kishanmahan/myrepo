@@ -1,0 +1,61 @@
+()global setting->Quicklink Populations:-
+->new->name/description-ruthie->included identities-arron.nichols-aur adam-kennedy->who can members request for-ignore scoping-tick->
+->quicklinks-workitem-tick->
+->view identity-tick-for self-tick-for other and single-tick->save->
+->signoffs/trackrequest/tick->
+->request access-tick-for self->
+->request entitlements->allow requesting additional/allow requester-tick->
+->policy violations-tick->
+->manage password-for self-tick- allow managing/allow requesting new-tick->
+->edit identity-for self/other/single teeno me-tick->
+->create identity-tick->
+->save->fir login arron.nichols->stack bar->see manage and create identity-ka sara quiclink aek simple user ko mila.
+
+()Quicklink ka matlab->stackbar me jitne tab-links wahi quicklinks hai.
+
+1. Configuration Tab (Details & Membership):-
+Yahan aap population ki pehchan aur uske members tay karte hain.
+()Name & Description: Population ka naam (e.g., "All Managers") aur uska maqsad.
+()Membership Rule: Ek Beanshell rule jo ye decide karta hai ki kaun is population ka part banega. 
+Ismein "All" select karne par system ke saare users member ban jate hain.
+()Included/Excluded Identities: Agar aapko rule ke alawa manually kisi ko add ya remove karna hai, 
+toh yahan se specific identities select kar sakte hain.
+
+()Who can members request for?:-
+Everyone: Is population ke log kisi bhi user ke liye access request kar sakte hain.
+Specific Users: Sirf ek khaas group ke liye (e.g., manager sirf apni team ke liye).
+No one: User sirf apne liye request kar sakta hai ya bilkul nahi.
+
+()Ignore Scoping: Agar ye checked hai, toh SailPoint ka general organizational scope (parda) is population par lagu nahi hoga.
+//////////*
+Simple words mein:-
+👉 Organization kya karta hai, kahan tak karta hai, aur kis limit tak karta hai — ye sab uska scope define karta hai.
+Isme kya-kya include hota hai:
+Activities: Organization ka main kaam (jaise manufacturing, service dena, education, etc.)
+Geographical Area: Kaam kaha tak hota hai (local, national, international)
+Products/Services: Kaunse products ya services provide karta hai
+Target Audience: Kis type ke log ya customers ke liye kaam karta hai
+Objectives: Organization ka goal kya hai.
+*////////////
+
+()What can members request/remove?: Yahan aap rules set karte hain ki ye members kaunse Roles, Applications,
+ya Entitlements mang sakte hain ya delete kar sakte hain.
+Example: Aap rule laga sakte hain ki HR team sirf "HR App" mang sake, "Finance App" nahi.
+
+2. Quicklinks Tab (Available Links):-
+Yahan aap list mein se wo icons/links select karte hain jo user ke home page par dikhenge.
+
+Quicklink Name	                       Iska Kaam
+Access Reviews:-----------User ko unke pending certification tasks dikhata hai.
+Approvals:----------------Agar koi manager hai, toh dusron ki requests approve karne ka link.
+Create/Edit Identity:-----Nayi identity banane ya existing details badalne ke liye (zyadatar Help Desk ke liye).
+Manage Passwords:---------Password change ya reset karne ka shortcut.
+Request Access:-----------Naye access mangne ka main portal kholta hai.
+Work Items:---------------Saare pending manual tasks (approvals, forms) ek jagah dekhne ke liye.
+Manage Accounts:----------User ke link kiye huye saare accounts (AD, SAP, etc.) ki list dikhata hai.
+Signoffs:-----------------Agar koi manager hai, toh certification campaign khatam hone par final "Sign-off" karne ke liye.
+View Identity:------------User ki apni ya (agar permissions ho toh) dusron ki poori profile dekhne ke liye.
+Forms:--------------------Agar koi manual process pending hai jisme user ko data bharna hai.
+Mobile Violation Reviews:-Mobile interface par policy violations (SOD) ko review karne ke liye shortcut.
+Policy Violations:--------System mein maujood saari policy violations ki list aur unka status.
+Track Requests:-----------Apni bheji hui requests ka live status dekhne ke liye (Pending/Approved/Failed).

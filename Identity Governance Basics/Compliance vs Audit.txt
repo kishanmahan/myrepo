@@ -1,0 +1,209 @@
+1️⃣ Compliance kya hota hai?
+Compliance = Rules, policies aur laws ko follow karna.
+Matlab company ko government ya industry ke rules follow karne padte hain.
+Example:-
+Company rule:-
+Employee ko Admin + Finance access ek sath nahi mil sakta
+Agar system ye rule follow kar raha hai → Company compliant hai
+Agar rule break ho gaya → Compliance violation.
+
+()Common Compliance Standards:-
+ISO 27001
+SOC 2
+GDPR
+HIPAA
+SOX
+Ye standards batate hain data security kaise maintain karni hai.
+
+️⃣ Compliance vs Audit:-
+Compliance	             Audit
+Rules follow karna---Rules check karna
+Internal process-----External review
+Continuous process---Periodic process
+
+Simple Example:-
+Company rule:-
+DatabaseDelete access sirf Admin ko milega
+Agar rule follow ho raha hai → Compliance
+Auditor check karega rule follow hua ya nahi → Audit
+
+1️⃣ Audit Logs kya hote hain?
+Audit Logs = System me jo bhi activity hoti hai uska recorded history.
+Matlab system har important action ko log file me store karta hai.
+👉 Example activities:-
+User login
+Access granted
+Access removed
+Role change
+Password change
+
+2️⃣ Example Audit Log:-
+Time: 10:30 AM
+User: Rahul
+Action: Role Assigned
+Role: Admin
+Status: Success
+
+3️⃣ Audit Logs me kya kya store hota hai:-
+Field	     Meaning
+Timestamp---Action kab hua
+User--------Kisne action kiya
+Action------Kya action hua
+Target------Kis identity ya system par hua
+Status------Success / Failure
+
+4️⃣ IAM System Example:-
+Timestamp : 2026-03-12 10:45
+Actor : AdminUser
+Action : Access Revoked
+Target User : Rahul
+Entitlement : DatabaseDelete
+Status : Success
+Iska matlab:-
+Admin ne Rahul ka DatabaseDelete access revoke kiya.
+
+5️⃣ Audit Logs kyun important hote hain:-
+✔ Security monitoring
+✔ Compliance (ISO / SOC2)
+✔ Investigation
+✔ Fraud detection
+Example: Agar data leak hua to logs se pata chal sakta hai kisne kya kiya tha.
+
+Audit Log IAM Project (Java)
+import java.util.ArrayList;
+import java.util.List;
+import java.time.LocalDateTime;
+
+class AuditLog {
+
+    private String actor;
+    private String action;
+    private String target;
+    private LocalDateTime time;
+
+    public AuditLog(String actor, String action, String target) {
+        this.actor = actor;
+        this.action = action;
+        this.target = target;
+        this.time = LocalDateTime.now();
+    }
+
+    public void displayLog() {
+
+        System.out.println("Time : " + time);
+        System.out.println("Actor : " + actor);
+        System.out.println("Action : " + action);
+        System.out.println("Target : " + target);
+        System.out.println("------------------------------");
+
+    }
+}
+
+class Identity {
+
+    private String name;
+    private List<String> roles;
+
+    public Identity(String name) {
+
+        this.name = name;
+        this.roles = new ArrayList<>();
+
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void assignRole(String role) {
+
+        roles.add(role);
+
+    }
+
+    public void revokeRole(String role) {
+
+        roles.remove(role);
+
+    }
+
+    public void displayRoles() {
+
+        System.out.println(name + " Roles : " + roles);
+
+    }
+
+}
+
+public class AuditLogProject {
+
+    public static void main(String[] args) {
+
+        List<Identity> users = new ArrayList<>();
+        List<AuditLog> logs = new ArrayList<>();
+
+        Identity user1 = new Identity("Rahul");
+        Identity user2 = new Identity("Amit");
+
+        users.add(user1);
+        users.add(user2);
+
+
+        // Role Assignment
+        user1.assignRole("Admin");
+        logs.add(new AuditLog("System", "Assign Role Admin", user1.getName()));
+
+        user2.assignRole("Employee");
+        logs.add(new AuditLog("System", "Assign Role Employee", user2.getName()));
+
+
+        // Role Revoke
+        user1.revokeRole("Admin");
+        logs.add(new AuditLog("AdminUser", "Revoke Role Admin", user1.getName()));
+
+
+        // Display Users
+        System.out.println("---- User Roles ----");
+
+        for(Identity id : users) {
+
+            id.displayRoles();
+
+        }
+
+
+        // Display Audit Logs
+        System.out.println("\n---- Audit Logs ----");
+
+        for(AuditLog log : logs) {
+
+            log.displayLog();
+
+        }
+
+    }
+}
+Example Output
+---- User Roles ----
+Rahul Roles : []
+Amit Roles : [Employee]
+
+---- Audit Logs ----
+
+Time : 2026-03-12T11:40
+Actor : System
+Action : Assign Role Admin
+Target : Rahul
+------------------------------
+
+Time : 2026-03-12T11:40
+Actor : System
+Action : Assign Role Employee
+Target : Amit
+------------------------------
+
+Time : 2026-03-12T11:40
+Actor : AdminUser
+Action : Revoke Role Admin
+Target : Rahul
+------------------------------

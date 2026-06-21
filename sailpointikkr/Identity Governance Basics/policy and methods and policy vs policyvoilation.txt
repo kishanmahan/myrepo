@@ -1,0 +1,967 @@
+()Policy kya hai?
+--🔐 SailPoint me Policy kya hoti hai? (Hinglish)
+SailPoint (IdentityIQ / IdentityNow) me Policy ka matlab hota hai:-
+👉 Security rules jo check karte hain ki kisi user ka access sahi hai ya galat (risk ya violation hai ya nahi)
+
+🔹 Simple samajh:-
+👉 System check karta hai:-
+“User ko jo access mila hai, kya wo allowed hai?”
+Agar nahi → ❌ Policy Violation
+
+🔐 SailPoint me kitne type ki Policies hoti hain?
+1️⃣ Access Policy:-
+👉 Check karta hai ki user ke paas jo access hai wo allowed hai ya nahi
+
+Example:-
+User ko admin access nahi milna chahiye
+
+2️⃣ SoD Policy (Segregation of Duties):-
+👉 Conflicting roles detect karta hai.
+Example:-
+"Create Payment" + "Approve Payment" ❌
+
+3️⃣ Password Policy:-
+👉 Password rules define karta hai
+Example:-
+Minimum 8 characters
+Special character mandatory
+
+4️⃣ Activity Policy:-
+👉 User ke actions monitor karta hai
+Example:-
+Bahut zyada failed login attempts
+Suspicious activity
+
+5️⃣ Risk-Based Policy:-
+👉 User ke risk score ke basis pe decision
+Example:-
+High risk user → access block
+
+6️⃣ Certification Policy (Review Policy)?
+👉 Access review ke time check hota hai.
+Example:-
+Manager verify kare ki employee ka access sahi hai.
+
+🔥 Main Difference: Policy vs PolicyViolation
+🔐 1️⃣ Policy (sailpoint.object.Policy):-
+👉 Ye rule/configuration hota hai
+Define karta hai:-
+kya check karna hai
+kis condition pe violation hoga
+severity kya hogi
+👉 Matlab:-
+“Rule banane wala object”
+
+🚨 2️⃣ PolicyViolation (sailpoint.object.PolicyViolation):-
+👉 Ye result/output hota hai
+Jab policy fail hoti hai → ye object create hota hai
+Isme hota hai:-
+kis user ne violate kiya
+kya violation hai
+mitigation / resolution kya hai.
+👉 Matlab:-
+“Rule tootne ka result”
+-------------------------sare methods of policy:->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+🔹 Basic Info Methods
+getId()
+setId(String id)
+
+getName()
+setName(String name)
+
+getDescription()
+setDescription(String description)
+
+getType()
+setType(String type)
+
+🔹 Policy State / Status
+isEnabled()
+setEnabled(boolean enabled)
+
+isActive()
+setActive(boolean active)
+
+getState()
+setState(String state)
+🔹 Severity / Risk
+getSeverity()
+setSeverity(String severity)
+
+getRiskScore()
+setRiskScore(int score)
+🔹 Rule & Logic Related
+getRule()
+setRule(Rule rule)
+
+getRuleName()
+setRuleName(String ruleName)
+
+getViolationRule()
+setViolationRule(Rule rule)
+
+getOwner()
+setOwner(Identity owner)
+
+
+🔹 Policy Conditions / Constraints
+getConstraints()
+setConstraints(List constraints)
+
+addConstraint(Constraint constraint)
+
+getFilter()
+setFilter(Filter filter)
+
+🔹 Violation Handling
+getViolationOwner()
+setViolationOwner(Identity identity)
+
+getMitigationRequired()
+setMitigationRequired(boolean val)
+
+getMitigationDescription()
+setMitigationDescription(String desc)
+🔹 Notification / Escalation
+getEscalationRule()
+setEscalationRule(Rule rule)
+
+getNotificationRule()
+setNotificationRule(Rule rule)
+
+
+🔹 Scope / Application
+getApplication()
+setApplication(Application app)
+
+getScope()
+setScope(Scope scope)
+
+getPopulation()
+setPopulation(Population population)
+🔹 Audit / Metadata
+getCreated()
+getModified()
+
+getCreatedBy()
+getModifiedBy()
+🔹 XML / Object Conversion (VERY IMPORTANT 🔥)
+toXml()
+fromXml(String xml)
+
+toMap()
+fromMap(Map map)
+
+👉 Ye interview me bahut important hai
+
+🔹 Utility Methods
+validate()
+
+clone()
+
+equals(Object obj)
+
+hashCode()
+
+toString()
+-------------------------------------------------
+1️⃣ getId() / setId(String id):-
+👉 Policy ka unique ID
+
+📌 Code:-
+Policy policy = new Policy();
+
+policy.setId("POL-001");
+
+System.out.println(policy.getId());
+✅ Output:-
+POL-001
+
+🧠 Real use:-
+Database me identify karna
+API / logs me 
+-------------------
+2️⃣ getName() / setName(String name):-
+👉 Policy ka naam
+
+📌 Code:-
+policy.setName("SoD Policy");
+
+System.out.println(policy.getName());
+✅ Output:
+SoD Policy
+
+🧠 Real use:-
+UI me show hota hai
+-------------------------
+3️⃣ getDescription() / setDescription(String description):-
+👉 Policy ka detail explanation
+
+📌 Code:-
+policy.setDescription("Developer should not have Production access");
+System.out.println(policy.getDescription());
+
+🧠 Real use:-
+Auditor ko samjhane ke liye
+Documentation
+--------------------------
+4️⃣ getType() / setType(String type):-
+👉 Policy ka type (kis category ka rule hai)
+
+💡 Common Types:-
+SoD            → Segregation of Duties
+Access         → Direct access policy
+Risk           → Risk based policy
+Compliance     → SOX / GDPR related
+📌 Code:-
+policy.setType("SoD");
+System.out.println(policy.getType());
+
+🧠 Real use:-
+System decide karta hai kaise evaluate kare
+Reporting category
+--------------------------------
+Policy policy = new Policy();
+
+policy.setId("POL-001");
+policy.setName("Dev-Prod Conflict");
+policy.setDescription("Developer should not have Production access");
+policy.setType("SoD");
+
+System.out.println(policy.getId());
+System.out.println(policy.getName());
+System.out.println(policy.getDescription());
+System.out.println(policy.getType());
+✅ Output:-
+POL-001
+Dev-Prod Conflict
+Developer should not have Production access
+SoD
+--------------------------------------------
+()🔥 1️⃣ isEnabled() / setEnabled(boolean enabled):-
+👉 Kya karta hai?
+➡️ Ye system level switch hai
+👉 Matlab SailPoint engine decide karta hai:-
+
+Policy ko evaluate karna hai ya ignore karna hai
+💡 Simple samajh:-
+true → policy chalegi (engine use karega)
+false → policy bilkul ignore ho jayegi
+
+📌 Code:-
+policy.setEnabled(true);
+
+System.out.println(policy.isEnabled());
+✅ Output:-
+true
+
+🧠 Real use:-
+Temporary disable karna (maintenance, testing)
+Policy ko completely band karna
+----------
+🔥 2️⃣ isActive() / setActive(boolean active):-
+👉 Ye batata hai policy currently use me hai ya nahi.
+
+📌 Code:-
+policy.setActive(true);
+
+System.out.println(policy.isActive());
+-----------
+🔥 3️⃣ getState() / setState(String state)
+👉 Kya karta hai?
+➡️ Ye policy ka lifecycle stage batata hai.
+
+DRAFT        → abhi ban rahi hai
+ACTIVE       → live hai
+INACTIVE     → use nahi ho rahi
+DEPRECATED   → purani ho gayi
+📌 Code:-
+policy.setState("DRAFT");
+System.out.println(policy.getState());
+-----------------------------------------
+🔥 🔥 Teeno ka Combined Flow:-
+Step 1: Policy banayi
+        State = DRAFT
+        Enabled = false
+        Active = false
+
+Step 2: Testing complete
+        Enabled = true
+
+Step 3: Go Live
+        Active = true
+        State = ACTIVE
+
+Step 4: Old ho gayi
+        Active = false
+        State = DEPRECATED
+----------------------------------------------
+🔥 🔹 1️⃣ Risk Related Methods:-
+
+✅ getSeverity() / setSeverity(String severity)
+👉 Kya karta hai?
+➡️ Policy ka default severity level define karta hai
+
+💡 Meaning:-
+Ye batata hai ki agar violation aaye to kitna serious maana jaye.
+
+📌 Code:-
+policy.setSeverity("HIGH");
+
+System.out.println(policy.getSeverity());
+✅ Output:-
+HIGH
+
+🧠 Real use:-
+Reporting
+Priority decide karna
+Dashboard color coding
+----------------------------------------------------------
+✅ getRiskScore() / setRiskScore(int score):-
+👉 Kya karta hai?
+➡️ Policy ka numeric risk weight define karta hai
+
+📌 Code:-
+policy.setRiskScore(80);
+
+System.out.println(policy.getRiskScore());
+✅ Output:-
+80
+
+🧠 Real use:-
+Risk calculation
+Multiple violations ka total risk.
+-------------------------------------------------------------
+🔥 🔹 2️⃣ Rule & Logic Related Methods:-
+🔥 🔹 2️⃣ Rule & Logic Related Methods
+✅ getRule() / setRule(Rule rule)
+👉 Kya karta hai?
+➡️ Ye actual logic (Rule object) attach karta hai policy ke saath
+
+💡 Rule kya hota hai?
+👉 Custom logic (Beanshell / Java style)
+➡️ Jo decide karta hai:-
+Violation hai ya nahi
+
+📌 Code:-
+Rule rule = new Rule();
+rule.setName("Check Dev vs Prod");
+
+policy.setRule(rule);
+
+System.out.println(policy.getRule().getName());
+✅ Output:-
+Check Dev vs Prod
+
+🧠 Real use:-
+Custom validation
+Complex SoD logic
+----------------------------------------
+✅ getRuleName() / setRuleName(String ruleName):-
+👉 Kya karta hai?
+➡️ Rule ka naam store karta hai (string form me)
+
+📌 Code:-
+policy.setRuleName("DevProdRule");
+System.out.println(policy.getRuleName());
+✅ Output:-
+DevProdRule
+------------------------------------------------------
+✅ getViolationRule() / setViolationRule(Rule rule)
+👉 Kya karta hai?
+
+➡️ Ye special rule hota hai jo violation create karta hai
+
+💡 Difference:-
+Rule	                ViolationRule
+Check karta hai-------Violation banata hai
+Logic run karta hai---Result create karta hai
+
+📌 Code:-
+Rule vRule = new Rule();
+vRule.setName("Violation Creator");
+
+policy.setViolationRule(vRule);
+
+System.out.println(policy.getViolationRule().getName());
+✅ Output:-
+Violation Creator
+
+🧠 Real use:-
+Custom violation object banana
+Advanced reporting
+-----------------------------------------------------------------------------
+----------------------------------------------------------------
+💡 Rule vs ViolationRule (Full Detail – SailPoint):-
+🔹 1️⃣ Rule kya hota hai?
+
+👉 Rule = Reusable Java-based logic block
+Ye SailPoint ka core concept hai jahan tum custom logic likhte ho
+
+🔧 Rule kaha use hota hai?
+Identity creation/update
+Provisioning (account create/delete)
+Approval flow
+Attribute transformation
+Connector logic
+
+📦 Internally kya hota hai?
+Rule ek XML object hota hai
+Uske andar Java code hota hai
+SailPoint runtime pe execute karta hai
+
+🧠 Real Example:-
+<Rule name="CheckDepartmentRule" type="Identity">
+    <Source>
+        if(identity.getDepartment().equals("IT")) {
+            return true;
+        }
+        return false;
+    </Source>
+</Rule>
+🔍 Samajh:-
+👉 Ye rule bas ek condition check kar raha hai,
+👉 Koi violation ya risk detect nahi kar raha.
+
+🔹 2️⃣ ViolationRule kya hota hai?
+👉 ViolationRule = Special type ka Rule jo Policy violation detect karta hai,
+Ye normal rule nahi hai — ye specifically Policy Engine ke saath use hota hai.
+
+🔧 Ye kaha use hota hai?
+Policy check ke time
+SoD (Segregation of Duties)
+Compliance validation
+Access certification
+
+📦 Internally kya hota hai?
+Ye bhi XML + Java hota hai
+Lekin output me Violation object / message deta hai
+Policy system ko batata hai: "problem hai"
+
+🧠 Real Example:-
+<Rule name="SoDViolationRule" type="Violation">
+    <Source>
+        if(identity.hasRole("Admin") && identity.hasRole("Auditor")) {
+            return "Violation: Admin + Auditor not allowed";
+        }
+        return null;
+    </Source>
+</Rule>
+🔍 Samajh:-
+👉 Ye rule risk detect kar raha hai
+👉 Agar condition true → violation generate
+👉 Agar false → koi issue nahi.
+
+🔸 Execution Level difference:-
+Point	              Rule	                      ViolationRule
+Execution-----------Har jagah----------------Sirf Policy evaluation me
+Trigger-------------Developer call/config----Policy engine automatically
+Context-------------Flexible-----------------------Policy context
+
+🔸 Output Difference:-
+Rule Output	            ViolationRule Output
+boolean------------------Violation message
+object-------------------Risk / violation
+modified data------------compliance issue
+
+🔸 Real Life Mapping:-
+🔹 Rule (Normal Logic):-
+👉 "User IT department me hai ya nahi?"
+
+🔹 ViolationRule (Security Logic):-
+👉 "User ke paas dangerous combination access hai ya nahi?"
+
+👉 Rule = "Kya karna hai" define karta hai
+👉 ViolationRule = "Kya galat ho raha hai" detect karta hai.
+
+()Ek hi Rule engine hota hai:-
+Usme different types hote hain:-
+Identity Rule
+Provisioning Rule
+Approval Rule
+Violation Rule
+----------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------
+🔥 🔹 3️⃣ Owner Method:-
+✅ getOwner() / setOwner(Identity owner)
+👉 Kya karta hai?
+➡️ Policy ka owner define karta hai (kaun responsible hai)
+
+📌 Code:-
+Identity owner = new Identity();
+owner.setName("Admin_User");
+
+policy.setOwner(owner);
+
+System.out.println(policy.getOwner().getName());
+✅ Output:-
+Admin_User
+
+🧠 Real use:-
+Accountability
+Approval flow
+Governance
+---------------------------------
+🔥 🔹 1️⃣ getConstraints() / setConstraints(List constraints):-
+👉 Kya karta hai?
+➡️ Ye policy ke andar multiple rules (conditions) store karta hai
+
+💡 Constraint kya hota hai?
+💡 Constraint kya hota hai?
+➡️ Policy ke andar ek specific rule
+Example:-
+Policy: SoD Policy
+Constraint: Dev vs Prod Access Conflict
+
+Example:-
+Policy:critical combo
+User ke paas:
+- Developer Role
+- Production Access
+➡️ Ye combination allowed nahi ❌
+-------------------
+📌 Code:-
+List<Constraint> list = new ArrayList<>();
+
+Constraint c1 = new Constraint();
+Constraint c2 = new Constraint();
+
+list.add(c1);
+list.add(c2);
+
+policy.setConstraints(list);
+
+System.out.println(policy.getConstraints().size());
+✅ Output:-2
+--------------------------
+🔥 🔹 2️⃣ addConstraint(Constraint constraint):-
+👉 Kya karta hai?
+
+➡️ Ek single constraint add karta hai policy me
+
+📌 Code:
+Constraint c = new Constraint();
+
+policy.addConstraint(c);
+
+System.out.println(policy.getConstraints().size());//1
+-----------------------------------
+🔥 🔹 3️⃣ getFilter() / setFilter(Filter filter):-
+👉 Kya karta hai?
+
+➡️ Ye decide karta hai:-
+Policy kin users pe apply hogi
+
+💡 Filter kya hota hai?
+👉 Condition jo target select karta hai
+
+Example:-
+Department = IT
+Location = India
+
+📌 Code:-
+Filter filter = new Filter();
+policy.setFilter(filter);
+System.out.println(policy.getFilter());
+
+✅ Output:-
+Filter object
+🧠 Real use:-
+Policy sirf IT users ke liye apply hogi india me.
+-------------------------------------------------
+🔥 🔹 1️⃣ Violation Handling Methods:-
+✅ getViolationOwner() / setViolationOwner(Identity identity):
+
+👉 Kya karta hai?
+➡️ Ye define karta hai:-
+Violation ko kaun handle karega (responsible person)
+
+📌 Code:-
+Identity owner = new Identity();
+owner.setName("Security_Admin");
+policy.setViolationOwner(owner);
+
+System.out.println(policy.getViolationOwner().getName());
+✅ Output:-
+Security_Admin
+
+🧠 Real use:-
+Task assign hota hai
+Approval / fix ka responsibility
+----------------------------------------------------------
+///////////////*
+()🔥 1️⃣ Resolution (kya hota hai?)
+👉 Resolution ka matlab hai problem ko poori tarah solve kar dena (final fix)
+
+✅ Kya karta hai:-
+Root cause ko fix karta hai
+Issue permanently close kar deta hai
+
+📌 Example:-
+User ko galti se Admin access mil gaya
+👉 Resolution:-
+Admin access remove kar diya
+Correct role assign kar diya
+
+🎯 Result:-
+✔ Problem completely fix
+✔ Future me same issue nahi aayega
+
+⚡ 2️⃣ Mitigation (kya hota hai?)
+👉 Mitigation ka matlab hai risk ko temporarily control ya reduce karna.
+
+✅ Kya karta hai:-
+Problem ko turant control karta hai
+Lekin permanent fix nahi hota
+
+📌 Example:-
+User ke paas risky access hai (remove nahi kar sakte immediately)
+👉 Mitigation:-
+Monitoring enable kar di
+Approval mandatory kar diya
+Time-based access laga diya
+
+🎯 Result:-
+✔ Risk kam ho gaya
+❌ Problem fully solve nahi hui
+*///////////////
+---------------------------------------
+✅ getMitigationRequired() / setMitigationRequired(boolean val)
+👉 Kya karta hai?
+
+➡️ Ye batata hai:-
+Violation ke liye mitigation (temporary control) zaroori hai ya nahi.
+
+🧠 Real use:-
+High risk cases me mitigation mandatory
+Approval ke bina access allow nahi.
+-----------------------------------------------
+✅ getMitigationDescription() / setMitigationDescription(String desc)
+👉 Kya karta hai?
+
+➡️ Ye batata hai:-
+Mitigation kaise karna hai (instructions)
+
+📌 Code:-
+policy.setMitigationDescription("Manager approval required for temporary access");
+
+System.out.println(policy.getMitigationDescription());
+✅ Output:-
+Manager approval required for temporary access
+
+🧠 Real use:-
+User / admin ko guide karna
+Compliance proof
+
+🔥 🔥 Violation Handling Flow 💥:-
+Violation detect hua
+        ↓
+ViolationOwner assign hua
+        ↓
+Check: MitigationRequired?
+        ↓
+Yes → mitigation follow karo
+        ↓
+Description ke hisab se action lo
+----------------------------------------------------
+🔥 🔹 2️⃣ Notification / Escalation Methods:-
+✅ getEscalationRule() / setEscalationRule(Rule rule)
+👉 Kya karta hai?
+➡️ Ye define karta hai:-
+Agar violation fix nahi hua to kya karna hai
+📌 Code:-
+Rule escRule = new Rule();
+escRule.setName("EscalateToManager");
+
+policy.setEscalationRule(escRule);
+
+System.out.println(policy.getEscalationRule().getName());
+✅ Output:-
+EscalateToManager
+
+🧠 Real use:-
+7 din me fix nahi hua → manager ko notify
+escalation chain
+--------------------------------------
+✅ getNotificationRule() / setNotificationRule(Rule rule)
+👉 Kya karta hai?
+
+➡️ Ye define karta hai:
+
+Violation detect hote hi kisko notification bhejna hai
+📌 Code:
+Rule notifyRule = new Rule();
+notifyRule.setName("NotifySecurityTeam");
+
+policy.setNotificationRule(notifyRule);
+
+System.out.println(policy.getNotificationRule().getName());
+✅ Output:
+NotifySecurityTeam
+
+🧠 Real use:-
+Email alert
+Dashboard notification
+Slack / Teams integration
+------------------------------------------------------
+🔥 🔹 1️⃣ Scope / Application Methods:-
+✅ getApplication() / setApplication(Application app)
+👉 Kya karta hai?
+
+➡️ Ye define karta hai:-
+Policy kis application pe apply hogi
+💡 Example:-
+SAP
+Salesforce
+Active Directory
+
+📌 Code:-
+Application app = new Application();
+app.setName("SAP");
+
+policy.setApplication(app);
+
+System.out.println(policy.getApplication().getName());
+✅ Output:-
+SAP
+
+🧠 Real use:-
+Policy sirf ek specific system ke liye
+Multi-app environment control
+-----------------------------------
+🔥 2️⃣ getScope() / setScope(Scope scope)
+👉 Kya karta hai?
+➡️ Ye define karta hai:-
+ye sirf scope define ya get karega ki policy ke rules:-
+Kis object pe kaam karega?
+Kis process me trigger hoga?
+Kis data ko access karega?
+kis Department (IT, HR) me
+kis Region (India, US) me
+kis Business Unit me
+
+Scope scope = new Scope();
+scope.setName("IT Department");
+
+policy.setScope(scope);
+
+System.out.println(policy.getScope().getName());
+✅ Output:-
+IT Department
+---------------------------------------------------------
+🔥 3️⃣ getPopulation() / setPopulation(Population population)
+👉 Kya karta hai?
+
+➡️ Ye define karta hai:-
+Exact user group jinke upar policy apply hogi.
+
+📌 Code:-
+Population pop = new Population();
+pop.setName("High Risk Users");
+
+policy.setPopulation(pop);
+
+System.out.println(policy.getPopulation().getName());
+✅ Output:-
+High Risk Users
+🧠 Real use:-
+Sirf admin users
+Sirf privileged accounts
+-----------------------------------------------
+✅ getCreated()
+👉 Kya karta hai?
+
+➡️ Batata hai:-
+Policy kab banayi gayi
+📌 Code:-
+System.out.println(policy.getCreated());
+✅ Output:-
+Tue Mar 17 09:00:00 IST 2026
+
+🧠 Real use:-
+Audit logs
+Compliance
+---------------------------
+✅ getModified()
+👉 Kya karta hai?
+
+➡️ Batata hai:-
+Policy last kab update hui
+
+📌 Code:-
+System.out.println(policy.getModified());
+✅ Output:-
+Tue Mar 17 11:30:00 IST 2026
+
+🧠 Real use:-
+Change tracking
+---------------------
+✅ getCreatedBy()
+👉 Kya karta hai?
+
+➡️ Batata hai:-
+Policy kisne banayi
+
+📌 Code:-
+System.out.println(policy.getCreatedBy());
+✅ Output:-
+Admin_User
+
+🧠 Real use:-
+Accountability
+Audit
+-------------------------------------------
+✅ getModifiedBy():-
+👉 Kya karta hai?
+
+➡️ Batata hai:-
+Last change kisne kiya
+
+📌 Code:-
+System.out.println(policy.getModifiedBy());
+✅ Output:-
+Security_Admin
+
+🧠 Real use:-
+Change responsibility
+----------------------------------------------------------
+✅ toXml():-
+👉 Kya karta hai?
+➡️ Object ko XML format me convert karta hai
+Policy Object → XML String
+
+📌 Code:-
+String xml = policy.toXml();
+System.out.println(xml);
+✅ Output (Example):
+<Policy>
+    <Name>Access Policy</Name>
+    <Severity>High</Severity>
+</Policy>
+
+🧠 Real use:-
+Export config
+Backup
+Debugging
+-------------------------------------------
+✅ fromXml(String xml):-
+👉 Kya karta hai?
+➡️ XML se object create karta hai
+
+XML → Policy Object
+📌 Code:-
+String xml = "<Policy><Name>Test</Name></Policy>";
+Policy policy = Policy.fromXml(xml);
+System.out.println(policy.getName());
+✅ Output:-
+Test
+
+🧠 Real use:-
+Import config
+Restore backup
+----------------------------
+✅ fromXml(String xml):-
+👉 Kya karta hai?
+➡️ XML se object create karta hai.
+XML → Policy Object
+
+📌 Code:-
+String xml = "<Policy><Name>Test</Name></Policy>";
+Policy policy = Policy.fromXml(xml);
+System.out.println(policy.getName());
+✅ Output:-
+Test
+
+🧠 Real use:-
+Import config
+Restore backup
+-------------------------------
+✅ fromMap(Map map):-
+👉 Kya karta hai?
+➡️ Map se object create karta hai
+
+📌 Code:-
+Map map = new HashMap();
+map.put("name", "Test Policy");
+
+Policy policy = Policy.fromMap(map);
+
+System.out.println(policy.getName());
+✅ Output:-
+Test Policy
+--------------------------------------
+✅ fromMap(Map map):-
+👉 Kya karta hai?
+➡️ Map se object create karta hai
+📌 Code:-
+Map map = new HashMap();
+map.put("name", "Test Policy");
+
+Policy policy = Policy.fromMap(map);
+
+System.out.println(policy.getName());
+✅ Output:-
+Test Policy
+---------------------------------------
+✅ clone():-
+👉 Kya karta hai?
+
+➡️ Object ka copy banata hai
+
+📌 Code:-
+Policy copy = (Policy) policy.clone();
+
+System.out.println(copy.getName());
+
+🧠 Real use:-
+Same policy ka duplicate
+Testing changes without affecting original
+---------------------------------------------
+✅ equals(Object obj):-
+👉 Kya karta hai?
+➡️ Do objects same hai ya nahi check karta hai
+
+📌 Code:-
+Policy p1 = new Policy();
+p1.setName("Policy1");
+
+Policy p2 = new Policy();
+p2.setName("Policy1");
+
+System.out.println(p1.equals(p2));
+✅ Output:-
+true
+
+🧠 Real use:-
+Compare policies
+Duplicate check
+---------------------------------------------------
+✅ equals(Object obj):-
+👉 Kya karta hai?
+➡️ Do objects same hai ya nahi check karta hai
+
+📌 Code:-
+Policy p1 = new Policy();
+p1.setName("Policy1");
+
+Policy p2 = new Policy();
+p2.setName("Policy1");
+
+System.out.println(p1.equals(p2));
+✅ Output:-
+true
+-----------------------------------------------------
+✅ toString():-
+👉 Kya karta hai?
+
+➡️ Object ko readable string me convert karta hai
+
+📌 Code:-
+System.out.println(policy.toString());
+✅ Output:-
+Policy[name=Access Policy, severity=High]
+
+🧠 Real use:-
+Debugging
+Logging
+--------------------------------------------------------

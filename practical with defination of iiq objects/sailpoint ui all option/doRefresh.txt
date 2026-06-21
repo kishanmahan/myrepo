@@ -1,0 +1,3 @@
+6. <Arg name="doRefresh" value="true"/>:-
+Provisioning complete hone ke baad identity ko refresh karo.
+Ye SailPoint ke “LCM Provisioning” workflow (called workflow) ko bheje ja rahe hain.

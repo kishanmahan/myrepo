@@ -1,0 +1,35 @@
+()Digital Identity lifecycle kya hai?
+--1️⃣ Joiner (Identity Creation):-
+Jab naya employee join karta hai company me.
+SailPoint me Identity object create hota hai, aur uske liye required accounts & access provision hote hain.
+Example:-
+Identity rahul = new Identity();
+rahul.setName("Rahul Kumar");
+rahul.setEmail("rahul@company.com");
+rahul.setDepartment("Finance");
+rahul.setRole("Finance Manager");
+rahul.setStatus("Active");
+
+// Provision access
+provisionAccess(rahul);
+--------------------------
+()2️⃣ Mover (Identity Update / Transfer)
+Jab employee ka role, department, ya location change hota hai.
+SailPoint me Identity update hoti hai, aur access adjust hota hai.
+
+Example:-
+// Rahul ka department change
+rahul.setDepartment("IT");
+rahul.setRole("IT Manager");
+
+// Re-evaluate access based on new role
+updateAccess(rahul);
+----------------------
+()3️⃣ Leaver (Identity Deactivation / Removal):-
+Jab employee company chhod deta hai.
+SailPoint me Identity deactivate ya delete hoti hai, aur saare access revoke hote hain.
+Example:-
+rahul.setStatus("Inactive");
+
+// Revoke all access
+deprovisionAccess(rahul);

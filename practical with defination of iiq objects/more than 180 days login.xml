@@ -1,0 +1,82 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Last Login Greater Than 180 Days" type="Policy">
+  <Description>
+    This rule evaluates if an active identity has not logged in for more than 180 days.
+  </Description>
+  <Signature returnType="PolicyViolation">
+    <Inputs>
+      <Argument name="log" type="org.apache.commons.logging.Log"/>
+      <Argument name="context" type="sailpoint.api.SailPointContext"/>
+      <Argument name="identity" type="sailpoint.object.Identity"/>
+      <Argument name="policy" type="sailpoint.object.Policy"/>
+      <Argument name="constraint" type="sailpoint.object.BaseConstraint"/>
+    </Inputs>
+    <Returns>
+      <Argument name="violation" type="sailpoint.object.PolicyViolation"/>
+    </Returns>
+  </Signature>
+  <Source>
+    import sailpoint.object.Identity;
+    import sailpoint.object.PolicyViolation;
+    import java.util.Date;
+    import java.util.Calendar;
+
+    // Agar identity already inactive hai, toh policy check skip kar do (optional but recommended)
+    if (identity.isInactive()) {
+        return null;
+    }
+
+    PolicyViolation violation = null;
+
+    // Apna Identity attribute ka sahi naam yahan daalein (e.g., 'lastLogin')
+    Object lastLoginObj = identity.getAttribute("lastLogin");
+
+    if (lastLoginObj != null) {
+        Date lastLoginDate = null;
+
+        // Ensure the attribute is stored/treated as a Date object
+        if (lastLoginObj instanceof Date) {
+            lastLoginDate = (Date) lastLoginObj;
+        }
+
+        if (lastLoginDate != null) {
+            // Aaj ki date se 180 days minus karke threshold date nikalein
+            Calendar cal = Calendar.getInstance();
+            cal.add(Calendar.DAY_OF_YEAR, -180);
+            Date thresholdDate = cal.getTime();
+
+            // Check karo ki last login 180 days se purana (before) hai ya nahi
+            if (lastLoginDate.before(thresholdDate)) {
+                violation = new PolicyViolation();
+                violation.setActive(true);
+                violation.setIdentity(identity);
+                violation.setPolicy(policy);
+                violation.setConstraint(constraint);
+                violation.setDescription("User violation: Account has not been logged into for over 180 days. Last Login: " + lastLoginDate.toString());
+                violation.setStatus(PolicyViolation.Status.Open);
+
+                // Violation ka owner set karein (Manager ko assign hoga, ya fail-safe me spadmin ko)
+                Identity manager = identity.getManager();
+                if (manager != null) {
+                    violation.setOwner(manager);
+                } else {
+                    violation.setOwner(context.getObjectByName(Identity.class, "spadmin"));
+                }
+            }
+        }
+    }
+
+    return violation;
+  </Source>
+</Rule>
+//////////////*
+()getInstance() = current date/time uthao
+👉 current date & time ka ek Calendar object banana.
+Example:-
+Calendar cal = Calendar.getInstance();
+
+()violation.setConstraint(constraint);:-“Yeh violation kis specific rule/condition ki wajah se hua hai” → yahan define ho raha hai
+constraint = us policy ka specific check (e.g. 180 days wala condition).
+
+*//////////////

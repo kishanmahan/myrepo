@@ -1,0 +1,306 @@
+1️⃣3️⃣ Workflow Basics:-
+Access request workflow
+Certification workflow
+Provisioning workflow
+
+()Workflow ka matlab hota hai automation process.
+Jab koi event hota hai to system automatically steps follow karta hai.
+
+Example:-
+User request karta hai:-
+SAP access
+
+Workflow:-
+User request karega
+fir ⬇Manager approval
+fir ⬇Application owner approval 
+fir  ⬇Provisioning 
+fir  ⬇Access granted
+
+1️⃣ Workflow Architecture:-
+Workflow main components:-
+Workflow
+  ↓
+Steps
+  ↓
+Transitions
+  ↓
+Variables
+  ↓
+Actions
+
+Example:-
+Start → Approval → Provisioning → End
+
+2️⃣ Workflow Types:-
+SailPoint में main 3 workflows होते हैं।
+
+1️⃣ Access Request Workflow:-
+User access request approval process
+Example:-
+User → Request Access
+Manager → Approve
+Owner → Approve
+System → Provision Access
+
+2️⃣ Certification Workflow:-
+Access review automation
+Example:-
+Certification Campaign
+     ↓
+Manager Review
+     ↓
+Approve / Revoke
+     ↓
+Provisioning revoke
+
+3️⃣ Provisioning Workflow:-
+Account creation / modification process
+Example:-
+Create Account
+Modify Account
+Disable Account
+Delete Account
+
+3️⃣ Workflow Components:-
+1️⃣ Workflow Object:-
+Workflow XML file
+Example:-
+<Workflow name="AccessRequestWorkflow">
+</Workflow>
+
+2️⃣ Step:-
+Workflow का step execution point होता है।
+Example:-
+Start
+Approval
+Provisioning
+End
+
+XML Example:-
+<Step name="ManagerApproval"/>
+
+3️⃣ Transition:-
+Step change define करता है।
+Example:-
+Start → Approval
+Approval → Provisioning
+XML:-
+<Transition to="Provisioning"/>
+
+4️⃣ Variables:-
+Workflow variables data store करते हैं।
+Example:-
+identityName
+applicationName
+approvalStatus
+
+XML:-
+<Variable name="identityName"/>
+-----------------------------------------
+4️⃣ Access Request Workflow (Detailed):-
+Flow:-
+User Portal
+   ↓
+Access Request
+   ↓
+Manager Approval
+   ↓
+Application Owner Approval
+   ↓
+Provisioning
+
+Steps:-
+1️⃣ Request submit
+2️⃣ Approval routing
+3️⃣ Provisioning execution
+
+()Access Request Workflow XML Example:-
+<Workflow name="AccessRequestWorkflow">
+
+<Variable name="identityName"/>
+<Variable name="roleName"/>
+
+<Step name="Start">
+<Transition to="ManagerApproval"/>
+</Step>
+
+<Step name="ManagerApproval">
+<Transition to="Provisioning"/>
+</Step>
+
+<Step name="Provisioning">
+<Transition to="End"/>
+</Step>
+
+</Workflow>
+
+5️⃣ Certification Workflow:-
+Certification workflow access review handle करता है।
+
+Flow:-
+Certification Campaign
+     ↓
+Manager Review
+     ↓
+Approve / Revoke
+     ↓
+Provisioning revoke
+
+Steps:-
+Start
+Certification Review
+Decision
+Provisioning
+End
+
+6️⃣ Provisioning Workflow:-
+Provisioning workflow account operations execute करता है।
+
+Operations:-
+Create account
+Modify account
+Enable account
+Disable account
+Delete account
+
+Example:-
+User Role Assigned
+     ↓
+Provisioning Plan Generated
+     ↓
+Account Created
+---------------------------------------------
+
+7️⃣ Workflow Step Types:-
+SailPoint में कई step types होते हैं।
+
+1️⃣ Approval Step:-
+Manager approval।
+Example:-
+Manager approves access
+
+XML:-
+<Step name="ManagerApproval" type="approval"/>
+
+2️⃣ Script Step:-
+Beanshell script run करता है।
+Example:-
+<Step name="ScriptStep" type="script"/>
+
+Example script:-
+if(identity.getDepartment().equals("IT"))
+{
+ approve = true;
+}
+
+3️⃣ Provisioning Step:-
+Provisioning execute करता है।
+Example:-
+<Step name="ProvisionAccess" type="provision"/>
+
+4️⃣ Notification Step:-
+Email notification भेजता है।
+Example:-
+Send email to manager
+
+5️⃣ Manual Work Item:-
+Manual action required।
+Example:-
+Security team review
+
+8️⃣ Workflow Variables (Important):-
+--Common variables:-
+identityName
+applicationName
+roleName
+manager
+approvalStatus
+requestId
+
+Example:-
+<Variable name="manager"/>
+
+9️⃣ Workflow Context Objects:-
+Developer को ये objects use करने पड़ते हैं।
+()Identity:-
+identity.getName()
+identity.getManager()
+identity.getDepartment()
+
+()Application:-
+application.getName()
+application.getType()
+
+()ProvisioningPlan:-
+plan.getAccountRequests()
+
+🔟 Workflow Methods (Developer):-
+
+()Important methods:-
+--Workflower class:-
+workflower.launch()
+workflower.start()
+workflower.resume()
+
+--WorkflowContext methods:-
+context.getObject()
+context.saveObject()
+context.commitTransaction()
+
+--Identity methods:-
+identity.getName()
+identity.getEmail()
+identity.getManager()
+
+1️⃣1️⃣ Workflow Launch:-
+Workflow manually launch किया जा सकता है।
+
+Example:-
+Workflower wf = new Workflower(context);
+wf.launch("AccessRequestWorkflow", args);
+
+1️⃣2️⃣ Workflow Approval Logic:-
+Example:-
+if(identity.getDepartment().equals("Finance"))
+{
+ approver = "FinanceManager";
+}
+
+1️⃣3️⃣ Workflow Debugging:-
+Developer debugging tools:-
+Debug pages
+Log4j logs
+Workflow history
+Task results
+
+Logs example:-
+identityiq.log
+workflow.log
+
+1️⃣4️⃣ Workflow Tasks:-
+Workflows tasks trigger करते हैं।
+
+Examples:-
+Access Request Task
+Provisioning Task
+Certification Task
+
+1️⃣5️⃣ Workflow Best Practices:-
+✔ छोटे workflows बनाओ
+✔ approval clearly define करो
+✔ logs enable रखो
+✔ provisioning rules properly use करो
+
+🚀 Real Enterprise Workflow Example:-
+User requests SAP access
+      ↓
+Manager Approval
+      ↓
+Application Owner Approval
+      ↓
+Provisioning
+      ↓
+Account created
+      ↓
+User notified

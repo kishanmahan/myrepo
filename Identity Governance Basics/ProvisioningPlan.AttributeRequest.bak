@@ -1,0 +1,95 @@
+()ProvisioningPlan.AttributeRequest kya hai?
+--🔹 1. ProvisioningPlan.AttributeRequest kya hai?
+👉 AttributeRequest = kisi account ke ek specific field (attribute) ko change karne ki request
+📌 Matlab:-
+👉 “Account ke andar kaunsa field change karna hai aur kya value deni hai”
+
+🔹 3. Example:-
+👉 Tum bolte ho:-
+AD account me:-
+- email change karo
+- role add karo
+👉 Internally:-
+email → AttributeRequest  
+role  → AttributeRequest  
+✔ Har field ke liye ek AttributeRequest.
+
+🔹 4. Code example:-
+AttributeRequest attr = new AttributeRequest();
+
+attr.setName("email");
+attr.setValue("john@example.com");
+attr.setOperation(ProvisioningPlan.Operation.Set);
+
+acc.add(attr);
+
+🔹 5. AttributeRequest kya karta hai? ⚙️
+👉 Ye define karta hai:-
+✔ Kaunsa field (name)
+✔ Kya value (value)
+✔ Kya action (set / add / remove)
+------------------------------------------------------
+🔹 6. AttributeRequest ke andar kya hota hai? 🧠
+Main fields 👇
+
+🔸 1. name:-
+👉 Field ka naam
+attr.setName("email");
+✔ Example:-
+email
+role
+department
+
+🔸 2. value:-
+👉 Field ki value
+attr.setValue("john@example.com");
+
+🔸 3. operation:-
+👉 Kya karna hai
+attr.setOperation(ProvisioningPlan.Operation.Set);
+Possible           operations:
+Operation	        Meaning
+Set:-------------value replace karo
+Add:-------------list me add karo
+Remove:----------value hatao
+
+🔸 4. arguments:-
+👉 Extra info
+attr.setArguments(map);
+-----------------------------------------------
+🔹 7. Important: Operation difference:-
+🟢 Set:-
+email = "new@mail.com"
+👉 Purana replace
+
+🟡 Add:-
+role add = Admin
+👉 Existing me add
+
+🔴 Remove:-
+role remove = User
+👉 Value hata do
+
+🔹 8. AccountRequest + AttributeRequest relation 🧠
+AccountRequest (AD account)
+   ↓
+AttributeRequest (email change)
+AttributeRequest (role add)
+---------------------------------------------------------
+🔹 10. Methods (important):-
+🔸 setName() / getName():-
+attr.setName("email");
+attr.getName();
+🔸 setValue() / getValue():-
+attr.setValue("john@example.com");
+attr.getValue();
+🔸 setOperation() / getOperation():-
+attr.setOperation(ProvisioningPlan.Operation.Set);
+🔸 setArguments() / getArguments()
+attr.setArguments(map);
+🔸 toString(), equals(), hashCode():-
+----------------------------------------------------------
+🔹 11. DB me store hota hai kya? 🧠
+👉 ❌ Directly AttributeRequest DB me store nahi hota,
+👉 ✔ Ye runtime object hai.
+-------------------------------------------------------------------

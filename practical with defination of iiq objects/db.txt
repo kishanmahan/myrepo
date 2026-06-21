@@ -1,0 +1,234 @@
+create table employees(employee varchar(50),firstName varchar(50),lastName varchar(50),empStatus varchar(50),department varchar(50),userLevel varchar(50),
+hireDate varchar(50),salaryClass varchar(50),terminationDate varchar(50),workState varchar(50),email varchar(50),countryCode varchar(50),workCountry varchar(50),
+manager varchar(50),superviserId varchar(50),employeeId varchar(50) primary key,bussinessUnit varchar(50),annualHours varchar(50),jobTitle varchar(50),isManager varchar(50));
+
+create table roles(roleId varchar(50) primary key,name varchar(50),description varchar(150),type varchar(50),status varchar(50),owner varchar(50),createdDate varchar(50),
+modifiedDate varchar(50));
+
+create table employee_roles(employeeId varchar(50),roleId varchar(50),Primary key(employeeId,roleId),
+FOREIGN Key(employeeId) reference employees(employeeId) on delete CASCADE,
+FOREIGN key (roleId) reference roles(roleId) on delete CASCADE);
+
+
+
+
+create table employee_roles(employeeId varchar(50),roleId varchar(50),Primary key(employeeId,roleId),
+FOREIGN Key(employeeId) REFERENCES employees(employeeId) on delete CASCADE,
+FOREIGN key (roleId) REFERENCES roles(roleId) on delete CASCADE);
+
+
+
+use financial_planning_and_forecasting;
+
+
+
+
+
+
+INSERT INTO roles (roleId, name, description, type, status, owner, createdDate, modifiedDate)
+VALUES
+('ROL_FIN_AP_ANALYST_001', 'Accounts Payable Analyst', 'Responsible for processing vendor invoices, performing three-way matching, and managing payment runs.', 'Business', 'Active', 'payables.team@sriiq.com', '2025-01-10', '2025-09-15'),
+
+('ROL_FIN_AR_OFFICER_002', 'Accounts Receivable Officer', 'Manages customer invoicing, collections, and credit adjustments in AR module.', 'Business', 'Active', 'receivables.lead@sriiq.com', '2025-02-05', '2025-09-22'),
+
+('ROL_FIN_GEN_LEDGER_003', 'General Ledger Accountant', 'Prepares journal entries, reconciliations, and monthly financial close activities.', 'Business', 'Active', 'gl.controller@sriiq.com', '2025-03-02', '2025-09-30'),
+
+('ROL_FIN_PROCUREMENT_004', 'Procurement Officer', 'Creates and approves purchase requisitions, manages vendor onboarding and PO releases.', 'Business', 'Active', 'procurement.manager@sriiq.com', '2025-03-18', '2025-09-10'),
+
+('ROL_FIN_TREASURY_005', 'Treasury Specialist', 'Handles bank reconciliation, cash forecasting, and fund transfers across business units.', 'Business', 'Active', 'treasury@sriiq.com', '2025-04-10', '2025-09-25'),
+
+('ROL_FIN_AUDITOR_006', 'Internal Auditor', 'Conducts internal audit of financial transactions, ensures compliance with GAAP and SOX.', 'Governance', 'Active', 'audit.controller@sriiq.com', '2025-05-07', '2025-09-28'),
+
+('ROL_FIN_APPROVER_007', 'Financial Approver Level 1', 'Authorized to approve financial transactions up to defined threshold.', 'Business', 'Active', 'finance.head@sriiq.com', '2025-06-12', '2025-09-20'),
+
+('ROL_FIN_BUDGET_CTRL_008', 'Budget Controller', 'Monitors budget allocations, variance reporting, and cost control measures.', 'Business', 'Active', 'budget.office@sriiq.com', '2025-07-05', '2025-09-25'),
+
+('ROL_FIN_RECONCILE_009', 'Reconciliation Analyst', 'Performs account and bank reconciliations ensuring financial integrity.', 'Business', 'Active', 'recon.team@sriiq.com', '2025-08-01', '2025-09-22'),
+
+('ROL_FIN_AUDIT_VIEWER_010', 'Audit Viewer', 'Read-only role for audit and compliance teams to review financial records.', 'Governance', 'Active', 'audit.viewer@sriiq.com', '2025-08-18', '2025-09-30');
+
+
+
+
+INSERT INTO employees (
+    employee,
+    firstName,
+    lastName,
+    empStatus,
+    department,
+    userLevel,
+    hireDate,
+    salaryClass,
+    terminationDate,
+    workState,
+    email,
+    countryCode,
+    workCountry,
+    manager,
+    superviserId,
+    employeeId,
+    bussinessUnit,
+    annualHours,
+    jobTitle,
+    isManager
+)
+VALUES (
+    'Christian Armstrong',     -- employee (displayName)
+    'Christian',               -- firstName
+    'Armstrong',               -- lastName
+    'Joiner-Completed 01-31-2018', -- empStatus (srStatus)
+    'Morph',                   -- department
+    'Professional',            -- userLevel (mapped from workerType)
+    '01-31-2018',              -- hireDate
+    NULL,                      -- salaryClass (not in provided data)
+    '09-08-2025',              -- terminationDate
+    NULL,                      -- workState (not provided)
+    'christian.armstrong@SR.com', -- email
+    NULL,                      -- countryCode (not provided)
+    'United States of America',-- workCountry
+    'shani rajawat',                      -- manager (not provided)
+    '739012',                      -- superviserId
+    '739070',                  -- employeeId
+    'Sriiq Inc',               -- bussinessUnit (company)
+    '1920',                      -- annualHours
+    'Advice worker',           -- jobTitle
+    'No'                       -- isManager (not specified, assuming No)
+);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SELECT 
+    e.employee,
+    e.firstName,
+    e.lastName,
+    e.empStatus,
+    e.department,
+    e.userLevel,
+    e.hireDate,
+    e.salaryClass,
+    e.terminationDate,
+    e.workState,
+    e.email,
+    e.countryCode,
+    e.workCountry,
+    e.manager,
+    e.superviserId,
+    e.employeeId,
+    e.bussinessUnit,
+    e.annualHours,
+    e.jobTitle,
+    e.isManager,
+    GROUP_CONCAT(r.name SEPARATOR ', ') AS roles
+FROM 
+    employees e
+LEFT JOIN 
+    employee_roles er ON e.employeeId = er.employeeId
+LEFT JOIN 
+    roles r ON r.roleId = er.roleId
+GROUP BY 
+    e.employee,
+    e.firstName,
+    e.lastName,
+    e.empStatus,
+    e.department,
+    e.userLevel,
+    e.hireDate,
+    e.salaryClass,
+    e.terminationDate,
+    e.workState,
+    e.email,
+    e.countryCode,
+    e.workCountry,
+    e.manager,
+    e.superviserId,
+    e.employeeId,
+    e.bussinessUnit,
+    e.annualHours,
+    e.jobTitle,
+    e.isManager;
+	
+	
+	
+financial_planning_and_forecasting
+	
+	
+	
+	
+	
+SELECT *, GROUP_CONCAT(r.name SEPARATOR ',') AS name from employees e left join employee_roles er on e.employeeId = er.employeeId 
+left join roles r on r.roleId = er.roleId GROUP BY e.email;
+	
+	
+	
+	
+	
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule created="1768640000409" id="c0a83c019bcb1baa819bcb28b199002c" language="beanshell" modified="1768640389176" name="NS_Rule_FinancialAndForecasting_ProvisioningRule" type="JDBCProvision">
+  <Description>This rule is used by the JDBC connector to do provisioning of the data .</Description>
+  <Signature returnType="ProvisioningResult">
+    <Inputs>
+      <Argument name="log" type="org.apache.commons.logging.Log">
+        <Description>
+          The log object associated with the SailPointContext.
+        </Description>
+      </Argument>
+      <Argument name="context" type="sailpoint.api.SailPointContext">
+        <Description>
+          A sailpoint.api.SailPointContext object that can be used to query the database if necessary.
+        </Description>
+      </Argument>
+      <Argument name="application">
+        <Description>
+                The application whose data file is being processed.
+                </Description>
+      </Argument>
+      <Argument name="schema">
+        <Description>
+                The Schema currently in use.
+                </Description>
+      </Argument>
+      <Argument name="connection">
+        <Description>
+                A connection object to connect to database.
+                </Description>
+      </Argument>
+      <Argument name="plan">
+        <Description>
+                The ProvisioningPlan created against the JDBC application.
+                </Description>
+      </Argument>
+    </Inputs>
+    <Returns>
+      <Argument name="result">
+        <Description>
+                A Provisioning Result object is desirable to return the status.IT can be a new object or part of  Provisioning Plan
+                </Description>
+      </Argument>
+    </Returns>
+  </Signature>
+  <Source>
+  import org.SailPoint_IIQ.Utils.FinancialAndForecastingProvisioningRule;
+  import sailpoint.object.ProvisioningResult;
+  import org.apache.log4j.Logger;
+	Logger logs = Logger.getLogger("com.ns.workflow.NS_Workflow_Candidate_Joiner");
+	logs.debug("NS_Rule_FinancialAndForecasting_ProvisioningRule");
+  logs.debug("in provisioning rule;;;;;;;;;"+plan.toXml());
+
+  ProvisioningResult result = FinancialAndForecastingProvisioningRule.doProvisioning(plan, connection, context);
+  return result;
+</Source>
+</Rule>

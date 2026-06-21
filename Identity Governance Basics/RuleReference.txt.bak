@@ -1,0 +1,31 @@
+RuleReference kya hai kya karta hai?
+--🔹 RuleReference kya hai?
+👉 RuleReference = kisi existing Rule ka reference (pointer) hota hai.
+
+📌 Simple line:-
+RuleReference ka kaam hai ek rule ko doosri jagah use karna
+
+🧠 Easy Samajh:-
+👉 Tumne ek Rule banaya:-
+Naam: "MyTaskRule"
+👉 Ab us rule ko kisi Task / Workflow / Config me use karna hai
+👉 Tab tum likhte ho:-
+RuleReference → "MyTaskRule"
+
+💻 Example (XML Style - Real SailPoint):-
+<TaskDefinition name="My Task">
+    <Attributes>
+        <Map>
+            <entry key="taskRule">
+                <value>
+                    <RuleReference class="sailpoint.object.Rule" name="MyTaskRule"/>
+                </value>
+            </entry>
+        </Map>
+    </Attributes>
+</TaskDefinition>
+
+🔥 Real Meaning:-
+Ye khud code nahi hota
+Ye sirf rule ko call / attach karta hai.
+

@@ -1,0 +1,54 @@
+4️⃣ Email Templates kya hai?
+Email Template = Predefined email format,
+Isme email ka subject, body, variables already defined hote hain.
+Workflow ya rule se jab email bhejna hota hai tab template call kiya jata hai.
+Example template:-
+Subject: Access Request Approved
+
+Hello ${identityName},
+
+Your access request has been approved.
+
+Thanks,
+IAM Team
+
+Yaha ${identityName} dynamic variable hai.
+
+1️⃣ getName():-
+Template ka naam return karta hai.
+EmailTemplate template = context.getObjectByName(EmailTemplate.class,"Access Approved");
+System.out.println(template.getName());
+Output:-
+Access Approved
+
+2️⃣ setName(String name):-
+Template ka naam set karta hai.
+template.setName("Access Request Template");
+
+3️⃣ getSubject():-
+Email ka subject return karta hai.
+System.out.println(template.getSubject());
+Output:-
+Access Request Approved
+
+4️⃣ setSubject(String subject):-
+Email subject set karta hai.
+template.setSubject("New Access Request");
+
+5️⃣ getBody():-
+Email body return karta hai.
+System.out.println(template.getBody());
+Output example:-
+Hello ${identityName}, your request approved
+
+6️⃣ setBody(String body):-
+Email ka content set karta hai.
+template.setBody("Hello User");
+
+7️⃣ getDescription():-
+Template description return karta hai.
+template.getDescription();
+
+8️⃣ setDescription(String desc):-
+Description set karta hai.
+template.setDescription("Approval email template");

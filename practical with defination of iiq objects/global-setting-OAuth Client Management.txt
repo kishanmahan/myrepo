@@ -1,0 +1,482 @@
+()global-setting-OAuth Client Management->
+
+()1. OAuth Client Management (Image 1)
+Yahan aap un "Clients" ko register karte hain jo API access maang rahe hain.
+
+--Client Name: Yeh aapke application ka naam hai (e.g., "MobileApp" ya "ServiceNow_Integration").
+--Proxy User: Yeh sabse mahatvapurn (important) field hai.
+API jab bhi koi kaam karegi (jaise user create karna), toh SailPoint mein woh kis insaan ke naam par audit hogi?
+Aapko yahan ek aisi Identity select karni hoti hai jiske paas API chalane ke zaroori Capabilities aur Rights hon.
+
+--Access Token Expiration In Seconds:-
+Jab koi client login karta hai, toh use ek "Token" milta hai jo ek chabi (key) ki tarah kaam karta hai.
+Yeh token kitni der tak valid rahega? Default 1200 seconds (20 minutes) hota hai. Iske baad client ko fir se authenticate karna padega.
+
+()SailPoint IdentityIQ mein Token Settings ka tab mukhya roop se tab use hota hai
+jab aap Identity Authentication ke liye JSON Web Tokens (JWT) ka istemal karte hain. 
+Yeh settings tay karti hain ki bahar se aane wala token kitna bharosemand hai aur use system mein kis identity se link karna hai.
+
+1. Access Token Authentication Scope:-
+Kya hai?: Yeh batata hai ki token ke paas system ke andar kya-kya karne ka "adhikaar" (permission) hai.
+Kaise kaam karta hai?: Ismein aap values jaise read, write, ya admin set karte hain. 
+Agar aane wale token ka scope isse match nahi karta, toh SailPoint request ko block kar dega.
+
+2. Access Token Authentication Audience:-
+Kya hai?: Yeh woh system ya service hai jiske liye token issue kiya gaya hai.
+Kyun zaroori hai?: Yeh ek security layer hai jo "Token Misuse" ko rokti hai. 
+Agar token kisi dusre app ke liye bana hai aur koi use IdentityIQ par chalane ki koshish karega, 
+toh audience mismatch ki wajah se authentication fail ho jayega.
+
+3. Access Token Authentication Issuers:-
+Yeh setting suraksha (security) ka ek bahut mahatvapurn hissa hai jo token ke "Source" yaani ushe banane wale system ko verify karti hai.
+Maqsad (Purpose): Jab aapka SailPoint system kisi external system (jaise Azure AD, Okta, ya PingFederate) se token receive karta hai, 
+toh woh sabse pehle yeh dekhta hai ki kya yeh token kisi "Trusted" (bharosemand) jagah se aaya hai.
+Kaise Kaam Karta Hai: Har Identity Provider (IdP) jab token banata hai, toh usmein apna ek identifier dalta hai (jise iss claim kehte hain). 
+Agar aapne yahan woh issuer URL ya naam likha hai, tabhi SailPoint us token ko valid manega.
+Example: Agar aap Azure AD use kar rahe hain, toh issuer URL kuch aisa hoga: [https://sts.windows.net/tenant-id/](https://sts.windows.net/tenant-id/). 
+Agar token mein issuer match nahi hota, toh authentication fail ho jayega.
+
+4. Correlation Variable:-
+Kya hai?: Yeh token ke andar ki information ko SailPoint ki Identity se "match" (link) karne ka tarika hai.
+Kaise kaam karta hai?:
+Maan lijiye token ke andar ek field hai sub: "jatin_sharma".
+Agar aapne Correlation Variable mein name set kiya hai, toh SailPoint Identity Warehouse mein jaakar check karega ki kis user ka name (User Name) "jatin_sharma" hai.
+Match hone par, system samajh jayega ki yeh token Jatin ka hai aur use uski permissions ke sath login karne dega.
+------------------------------------------------------------------------------------------------------------------------
+()SCIM kya hai?
+--SCIM ka main kaam Provisioning aur Deprovisioning through automation hai.
+
+1. SCIM Kyun Zaruri Hai? 
+Pehle ke time mein, agar kisi company ko SailPoint se 50 alag-alag cloud apps (jaise Slack, Zoom, AWS, GitHub) 
+ko connect karna hota tha, toh har app ka apna alag API hota tha. Developer ko har app ke liye alag code likhna padta tha.
+
+2. SCIM ka fayda: Ab agar saari apps SCIM standard follow karti hain, toh SailPoint ko sirf ek "SCIM Connector" ki zarurat hai, 
+aur woh sabse baat kar payega.
+
+3. SCIM Kaise Kaam Karta Hai?
+SCIM do main cheezon par base hota hai:-
+
+1.JSON (Data Format): Data exchange karne ke liye JSON format ka use hota hai jo light aur fast hota hai.
+
+2.REST (Protocol): Yeh standard HTTP methods use karta hai:-
+--POST: Naya user create karne ke liye.
+--GET: User details fetch/read karne ke liye.
+--PUT/PATCH: User details update karne ke liye.
+--DELETE: User ko remove ya deactivate karne ke liye.
+
+3. SCIM ke Main Components:-
+(a)Resources: SCIM do main resources ko samajhta hai: Users (employees/identities) aur Groups (roles/entitlements).
+
+(b)Schema: Yeh define karta hai ki ek user ke paas kya-kya attributes honge (jaise userName, emails, displayName).
+
+4. SailPoint IdentityIQ mein SCIM ka Use:-
+--SailPoint mein jab aap SCIM connector use karte hain, toh aap niche di gayi cheezein achieve karte hain:
+
+--Automation: Jaise hi HR system mein naya employee join hota hai, SailPoint SCIM ke zariye automatic uska account Salesforce ya Zoom mein bana deta hai.
+
+--Security: Jab koi employee resign karta hai, toh SCIM ke through turant saare cloud accounts ek saath delete ya disable ho jaate hain.
+
+--Compliance: Sabhi applications ek hi standard follow karti hain, isliye auditing aasaan ho jati hai.
+
+()SCIM kya kya karta hai?
+--1. Attribute Updates:-
+Attribute मतलब user की information।
+जैसे:-
+Email
+Department
+Manager
+Job Title
+Phone Number
+Example
+
+--पहले:-
+Department = Support
+
+HR system में change हुआ:-
+Department = Finance
+
+--अब IIQ SCIM API के जरिए target applications में भी update करेगा।
+
+SCIM request example:-
+PATCH /Users/123
+
+{
+  "Operations": [
+    {
+      "op": "replace",
+      "path": "department",
+      "value": "Finance"
+    }
+  ]
+}
+
+()फायदा:-
+सब applications में same updated data रहता है।
+
+2. Group / Role Management:-
+यह user को सही access देना या हटाना होता है।
+
+()Group Example:-
+Finance Team
+Admin Group
+VPN Users
+
+()Role Example:-
+Developer Role
+Manager Role
+ReadOnly Access
+
+()Example Scenario:-
+अगर employee Finance department में गया:-
+Old group remove
+Finance group add
+
+--IIQ automatically SCIM के जरिए:-
+Group membership update करता है
+Roles assign/remove करता है
+
+()fayda:-
+User को correct permissions मिलती हैं।
+
+3. Identity Synchronization Between Applications:-
+इसका मतलब:-
+एक system में change हो तो बाकी systems में भी same change reflect हो।
+
+Example:-
+System	              Data
+HR System------------Amit Sharma
+IIQ------------------Amit Sharma
+Active Directory-----Amit Sharma
+ServiceNow-----------Amit Sharma
+
+-अगर HR में email change हुआ:-
+amit@old.com → amit@new.com
+
+-तो IIQ SCIM use करके:-
+AD update करेगा
+ServiceNow update करेगा
+Slack update करेगा
+
+फायदा:-
+सभी systems synchronized रहते हैं।
+
+4. User Provisioning:-
+Provisioning मतलब:-
+👉 किसी user का account automatically create करना और access देना।
+
+()Example:-
+HR system में नया employee join हुआ:-
+Name = Rahul
+Department = IT
+Designation = Developer
+
+()अब IIQ:-
+Identity create करेगा
+Rules/checks चलाएगा
+Required applications identify करेगा
+
+()फिर SCIM/API/Connector के जरिए:-
+Active Directory account बनाएगा
+Email account बनाएगा
+VPN access देगा
+Jira/ServiceNow access देगा
+
+()Provisioning में क्या-क्या होता है?
+User account creation
+Initial password setup
+Group assignment
+Role assignment
+Access permissions
+Mailbox creation
+
+5. Deprovisioning:-
+Deprovisioning मतलब:-
+👉 User का access remove करना या account disable करना।
+यह security के लिए बहुत important है।
+
+()Example:-
+Employee company छोड़ देता है।
+
+()HR system:-
+Status = Terminated
+
+()IIQ detect करेगा और:-
+AD account disable
+VPN access remove
+Email disable
+Application access revoke
+Groups remove
+सब automatically कर देगा।
+
+---------------------------------------------SCIM settings------------------------------------------------------------------------
+->application definition->add application->select application type->
+
+1. Base URL:-
+Example:-
+https://company.scim.com/scim/v2
+
+IIQ यहीं requests भेजेगा:-
+GET /Users
+GET /Groups
+POST /Users
+PATCH /Users
+
+() Base URL क्या होता है?
+--यह target application का main SCIM API address होता है।
+
+yahi se:-
+Users fetch होते हैं
+Groups fetch होते हैं
+Users create/update/delete होते हैं
+
+()IIQ Base-url ka क्या करता है?
+
+--IIQ इसी URL के आगे APIs जोड़ता है।
+Users fetch:-
+GET https://companyapp.com/scim/v2/Users
+Groups fetch:-
+GET https://companyapp.com/scim/v2/Groups
+User create:-
+POST https://companyapp.com/scim/v2/Users
+
+----------------------------------------------
+2. Authentication Type:-
+यह क्या करता है?
+
+यह decide करता है:-
+👉 IIQ target system को अपनी identity कैसे prove करेगा।
+
+Common types:-
+Basic Auth
+OAuth 2.0
+Bearer Token
+
+Most modern SCIM apps:
+✅ OAuth 2.0 use करती हैं।
+
+()सबसे Important Concept:-
+SailPoint IdentityIQ जब SCIM integration करता है, तब ज्यादातर cases में:
+
+--IIQ apni identity prove karta hai
+NOT end-user identity
+मतलब:-
+Rahul user का token नहीं
+Amit user का password नहीं
+Human login नहीं
+बल्कि:-
+✅ Application-to-Application trust.
+
+()Authentication में कौन authenticate होता है?
+Answer
+✅ IIQ application authenticate होती है।
+कैसे?
+
+IIQ भेजता है:-
+Client ID
+Client Secret
+
+()Target System क्या check करता है?
+"Kya ye trusted application hai?"
+अगर valid:-
+✅ Token देता है।
+
+()Token किसका होता है?
+Most SCIM integrations में:
+Token = Application token
+यह किसी user का token नहीं होता।
+
+इसका मतलब?
+यह token कहता है:
+"IIQ ko API access allowed hai"
+
+Example:-
+IIQ → "Mujhe Users fetch karne hain"
+
+OAuth Server →
+"Apni identity prove karo"
+
+IIQ →
+Client ID + Secret
+
+OAuth Server →
+"Valid ho"
+↓
+Access Token
+
+()Token किसका?
+✅ IIQ application का.
+
+2. Refresh Token Grant:-
+Purpose:-
+जब access token expire हो जाए।
+
+Example:-
+Access token validity:-
+1 hour
+
+1 घंटे बाद:-
+❌ token invalid
+तो refresh token use होगा।
+
+Flow:-
+Refresh Token
+ ↓
+OAuth Server
+ ↓
+New Access Token
+
+Important:-
+Refresh token:-
+Long-lived होता है
+Mostly user-based flows में use होता है
+SCIM backend integrations में कम use होता है.
+
+3. JWT Bearer Grant इसमें क्या होता है?
+IIQ signed JWT token भेजता है।
+JWT = digitally signed identity proof।
+
+Flow:-
+IIQ creates signed JWT
+        ↓
+OAuth Server validates signature
+        ↓
+Returns Access Token
+----------------------------------------------------------
+()अब Client ID समझो
+Client ID क्या है?
+यह IIQ application का unique name/identifier है।
+
+Example:-
+iiq-prod-client
+
+()किसने दिया?
+--Target system/OAuth server ने
+
+()क्यों?
+--ताकि target system पहचान सके:-
+"Kaunsi application request bhej rahi hai?"
+
+()Client Secret क्या है?
+यह क्या है?
+
+Application password।:-
+Example:-
+A9X#K92
+
+()Purpose:-
+Client ID alone enough नहीं।
+
+()OAuth server check करता है:-
+--Client ID valid?
+Client Secret valid?
+-------------------------------------------------------
+()Token URL क्या है?
+यह क्या करता है?
+--यहीं से token मिलता है।
+
+Example:-
+https://company.com/oauth/token
+
+
+()कौन call करेगा?
+--IIQ
+
+किसको?
+--OAuth Authorization Server को
+
+Response क्या मिलेगा?
+--
+{
+  "access_token": "TOKEN123"
+}
+
+()फिर यह token कहाँ use होगा?
+--SCIM APIs call करने में।
+Example:-
+GET /scim/v2/Users
+
+Authorization: Bearer TOKEN123
+---------------------------------------
+()SCIM base url se sare application value lata hai?
+nahi,
+SCIM में हर application का अपना अलग URL होता है।
+SailPoint IdentityIQ एक common SCIM protocol use करता है, लेकिन:-
+Har target application ka:-
+- Base URL
+- Token URL
+- Client ID
+- Client Secret
+alag hota hai.
+
+Example:-
+Application 1 — ServiceNow
+Base URL:-
+https://servicenow.company.com/scim/v2
+Application 2 — Okta:-
+Base URL:
+https://company.okta.com/scim/v2
+Application 3 — Azure AD:-
+Base URL:
+https://graph.microsoft.com/scim/v2
+
+()Example:-
+--IIQ wants users from Okta:-GET https://company.okta.com/scim/v2/Users
+--IIQ wants users from ServiceNow:-GET https://servicenow.company.com/scim/v2/Users
+----------------------------------------------------------------------------------------------------------------------------------
+7. Page Size:-
+यह क्या होता है?
+
+एक API call में कितने records आएंगे।
+
+--Example:-
+Total users:-
+10,000
+
+Page size:-
+100
+
+तो:-
+Request 1 → 100 users
+Request 2 → next 100
+
+क्यों जरूरी?
+Very Large Page Size
+Problems:-
+Timeout
+High memory usage
+API crash
+Very Small Page Size
+
+Problems:-
+Too many API calls
+Slow aggregation
+Best Practice
+
+Usually:-
+100–500
+
+8. Content Type
+यह क्या होता है?
+Data किस format में exchange होगा।
+
+9. Filter Conditions
+यह क्या होता है?
+
+Specific data fetch करने के लिए query condition।
+
+Example 1:-
+Only active users:
+
+GET /Users?filter=active eq true
+
+Example 2:-
+Only IT users:
+
+()filter=department eq "IT"क्यों जरूरी?
+--अगर filters नहीं लगाए:-
+1 lakh users सब fetch होंगे।
+Problems:-
+Slow aggregation
+High server load
+Unnecessary data
+

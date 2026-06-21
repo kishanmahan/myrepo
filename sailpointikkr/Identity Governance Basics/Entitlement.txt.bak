@@ -1,0 +1,877 @@
+🔥 Entitlement kya hota hai?
+👉 Entitlement = actual permission / access right
+Matlab: user system me kya kar sakta hai.
+
+🔥 Entitlement vs Role vs AccessProfile:-
+Concept	                    Meaning
+Entitlement:-----------actual permission (READ, WRITE)
+AccessProfile:---------entitlements ka group
+Role:------------------multiple AccessProfiles ka group.
+
+🔥 Real System Example (SailPoint):-
+👉 Application: SAP
+Entitlements ho sakte hain:-
+SAP_USER_CREATE
+SAP_USER_DELETE
+SAP_REPORT_VIEW
+
+🔥 Entitlement ke andar kya hota hai?
+👉 Entitlement sirf ek string nahi hota
+👉 Ye ek object hota hai jisme multiple fields/properties hoti hain
+
+🧠 Basic Fields (core cheezein):-
+1️⃣ Name:-
+👉 Entitlement ka naam
+entitlement.getName();
+💡 Example:-
+READ_ACCESS
+WRITE_ACCESS
+
+2️⃣ Value:-
+👉 Actual value jo application ko diya jata hai
+entitlement.getValue();
+💡 Example:-
+READ
+WRITE
+ADMIN
+
+3️⃣ Description:-
+👉 Ye kya karta hai (detail me)
+entitlement.getDescription();
+💡 Example:-
+User can read data
+
+4️⃣ Type:-
+👉 Entitlement kis type ka hai
+entitlement.getType();
+💡 Example:-
+Permission
+Role
+Group
+
+5️⃣ Application:-
+👉 Ye entitlement kis application ka hai
+entitlement.getApplication();
+💡 Example:-
+SAP
+Salesforce
+Database
+
+6️⃣ Owner:-
+👉 Kaun manage karta hai
+entitlement.getOwner();
+
+7️⃣ Attributes (extra data):-
+👉 Key-value pair me extra info
+entitlement.getAttributes();
+💡 Example:-
+level = high
+region = india
+
+8️⃣ Display Name:-
+👉 UI me dikhne wala naam
+entitlement.getDisplayName();
+
+9️⃣ Requestable:-
+👉 User request kar sakta hai ya nahi
+entitlement.isRequestable();
+
+🔟 Risk Level:-
+👉 Kitna risky hai
+entitlement.getRiskScore();
+💡 Example:-
+Low
+Medium
+High
+
+1️⃣1️⃣ Status:-
+👉 Active hai ya nahi
+entitlement.getStatus();
+-----------------------------------------------------------------------------------------------------------------------
+🔥 Entitlement ke Types (Full List + Description):-
+
+1️⃣ Permission Type (सबसे important):-
+👉 Kya hota hai?
+👉 Ye basic action-level access hota hai,
+User system me kya kar sakta hai.
+
+💡 Real Example:-
+READ  → sirf dekh sakta hai
+WRITE → edit kar sakta hai
+DELETE → delete kar sakta hai
+💻 Code:-
+Entitlement ent = new Entitlement();
+ent.setName("DB_READ");
+ent.setValue("READ");
+ent.setType("Permission");
+-----------------------------------------------------
+2️⃣ Role Type
+👉 Kya hota hai?
+👉 Ye ek bundle hota hai multiple permissions ya multiple access profile ka
+💡 Example:-
+ADMIN = READ + WRITE + DELETE
+USER  = READ only
+💻 Code:-
+ent.setType("Role");
+ent.setValue("ADMIN");
+🧠 Backend Logic:-
+👉 System internally expand karta hai:-
+ADMIN → READ + WRITE + DELETE
+------------------------------------------------
+3️⃣ Group Type
+👉 Kya hota hai?
+👉 User ko kisi group me add karta hai
+💡 Example:-
+IT_TEAM
+HR_GROUP
+FINANCE_GROUP
+💻 Code:-
+ent.setType("Group");
+ent.setValue("IT_TEAM");
+🧠 Backend me kya hota hai?
+👉 LDAP / AD me:-
+Add user → IT_TEAM group
+-------------------------------------------
+4️⃣ Application Role (AppRole):-
+👉 Kya hota hai?
+👉 Specific application ke andar role
+
+💡 Example:-
+SAP_ADMIN
+SALESFORCE_MANAGER
+💻 Code:-
+ent.setType("AppRole");
+-----------------------------------------------
+5️⃣ Account Attribute Type
+👉 Kya hota hai?
+
+👉 User account ke fields change karta hai
+
+💡 Example:-
+department = IT
+location = India
+💻 Code:-
+ent.setType("Attribute");
+ent.setValue("department=IT");
+---------------------------------------------------
+6️⃣ Privilege Type (High Risk 🚨):-
+👉 Kya hota hai?
+👉 Powerful access deta hai
+
+💡 Example;-
+ROOT_ACCESS
+SUPER_ADMIN
+💻 Code:-
+ent.setType("Privilege");
+---------------------------------------------------
+🔥 7️⃣ Transaction Type — Rule Apply hota hai? ✅
+👉 Kaise?
+👉 Ye business rule driven hota hai
+
+💡 Example:-
+TRANSFER_MONEY
+
+👉 Rule:-
+✔ Amount < 1 lakh → allow
+❌ Amount > 1 lakh → manager approval
+------------------------------------------------
+8️⃣ UI / Menu Access:-
+👉 Kya hota hai?
+👉 Screen visibility control karta hai
+
+💡 Example:-
+DASHBOARD_VIEW
+SETTINGS_ACCESS
+💻 Code;-
+ent.setType("UI");
+
+9️⃣ Data Level Access:-
+👉 Kya hota hai?
+👉 Kaunsa data dekh sakta hai
+💡 Example:-
+REGION_INDIA
+REGION_US
+💻 Code:-
+ent.setType("Data");
+
+🔟 License Type
+👉 Kya hota hai?
+👉 Paid feature enable karta hai
+💡 Example:-
+O365_LICENSE
+SALESFORCE_LICENSE
+💻 Code:-
+ent.setType("License");
+----------------------------------------------------------------------------------------------------------------
+()👉 Type set karne se system ko pata chalta hai ki is entitlement ko kaise treat karna hai
+Matlab:-kaise process hoga + kahan apply hoga + kya effect hoga.
+
+🔥 Type set karne se system kya decide karta hai?
+1️⃣ Provisioning kaha hoga:-
+Type	        Target
+Permission:----DB / API
+Group:--------Active Directory
+Role:----------Application
+License:-------SaaS system
+
+2️⃣ Kaunsa operation chalega:-
+👉 Example:-
+Group → user add/remove
+Permission → grant/revoke
+License → assign/unassign
+
+3️⃣ Decide karta hai — kaunsa connector use hoga:-
+👉 Example:-
+AD connector
+DB connector
+API connector
+
+3️⃣ Rule kaise apply hoga:-
+Type	        Rule Behavior
+Transaction:---business rules
+Data:----------filter rules
+UI:------------visibility rules
+License:-------eligibility rules
+
+4️⃣ Approval ka level:-
+👉 Example:-
+Privilege → High approval
+Normal Permission → Low approval
+
+5️⃣ UI behavior:-
+👉 Example:-
+UI type → menu show/hide
+Data type → filtered data
+
+🔥 Real Flow (System internally):-
+Entitlement Type set
+   ↓
+System identify karta hai
+   ↓
+Provisioning plan banata hai
+   ↓
+Correct connector call hota hai
+   ↓
+Target system me Access apply hota hai
+
+🎯 Example 1:-
+ent.setValue("IT_TEAM");
+ent.setType("Group");
+👉 Result:-
+User IT_TEAM group me add hoga (AD/LDAP)
+
+🎯 Example 2:-
+ent.setValue("IT_TEAM");
+ent.setType("Permission");
+👉 Result:-
+IT_TEAM ko permission ki tarah treat karega (DB/API)
+
+1️⃣ Permission Type:-
+ent.setValue("READ");
+ent.setType("Permission");
+👉 Result:-
+User ko READ access mil gaya (database/file).
+
+2️⃣ Role Type:-
+ent.setValue("ADMIN");
+ent.setType("Role");
+👉 Result:-
+User ko ADMIN role mila (READ + WRITE + DELETE).
+
+3️⃣ Group Type:-
+ent.setValue("IT_TEAM");
+ent.setType("Group");
+👉 Result:-
+User IT_TEAM group me add ho gaya (AD/LDAP)
+
+4️⃣ AppRole Type:-
+ent.setValue("SAP_MANAGER");
+ent.setType("AppRole");
+👉 Result:-
+User SAP application me Manager role mil gaya
+
+5️⃣ Attribute Type:-
+ent.setValue("department=IT");
+ent.setType("Attribute");
+👉 Result:-
+User ka department IT set ho gaya
+
+6️⃣ Privilege Type:-
+ent.setValue("ROOT_ACCESS");
+ent.setType("Privilege");
+👉 Result:-
+User ko high-level admin access mil gaya.
+
+7️⃣ Transaction Type:-
+ent.setValue("TRANSFER_MONEY");
+ent.setType("Transaction");
+👉 Result:-
+User paisa transfer kar sakta hai (business action)
+
+8️⃣ UI Type:-
+ent.setValue("SETTINGS_ACCESS");
+ent.setType("UI");
+👉 Result:-
+Settings page UI me visible ho gaya.
+
+9️⃣ Data Type:-
+ent.setValue("REGION_INDIA");
+ent.setType("Data");
+👉 Result:-
+User sirf India ka data dekh sakta hai.
+
+🔟 License Type:-
+ent.setValue("O365_LICENSE");
+ent.setType("License");
+👉 Result:-
+User ko Office 365 license assign ho gaya.
+--------------------------------------------------------------------------------------------------------------------------
+getId()
+setId(String id)
+
+getName()
+setName(String name)
+
+getValue()
+setValue(String value)
+
+getDisplayName()
+setDisplayName(String displayName)
+
+getDescription()
+setDescription(String description)
+getApplication()
+setApplication(Application app)
+
+getType()
+setType(String type)
+-----------------------------------------
+getOwner()
+setOwner(Identity owner)
+Kaun manage karega (owner/approver)
+-----------------------------------------
+isRequestable()
+setRequestable(boolean requestable)
+
+isPrivileged()
+setPrivileged(boolean privileged)
+
+getApprovalMode()
+setApprovalMode(String mode)
+
+getCategory()
+setCategory(String category)
+--------------------------------------
+getRiskScore()
+setRiskScore(int score)
+
+getComplianceScore()
+setComplianceScore(int score)
+
+isActive()
+setActive(boolean active)
+
+getAttributes()
+setAttributes(Attributes attrs)
+
+getAttribute(String name)
+setAttribute(String name, Object value)
+
+getSchema()
+setSchema(Schema schema)
+
+
+getCreated()
+getModified()
+
+getLocalizedDisplayName()
+getLocalizedDescription()
+
+toString()
+equals(Object obj)
+hashCode()
+--------------------------------------------------------------------------------------------------------------------------------
+code:-
+-------------------------------------------
+Identity manager = new Identity();
+manager.setName("Rahul");
+Entitlement ent = new Entitlement();
+ent.setName("DB_ACCESS");
+ent.setOwner(manager);
+System.out.println(ent.getOwner().getName());
+✅ Output:-
+Rahul              //DB_ACCESS ka owner = Rahul
+
+
+🔥 1️⃣ Owner kya APPROVE karta hai?
+👉 Jab koi user request karta hai:-
+"Mujhe DB_ACCESS chahiye"
+👉 System check karta hai:-
+Iska owner kaun hai?
+👉 Fir:-
+Request owner ke paas jata hai
+👉 Owner = jo entitlement ka malik hai,
+👉 Owner hi decide karta hai access dena hai ya nahi,approve/reject.
+----------------------------------------------------
+()🔥 2️⃣ Owner aur kya karta hai?
+
+✔️ 1. Approval karta hai
+👉 Approve / Reject request
+
+✔️ 2. Entitlement manage karta hai
+👉 Change kar sakta hai:-
+name
+description
+type
+
+✔️ 3. Governance (control):-
+👉 Decide karta hai:-
+Kaun le sakta hai access
+Kaun nahi
+
+✔️ 4. Audit responsibility:-
+👉 Agar kuch galat hua:-
+Owner responsible hota hai
+
+✔️ 5. Rule decide kar sakta hai;-
+👉 Example:-
+✔ Sirf IT dept le sakta hai
+✔ Manager approval mandatory
+----------------------------------------------------------------------------------
+🔥 1️⃣ getId() / setId(String id):-
+👉 Kya karta hai?
+👉 Entitlement ka unique ID set aur get karta hai
+
+💻 Code:-
+Entitlement ent = new Entitlement();
+ent.setId("E101");
+System.out.println(ent.getId());
+✅ Output
+E101
+
+🔥 2️⃣ getName() / setName(String name):-
+👉 Kya karta hai?
+👉 Entitlement ka internal naam set/get karta hai
+
+💻 Code:-
+ent.setName("DB_ACCESS");
+System.out.println(ent.getName());
+✅ Output
+DB_ACCESS
+
+🔥 3️⃣ getValue() / setValue(String value):-
+👉 Kya karta hai?
+👉 Actual value jo system me use hoti hai (real permission)
+
+💻 Code:-
+ent.setValue("READ");
+System.out.println(ent.getValue());
+✅ Output
+READ
+
+🔥 4️⃣ getDisplayName() / setDisplayName(String displayName):-
+👉 Kya karta hai?
+👉 UI me dikhne wala friendly naam
+
+💻 Code:-
+ent.setDisplayName("Database Read Access");
+System.out.println(ent.getDisplayName());
+✅ Output
+Database Read Access
+
+🔥 5️⃣ getDescription() / setDescription(String description):-
+👉 Kya karta hai?
+👉 Detail me batata hai ki entitlement kya karta hai
+
+💻 Code:-
+ent.setDescription("User can read database records");
+System.out.println(ent.getDescription());
+✅ Output
+User can read database records
+
+🔥 6️⃣ getApplication() / setApplication(Application app):-
+👉 Kya karta hai?
+👉 Ye batata hai ki ye entitlement kis application ka hai
+
+💻 Code:-
+Application app = new Application();
+app.setName("BankingApp");
+ent.setApplication(app);
+System.out.println(ent.getApplication().getName());
+✅ Output
+BankingApp
+------------------------------------------------------------------------------------------------------------------
+🔥 1️⃣ isRequestable() / setRequestable(boolean requestable):-
+👉 Kya karta hai?
+👉 Decide karta hai:-
+User is entitlement ko request kar sakta hai ya nahi
+
+💻 Code:-
+Entitlement ent = new Entitlement();
+ent.setName("DB_ACCESS");
+ent.setRequestable(true);
+System.out.println(ent.isRequestable());
+✅ Output:-
+true
+-----------------------------------------------------------
+🔥 2️⃣ isPrivileged() / setPrivileged(boolean privileged)
+👉 Kya karta hai?
+
+👉 Batata hai:-
+Ye high-risk / sensitive access hai ya nahi
+
+💻 Code:-
+ent.setName("ROOT_ACCESS");
+ent.setPrivileged(true);
+System.out.println(ent.isPrivileged());
+✅ Output:-
+true
+🧠 Meaning:-
+true → 🔥 high-risk access (extra approval, audit)
+false → normal access
+-------------------------------------------------------
+🔥 3️⃣ getApprovalMode() / setApprovalMode(String mode):-
+👉 Kya karta hai?
+👉 Decide karta hai:-
+Approval ka process kaise hoga
+
+💻 Code:-
+ent.setApprovalMode("MANAGER");
+System.out.println(ent.getApprovalMode());
+✅ Output
+MANAGER
+🧠 Common Modes:-
+Mode	Meaning
+AUTO	auto approve (koi approval nahi)
+MANAGER	manager approve karega
+OWNER	entitlement owner approve karega
+BOTH	manager + owner dono
+NONE	approval nahi
+
+💥 Real Example:-
+READ_ACCESS → AUTO
+ADMIN_ACCESS → OWNER
+CRITICAL_ACCESS → BOTH
+-----------------------------------------------------------------
+🔥 setCategory(String category):-
+👉 Kya karta hai?
+👉 Entitlement ko ek category (group/label) me daal deta hai
+Matlab: “ye kis type ke access ka part hai”
+
+💻 Code:-
+Entitlement ent = new Entitlement();
+ent.setName("DB_READ");
+ent.setCategory("Database Access");
+👉 Kya hua?
+DB_READ → "Database Access" category me chala gaya
+🔥 getCategory():-
+👉 Kya karta hai?
+👉 Entitlement ki category return karta hai.
+
+🔥 Category kya hoti hai?
+👉 Category = ek label/grouping hai,
+jisme entitlements ko organize kiya jata hai.
+👉 Ye logic ke liye nahi, balki:-
+UI
+filtering
+reporting
+ke liye use hoti hai.
+-----------------------
+🔥 🔟+ Common Categories (real world):-
+👉 Note: Category fixed nahi hoti
+👉 Company apne hisaab se define karti hai
+
+1️⃣ Database Access
+DB_READ
+DB_WRITE
+DB_ADMIN
+
+2️⃣ Application Access
+SAP_USER
+SALESFORCE_USER
+
+3️⃣ Infrastructure
+SERVER_ACCESS
+VM_ACCESS
+SSH_ACCESS
+
+4️⃣ Network Access
+VPN_ACCESS
+FIREWALL_ACCESS
+
+5️⃣ Finance Access
+PAYMENT_APPROVE
+INVOICE_VIEW
+
+6️⃣ HR Access
+EMPLOYEE_DATA_VIEW
+PAYROLL_ACCESS
+
+7️⃣ Admin / Privileged
+ROOT_ACCESS
+SUPER_ADMIN
+
+8️⃣ Data Access
+REGION_INDIA
+REGION_US
+
+9️⃣ Reporting Access
+REPORT_VIEW
+DASHBOARD_ACCESS
+
+🔟 License / SaaS
+O365_LICENSE
+ZOOM_LICENSE
+
+1️⃣1️⃣ Security Access
+AUDIT_LOG_VIEW
+SECURITY_CONFIG
+--------------------------------------------------------------------------------------------------
+🔥 Category set karne se kya hota hai?
+👉 Ye sabse important part 👇
+
+🧠 1️⃣ UI me grouping hoti hai
+👉 Portal me aise dikhega:-
+
+Database Access
+   ├── DB_READ
+   ├── DB_WRITE
+
+Infrastructure
+   ├── SERVER_ACCESS
+   ├── VM_ACCESS
+🧠 2️⃣ Search & Filter easy ho jata hai:-
+👉 User bole:-
+"Mujhe sirf Infrastructure access dikhao"
+👉 System filter karega 🔥
+
+🧠 3️⃣ Approval rules apply ho sakte hain:-
+👉 Example:-
+Infrastructure → Manager approval
+Finance → Owner approval
+Admin → Multi-level approval
+
+🧠 4️⃣ Reporting easy ho jati hai:-
+👉 Example:-
+Kitne logon ko "Finance Access" diya gaya?
+
+🧠 5️⃣ Governance improve hota hai:-
+👉 Example:-
+Admin category = high risk → audit required.
+------------------------------------------------------------------------------
+🔥 1️⃣ getRiskScore() / setRiskScore(int score):-
+👉 Kya karta hai?
+👉 Entitlement ka risk level set/get karta hai
+
+💻 Code:-
+ent.setRiskScore(9);
+System.out.println(ent.getRiskScore());
+✅ Output
+9
+🧠 Meaning:-
+1–3 → Low
+4–7 → Medium
+8–10 → High 🔥
+--------------------------------------------
+🔥 3️⃣ isActive() / setActive(boolean active):-
+👉 Kya karta hai?
+👉 Entitlement active hai ya disabled
+💻 Code:-
+ent.setActive(true);
+System.out.println(ent.isActive());
+----------------------------------------
+🔥 4️⃣ getAttributes() / setAttributes(Attributes attrs):-
+👉 Kya karta hai?
+👉 Extra data (key-value pair) store karta hai
+💻 Code:-
+Attributes attrs = new Attributes();
+attrs.put("region", "India");
+ent.setAttributes(attrs);
+System.out.println(ent.getAttributes());
+✅ Output;-
+{region=India}
+---------------------------------------------------------
+🔥 5️⃣ getAttribute(String name) / setAttribute(String name, Object value):-
+👉 Kya karta hai?
+👉 Specific attribute set/get karta hai
+
+💻 Code:-
+ent.setAttribute("level", "High");
+System.out.println(ent.getAttribute("level"));
+✅ Output:-
+High
+-----------------------------------------------------------
+🔥 6️⃣ getSchema() / setSchema(Schema schema):-
+👉 Kya karta hai?
+👉 Entitlement ka structure/definition (schema) set karta hai
+
+💻 Code:-
+Schema schema = new Schema();
+schema.setName("AccountSchema");
+ent.setSchema(schema);
+System.out.println(ent.getSchema().getName());
+✅ Output:-
+AccountSchema
+----------------------------------------------------------------
+🔥 7️⃣ getCreated() / getModified():-
+👉 Kya karta hai?
+
+👉 Creation aur last update time deta hai
+
+💻 Code
+System.out.println(ent.getCreated());
+System.out.println(ent.getModified());
+✅ Output (example)
+2026-03-24
+2026-03-25
+
+🔥 8️⃣ getLocalizedDisplayName() / getLocalizedDescription():-
+👉 Kya karta hai?
+
+👉 Multi-language me name/description deta hai
+
+💻 Code
+System.out.println(ent.getLocalizedDisplayName());
+✅ Output (example)
+Database Access (Hindi/English based)
+----------------------------------------------------------------------
+🔥 7️⃣ getCreated() / getModified()
+👉 Kya karta hai?
+👉 Creation aur last update time deta hai
+
+💻 Code:-
+System.out.println(ent.getCreated());
+System.out.println(ent.getModified());
+✅ Output (example):-
+2026-03-24
+2026-03-25
+
+🔥 8️⃣ getLocalizedDisplayName() / getLocalizedDescription()
+👉 Kya karta hai?
+👉 Multi-language me name/description deta hai
+
+💻 Code:-
+System.out.println(ent.getLocalizedDisplayName());
+✅ Output (example)
+Database Access (Hindi/English based)
+---------------------------------------------------------------------------
+🔥 9️⃣ toString():-
+👉 Kya karta hai?
+👉 Object ko string format me convert karta hai
+💻 Code:-
+System.out.println(ent.toString());
+✅ Output
+Entitlement{name=DB_ACCESS, value=READ}
+
+🔥 🔟 equals(Object obj):-
+👉 Kya karta hai?
+👉 Do objects same hain ya nahi check karta hai
+
+💻 Code:-
+Entitlement e1 = new Entitlement();
+e1.setId("1");
+Entitlement e2 = new Entitlement();
+e2.setId("1");
+
+System.out.println(e1.equals(e2));
+✅ Output:-
+true
+
+🔥 1️⃣1️⃣ hashCode():-
+👉 Kya karta hai?
+👉 Object ka unique hash number deta hai
+
+💻 Code:-
+System.out.println(ent.hashCode());
+✅ Output (example)
+12345678
+---------------------------------------------------------------
+🔥 1️⃣ ComplianceScore kya hota hai?
+👉 Simple Definition:-
+👉 ComplianceScore = kitna compliant (rule-following) hai entitlement
+
+🧠 Real Meaning:-
+👉 Ye batata hai:-
+kya ye access audit rules follow karta hai?
+kya ye safe hai ya risky?
+kya ye policy violation karega?
+🎯 Example:-
+Entitlement: PAYMENT_APPROVE
+ComplianceScore = 9 → risky (audit needed)
+ComplianceScore = 2 → safe
+
+🔥 Real Use:-
+👉 System use karta hai:-
+1️⃣ Audit ke time
+High compliance score → manual review
+2️⃣ Approval flow me
+High score → extra approval
+3️⃣ Policy violation check
+Score high → alert 🚨
+-----------------------------------------------------------------
+🔥 2️⃣ Schema kya hota hai?
+👉 Simple Definition:-
+👉 Schema = structure / blueprint hota hai data ka.
+
+🔥 IAM (SailPoint) me Schema:-
+👉 Jab kisi application (jaise AD, SAP, DB) ko connect karte hain
+👉 to uska Schema define hota hai
+
+🎯 Example:-
+Schema: AccountSchema
+
+Fields:-
+- username (String)
+- email (String)
+- department (String)
+- role (String)
+👉 Matlab system ko pata hai:-
+kya data aayega
+kaise store hoga
+kaise bhejna hai
+
+🔥 Code Example:-
+Schema schema = new Schema();
+schema.setName("AccountSchema");
+ent.setSchema(schema);
+System.out.println(ent.getSchema().getName());
+---------------------------------------------------------------------------
+🔥 Real Life Use (VERY IMPORTANT):-
+1️⃣ Provisioning ke time
+👉 Jab user create hota hai:-
+Username → string hona chahiye
+Email → string hona chahiye
+👉 Ye sab Schema decide karta hai 🔥
+
+2️⃣ Mapping ke time:-
+SailPoint field → Application field
+Example:-
+identity.name → username
+identity.email → email
+
+3️⃣ Validation:-
+👉 Galat data nahi jayega:-
+age = "abc" ❌
+
+4️⃣ UI form banane me:-
+👉 Form auto-generate hota hai schema se
+------------------------------------------------
+🔥 Types of Schema (real system):-
+1️⃣ Account Schema:-
+👉 User account fields
+
+2️⃣ Entitlement Schema:-
+👉 Roles / permissions
+
+3️⃣ Group Schema:-
+👉 Groups / teams
+
+4️⃣ Custom Schema:-
+👉 Company specific fields
+
+🔥 XML Style (Real SailPoint)
+<Schema name="Account" objectType="account">
+    <AttributeDefinition name="username" type="string"/>
+    <AttributeDefinition name="email" type="string"/>
+</Schema>
+--------------------------------------------------------------

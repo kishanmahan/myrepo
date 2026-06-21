@@ -1,0 +1,96 @@
+()global setting->role configuration->
+
+()role configuration->role type->name/displayname-BirthRightSpecial->save->setup-roles->new role->type->BirthRightSpecial->owner-spadmin->
+->name/displayname->Ruthie Special Role->scroll-entitlements-add-ldap->
+->select list of groups a user is a member->select entitlement-demo group->
+->save->submit->stack bar->manage user access->select adam.kennedy->manage access->scroll karne pe Ruthie Special Role dikhega->
+->toh BirthRightSpecial- ->role type dikhega in filter ke role type.
+
+()role configuration->new attribute->name/display->ApprovalSchema->type-String->editiable-tick->Allowed-values->Owner,Identity,Manger->
+->default value-Owner->save->
+->agar ye attribute nahi chahiye buisnessrole ya koi aur role me toh click buisnessrole aur role-attribute se untick karde ApprovalSchema->
+->save.
+---------------------------------------------------------------------------------------------------------------------------------
+()Type Name: Is role type ka internal technical naam (e.g., "business", "it").
+
+()Display Name: Woh naam jo users ko interface par dikhayi dega.
+
+()Description: Role type ke baare mein thodi jankari.
+
+()Icon Class: UI mein is role ke liye kaunsa icon dikhega uski CSS class.
+
+()Do not allow inheritance of other roles: Agar ise check kiya, toh is type ke roles dusre roles ko apne andar "shamil" (inherit) nahi kar payenge.
+
+()Do not allow other roles from inheriting this role: Iska matlab hai ki koi aur role is type ke role ko inherit nahi kar sakta.
+
+()No automatic detection with profiles: Is role type ke roles automatically detect nahi honge, bhale hi user ke paas usse jude saare accounts/entitlements ho.
+
+()No automatic detection with profiles unless assigned: Role tabhi detect hoga agar wo pehle se user ko "Assign" kiya gaya ho.
+
+()No entitlement profiles: Is role type mein aap "Entitlement Profiles" (direct permissions) add nahi kar payenge.
+
+()No automatic assignment with rule: Rules ke zariye is role type ko automatically assign karne ki permission nahi hogi.
+
+()No assignment rule: Is role type ke liye "Assignment Rule" define karne ka option hat jayega.
+
+()No manual assignment: Users ya admins is role ko manually kisi ko assign nahi kar payenge.
+
+()No permitted roles list: Is role type ke liye "Permitted Roles" (allowed optional roles) ki list nahi banayi ja sakegi.
+
+()Do not allow this role from being on a permitted roles list: Ye role khud kisi dusre role ki "Permitted" list mein nahi ja payega.
+
+()No required roles list: Is role ke liye koi "Required Roles" (zaroori roles) set nahi kiye ja sakenge.
+
+()Do not allow this role from being on a required roles list: Ye role kisi dusre role ke liye "Required" (mandatory) nahi ban payega.
+
+()Do not allow the Granting of IdentityIQ User Rights: Is role ke pas hone se IdentityIQ ke internal administrative rights (jaise capability ya scopes) nahi milenge.
+
+()1. Role Inheritance (Virasat):-
+Inheritance ka matlab hai ek role ka dusre role ke andar hona. Ye "Parent-Child" rishte ki tarah kaam karta hai.
+Kaise kaam karta hai: Agar "Role A" (Parent) ne "Role B" (Child) ko inherit kiya hai, toh jo bhi user Role A ka member banega,
+use Role B ki saari permissions (entitlements) automatically mil jayengi.
+Fayda: Isse aapko bar-bar wahi permissions har role mein nahi daalni padti. Aap ek "Base IT Role" banate hain aur use dusre roles mein inherit kar lete hain.
+
+()2. Role Detection (Pehchan):-
+Detection ka matlab hai system ka khud-ba-khud ye pata lagana ki kisi user ke paas kaunsa role hona chahiye, unke pass maujood permissions ko dekh kar.
+Kaise kaam karta hai: Maan lijiye ek "Manager Role" ke liye Active Directory mein 'Group A' aur 'Group B' hona zaroori hai. 
+Agar koi user manually ye dono groups le leta hai,
+toh SailPoint ka Correlation process detect kar lega ki "Is user ke paas Manager Role ki saari permissions hain, 
+isliye ise Manager Role assign kar do."
+Udeshya: Isse system saaf rehta hai kyunki humein pata chalta hai ki user ke paas jo access hai, wo kis role se juda hai.
+
+()Attribute Name: Ye database ke liye technical naam hai (e.g., roleCostCenter). Ismein spaces nahi hone chahiye.
+
+()Display Name: Ye wo naam hai jo users ko screen par dikhega (e.g., "Role Cost Center").
+
+()Type: Ismein data kis tarah ka hoga? (e.g., String, Integer, Boolean, ya Date).
+
+()Description: Ye attribute kis kaam ke liye banaya gaya hai, uski detail.
+
+()Category Name: Agar aapne bahut saare extra attributes banaye hain, 
+toh unhein groups (Categories) mein baantne ke liye iska use hota hai.
+Example:-
+Aapne do categories banayi: "Finance Details" aur "Security Info".
+Cost Center aur Budget Code attributes ko aapne "Finance Details" category mein daal diya.
+Risk Level aur Compliance Owner ko aapne "Security Info" mein daal diya.
+Fayda: Jab aap Role open karenge, toh aapko saaf-saaf sections dikhenge, 
+bilkul waise hi jaise folders mein files rakhi jati hain.Isse data entry asan ho jati hai.
+
+()Searchable: Agar aap ise check karte hain, toh aap is attribute ki value ke base par roles ko search ya filter kar payenge.
+
+()Editable: Agar ye checked hai, toh admins ya users is attribute ki value ko baad mein change kar sakte hain. 
+Agar unchecked hai,toh ye read-only ho jayega.
+Example (Editable - Unchecked ❌):-
+Maan lijiye aapka ek external system (jaise SAP) hai jo automatically SailPoint mein roles bhejta hai aur
+har role ko ek "External ID" deta hai. Aap chahte hain ki ye ID SailPoint mein dikhe toh sahi, 
+lekin koi admin ise galti se bhi change na kar sake kyunki ye sync bigad sakta hai.
+Aise case mein aap Editable ko uncheck kar denge. Ye field screen par "Read-Only" (grayed out) dikhegi.
+
+()Required: Agar ise check kiya, toh is attribute ko khali nahi chhoda ja sakta. 
+Role banate waqt ismein value daalna zaroori hoga.
+
+()Allowed Values: Agar aap chahte hain ki user apni marzi se kuch bhi na likhe balki ek list mein se choose kare (Dropdown ki tarah),
+toh wo options yahan likhe jate hain.
+
+()Default Value: Agar user koi value nahi daalta, toh system automatically kaunsi value uthayega, wo yahan set hoti hai.
+

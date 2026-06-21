@@ -1,0 +1,362 @@
+-------------------------------------------------------------------------------------------
+<?xml  version="1.0" encoding="UTF-8"?>
+<DOCTYPE sailpoint PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<sailpoint>''
+<Workflow explicitTransitions="true" name="Approve and Provision Subprocess" type="Subprocess">
+<Variable name="identityName" input="true" initializer="Script:wfcontext.getIdentityName()"></Variable>
+<Variable name="approvalMode" input="true"></Variable>
+<Variable name="project" input="true" initializer=""></Variable>
+<Variable name="launcher" input="true" initializer="Script:wfcontext.getWorkflow().getLauncher()"></Variable>
+<Variable name="source" input="true" initializer="Script:event.getName()"></Variable>
+<Variable name="trace" input="true" initializer="false"></Variable>
+<Variable name="flow" input="true"></Variable>
+<Variable name="approvalSplitPoint" input="true"></Variable>
+<Variable name="approvalSet" input="true"></Variable>
+<Variable name="setPreviousApprovalDecisions" input="false"></Variable>
+<Variable name="trace" input="false"></Variable>
+<Variable name="workItemComments" input="true" ></Variable>
+<Variable name="ownerElectronicSignature" input="true" initializer=""></Variable>
+<Variable name="ownerEmailTemplate" input="true" initializer=""></Variable>
+<Variable name="managerElectronicSignature" input="true" initializer=""></Variable>
+<Variable name="managerEmailTemplate" input="true" initializer=""></Variable>
+<Variable name="identityRequestId" input="true" output="true">
+<Variable name="optimisticProvisioning" input="true" initializer="false">
+<Script>
+<Source>
+import sailpoint.object.Identity;
+if(identityName!=null)
+Identity iobj=context.getObjectByName(Identity.class,identityName);
+if(iobj!=null)
+return iobj.getId();
+</Source>
+</Script>
+</Variable>
+<Variable name="identityDisplayName" input="true">
+<Script>
+<Source>
+import sailpoint.object.Identity;
+if(identityName!=null)
+Identity iobjd=context.getObjectByName(Identity.class,identityName);
+if(iobjd!=null)
+return iobjd.getDisplayName();
+</Source>
+</Script>
+</Variable>
+<Variable name="workItemComments" input="true"></Variable>
+<Variable name="workItemEscalationRule" input="true"></Variable>
+<Variable name="workItemHoursTillEscalation" input="true"></Variable>
+<Variable name="workItemEscalationTemplate" input="true"></Variable>
+<Variable name="workItemMaxReminders" input="true"></Variable>
+<Variable name="workItemHoursBetweenReminders" input="true"></Variable>
+<Variable name="workItemReminderTemplate" input="true"></Variable>
+<Variable name="identityEmailTemplate" input="true"></Variable>
+<Variable name="identityElectronicSignature" input="true"></Variable>
+<Variable name="identityDisplayName" input="true"></Variable>
+<Variable name="filterRejects" input="true"></Variable>
+<Variable name="approvalAssignmentRule" input="true"></Variable>
+<Variable name="approvingIdentities" input="true"></Variable>
+<Variable name="securityOfficerElectronicSignature" input="true"></Variable>
+<Variable name="securityOfficerEmailTemplate" input="true" initializer=""></Variable>
+<Variable name="securityOfficerName" input="true" initializer=""></Variable>
+<Variable name="workItemPriority" input="true" initializer="medium"></Variable>
+<Variable name="policyViolations" input="true" initializer=""></Variable>
+<Variable name="plan" input="true" initializer=""></Variable>
+<Variable name="approvalScheme" input="true" initializer=""></Variable>
+<Variable name="ticketManagementApplication" input="true" initializer=""></Variable>
+<Variable name="postApproval" input="true" initializer=""></Variable>
+<Variable name="splitProvisioning" input="true" initializer="true"></Variable>
+<Variable name="foregroundProvisioning" input="true" initializer="false"></Variable>
+<Variable name="policyViolation" input="true" initializer=""></Variable>
+<Variable name="policyScheme" input="true" initializer=""></Variable>
+<Variable name="" input="true" initializer=""></Variable>
+<Variable name="" input="true" initializer=""></Variable>
+<Variable name="" input="true" initializer=""></Variable>
+<Variable name="" input="true" initializer=""></Variable>
+
+<Step name="start" icon="task start">
+<Transition to="next1"/>
+</Step>
+<Step name="next1" action="call:compileProvisioningProject" condition="script:(!isNull(approvalSplitPoint))" return="project">
+<Arg name="requester" value="ref:launcher"/>
+<Arg name="plan" value="ref:plan"/>
+<Arg name="optimisticProvisioning" value="optimisticProvisioning"/>
+<Arg name="identityName" value="ref:identityName"/>
+<Arg name="source" value="ref:source"/>
+<Arg name="noApplicationTemplates">
+<Script>
+<Source>
+boolean ignoreforms = false;
+String flows = (String) wfcontext.getVariable("flow");
+if ("ForgotPassword".equals(flows) || "ExpirePassword".equals(flows)) {
+    ignoreforms = true;
+}
+return ignoreforms;
+</Source>
+</Script>
+</Arg>
+<Transition to="next2">
+</Step>
+<Step name="next2" action="call:buildSplitApprovalSet" resultVariable="approvalSet">
+<Arg name="plan" value="ref:plan"/>
+<Return name="approvalSet" to="approvalSet" />
+<Transition to="next3">
+</Step>
+<Step name="next3" condition="Script:((flow==null) || (!&quot;UnlockAccount&quot;.equals(flow)))" configForm="Provisioning Approval Step Form" >
+<Arg name="approvalSplitPoint" value="ref:approvalSplitPoint">
+<Arg name="project" value="ref:project">
+<Arg name="fallbackApprover" value="spadmin">
+<Arg name="approvalScheme" value="ref:approvalScheme">
+<Arg name="approvalMode" value="ref:approvalMode">
+<Arg name="approvalSet" value="ref:approvalSet">
+<Arg name="plan" value="ref:plan">
+<Arg name="policyViolations" value="ref:policyViolations"/>
+    <Arg name="priority" value="ref:workItemPriority"/>
+    <Arg name="securityOfficerName" value="ref:securityOfficerName"/>
+    <Arg name="securityOfficerEmailTemplate" value="ref:approvalEmailTemplate"/>
+    <Arg name="securityOfficerElectronicSignature" value="ref:securityOfficerElectronicSignature"/>
+<Arg name="approvingIdentities"/>
+<Arg name="approvalAssignmentRule"/>
+<Arg name="filterRejects" value="ref:filterRejects"/>
+<Arg name="flow" value="ref:flow">
+<Arg name="identityName" value="ref:identityName"/>
+    <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+    <Arg name="identityElectronicSignature"/>
+    <Arg name="identityEmailTemplate"/>
+    <Arg name="identityRequestId" value="ref:identityRequestId"/>
+<Arg name="launcher" value="ref:launcher">
+<Arg name="managerEmailTemplate" value="ref:approvalEmailTemplate"/>
+    <Arg name="managerElectronicSignature" value="ref:managerElectronicSignature"/>
+    <Arg name="ownerEmailTemplate" value="ref:approvalEmailTemplate"/>
+    <Arg name="ownerElectronicSignature" value="ref:ownerElectronicSignature"/>
+<Arg name="setPreviousApprovalDecisions" value="ref:setPreviousApprovalDecisions">
+<Arg name="workItemReminderTemplate"/>
+    <Arg name="workItemHoursBetweenReminders"/>
+    <Arg name="workItemMaxReminders"/>
+    <Arg name="workItemEscalationTemplate"/>
+    <Arg name="workItemHoursTillEscalation"/>
+    <Arg name="workItemEscalationRule"/>
+    <Arg name="workItemComments"/>
+<Arg name="clearApprovalDecisions" value="script:(!isNull(approvalSplitPoint) &amp;&amp; csvToList(approvalScheme).contains(approvalSplitPoint))"/>
+    <Return name="approvalSet"/>
+    <Return name="workItemComments"/>
+<Return name="project"/>
+<WorkflowRef>
+<Reference class="sailpoint.object.Workflow" name="Provisioning Approval Subprocess" />
+</WorkflowRef>
+<Transition to="next4"/>
+</Step>
+<Step name="next4" condition="script:(ticketManagementApplication!=null)">
+<Arg name="action" value="ref:postApproval"/>
+<Arg name="project" value="ref:project"/>
+<Arg name="source" value="ref:source"/>
+<Arg name="priority" value="ref:workItemPriority"/>
+<Arg name="ticketManagementApplication" value="ref:ticketManagementApplication"/>
+<Arg name="identityRequestId" value="ref:identityRequestId"/>
+<Arg name="trace" value="ref:trace"/>
+<Arg name="ticketDataGenerationRule" />
+<WorkflowRef>
+<Reference class="sailpoint.object.Workflow" name="Manage Ticket"/>
+</WorkflowRef>
+<Transition to="next5"/>
+</Step>
+<Step name="next5">
+<Arg name="approvalSet" value="approvalSet"/>
+<Arg name="project" value="project"/>
+<Arg name="plan" value="ref:plan"/>
+<Arg name="identityName" value="ref:identityName"/>
+<Arg name="launcher" value="ref:launcher"/>
+<Arg name="foregroundProvisioning" value="ref:foregroundProvisioning"/>
+<Arg name="approvalScheme" value="approvalScheme"/>
+<Arg name="splitProvisioning" value="ref:splitProvisioning">
+<Arg name="formTemplate" value="Identity Update"/>
+<Arg name="flow" value="ref:flow"/>
+<Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+<Arg name="identityName" value="ref:identityName"/>
+<Arg name="identityRequestId" value="identityRequestId"/>
+<Arg name="optimisticProvisioning" value="ref:optimisticProvisioning"/>
+<Arg name="policyViolation" value="ref:policyViolation"/>
+<Arg name="project" value="ref:project"/>
+<Arg name="policyScheme" value="ref:policyScheme"/>
+<Arg name="priority" value="ref:workItemPriority"/>
+<Arg name="workItemComments" value="ref:workItemComments"/>
+<Arg name="trace" value="false"/>
+<Arg name="splitProvisioning" value="ref:splitProvisioning"/>
+<Arg name="manualActionsEmailTemplate" value="Pending Manual Changes"/>
+<Return name="project" to="project"/>
+<WorkflowRef>
+      <Reference class="sailpoint.object.Workflow" name="Identity Request Provision"/>
+</WorkflowRef>
+<Transition to="stop"/>
+</Step>
+<Step name="stop" icon="stop"/>
+</Workflow>
+</sailpoint>
+/////////////*
+()flow me kitne tarah ke value aa sakte hai?non custom workflow me flow ki value ek baar hi shuru me set hoti hai.
+-->flow variable ko value sailpoint deta hai,aur ye workflow ka flow batata hai ye workflow kya karega ya kis kaam ke liye ishko trigger kiya gaya hai.
+note:-getVariable(flow) mein galti:-
+Variable ka naam hamesha double quotes mein string ki tarah pass hota hai, 
+jaise: getVariable("flow"). Agar aap bina quotes ke flow likhoge, toh system confuse ho jayega.
+
+1. Lifecycle Events:-
+Jab company mein kisi employee ka status badalta hai, toh SailPoint automatic ek flow trigger karta hai. 
+Us waqt flow ya event.getName() mein niche di gayi values aati hain:-
+-->Joiner / IdentityLifecycle-Joiner: Jab koi naya employee company join karta hai aur uska naya account banta hai.
+-->Mover / IdentityLifecycle-Mover: Jab kisi employee ka department, manager, ya location badalti hai (Transfer hota hai).
+-->Leaver / IdentityLifecycle-Leaver / Termination: Jab koi employee company chhodta hai aur uske saare accounts disable kiye jaate hain.
+-->Rehire: Jab koi purana employee dobara company join karta hai.
+
+2. Access Requests (Lifecycle ke alawa manual requests):-
+Agar koi user ya manager SailPoint portal par jaakar manually kuch request karta hai, 
+toh flow ya quickAction ke andar yeh values aati hain:
+-->AccessRequest / provideAccess: Jab kisi user ke liye koi naya Role ya Entitlement request kiya jata hai.
+-->IdentityUpdate: Jab user ki profile identity details (jaise phone number, secondary email) update hoti hain.
+-->ForgotPassword / PasswordReset: Jab koi user apna password bhool jata hai aur use reset karne ki request daalta hai.
+-->AccountAggregation: Jab system background mein kisi application (jaise Active Directory ya HR system) se data khinch raha hota hai.
+
+3. Certification & Compliance Flows:-
+Jab audit chal raha ho ya access review ho raha ho, tab workflows mein alag tarah ki values aati hain:-
+-->Certification: Jab managers ko apne employees ki access review karni hoti hai ki access sahi hai ya nahi.
+-->Remediation: Agar audit ke waqt manager kisi access ko Revoke (hataane) ka faisla karta hai,toh access delete karne ke liye yeh flow chalta hai.
+-->PolicyViolation: Agar koi user Sod (Segregation of Duties) policy todta hai (jaise ek hi bande ke paas Invoice Create aur Invoice Approve dono ki access ho), toh alert generate karne ke liye yeh flow trigger hota hai.
+*//////////
+///////////*
+()<Arg name="noApplicationTemplates">:-SailPoint IdentityIQ ke standard workflows(jaise LCM Provisioning ya Subprocess workflows) 
+mein use hone wala ek bahut hi important Argument (System Parameter) hai.
+noApplicationTemplates Kya Kaam Karta Hai?
+Jab yeh argument true hota hai, toh yeh SailPoint ko order deta hai ki:-
+"Provisioning ke time par jo bhi standard Application Forms, Provisioning Policies, ya Multi-instance Account Templates hote hain, 
+unhe skip kar do. User ya Manager ke samne koi pop-up form mat dikhao."Agar yeh false hota hai, 
+toh SailPoint normal tarike se application ka form screen par dikhata hai taaki required fields 
+(jaise target directory path, access levels) bhari ja sakein.
+ex:-
+Real-World Use Case (Yeh kyun zaroori hai?)
+Aapne pichle code mein dekha ki yeh ForgotPassword aur ExpirePassword ke liye true ho raha tha.Iska bada reason yeh hai:-
+-->Scenario A (Normal Access Request - noApplicationTemplates = false):-Maano aap kisi user ko Active Directory (AD) ki access 
+de rahe ho. SailPoint beech mein rukega aur ek Form dikhayega:"Bhai, is user ka OU (Organizational Unit) select karo, 
+ya iska mailbox size batao." Yahan form zaroori hai.
+
+-->Scenario B (Password Reset - noApplicationTemplates = true):-Wahi user apna AD password bhool gaya aur ForgotPassword par 
+click kiya. Ab SailPoint ko sirf password update karna hai,
+use naya account thodi banana hai! Agar is time par bhi SailPoint beech mein wahi purana AD Form khol kar baith jaye 
+(ki OU batao, department batao), toh user pareshan ho jayega.
+Isliye Password Reset ke waqt noApplicationTemplates ko true pass kar diya jata hai taaki workflow bina kisi rukawat ya form-popup
+ke chupchaap background mein password change kar de.
+*///////////
+////////////*
+1.approvalSplitPoint variable ka Asli Kaam Kya Hai?
+Maano ki aapne ek saath 3 applications ke liye access request daali: Active Directory (AD), SAP, aur Salesforce.
+Ab in teeno applications ke approvals alag-alag logon ke paas jaane hain (jaise AD ka approval IT Team degi, SAP ka Finance Manager dega, aur Salesforce ka Sales Head dega).
+approvalSplitPoint isi jagah par kaam aata hai:-
+-->Plan ko Split Karna (Todna): Yeh chal rahe main Provisioning Plan ko dekhta hai aur use applications ya approvers ke hisab se alag-alag tukdon (sub-plans) mein tod deta hai.
+-->Parallel Approvals Bhejna: Yeh teeno approvals ko ek saath (parallelly) unke respective managers ke paas bhej deta hai taaki kisi ek ke chakkar mein poora kaam na ruke.
+-->Result ko Merge Karna: Jab teeno managers apna-apna approval de dete hain, toh approvalSplitPoint un saare approved tukdon ko wapas ek sath merge (jod) kar deta hai aur unhe aage final provisioning ke liye bhejta hai.
+
+Plan Kaun Banata Hai? Workflow ka starting step (jaise Compile Project ya provisioning subprocess).
+approvalSplitPoint Kya Karta Hai? Bane-banaye plan ko pakadta hai, use approval ke liye alag-alag hisson mein split (divide) karta hai, 
+aur approvals milne ke baad wapas combine (merge) kar deta hai.
+
+2.value koun deta hai approvalSplitPoint ko?
+-->SailPoint ki Global Configuration (LCM Configuration) se
+SailPoint ke UI mein ek jagah hoti hai jise LCM Configuration (Lifecycle Manager Configuration) kehte hain.
+Wahan system administrator select karta hai ki approvals ka level kya hona chahiye:-
+Approve by Application: Har application ke liye alag approval jaye.
+Approve by Role: Har role ke liye alag approval jaye.
+Jo bhi option UI mein select kiya jata hai, 
+SailPoint background mein approvalSplitPoint variable ko wahi value (jaise "Application" ya "Role") de deta hai.
+Bhai, aapne bilkul sahi pakda hai! approvalSplitPoint ke andar jo value hoti hai, 
+woh asal mein ek list (ya scheme) hi hoti hai jo SailPoint ko batati hai ki pure plan ko kis basis par alag-alag tukdon mein todna hai.
+
+()plan ka hissa hai approvalset?
+Aapne jo kaha: "approvalSet toh plan ka tukda hai" — iska concept ekdum sahi hai, 
+kyunki jo cheez approve honi hai, woh aakhirkaar plan se hi aayi hai.
+Aaiye ab isko technical tarike se samajhte hain ki approvalSplitPoint dono ko kaise todta hai:-
+-->Asliyat mein kya hota hai?
+approvalSplitPoint sirf plan ko nahi todta, balki Plan aur ApprovalSet dono ko aamne-saamne rakh kar, 
+ek saath(parallelly) unke jode (pairs) banakar todta hai.
+
+()ProvisioningPlan (The "What" - Kya kaam hona hai): Identity: Amit ──> AccountRequest (Application: AD) ──> 
+->AttributeRequest (Operation: Add, Name: memberOf, Value: Finance-Group).
+(Yeh ekdum raw technical instruction hai engine ke liye).
+
+()ApprovalSet (The "Who" - Kiski permission chahiye): ApprovalItem (Application: AD, Instance: Finance-Group, 
+Approver: Rahul Manager, Status: Pending).
+(Yeh sirf approvals ko track karne ke liye hai).
+
+()1. Splitting se pehle (Bada Project):-
+Bada ProvisioningPlan: [AD Request + SAP Request]
+Bada ApprovalSet: [AD ApprovalItem (Manager) + SAP ApprovalItem (App Owner)]
+
+2. approvalSplitPoint ka Action (The Breakdown):-
+Yeh engine donon ko aapas mein match karta hai aur unke tukde kar deta hai:-
+Tukda 1 (For AD): Isme se AD ka ProvisioningPlan aur AD ka ApprovalItem alag ho jata hai. 
+Yeh dono milkar ek chota subprocess banate hain aur AD ke manager ke paas chale jaate hain.
+
+Tukda 2 (For SAP): Isme se SAP ka ProvisioningPlan aur SAP ka ApprovalItem alag ho jata hai. 
+Yeh dono milkar doosre subprocess mein SAP ke owner ke paas chale jaate hain.
+
+flow:-
+[User Request / Lifecycle Event] 
+       │
+       ▼
+ 1. Provisioning Plan (Pehle banta hai)
+       │  (Sirf kacha data: "Amit ko Active Directory me Finance Group de do")
+       ▼
+ 2. Compile Project (Workflow Step)
+       │  (Is raw plan ko system compile karta hai)
+       ▼
+ 3. Provisioning Project (Baad me banta hai)
+       │  (Isme Plan + ApprovalSet dono taiyar hokar aate hain)
+       ▼
+ 4. approvalSplitPoint:-plan ko todta hai approvalset ke samne,subset ban gaya(har subset ka workitem)
+fir approver ke pass request jata hai aur approve/reject hone ke baad ye approvalSplitPoint unhe merge kar deta hai aur project me de deta hai.
+*////////////
+///////////////*
+()<Step condition="script:((flow == null) ||  (!&quot;UnlockAccount&quot;.equals(flow)))" 
+configForm="Provisioning Approval Step Form" icon="Approval" name="Approve" posX="320" posY="20">
+ 
+-->flow == null: Agar flow ki koi value nahi hai (matlab normal ad-hoc request hai), toh approval step chalega.
+
+-->!"UnlockAccount".equals(flow): Agar flow ki value UnlockAccount nahi hai (jaise Joiner, Mover, ya normal Access Request hai), toh bhi approval step chalega.
+
+-->Iska ulti baat (Exception): Agar koi user apna account lock ho jaane par use Unlock kar raha hai (flow == "UnlockAccount"),
+toh yeh condition false ho jayegi aur yeh approval step skip (bypass) ho jayega.
+(Business reason: Account unlock karne ke liye kisi manager ke approval ka wait nahi kiya jata,use turant access chahiye hoti hai).
+
+2. configForm="Provisioning Approval Step Form":-
+Jab yeh step chalega aur manager ke paas approval jayega, toh manager ko screen par ek form dikhega.
+Woh form kaisa dikhega, usme kaunse fields honge (jaise user ka naam, application ka naam, approve/reject ka button)
+—yeh sab Provisioning Approval Step Form naam ke predefined form configuration se design hota hai.
+*//////////////
+////////////////*
+()clearApprovalDecisions variable kya karta hai?
+Iska Asli Kaam Kya Hai? (Business Use Case)
+Maano ek bada access request chal raha tha jisme AD aur SAP dono maange gaye the.
+
+Pehle step mein main Manager ne dono ko approve kar diya.
+
+Uske baad plan split hua (approvalSplitPoint chala) aur AD chala gaya IT Team ke paas, 
+aur SAP chala gaya Finance Team ke paas.
+
+Maano Finance Team ne SAP ko Reject kar diya ya usme koi badlav kar diya, 
+jiske wajah se request ko wapas pichle loop par aana pada.
+
+Jab yeh cycle dobara ghum kar aayega, toh SailPoint is script ko chalayega.Agar yeh condition true return karti hai, 
+toh SailPoint purane saare decisions ko reset (clear) kar dega taaki naye sire se approvals liye ja sakein aur koi purana decision 
+automatic apply na ho jaye.
+
+()<Arg name="clearApprovalDecisions" value="script:(!isNull(approvalSplitPoint) &amp;&amp; csvToList(approvalScheme).contains(approvalSplitPoint))"/>:-
+1. !isNull(approvalSplitPoint):-
+isNull(approvalSplitPoint) check karta hai ki kya split point khali hai.
+Aage laga ! (NOT operator) isko ulta kar deta hai.
+To iska matlab hua: "approvalSplitPoint khali nahi hona chahiye". 
+Matlab system mein plan ko todne (split karne) ka logic active hai (jaise Application ya Role level par split ho raha hai).
+
+2. csvToList(approvalScheme)approvalScheme ek workflow variable hota hai jisme comma-separated values (CSV) hoti hain, 
+jaise: "manager,owner,security". Yeh batata hai ki approval kitne levels par hona hai.
+csvToList(...) ek SailPoint ka in-built function hai jo is text ko ek proper Java List["manager", "owner", "security"] mein badal deta hai taaki system isme search kar sake.
+
+3. .contains(approvalSplitPoint):-
+Yeh check karta hai ki jo hamari current approvalSplitPoint ki value hai (jaise maano iski value "owner" hai), 
+kya woh upar wali approvalScheme list ke andar maujood (contains) hai ya nahi?
+*/////////////

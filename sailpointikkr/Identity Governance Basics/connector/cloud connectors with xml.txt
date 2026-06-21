@@ -1,0 +1,993 @@
+()Cloud connectors kya hai?
+--Cloud Connector = Integration component jo IAM system ko Cloud applications se connect karta hai.
+Matlab:-
+IAM tool (jaise SailPoint IdentityNow, Okta, Microsoft Entra ID)
+->Connector->
+Cloud Application (jaise Salesforce, Slack, Workday)
+Connector ka kaam hota hai user account aur access ko manage karna.
+
+()Cloud Connector kya kya karta hai?
+1️⃣ Account Provisioning:-
+User create karta hai cloud application me.
+Example:-
+IAM → Salesforce user create
+User: Rahul
+App: Salesforce
+Action: Create Account
+
+2️⃣ Account Deprovisioning:-
+User ka access remove karta hai.
+Example:-
+Rahul leaves company
+IAM → Salesforce account disabled
+
+3️⃣ Aggregation:-
+Cloud application se user data aur entitlements IAM me import karta hai.
+Example:-
+Salesforce Users
+Slack Users
+GitHub Users
+IAM me sync ho jate hain.
+
+4️⃣ Password Management:-
+Connector password change bhi kar sakta hai.
+Example:-
+IAM password reset
+↓
+Salesforce password reset
+
+5️⃣ Entitlement Management:-
+Application roles / permissions manage karta hai.
+Example:-
+Slack Role → Admin
+Salesforce Role → Sales User
+
+()Real Cloud Connectors Examples:-
+IAM tools me ready connectors milte hain:-
+SaaS Application Connectors
+Salesforce Connector
+Slack Connector
+ServiceNow Connector
+Google Workspace Connector
+Workday Connector
+
+()Cloud Infrastructure Connectors
+Amazon Web Services
+Microsoft Azure
+Google Cloud
+
+()Types of Connectors:-
+1️⃣ Direct Connector:-
+IAM directly connect karta hai application se.
+Example:-
+IAM → Salesforce API
+
+2️⃣ Gateway Connector:-
+Firewall ke andar applications ke liye gateway use hota hai.
+Example:-
+IAM Cloud
+     ↓
+Virtual Appliance
+     ↓
+On-Prem Application
+
+3️⃣ API Based Connector:-
+REST API use karta hai.
+Example:-
+POST /users
+GET /accounts
+DELETE /users
+
+()SailPoint me Cloud Connector ka Flow:-
+Application Add
+      ↓
+Connector Configure
+      ↓
+Aggregation
+      ↓
+Identity Mapping
+      ↓
+Provisioning
+      ↓
+Access Certification
+---------------------Top 10 SailPoint Cloud Connectors:--------------------------->>>>>>
+1️⃣ Salesforce Connector:-
+Salesforce Connector kya hai?
+Salesforce Connector ek software bridge / integration module hota hai jo:
+IAM system
+aur Salesforce application
+ke beech data aur access management operations perform karta hai.
+
+Simple language me:-
+IAM System
+    ↓
+Salesforce Connector
+    ↓
+Salesforce Application
+Connector Salesforce ke API use karke operations perform karta hai.
+
+Operations (Methods):-
+Test Connection:-Test Connection kya karta hai
+Simple words me:-
+Connector application ke API ko ping karta hai aur verify karta hai ki:
+URL sahi hai
+Username / Password ya API Token sahi hai
+Network connection available hai
+Agar sab sahi hai → Connection Successful
+Agar kuch galat hai → Connection Failed.
+
+Account Aggregation:-Application ke existing accounts IAM me import karta hai.
+Entitlement Aggregation:-Application ke roles / permissions IAM me sync karta hai.
+Group Aggregation:-Application ke groups IAM me sync karta hai.
+Create Account:-Application me new user account create karta hai.
+Update Account:-User ke attributes update karta hai (email, department, role etc.).
+Enable Account:-Disabled account ko phir se active karta hai.
+Disable Account:-User account ko temporarily block karta hai.
+Delete Account:-User account ko permanently remove karta hai.
+Unlock Account:-Locked account ko unlock karta hai.
+Add Entitlement:-User ko role / permission assign karta hai.
+Remove Entitlement:-User se role / permission remove karta hai.
+Password Reset:-User ka password reset karta hai.
+Role Assignment:-User ko role assign karta hai.
+Role Removal:-User se role remove karta hai.
+
+2️⃣ ServiceNow Connector:-
+Operations
+Test Connection
+Account Aggregation
+Group Aggregation
+Role Aggregation:-Application ke roles IAM me import karta hai.
+Create User:-Application me naya user account create karta hai.
+Update User:-User ke attributes update karta hai,email,role,department.
+Disable User:-User account ko temporarily block karta hai.
+Enable User:-Disabled account ko phir se activate karta hai.
+Delete User:-User account ko permanently remove karta hai.
+Add Role
+Remove Role
+Password Reset
+
+3️⃣ Workday Connector:-
+HR system connector
+methods:-
+Test Connection()
+Employee Aggregation():-HR system se saare employees ka data IAM system me import (sync) karta hai.
+Example:-
+Employee ID
+Name
+Email
+Department
+
+Department Aggregation():-user ka department fetch karta hai IAM me.
+
+Manager Mapping():-Employee ko uske manager ke saath link karta hai IAM me.
+Identity Creation():-HR system se aane wale employee data se IAM me new identity create karta hai.
+Identity Update():-Agar employee ka data change ho jaye to IAM identity update karta hai.
+Example changes:-
+Department change
+Role change
+Location change
+
+Termination Processing():-Jab employee company chhod deta hai to IAM automatically uski access remove/disable kar deta hai.
+
+4️⃣ Slack Connector:-
+methods:-
+Test Connection
+User Aggregation
+Channel Aggregation
+Create User
+Disable User
+Enable User
+Add User to Channel
+Remove User from Channel
+Deactivate Account
+
+5️⃣ Google Workspace Connector:-
+methods:-
+Test Connection
+User Aggregation
+Group Aggregation
+Create User
+Update User
+Disable User
+Enable User
+Delete User
+Add Group Member
+Remove Group Member
+Password Reset
+
+6️⃣ Microsoft Entra ID Connector:-
+methods:-
+Test Connection
+User Aggregation
+Group Aggregation
+Role Aggregation
+Create User
+Update User
+Disable User
+Enable User
+Delete User
+Assign Role
+Remove Role
+Reset Password
+
+7️⃣ Amazon Web Services IAM Connector:-
+methods:-
+Test Connection():-
+IAM User Aggregation():-
+IAM Role Aggregation():-
+Create IAM User():-
+Delete IAM User():-
+Attach Policy():-Ye method IAM user ya role ko policy attach karta hai.
+Policy decide karti hai ki user kaun-kaun se AWS resources access kar sakta hai.
+Detach Policy():-Ye method user ya role se policy remove karta hai, jisse uska access restrict ho jata hai.
+Create Access Key():-Ye method IAM user ke liye programmatic access key create karta hai jisse user API,
+CLI ya scripts ke through AWS access kar sakta hai.
+Delete Access Key():-Ye method IAM user ki existing access key delete karta hai taaki security maintain rahe.
+
+8️⃣ GitHub Connector:-
+Test Connection():-
+User Aggregation():-
+Organization Aggregation():-Platform se saare organizations ka data IAM system me import karta hai.
+Matlab IAM ko pata chal jata hai ki kaun-kaun si organizations exist karti hain.
+
+Repository Aggregation():-Platform se saare repositories ka data IAM system me sync karta hai.
+Repositories matlab:-
+project code
+application code
+source files
+
+Add Member():-Kisi organization me user ko add karta hai.
+Remove Member():-Organization se user ko remove karta hai.
+Assign Repository Access():-User ko repository ka access deta hai.
+User:-
+code dekh sakta hai
+code push kar sakta hai
+code pull kar sakta hai
+
+Remove Repository Access():-User ka repository access remove karta hai.
+
+9️⃣ Zoom Connector:-
+methods:-
+Test Connection
+User Aggregation
+Create User
+Update User
+Disable User
+Enable User
+Delete User
+
+Assign License():-Assign License user ko paid ya specific feature access deta hai.
+Agar license assign nahi hoga to user application ke advanced features use nahi kar paayega.
+Example:-
+User: Rahul
+Application: Zoom
+License: Pro License
+
+Operation:-
+Assign License
+
+Result:-
+Rahul → Zoom Pro features use kar sakta hai
+Features example:
+unlimited meeting time
+cloud recording
+large meeting support
+
+Remove License():-remove karta hai license.
+
+🔟 Dropbox Connector:-
+methods:-
+Test Connection()
+User Aggregation()
+Create User()
+Disable User()
+Enable User()
+Delete User()
+
+Add User to Folder():-Ye operation user ko kisi specific folder ka access deta hai.
+Matlab user us folder me:-
+files dekh sakta hai
+files download kar sakta hai
+kabhi-kabhi edit bhi kar sakta hai (permission par depend karta hai)
+
+Remove User from Folder()
+
+11️⃣ Box Connector:-
+methods:-
+Test Connection()
+User Aggregation()
+Group Aggregation()
+Create User()
+Update User()
+Disable User()
+Delete User()
+Add Group Member()
+Remove Group Member()
+
+12️⃣ SAP SuccessFactors Connector:-
+methods:-
+Test Connection
+Employee Aggregation():-HR system se saare employees ka basic data IAM system me import (sync) karta hai.
+Ye data ho sakta hai:-
+Employee ID
+Name
+Email
+Department
+Job Title
+
+Job Data Aggregation():-Employee ka job related data HR system se IAM me sync karta hai.
+Isme usually ye data hota hai:-
+Job title
+Department
+Location
+Manager
+Employment type
+
+Identity Creation()
+Identity Update()
+Termination Sync():-Jab employee company chhod deta hai (terminated) to HR system ka status IAM me sync ho jata hai.
+
+13️⃣ Okta Connector:-
+methods:-
+Test Connection
+User Aggregation
+Group Aggregation
+Create User
+Update User
+Disable User
+Enable User
+Delete User
+Assign Application
+Remove Application
+
+14️⃣ Jira Connector:-
+methods:-
+Test Connection
+User Aggregation
+Group Aggregation
+Create User
+Disable User
+Enable User
+Delete User
+Add Group Member
+Remove Group Member
+
+15️⃣ Active Directory Connector:-
+(Cloud + On-Prem hybrid)
+methods:-
+Test Connection
+Account Aggregation
+Group Aggregation
+Create Account
+Update Account
+Disable Account
+Enable Account
+Delete Account
+Unlock Account
+Reset Password
+Add Group Member():-User ko kisi specific group ka member banana IAM me,
+Jab user group me add hota hai to usko group ke permissions automatically mil jate hain.
+Remove Group Member
+--------------------------------salesforce connectors methods:--------->>>>>>>>>>>>>>>
+1️⃣ Test Connection:-
+Kya karta hai?
+IAM system Salesforce API se connection check karta hai.
+
+import java.lang.System;
+
+class TestConnection {
+
+    public static boolean testConnection() {
+
+        System.out.println("Connecting to Salesforce...");
+
+        boolean connected = true;
+
+        if (connected) {
+            System.out.println("Connection Successful");
+        } else {
+            System.out.println("Connection Failed");
+        }
+
+        return connected;
+    }
+
+    public static void main(String[] args) {
+        testConnection();
+    }
+}
+------------
+2️⃣ Account Aggregation
+Kya karta hai
+
+Salesforce ke existing users IAM me import karta hai.
+
+Code
+import java.util.ArrayList;
+import java.util.List;
+
+class AccountAggregation {
+
+    public static List<String> aggregateAccounts() {
+
+        List<String> users = new ArrayList<String>();
+
+        users.add("john");
+        users.add("emma");
+        users.add("alex");
+
+        return users;
+    }
+
+    public static void main(String[] args) {
+
+        List<String> result = aggregateAccounts();
+
+        for (int i = 0; i < result.size(); i++) {
+            System.out.println(result.get(i));
+        }
+    }
+}
+Output
+john
+emma
+alex
+----------
+3️⃣ Entitlement Aggregation:-
+Kya karta hai?
+Salesforce ke permissions / roles IAM me sync karta hai.
+
+import java.util.ArrayList;
+import java.util.List;
+
+class EntitlementAggregation {
+
+    public static List<String> getEntitlements() {
+
+        List<String> roles = new ArrayList<String>();
+
+        roles.add("Admin");
+        roles.add("Manager");
+        roles.add("Viewer");
+
+        return roles;
+    }
+
+    public static void main(String[] args) {
+
+        List<String> list = getEntitlements();
+
+        for (int i = 0; i < list.size(); i++) {
+            System.out.println(list.get(i));
+        }
+    }
+}
+----------
+3️⃣ Entitlement Aggregation
+Kya karta hai
+
+Salesforce ke permissions / roles IAM me sync karta hai.
+
+Code
+import java.util.ArrayList;
+import java.util.List;
+
+class EntitlementAggregation {
+
+    public static List<String> getEntitlements() {
+
+        List<String> roles = new ArrayList<String>();
+
+        roles.add("Admin");
+        roles.add("Manager");
+        roles.add("Viewer");
+
+        return roles;
+    }
+
+    public static void main(String[] args) {
+
+        List<String> list = getEntitlements();
+
+        for (int i = 0; i < list.size(); i++) {
+            System.out.println(list.get(i));
+        }
+    }
+}
+Output
+Admin
+Manager
+Viewer
+---------------------
+4️⃣ Group Aggregation:-
+Kya karta hai
+
+Salesforce ke groups IAM me import karta hai.
+
+Code
+import java.util.ArrayList;
+import java.util.List;
+
+class GroupAggregation {
+
+    public static List<String> groups() {
+
+        List<String> groupList = new ArrayList<String>();
+
+        groupList.add("Sales Team");
+        groupList.add("Support Team");
+        groupList.add("Admin Team");
+
+        return groupList;
+    }
+
+    public static void main(String[] args) {
+
+        List<String> result = groups();
+
+        for (int i = 0; i < result.size(); i++) {
+            System.out.println(result.get(i));
+        }
+    }
+}
+Output
+Sales Team
+Support Team
+Admin Team
+-----------
+5️⃣ Create Account
+Kya karta hai:-
+Salesforce me new user create karta hai.
+Code
+import java.util.HashMap;
+import java.util.Map;
+
+class CreateAccount {
+
+    static Map<String,String> users = new HashMap<String,String>();
+
+    public static void createUser(String name,String role)
+    {
+        users.put(name,role);
+
+        System.out.println("User Created : " + name);
+    }
+
+    public static void main(String[] args) {
+
+        createUser("john","Admin");
+
+    }
+}
+Output
+User Created : john
+-----------------------
+6️⃣ Update Account
+Kya karta hai:-
+
+User ka role / attributes update karta hai.
+
+Code
+import java.util.HashMap;
+import java.util.Map;
+
+class UpdateAccount {
+
+    static Map<String,String> users = new HashMap<String,String>();
+
+    public static void updateUser(String user,String role)
+    {
+        users.put(user,role);
+
+        System.out.println("User Updated : " + user);
+    }
+
+    public static void main(String[] args) {
+
+        updateUser("john","Manager");
+
+    }
+}
+Output
+User Updated : john
+--------------------
+7️⃣ Enable Account
+Kya karta hai
+
+Disabled user ko activate karta hai.
+
+Code
+class EnableAccount {
+
+    public static void enable(String user)
+    {
+        System.out.println(user + " account enabled");
+    }
+
+    public static void main(String[] args) {
+
+        enable("john");
+
+    }
+}
+-----------
+8️⃣ Disable Account
+Kya karta hai
+
+User ko temporarily block karta hai.
+
+Code
+class DisableAccount {
+
+    public static void disable(String user)
+    {
+        System.out.println(user + " account disabled");
+    }
+
+    public static void main(String[] args) {
+
+        disable("john");
+
+    }
+	}
+----------
+9️⃣ Delete Account
+Kya karta hai
+
+User account permanently remove karta hai.
+
+Code
+import java.util.HashMap;
+import java.util.Map;
+
+class DeleteAccount {
+
+    static Map<String,String> users = new HashMap<String,String>();
+
+    public static void delete(String user)
+    {
+        users.remove(user);
+
+        System.out.println("User deleted : " + user);
+    }
+
+    public static void main(String[] args) {
+
+        delete("john");
+
+    }
+}
+Output
+User deleted : john
+--------------------
+🔟 Unlock Account
+Kya karta hai
+
+Locked account ko unlock karta hai.
+
+Code
+class UnlockAccount {
+
+    public static void unlock(String user)
+    {
+        System.out.println(user + " account unlocked");
+    }
+
+    public static void main(String[] args) {
+
+        unlock("john");
+
+    }
+}
+Output
+john account unlocked
+--------------------------
+1️⃣1️⃣ Add Entitlement
+Kya karta hai
+
+User ko permission / role assign karta hai.
+
+Code
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.List;
+
+class AddEntitlement {
+
+    static Map<String,List<String>> access = new HashMap<String,List<String>>();
+
+    public static void add(String user,String role)
+    {
+
+        if(!access.containsKey(user))
+        {
+            access.put(user,new ArrayList<String>());
+        }
+
+        access.get(user).add(role);
+
+        System.out.println(role + " added to " + user);
+
+    }
+
+    public static void main(String[] args) {
+
+        add("john","Admin");
+
+    }
+}
+Output
+Admin added to john
+----------------------
+1️⃣2️⃣ Remove Entitlement
+Kya karta hai?
+User se permission remove karta hai.
+
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.List;
+
+class RemoveEntitlement {
+
+    static Map<String,List<String>> access = new HashMap<String,List<String>>();
+
+    public static void remove(String user,String role)
+    {
+
+        if(access.containsKey(user))
+        {
+            access.get(user).remove(role);
+        }
+
+        System.out.println(role + " removed from " + user);
+
+    }
+
+    public static void main(String[] args) {
+
+        remove("john","Admin");
+
+    }
+}
+Output
+Admin removed from john
+--------------------------
+1️⃣3️⃣ Password Reset
+Kya karta hai?
+
+User ka password reset karta hai.
+
+Code
+class PasswordReset {
+
+    public static void reset(String user)
+    {
+        System.out.println("Password reset for " + user);
+    }
+
+    public static void main(String[] args) {
+
+        reset("john");
+
+    }
+}
+Output
+Password reset for john
+---------------------------
+1️⃣4️⃣ Role Assignment
+Kya karta hai
+
+User ko Salesforce role assign karta hai.
+
+Code
+class RoleAssignment {
+
+    public static void assignRole(String user,String role)
+    {
+        System.out.println(role + " role assigned to " + user);
+    }
+
+    public static void main(String[] args) {
+
+        assignRole("john","Sales Manager");
+
+    }
+}
+Output
+Sales Manager role assigned to john
+-------------------------------------
+1️⃣5️⃣ Role Removal
+Kya karta hai
+
+User se role remove karta hai.
+
+Code
+class RoleRemoval {
+
+    public static void removeRole(String user,String role)
+    {
+        System.out.println(role + " role removed from " + user);
+    }
+
+    public static void main(String[] args) {
+
+        removeRole("john","Sales Manager");
+
+    }
+}
+Output
+Sales Manager role removed from john
+----------------------------------------------------------------------------------------------------
+()Cloud Connector ka real configuration:-
+--Isme basically IAM system ko cloud application se connect karne ke liye configuration karte hain.
+1️⃣ Application Create karna (Connector Setup):-
+IAM me pehle application/connector create karte hain.
+Example: Salesforce connector
+Application Name : Salesforce
+Type             : Web Services / SaaS Connector
+Owner            : IAM Team
+
+2️⃣ Connection Configuration:-
+Yaha cloud application ka endpoint aur authentication details daalte hain.
+Example configuration:-
+API URL        : https://api.salesforce.com
+Client ID      : abc123xyz
+Client Secret  : xxxxxxxx
+Username       : admin@company.com
+Password       : ********
+Ye IAM ko allow karta hai ki wo cloud application ke API se connect kare.
+
+3️⃣ Test Connection:-
+Ab connection test karte hain.
+
+Operation : Test Connection
+Result    : Connection Successful
+
+Agar credentials galat honge to error aayega.
+
+Connection Failed
+Invalid credentials
+-----------------------------------------------------------------------------------------------------
+()Connector XML configuration:-
+--1️⃣ Basic Connector XML Configuration
+<Application name="Salesforce" type="WebService">
+
+    <!-- Connection Configuration -->
+    <Attributes>
+        <Map>
+            <entry key="apiUrl" value="https://api.salesforce.com"/>
+            <entry key="username" value="admin@company.com"/>
+            <entry key="password" value="password123"/>
+            <entry key="clientId" value="abc123xyz"/>
+            <entry key="clientSecret" value="secret123"/>
+        </Map>
+    </Attributes>
+
+    <!-- Schema Configuration -->
+    <Schemas>
+        <Schema name="account" type="account">
+            <AttributeDefinition name="username" type="string"/>
+            <AttributeDefinition name="email" type="string"/>
+            <AttributeDefinition name="department" type="string"/>
+            <AttributeDefinition name="status" type="string"/>
+        </Schema>
+    </Schemas>
+
+</Application>
+///////////////*
+()<Application>:-
+Ye application/connector ka main container hota hai.
+<Application name="Salesforce" type="WebService">
+Matlab:-
+Connector Name : Salesforce
+Connector Type : WebService
+
+()<Attributes>:-
+Isme connection configuration hoti hai.
+<entry key="apiUrl" value="https://api.salesforce.com"/>
+Matlab IAM system Salesforce API endpoint se connect karega.
+
+()1️⃣ Connection Configuration:-
+<entry key="apiUrl" value="https://api.salesforce.com"/>
+Kya karta hai?
+Ye API endpoint batata hai.
+IAM system isi URL par request bhej kar Salesforce se data leta hai.
+
+()<entry key="username" value="admin@company.com"/>:-
+Kya karta hai?
+Ye login username hai.
+IAM isi username se application me login karega.
+
+()<entry key="password" value="password123"/>:-
+Kya karta hai?
+Ye application ka password hai.
+Username ke saath authentication ke liye use hota hai.
+
+()1️⃣ clientId
+<entry key="clientId" value="abc123xyz"/>:-
+Kya karta hai?
+Ye application ka unique identifier hota hai.
+SaaS application ko pata chalta hai kaunsa client request bhej raha hai.
+yaha IAM hi client hai.clientId = IAM application ki ID
+Example flow:-
+IAM System → clientId send karta hai → Salesforce identify karta hai.
+
+2️⃣ clientSecret:-
+<entry key="clientSecret" value="secret123"/>
+Kya karta hai?
+Ye secret password jaisa key hota hai jo client ko authenticate karta hai.
+Ye confirm karta hai ki request trusted client se hi aa rahi hai.
+
+()Schema IAM ko batata hai ki application me kaun-kaun se attributes available hain.
+<Schema name="account" type="account">
+Kya karta hai?
+Ye account object schema define karta hai.
+Matlab user account ka structure.
+
+()<AttributeDefinition name="username" type="string"/>:-
+Kya karta hai?
+Ye username field define karta hai.
+Data type string hai.
+Example:-
+username = rahul123
+
+()<AttributeDefinition name="email" type="string"/>:-
+Kya karta hai?
+User ka email attribute define karta hai.
+Example:-
+email = rahul@company.com
+
+()<AttributeDefinition name="department" type="string"/>:-
+Kya karta hai?
+User ka department field define karta hai.
+Example:-
+department = IT
+
+()<AttributeDefinition name="status" type="string"/>:-
+Kya karta hai?
+User ka account status batata hai.
+Example:-
+status = Active / Disabled
+*/////////////////
+clientId aur clientSecret kaise generate hote hain:-
+Step 1️⃣ Application me Developer / API App create karo
+
+Example: Salesforce me:-
+1️⃣ Setup open karo:-
+Salesforce dashboard me top right corner me ⚙️ gear icon hota hai.
+Gear Icon → Setup
+Matlab tum Salesforce administration panel me chale jaoge.
+
+2️⃣ App Manager open karo
+Setup ke search box me type karo:-
+App Manager
+Fir open karo:-
+Setup → Apps → App Manager
+Yaha Salesforce ke saare apps list me milenge.
+
+3️⃣ New Connected App create karo
+App Manager page me:-
+New Connected App
+button click karo.
+Ab ek form open hoga.
+
+
+Step 2️⃣ App details fill karo:-
+Example configuration:-
+App Name        : IAM Connector
+Contact Email   : admin@company.com
+Enable OAuth    : Yes
+Callback URL    : https://iam.company.com/oauth
+
+Step 3️⃣ OAuth enable karte hi system generate karta hai,
+Application automatically 2 values generate karta hai.
+
+Consumer Key  → clientId
+Consumer Secret → clientSecret
+
+Example:-
+clientId     = 3MVG9abcXYZ123
+clientSecret = 1948234ABCxyz987
+---------------------------------------------------------------------------

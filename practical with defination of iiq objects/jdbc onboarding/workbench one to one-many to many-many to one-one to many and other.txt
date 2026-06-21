@@ -1,0 +1,1034 @@
+1. One To One:-
+Matlab: Ek table ka 1 record dusre table ke sirf 1 record se connected hoga.
+Example:-
+()users table
+id    name
+1----Rahul
+2----Amit
+()passport table
+id----passport_no----user_id
+1----IN123----1
+2----IN456----2
+Yaha:
+Rahul ka ek passport
+Amit ka ek passport
+➡ Ek user = ek passport. 
+CREATE TABLE users (
+    id INT PRIMARY KEY,
+    name VARCHAR(50)
+);
+
+CREATE TABLE passport (
+    id INT PRIMARY KEY,
+    passport_no VARCHAR(50),
+    user_id INT UNIQUE,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+----------------
+() UNIQUE:-
+lagane se ek user multiple passport nahi rakh sakta.
+
+2. One To Many:-
+Matlab: Ek table ka 1 record dusre table ke many records se connected ho sakta hai.
+Example:-
+()department table me:--
+id----dept_name
+1----IT
+()employee table se:--
+id----name----dept_id
+1----Rahul----1
+2----Amit----1
+3----Neha----1
+➡ Ek department me bahut employees ho sakte hain.
+Ex:-
+CREATE TABLE department (
+    id INT PRIMARY KEY,
+    dept_name VARCHAR(50)
+);
+
+CREATE TABLE employee (
+    id INT PRIMARY KEY,
+    name VARCHAR(50),
+    dept_id INT,
+    FOREIGN KEY (dept_id) REFERENCES department(id)
+);
+------------------
+3. Many To One:-
+Ye basically One-To-Many ka ulta view hota hai.
+Example:--
+Bahut employees ek department me kaam karte hain.
+()employee table:-
+id   name  dept_id
+1----Rahul----1
+2----Amit----1
+Many employees → One department. 
+ex:-
+CREATE TABLE employee (
+    id INT PRIMARY KEY,
+    name VARCHAR(50),
+    dept_id INT,
+    FOREIGN KEY (dept_id) REFERENCES department(id)
+);
+-----------------------
+Difference:-
+Many To Many me dono side multiple hote hain, aur One To Many me sirf ek side multiple hota hai.
+Example:-
+Department → Employees
+ 1Department=many-Employes
+
+()Lekin:-
+1 Employee = sirf 1Department
+IT department me many employees hain
+BUT Rahul ek hi department me hai
+➡ Employee multiple department me nahi ho sakta.
+
+2. Many To Many (M : M)
+Example:-
+Students ↔ Courses
+1 Student = many Courses
+AND
+1 Course = many Students
+Dono side many hai 🔥
+()student table:-
+id   name
+1----Rahul
+2----Amit
+() course table:-
+course  id  course_name
+1----Java
+2----Python
+( )student_course:-
+student_id   course_id
+1--------1
+1--------2
+2--------1
+Rahul multiple courses le raha
+Java course multiple students le rahe
+➡ Dono side many.
+--------------------------------------------
+1. One To One:-
+-- CREATE DATABASE relationship_demo;
+
+USE relationship_demo;
+
+CREATE TABLE users (
+
+    user_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_name VARCHAR(100)
+
+);
+
+CREATE TABLE passport (
+
+    passport_id INT PRIMARY KEY AUTO_INCREMENT,
+    passport_number VARCHAR(100),
+
+    user_id INT UNIQUE,
+
+    FOREIGN KEY(user_id)
+    REFERENCES users(user_id)
+
+);
+
+INSERT INTO users(user_name)
+VALUES
+('Rahul'),
+('Amit');
+
+INSERT INTO passport(passport_number, user_id)
+VALUES
+('IND12345',1),
+('IND67890',2);
+
+SELECT * FROM users;
+
+SELECT * FROM passport;
+----------------------------------
+2. One To Many / Many To One :--
+Sql id="79jv4r"
+Copy code
+CREATE DATABASE relationship_demo2;
+
+USE relationship_demo2;
+
+CREATE TABLE department (
+
+    dept_id INT PRIMARY KEY AUTO_INCREMENT,
+    dept_name VARCHAR(100)
+
+);
+
+CREATE TABLE employee (
+
+    emp_id INT PRIMARY KEY AUTO_INCREMENT,
+    emp_name VARCHAR(100),
+
+    dept_id INT,
+
+    FOREIGN KEY(dept_id)
+    REFERENCES department(dept_id)
+
+);
+
+INSERT INTO department(dept_name)
+VALUES
+('IT'),
+('HR');
+
+INSERT INTO employee(emp_name, dept_id)
+VALUES
+('Rahul',1),
+('Amit',1),
+('Neha',2);
+
+SELECT * FROM department;
+
+SELECT * FROM employee;
+--------------------------------------
+3. Many To Many:-
+CREATE DATABASE relationship_demo3;
+
+USE relationship_demo3;
+
+CREATE TABLE student (
+
+    student_id INT PRIMARY KEY AUTO_INCREMENT,
+    student_name VARCHAR(100)
+
+);
+
+CREATE TABLE course (
+
+    course_id INT PRIMARY KEY AUTO_INCREMENT,
+    course_name VARCHAR(100)
+
+);
+
+CREATE TABLE student_course (
+
+    student_id INT,
+    course_id INT,
+
+    PRIMARY KEY(student_id, course_id),
+
+    FOREIGN KEY(student_id)
+    REFERENCES student(student_id),
+
+    FOREIGN KEY(course_id)
+    REFERENCES course(course_id)
+
+);
+
+INSERT INTO student(student_name)
+VALUES
+('Rahul'),
+('Amit');
+
+INSERT INTO course(course_name)
+VALUES
+('Java'),
+('Python');
+
+INSERT INTO student_course(student_id, course_id)
+VALUES
+(1,1),
+(1,2),
+(2,1);
+
+SELECT * FROM student;
+
+SELECT * FROM course;
+
+SELECT * FROM student_course;
+--------------------------------------your workbench work jdbc onboarding:-----------------------------------------------------------------
+()workbench:-
+()create database financial_planning_and_forecasting;->select run.
+()use financial_planning_and_forecasting;->select run.
+
+()create table employees(
+employee varchar(50),
+firstName varchar(50),
+lastName varchar(50),
+empStatus varchar(50),
+department varchar(50),
+userLevel varchar(50),
+hireDate varchar(50),
+salaryClass varchar(50),
+terminationDate varchar(50),
+workState varchar(50),
+email varchar(50),
+countryCode varchar(50),
+workCountry varchar(50),
+manager varchar(50),
+superviserId varchar(50),
+employeeId varchar(50) primary key,
+bussinessUnit varchar(50),
+annualHours varchar(50),
+jobTitle varchar(50),
+isManager varchar(50));  
+
+->select aur run.
+
+()create table roles(
+roleId varchar(50) primary key,
+name varchar(50),
+description varchar(150),
+type varchar(50),
+status varchar(50),
+owner varchar(50),
+createdDate varchar(50),
+modifiedDate varchar(50));
+
+->select run.
+
+()create table employee_roles(
+employeeId varchar(50),
+roleId varchar(50),
+Primary key(employeeId,roleId),
+FOREIGN Key(employeeId) REFERENCES employees(employeeId) on delete CASCADE,
+FOREIGN key (roleId) REFERENCES roles(roleId) on delete CASCADE);
+->select and run.
+///////////*
+()ON DELETE CASCADE ka matlab hota hai:-
+Agar parent table ka data delete hoga, toh child table ka related data bhi automatically delete ho jayega.
+
+Tumhare query me:-
+FOREIGN KEY(employeeId) REFERENCES employees(employeeId) ON DELETE CASCADE
+iska matlab:-
+employees = parent table
+employee_roles = child table
+Agar employees table se koi employee delete hua, toh employee_roles me us employee ki sari matching rows automatically delete ho jayengi.
+
+Example:-
+()employees table:-
+employeeId        name
+E101--------------Rahul
+
+()roles table:-
+roleId	   roleName
+R1----------Admin
+
+()employee_roles table:-
+employeeId	  roleId
+E101------------R1
+
+()Agar tum ye chalao:-
+DELETE FROM employees
+WHERE employeeId='E101';
+
+->toh automatically:
+
+employee_roles table me jo:-
+E101 | R1 
+wali row hai woh bhi delete ho jayegi.
+
+()Same cheez:-
+FOREIGN KEY(roleId) REFERENCES roles(roleId)
+ON DELETE CASCADE
+
+->Agar roles table se koi role delete hua:-
+DELETE FROM roles
+WHERE roleId='R1';
+
+toh employee_roles me us role se related sari rows automatic delete ho jayengi.
+
+()Ye mainly use hota hai:-
+orphan records bachane ke liye
+automatic cleanup ke liye
+relationship maintain karne ke liye
+
+Visual flow:-
+employees ----<
+                employee_roles
+roles --------<
+Parent delete → child automatic delete.
+*/////////////
+
+
+()INSERT INTO roles (roleId, name, description, type, status, owner, createdDate, modifiedDate)
+VALUES
+('ROL_FIN_AP_ANALYST_001', 
+'Accounts Payable Analyst', 
+'Responsible for processing vendor invoices, performing three-way matching, and managing payment runs.', 
+'Business', 
+'Active', 
+'payables.team@sriiq.com', 
+'2025-01-10', 
+'2025-09-15'),
+
+('ROL_FIN_AR_OFFICER_002', 
+'Accounts Receivable Officer', 
+'Manages customer invoicing, collections, and credit adjustments in AR module.', 
+'Business', 
+'Active', 
+'receivables.lead@sriiq.com', 
+'2025-02-05', 
+'2025-09-22'),
+
+('ROL_FIN_GEN_LEDGER_003', 
+'General Ledger Accountant', 
+'Prepares journal entries, reconciliations, and monthly financial close activities.', 
+'Business', 
+'Active', 
+'gl.controller@sriiq.com', 
+'2025-03-02', 
+'2025-09-30'),
+
+('ROL_FIN_PROCUREMENT_004', 
+'Procurement Officer', 
+'Creates and approves purchase requisitions, manages vendor onboarding and PO releases.', 
+'Business', 
+'Active', 
+'procurement.manager@sriiq.com', 
+'2025-03-18', 
+'2025-09-10'),
+
+('ROL_FIN_TREASURY_005', 
+'Treasury Specialist', 
+'Handles bank reconciliation, cash forecasting, and fund transfers across business units.', 
+'Business', 
+'Active', 
+'treasury@sriiq.com', 
+'2025-04-10', 
+'2025-09-25'),
+
+('ROL_FIN_AUDITOR_006', 
+'Internal Auditor', 
+'Conducts internal audit of financial transactions, ensures compliance with GAAP and SOX.', 
+'Governance', 
+'Active', 
+'audit.controller@sriiq.com', 
+'2025-05-07', 
+'2025-09-28'),
+
+('ROL_FIN_APPROVER_007', 
+'Financial Approver Level 1', 
+'Authorized to approve financial transactions up to defined threshold.', 
+'Business', 
+'Active', 
+'finance.head@sriiq.com', 
+'2025-06-12', 
+'2025-09-20'),
+
+('ROL_FIN_BUDGET_CTRL_008', 
+'Budget Controller', 
+'Monitors budget allocations, variance reporting, and cost control measures.', 
+'Business', 
+'Active', 
+'budget.office@sriiq.com', 
+'2025-07-05', 
+'2025-09-25'),
+
+('ROL_FIN_RECONCILE_009', 
+'Reconciliation Analyst', 
+'Performs account and bank reconciliations ensuring financial integrity.', 
+'Business', 
+'Active', 
+'recon.team@sriiq.com', 
+'2025-08-01', 
+'2025-09-22'),
+
+('ROL_FIN_AUDIT_VIEWER_010', 
+'Audit Viewer', 
+'Read-only role for audit and compliance teams to review financial records.', 
+'Governance', 
+'Active', 
+'audit.viewer@sriiq.com', 
+'2025-08-18', 
+'2025-09-30');
+
+->select and run.
+
+INSERT INTO employees (
+    employee,
+    firstName,
+    lastName,
+    empStatus,
+    department,
+    userLevel,
+    hireDate,
+    salaryClass,
+    terminationDate,
+    workState,
+    email,
+    countryCode,
+    workCountry,
+    manager,
+    superviserId,
+    employeeId,
+    bussinessUnit,
+    annualHours,
+    jobTitle,
+    isManager
+)
+VALUES (
+    'Christian Armstrong',     -- employee (displayName)
+    'Christian',               -- firstName
+    'Armstrong',               -- lastName
+    'Joiner-Completed 01-31-2018', -- empStatus (srStatus)
+    'Morph',                   -- department
+    'Professional',            -- userLevel (mapped from workerType)
+    '01-31-2018',              -- hireDate
+    NULL,                      -- salaryClass (not in provided data)
+    '09-08-2025',              -- terminationDate
+    NULL,                      -- workState (not provided)
+    'christian.armstrong@SR.com', -- email
+    NULL,                      -- countryCode (not provided)
+    'United States of America',-- workCountry
+    'shani rajawat',                      -- manager (not provided)
+    '739012',                      -- superviserId
+    '739079',                  -- employeeId
+    'Sriiq Inc',               -- bussinessUnit (company)
+    '1920',                      -- annualHours
+    'Advice worker',           -- jobTitle
+    'No'                       -- isManager (not specified, assuming No)
+),
+(
+    'Aadhya Das',     -- employee (displayName)
+    'Aadhya',               -- firstName
+    'Das',               -- lastName
+    'Joiner-Completed 01-31-2018', -- empStatus (srStatus)
+    'Morph',                   -- department
+    'Professional',            -- userLevel (mapped from workerType)
+    '01-31-2018',              -- hireDate
+    NULL,                      -- salaryClass (not in provided data)
+    '09-08-2025',              -- terminationDate
+    NULL,                      -- workState (not provided)
+    'christian.armstrong@SR.com', -- email
+    NULL,                      -- countryCode (not provided)
+    'United States of America',-- workCountry
+    'shani rajawat',                      -- manager (not provided)
+    '739012',                      -- superviserId
+    '8512570',                  -- employeeId
+    'Sriiq Inc',               -- bussinessUnit (company)
+    '1920',                      -- annualHours
+    'Advice worker',           -- jobTitle
+    'No'                       -- isManager (not specified, assuming No)
+),
+(
+    'Aadhya Gupta',     -- employee (displayName)
+    'Aadhya',               -- firstName
+    'Gupta',               -- lastName
+    'Joiner-Completed 01-31-2018', -- empStatus (srStatus)
+    'Morph',                   -- department
+    'Professional',            -- userLevel (mapped from workerType)
+    '01-31-2018',              -- hireDate
+    NULL,                      -- salaryClass (not in provided data)
+    '09-08-2025',              -- terminationDate
+    NULL,                      -- workState (not provided)
+    'christian.armstrong@SR.com', -- email
+    NULL,                      -- countryCode (not provided)
+    'United States of America',-- workCountry
+    'shani rajawat',                      -- manager (not provided)
+    '739012',                      -- superviserId
+    '8512545',                  -- employeeId
+    'Sriiq Inc',               -- bussinessUnit (company)
+    '1920',                      -- annualHours
+    'Advice worker',           -- jobTitle
+    'No'                       -- isManager (not specified, assuming No)
+),
+(
+    'Aadhya Mishra',     -- employee (displayName)
+    'Aadhya',               -- firstName
+    'Mishra',               -- lastName
+    'Joiner-Completed 01-31-2018', -- empStatus (srStatus)
+    'Morph',                   -- department
+    'Professional',            -- userLevel (mapped from workerType)
+    '01-31-2018',              -- hireDate
+    NULL,                      -- salaryClass (not in provided data)
+    '09-08-2025',              -- terminationDate
+    NULL,                      -- workState (not provided)
+    'christian.armstrong@SR.com', -- email
+    NULL,                      -- countryCode (not provided)
+    'United States of America',-- workCountry
+    'shani rajawat',                      -- manager (not provided)
+    '739012',                      -- superviserId
+    '8512576',                  -- employeeId
+    'Sriiq Inc',               -- bussinessUnit (company)
+    '1920',                      -- annualHours
+    'Advice worker',           -- jobTitle
+    'No'                       -- isManager (not specified, assuming No)
+),
+(
+    'Aadhya Rao',     -- employee (displayName)
+    'Aadhya',               -- firstName
+    'Rao',               -- lastName
+    'Joiner-Completed 01-31-2018', -- empStatus (srStatus)
+    'Morph',                   -- department
+    'Professional',            -- userLevel (mapped from workerType)
+    '01-31-2018',              -- hireDate
+    NULL,                      -- salaryClass (not in provided data)
+    '09-08-2025',              -- terminationDate
+    NULL,                      -- workState (not provided)
+    'christian.armstrong@SR.com', -- email
+    NULL,                      -- countryCode (not provided)
+    'United States of America',-- workCountry
+    'shani rajawat',                      -- manager (not provided)
+    '739012',                      -- superviserId
+    '8512579',                  -- employeeId
+    'Sriiq Inc',               -- bussinessUnit (company)
+    '1920',                      -- annualHours
+    'Advice worker',           -- jobTitle
+    'No'                       -- isManager (not specified, assuming No)
+);
+
+
+Select * from roles;
+->select and run.
+
+Select * from employees;
+->select and run.
+-------------------------------------------------------------------------------------------------------------------------------------------
+->eclipse->file->new->java project->name-sailpointm->java17->next->libraries->
+->add exeternal jars->finish->sailpointm-ke andar jre ke andar sare file ko hatado->
+->fir jre me src ke andar->package banao-name-org.SailPoint_IIQ.Utils-aur aek class add karo main jiska naam-JavaTest.java->aur finish->
+->fir aek class banao->name-FinancialAndForecastingProvisioningRule.java->aur test class me run as->1 application->
+->FinancialAndForecastingProvisioningRule code ko likh de(package org.SailPoint_IIQ.Utils;)->fir->
+->fir apache-web apps->webINF->lib->select all files-open->finish.
+->fir->WEbINF->classes->org->SailPoint_IIQ->Utils->FinancialAndForecastingProvisioningRule-ko paste->
+->restart your tomacatserver->
+
+->iiq application me-rule tab-me->aggregation customizationrule->kkr-Financial_Planing_CustomizationRule->ko import karo->aur->
+->provissining rule->KKR_Rule_FinancialAndForecasting_ProvisioningRule->ko import karo->
+->fir configuration-provissiningpolicies-create-add policy me-KKR_Form_Financial_Planning_AccountCreate.xml ko import karo->
+->refrence form se->save->Account Agg - Financial Planing And Forecasting->Promote managed attributes-tick->run->
+->
+aur Application definition->schema->account attribute me role-ko select role->fir edit-managed,entitlement,multi-valued tick and save.
+->springboot->
+->test.java ko run karo->right click KKR_Rule_FinancialAndForecasting_ProvisioningRule->show in->system explorer->
+C:\Users\kishan kumar\eclipse-workspace\sailpointm\bin\org\SailPoint_IIQ\Utils-se KKR_Rule_FinancialAndForecasting_ProvisioningRule ko uthao ko copy->
+fir->C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\identityiq\WEB-INF\classes\org\SailPoint_IIQ\Utils-paste kardo->
+->fir services restart->fir request karo->aur agar workitem na bane toh jao logfile me check.
+-------------------------------------------provission rule--------------------------------------------------------------------
+package org.SailPoint_IIQ.Utils;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+
+import sailpoint.api.SailPointContext;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AccountRequest.Operation;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.ProvisioningResult;
+import sailpoint.tools.GeneralException;
+
+public class FinancialAndForecastingProvisioningRule {
+	static PreparedStatement stmt = null;
+	static String defaultRoleId = "ROL_FIN_AUDIT_VIEWER_010";
+	static String ApplicationName = "Financial Planning & Forecasting";
+    static Logger logs = Logger.getLogger("org.SailPoint_IIQ.Utils.FinancialAndForecastingProvisioningRule");
+	public static ProvisioningResult doProvisioning(ProvisioningPlan plan, Connection connection,
+			SailPointContext context) throws SQLException, GeneralException {
+
+		System.out.println("doProvisioning method called;;;;;plan" + plan.toXml());
+		logs.debug("FinancialAndForecastingProvisioningRule method called");
+		ProvisioningResult result = new ProvisioningResult();
+		// PreparedStatement stmt = null;
+		AccountRequest acctReq = null;
+
+		List<AccountRequest> acctReqs = plan.getAccountRequests(ApplicationName);
+		for (AccountRequest accountRequest : acctReqs) {
+			acctReq = accountRequest;
+			break;
+		}
+		if (acctReq == null) {
+			logs.error("No account request found for "+ApplicationName);
+			return result;
+		}
+		Operation op = acctReq.getOperation();
+		if (AccountRequest.Operation.Create.equals(op)) {
+			result = createAccount(plan, connection, acctReq);
+		} else if (AccountRequest.Operation.Disable.equals(op)) {
+			String employeeId = acctReq.getNativeIdentity();
+			result = disableAccount(connection, employeeId);
+		} else if (AccountRequest.Operation.Modify.equals(op)) {
+			 result =modifyAccount(plan,connection,acctReq);
+		}else if (AccountRequest.Operation.Enable.equals(op)) {
+			 result =enableAccount(plan,connection,acctReq);
+		}
+
+		return result;
+
+	}
+
+	
+
+
+	private static ProvisioningResult createAccount(ProvisioningPlan plan, Connection connection, AccountRequest acctReq) {
+		//System.out.println("createAccount method called ");
+		logs.debug("createAccount method called ");
+		ProvisioningResult result = new ProvisioningResult();
+		List<AttributeRequest> attributeRequests = acctReq.getAttributeRequests();
+		String employeeId = acctReq.getNativeIdentity();
+		String employee = "", firstName = "", lastName = "", empStatus = "", department = "", userLevel = "",
+				hireDate = "", salaryClass = "", annualHours = "", jobTitle = "";
+		String terminationDate = "", workState = "", email = "", countryCode = "", workCountry = "", manager = "",
+				superviserId = "", bussinessUnit = "", isManager = "";
+
+		AttributeRequest attributeRequestEmployee = acctReq.getAttributeRequest("employee");
+		if (attributeRequestEmployee != null)
+			employee = attributeRequestEmployee.getValue().toString();
+
+		AttributeRequest attributeRequestFirstName = acctReq.getAttributeRequest("firstName");
+		if (attributeRequestFirstName != null)
+			firstName = attributeRequestFirstName.getValue().toString();
+
+		AttributeRequest attributeRequestLastName = acctReq.getAttributeRequest("lastName");
+		if (attributeRequestLastName != null)
+			lastName = attributeRequestLastName.getValue().toString();
+
+		AttributeRequest attributeRequestEmpStatus = acctReq.getAttributeRequest("empStatus");
+		if (attributeRequestEmpStatus != null)
+			empStatus = attributeRequestEmpStatus.getValue().toString();
+
+		AttributeRequest attributeRequestDepartment = acctReq.getAttributeRequest("department");
+		if (attributeRequestDepartment != null)
+			department = attributeRequestDepartment.getValue().toString();
+
+		AttributeRequest attributeRequestUserLevel = acctReq.getAttributeRequest("userLevel");
+		if (attributeRequestUserLevel != null)
+			userLevel = attributeRequestUserLevel.getValue().toString();
+
+		AttributeRequest attributeRequestHireDate = acctReq.getAttributeRequest("hireDate");
+		if (attributeRequestHireDate != null)
+			hireDate = attributeRequestHireDate.getValue().toString();
+
+		AttributeRequest attributeRequestSalaryClass = acctReq.getAttributeRequest("salaryClass");
+		if (attributeRequestSalaryClass != null)
+			salaryClass = attributeRequestSalaryClass.getValue().toString();
+
+		AttributeRequest attributeRequestTerminationDate = acctReq.getAttributeRequest("terminationDate");
+		if (attributeRequestTerminationDate != null)
+			terminationDate = attributeRequestTerminationDate.getValue().toString();
+
+		AttributeRequest attributeRequestWorkState = acctReq.getAttributeRequest("workState");
+		if (attributeRequestWorkState != null)
+			workState = attributeRequestWorkState.getValue().toString();
+
+		AttributeRequest attributeRequestEmail = acctReq.getAttributeRequest("email");
+		if (attributeRequestEmail != null)
+			email = attributeRequestEmail.getValue().toString();
+
+		AttributeRequest attributeRequestCountryCode = acctReq.getAttributeRequest("countryCode");
+		if (attributeRequestCountryCode != null)
+			countryCode = attributeRequestCountryCode.getValue().toString();
+
+		AttributeRequest attributeRequestWorkCountry = acctReq.getAttributeRequest("workCountry");
+		if (attributeRequestWorkCountry != null)
+			workCountry = attributeRequestWorkCountry.getValue().toString();
+
+		AttributeRequest attributeRequestManager = acctReq.getAttributeRequest("manager");
+		if (attributeRequestManager != null)
+			manager = attributeRequestManager.getValue().toString();
+
+		AttributeRequest attributeRequestSuperviserId = acctReq.getAttributeRequest("superviserId");
+		if (attributeRequestSuperviserId != null)
+			superviserId = attributeRequestSuperviserId.getValue().toString();
+
+		AttributeRequest attributeRequestAnnualHours = acctReq.getAttributeRequest("annualHours");
+		if (attributeRequestAnnualHours != null)
+			annualHours = attributeRequestAnnualHours.getValue().toString();
+
+		AttributeRequest attributeRequestIsManager = acctReq.getAttributeRequest("isManager");
+		if (attributeRequestIsManager != null)
+			isManager = attributeRequestIsManager.getValue().toString();
+
+		AttributeRequest attributeRequestJobTitlejobTitle = acctReq.getAttributeRequest("jobTitle");
+		if (attributeRequestJobTitlejobTitle != null)
+			jobTitle = attributeRequestJobTitlejobTitle.getValue().toString();
+
+		String insertUserSQL = "INSERT INTO financial_planning_and_forecasting.employees "
+				+ "(employeeId, employee, firstName, lastName, empStatus, department, userLevel, hireDate, "
+				+ "salaryClass, terminationDate, workState, email, countryCode, workCountry, manager, "
+				+ "superviserId, bussinessUnit, annualHours, isManager,jobTitle) "
+				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+		try {
+			stmt = connection.prepareStatement(insertUserSQL);
+			stmt.setString(1, employeeId);
+			stmt.setString(2, employee);
+			stmt.setString(3, firstName);
+			stmt.setString(4, lastName);
+			stmt.setString(5, empStatus);
+			stmt.setString(6, department);
+			stmt.setString(7, userLevel);
+			stmt.setString(8, hireDate);
+			stmt.setString(9, salaryClass);
+			stmt.setString(10, terminationDate);
+			stmt.setString(11, workState);
+			stmt.setString(12, email);
+			stmt.setString(13, countryCode);
+			stmt.setString(14, workCountry);
+			stmt.setString(15, manager);
+			stmt.setString(16, superviserId);
+			stmt.setString(17, bussinessUnit);
+			stmt.setString(18, annualHours);
+			stmt.setString(19, isManager);
+			stmt.setString(20, jobTitle);
+
+			stmt.executeUpdate();
+			stmt.close();
+			//System.out.println("Employee table created");
+			logs.debug("Employee table created ");
+			for (AttributeRequest ar : attributeRequests) {
+				if ("roles".equalsIgnoreCase(ar.getName()) && ("Add".equalsIgnoreCase(ar.getOperation().toString())
+						|| "Set".equalsIgnoreCase(ar.getOperation().toString()))) {
+					List<String> groupList = new LinkedList<String>();
+					if ("roles".equalsIgnoreCase(ar.getName())) {
+						if (ar.getValue() instanceof String) {
+							groupList.add((String) ar.getValue());
+						} else if (ar.getValue() instanceof List) {
+							groupList = (List) ar.getValue();
+						}
+						logs.debug("groupList;;;;" + groupList);
+						for (String roleName : groupList) {
+							//System.out.println("Assigning roleName: " + roleName);
+							logs.debug("Assigning roleName: " + roleName);
+							String roleId = roleIdByName(connection, roleName);
+							if (roleId != null) {
+								//System.out.println("retriving roleId: " + roleId);
+								logs.debug("retriving roleId: " + roleId);
+								int updateStatus = addRole(connection, employeeId, roleId);
+								if (updateStatus > 0) {
+									logs.debug("role added ");
+									result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+								}
+							} else {
+								logs.warn("Role not found in DB: " + roleName);
+								//System.out.println("Role not found in DB: " + roleName);
+								result.setStatus(ProvisioningResult.STATUS_FAILED);
+							}
+						}
+					}
+				}
+			}
+			// check and add default role
+			if (!checkExistingRole(connection, employeeId, defaultRoleId)) {
+				logs.debug(" default role added ");
+				int res = addRole(connection, employeeId, defaultRoleId);
+				if(res>0)
+				result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+				else
+					result.setStatus(ProvisioningResult.STATUS_FAILED);
+			}
+		} catch (SQLException e) {
+			logs.error("Exception during provisioning " , e);
+			//System.out.println("Exception during provisioning " + e);
+			result.setStatus(ProvisioningResult.STATUS_FAILED);
+			result.addError(e);
+
+		}
+		return result;
+	}
+
+	private static String roleIdByName(Connection connection, String name) throws SQLException {
+		String getRoleIdSQL = "SELECT roleId FROM financial_planning_and_forecasting.roles WHERE name = ?";
+		String roleId = null;
+		stmt = connection.prepareStatement(getRoleIdSQL);
+		stmt.setString(1, name);
+		ResultSet rs = stmt.executeQuery();
+
+		if (rs.next()) {
+			roleId = rs.getString("roleId");
+			rs.close();
+			stmt.close();
+
+		}
+		return roleId;
+	}
+
+	private static int addRole(Connection connection, String employeeId, String roleId) throws SQLException {
+		String insertMapSQL = "INSERT IGNORE INTO financial_planning_and_forecasting.employee_roles (employeeId,roleId) VALUES (?, ?)";
+		stmt = connection.prepareStatement(insertMapSQL);
+		stmt.setString(1, employeeId);
+		stmt.setString(2, roleId);
+		int executeStatus = stmt.executeUpdate();
+		stmt.close();
+		return executeStatus;
+	}
+	private static int removeRole(Connection connection, String employeeId, String roleId) throws SQLException {
+		String insertMapSQL = "DELETE FROM financial_planning_and_forecasting.employee_roles WHERE employeeId = ? AND roleId = ?";
+		stmt = connection.prepareStatement(insertMapSQL);
+		stmt.setString(1, employeeId);
+		stmt.setString(2, roleId);
+		int executeStatus = stmt.executeUpdate();
+		stmt.close();
+		return executeStatus;
+	}
+
+	private static boolean checkExistingRole(Connection connection, String employeeId, String roleId)
+			throws SQLException {
+		ResultSet rs = null;
+		boolean exists = false;
+		String checkSQL = "SELECT 1 FROM financial_planning_and_forecasting.employee_roles WHERE employeeId = ? AND roleId = ?";
+		try {
+			stmt = connection.prepareStatement(checkSQL);
+			stmt.setString(1, employeeId);
+			stmt.setString(2, roleId);
+			rs = stmt.executeQuery();
+			if (rs.next()) {
+				// Record exists
+				logs.debug("Role exist");
+				exists = true;
+			}
+		} finally {
+			if (rs != null)
+				rs.close();
+			if (stmt != null)
+				stmt.close();
+		}
+
+		return exists;
+	}
+
+	private static boolean isAnyRoleForEmployee(Connection connection, String employeeId)
+			throws SQLException {
+		ResultSet rs = null;
+		boolean exists = false;
+		String checkSQL = "SELECT 1 FROM financial_planning_and_forecasting.employee_roles WHERE employeeId = ?";
+		try {
+			stmt = connection.prepareStatement(checkSQL);
+			stmt.setString(1, employeeId);
+			rs = stmt.executeQuery();
+			if (rs.next()) {
+				// Record exists
+				logs.debug("Employee contains role");
+				exists = true;
+			}
+		} finally {
+			if (rs != null)
+				rs.close();
+			if (stmt != null)
+				stmt.close();
+		}
+
+		return exists;
+	}
+	private static ProvisioningResult disableAccount(Connection connection, String  employeeId) throws SQLException {
+		//System.out.println("disableAccount method called ");
+		logs.debug("disableAccount method called");
+		ProvisioningResult result = new ProvisioningResult();
+		String empStatus = "Inactive";
+		String updateQuery = "UPDATE financial_planning_and_forecasting.employees SET empStatus = ? WHERE employeeId = ?";
+		stmt = connection.prepareStatement(updateQuery);
+		stmt.setString(1, empStatus);
+		stmt.setString(2, employeeId);
+		int executeStatus = stmt.executeUpdate();
+		stmt.close();
+		if (executeStatus > 0) {
+			//System.out.println("account disable success ");
+			logs.debug("Account disable success");
+			result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+		}else {
+			result.setStatus(ProvisioningResult.STATUS_FAILED);
+		}
+		return result;
+
+	}
+	
+	private static ProvisioningResult modifyAccount(ProvisioningPlan plan, Connection connection, AccountRequest acctReq) throws SQLException {
+		//System.out.println("modifyAccount method called ");
+		logs.debug("modifyAccount method called");
+		ProvisioningResult result = new ProvisioningResult();
+		result.setStatus(ProvisioningResult.STATUS_FAILED);
+		List<AttributeRequest> attributeRequests = acctReq.getAttributeRequests();
+		String employeeId = acctReq.getNativeIdentity();
+
+		for (AttributeRequest ar : attributeRequests) {
+			String roleId = null;
+			List<String> groupList = new LinkedList();
+			if ("roles".equalsIgnoreCase(ar.getName())) {
+				if (ar.getValue() instanceof String) {
+					groupList.add(ar.getValue().toString());
+				} else if (ar.getValue() instanceof List) {
+					groupList = (List) ar.getValue();
+				}
+				for (String roleName : groupList) {
+
+					if ("Add".equals(ar.getOperation().toString())
+							|| "Set".equalsIgnoreCase(ar.getOperation().toString())) {
+						roleId = roleIdByName(connection, roleName);
+						if (roleId != null) {
+							int executeStatus =addRole(connection,employeeId,roleId);
+							if (executeStatus > 0) {
+								logs.debug(roleName+"-> Role added success ");
+								//System.out.println("Role added success ");
+								result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+							}
+						}
+						
+					}else if("Remove".equals(ar.getOperation().toString())){
+						roleId = roleIdByName(connection, roleName);
+						int rm =removeRole(connection,employeeId,roleId);
+						if(rm>0) {
+							logs.debug(roleName+"-> Role remove success ");
+                        result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+						}
+					}
+				}
+			}
+		}
+        if(!isAnyRoleForEmployee(connection,employeeId)) {
+        	result=disableAccount(connection,employeeId);
+        	logs.debug(" There is no role account is disable ");
+        }
+		return result;
+
+	}
+	
+	private static ProvisioningResult enableAccount(ProvisioningPlan plan, Connection connection,
+			AccountRequest acctReq) throws SQLException {
+		//System.out.println("disableAccount method called ");
+		logs.debug("EnableOperation method called");
+		ProvisioningResult result = new ProvisioningResult();
+		String employeeId = acctReq.getNativeIdentity();
+		String empStatus = "Active";
+		String updateQuery = "UPDATE financial_planning_and_forecasting.employees SET empStatus = ? WHERE employeeId = ?";
+		stmt = connection.prepareStatement(updateQuery);
+		stmt.setString(1, empStatus);
+		stmt.setString(2, employeeId);
+		int executeStatus = stmt.executeUpdate();
+		stmt.close();
+		if (executeStatus > 0) {
+			logs.debug("Account disable success");
+			if (!checkExistingRole(connection, employeeId, defaultRoleId)) {
+				logs.debug(" default role added ");
+				int res = addRole(connection, employeeId, defaultRoleId);
+				if(res>0)
+				result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+				else
+					result.setStatus(ProvisioningResult.STATUS_FAILED);
+			}
+		}else {
+			result.setStatus(ProvisioningResult.STATUS_FAILED);
+		}
+		return result;
+
+	}
+
+	 
+}
+----------------------------------------------
+package org.SailPoint_IIQ.Utils;
+
+public class JavaTest {
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+System.out.println("kkr");
+	}
+
+}
+-----------------------------------------------------------------------------
+()kkr-Financial-Forecasting-Managed-Attribute_Rule:-
+attribute.setRequestable(true);
+attribute.setAttribute("certifiable", true);kkr-Financial-Forecasting-Managed-Attribute_Rule->save in Managed Entitlement Customization Rule	->
+->
+--------------------------------------------------------------------------------
+upar ke har provisionrule ko trouble shoot karo through error:-

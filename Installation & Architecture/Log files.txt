@@ -1,0 +1,75 @@
+🧠 Log Files Kya Hote Hain?
+Logs matlab system ka record:-
+Kaun login hua
+Kaunsa task run hua
+Provisioning success ya fail
+Error kaha aaya
+Workflow kaha atka
+Ye sab text file me store hota hai.
+
+📂 1️⃣ Main Log Location (Tomcat Based Installation):-
+Agar IIQ Apache Tomcat pe deployed hai, to logs yaha milte hain:
+tomcat/logs/
+
+📁 Important Log Files:-
+1️⃣ catalina.out (Most Important 🔥)
+Location:-
+tomcat/logs/catalina.out
+Isme kya hota hai?
+Application startup logs
+DB connection logs
+Provisioning errors
+Workflow errors
+Rule execution logs
+👉 Sabse pehle isi ko check karte hain.
+
+2️⃣ localhost.log
+Web request related logs
+UI errors
+HTTP errors
+
+3️⃣ access.log
+Kaun user kab login hua
+Kis URL ko hit kiya
+
+📂 2️⃣ IdentityIQ Specific Logs
+Kabhi kabhi IIQ ke andar custom log folder hota hai:
+identityiq/log/
+Isme:-
+Task logs
+Custom debug logs
+Scheduled job logs
+
+🔥 Real Project Examples
+Scenario 1️⃣: DB Connection Failed
+catalina.out me milega:-
+Cannot get JDBC connection
+Matlab:-
+Username/password wrong
+Driver missing
+DB down
+
+Scenario 2️⃣: Provisioning Failed
+Log me milega:-
+Provisioning Plan Failed
+ConnectorException
+Matlab:-
+Target system issue
+Permission issue
+Mapping wrong
+
+Scenario 3️⃣: Workflow Stuck
+Log me:-
+Workflow execution error
+Check:-
+Variable null?
+Approval step misconfigured?
+
+🛠️ Log Rotation (Production Important):-
+Production me logs huge ho jate hain ⚠️
+Configure karte hain:-
+Daily log rotation
+Max file size
+Backup count
+Configuration file:-
+log4j.properties

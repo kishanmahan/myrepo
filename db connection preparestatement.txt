@@ -1,0 +1,1445 @@
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+
+public class Demo {
+
+    public static void main(String[] args) {
+
+        try {
+
+            // Database connection create
+            Connection conn =
+                    DriverManager.getConnection(
+                            "jdbc:mysql://localhost:3306/companydb",
+                            "root",
+                            "1234");
+
+            // SQL query
+            String sql =
+                    "INSERT INTO employee(id,name,email) VALUES(?,?,?)";
+
+            // PreparedStatement object create
+            PreparedStatement ps =
+                    conn.prepareStatement(sql);
+
+            // ? placeholders me value set
+            ps.setInt(1,101);
+            ps.setString(2,"Kishan");
+            ps.setString(3,"kishan@gmail.com");
+
+            // Query execute
+            int rows = ps.executeUpdate();
+
+            System.out.println("Inserted Rows : " + rows);
+
+            // Close
+            ps.close();
+            conn.close();
+
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+/////////*
+()Connection conn =
+DriverManager.getConnection(url,user,password);
+Kaam:-
+Database ke saath connection banata hai.
+Example:-
+Connection conn
+Matlab:-
+DB se baat karne ka pipe/connection.
+
+()executeUpdate():-
+int rows = ps.executeUpdate();
+Kaam:-
+Query chalata hai.
+INSERT / UPDATE / DELETE ke liye.
+Return karta hai:-
+kitni rows affect hui.
+Example output:-
+Inserted Rows : 1
+
+()PreparedStatement JDBC ka class/interface hai jo SQL query ko prepare aur execute karta hai.
+Import:-
+import java.sql.PreparedStatement;
+Simple syntax:-
+PreparedStatement ps = connection.prepareStatement(sqlQuery);
+
+()Common methods:-
+ps.setString(index,value);
+ps.setInt(index,value);
+ps.setBoolean(index,value);
+ps.setDouble(index,value);
+
+Execution methods:- 
+ps.executeUpdate(); // INSERT UPDATE DELETE
+ps.executeQuery();  // SELECT
+ps.execute();       // Generic
+
+()1. conn.prepareStatement(sql):-
+Ye SQL query prepare karta hai.
+Example:-
+String sql =
+"INSERT INTO employee(id,name) VALUES(?,?)";
+
+PreparedStatement ps =
+        conn.prepareStatement(sql);
+Yaha query prepare hui.
+
+2. ps.executeUpdate():-
+Ye data change karne wali queries ke liye.
+Use with:-
+()INSERT (Create):-
+String sql =
+"INSERT INTO employee(id,name) VALUES(?,?)";
+PreparedStatement ps =
+        conn.prepareStatement(sql);
+ps.setInt(1,101);
+ps.setString(2,"Kishan");
+ps.executeUpdate();
+
+()UPDATE:-
+String sql =
+"UPDATE employee SET name=? WHERE id=?";
+
+PreparedStatement ps =
+        conn.prepareStatement(sql);
+
+ps.setString(1,"Rahul");
+ps.setInt(2,101);
+
+ps.executeUpdate();
+
+()DELETE:-
+String sql =
+"DELETE FROM employee WHERE id=?";
+PreparedStatement ps =
+        conn.prepareStatement(sql);
+
+ps.setInt(1,101);
+
+ps.executeUpdate();
+
+()CREATE TABLE (DDL bhi):-
+String sql =
+"CREATE TABLE employee(id INT,name VARCHAR(50))";
+
+PreparedStatement ps =
+        conn.prepareStatement(sql);
+
+ps.executeUpdate();
+*/////////
+///////////*
+CREATE TABLE (DDL bhi):-
+String sql = "CREATE TABLE employee(id INT,name VARCHAR(50))";
+
+PreparedStatement ps = conn.prepareStatement(sql);
+ps.executeUpdate();
+*//////////////
+/////////*
+3. ps.executeQuery():-
+Ye SELECT / GET data ke liye.
+
+String sql = "SELECT * FROM employee WHERE id=?";
+
+PreparedStatement ps = conn.prepareStatement(sql);
+ps.setInt(1,101);
+ResultSet rs = ps.executeQuery();
+SELECT → executeQuery()
+
+4. ps.execute():-
+Ye generic method hai.
+INSERT/UPDATE/DELETE/SELECT sab me use ho sakta hai.
+Example:-
+SELECT
+String sql = "SELECT * FROM employee";
+PreparedStatement ps = conn.prepareStatement(sql);
+boolean result = ps.execute();
+/////////*
+INSERT
+String sql = "INSERT INTO employee(id,name) VALUES(?,?)";
+
+PreparedStatement ps = conn.prepareStatement(sql);
+ps.setInt(1,1);
+ps.setString(2,"Kishan");
+boolean result = ps.execute();
+*////////
+-------------------------------------------------------------------------------------------------------------------
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
+import java.sql.ResultSet;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+
+        Connection con =
+            DriverManager.getConnection(
+                "jdbc:mysql://localhost:3306/testdb",
+                "root",
+                "1234"
+            );
+
+        Statement st = con.createStatement();
+
+        ResultSet rs =
+            st.executeQuery("SELECT * FROM employee");
+
+        while (rs.next()) {
+
+            int id = rs.getInt("id");
+            String name = rs.getString("name");
+
+            System.out.println(id + " " + name);
+        }
+
+        con.close();
+    }
+}
+/////////*
+()import java.sql.ResultSet;
+ResultSet = Database se aaya hua result/data hold karta hai.
+Jab tum SQL query chalate ho, jaise:-
+SELECT * FROM employee;
+to jo rows/records database return karta hai, unko Java me ResultSet object handle karta hai.
+
+()1. Statement aur PreparedStatement dono JDBC me SQL execute karne ke liye use hote hain, but kaam karne ka tarika alag hai.
+
+->1. Statement:-Normal SQL query execute karta hai.("SELECT * FROM employee")
+
+->2. PreparedStatement:-Precompiled SQL query.
+Create:-
+PreparedStatement ps =
+con.prepareStatement(sql);
+
+()'?' kya hai:-Placeholder hai.
+
+()WHERE id=?:-Value baad me doge.
+ps.setInt(1,1);
+Meaning:-
+1st ? = 1
+
+()SQL ban gaya:-
+SELECT * FROM employee WHERE id=1
+
+()Statement vs PreparedStatement:-
+Feature	             Statement	          PreparedStatement
+Creation	        createStatement()	  prepareStatement()
+Query	              Direct SQL	      Parameterized SQL
+Placeholder	            ❌ No	                ✅ ?
+Speed	                Slower	               Faster
+Security	         SQL Injection risk	      More secure
+Reuse	              Less efficient	       Reusable
+
+()PreparedStatement Common Methods:-
+--setInt():-ps.setInt(1,100);
+--setString():-ps.setString(2,"Kishan");
+--setDouble():-ps.setDouble(3,50000.50);
+--executeQuery():-SELECT.
+--ResultSet rs = ps.executeQuery();
+--executeUpdate():-INSERT / UPDATE / DELETE.
+--int rows = ps.executeUpdate();
+*////////
+----------------------------------------------------------------------------------------------------------------------------
+()ALL Connection methods detail:-
+1. Statement Methods
+createStatement()
+createStatement(int,int)
+createStatement(int,int,int)
+
+2. PreparedStatement Methods:-
+prepareStatement(String sql)
+prepareStatement(String sql,int autoGeneratedKeys)
+prepareStatement(String sql,int[] columnIndexes)
+prepareStatement(String sql,String[] columnNames)
+prepareStatement(String sql,int,int)
+prepareStatement(String sql,int,int,int)
+
+3. CallableStatement Methods:-
+prepareCall() overloaded versions
+
+4. Transaction Methods
+setAutoCommit()
+getAutoCommit()
+commit()
+rollback()
+rollback(Savepoint)
+setSavepoint()
+setSavepoint(String)
+releaseSavepoint()
+setTransactionIsolation()
+getTransactionIsolation()
+
+5. Connection Control Methods:-
+close()
+isClosed()
+isValid()
+abort()
+
+6. Metadata / Info Methods
+getMetaData()
+getCatalog()
+setCatalog()
+getSchema()
+setSchema()
+
+7. Warning Methods
+getWarnings()
+clearWarnings()
+
+8. SQL Object Creation Methods
+createBlob()
+createClob()
+createNClob()
+createSQLXML()
+createArrayOf()
+createStruct()
+
+9. Advanced Methods
+nativeSQL()
+setClientInfo()
+getClientInfo()
+setTypeMap()
+getTypeMap()
+setNetworkTimeout()
+getNetworkTimeout()
+unwrap()
+isWrapperFor()
+
+10. Holdability Methods
+setHoldability()
+getHoldability()
+--------------------->
+()JDBC (Java Database Connectivity) में, Connection इंटरफ़ेस के ये तीनों मेथड्स SQL क्वेरीज़ को डेटाबेस में भेजने के लिए Statement ऑब्जेक्ट बनाने का काम करते हैं।
+इन तीनों में मुख्य अंतर यह है कि वे ResultSet (क्वेरी का रिज़ल्ट) को कैसे हैंडल करते हैं—जैसे कि आप डेटा में आगे-पीछे जा सकते हैं या नहीं, या डेटा को अपडेट कर सकते हैं या नहीं।
+यहाँ हर मेथड का आसान शब्दों में विवरण दिया गया है:-
+1.Connection Statement Methods:-
+createStatement()
+createStatement(int,int)
+createStatement(int,int,int)
+
+()1. createStatement():-
+यह सबसे बेसिक और डिफ़ॉल्ट मेथड है। इसमें कोई पैरामीटर नहीं होता।
+यह क्या करता है: यह एक साधारण Statement ऑब्जेक्ट बनाता है जो डिफ़ॉल्ट व्यवहार (Default behavior) के साथ काम करता है।
+विशेषताएं: इससे मिलने वाला ResultSet Forward-Only और Read-Only होता है।
+Forward-Only: आप डेटा में केवल आगे बढ़ सकते हैं (rs.next()), वापस पीछे की रो (Row) पर नहीं आ सकते।
+Read-Only: आप रिज़ल्ट सेट के ज़रिए डेटाबेस के डेटा को अपडेट नहीं कर सकते।
+-->Statement stmt = conn.createStatement();
+
+()2. createStatement(int resultSetType, int resultSetConcurrency):-
+यह मेथड आपको रिज़ल्ट सेट के व्यवहार को अपनी ज़रूरत के हिसाब से बदलने की अनुमति देता है।
+यह क्या करता है: यह आपको दो चीज़ें तय करने की आज़ादी देता है: आप डेटा में कैसे नेविगेट करेंगे (Type) और क्या आप डेटा अपडेट कर सकते हैं (Concurrency)।
+पैरामीटर्स:-
+resultSetType:-तय करता है कि कर्सर कैसे मूव करेगा। (जैसे: ResultSet.TYPE_SCROLL_INSENSITIVE जिससे आप ऊपर-नीचे कहीं भी स्क्रॉल कर सकते हैं)।
+resultSetConcurrency:-तय करता है कि डेटा केवल पढ़ा जाएगा या बदला भी जा सकता है। 
+(जैसे: ResultSet.CONCUR_UPDATABLE जिससे आप रिज़ल्ट सेट से ही डेटाबेस अपडेट कर सकते हैं)।
+Java
+Statement stmt = conn.createStatement(
+    ResultSet.TYPE_SCROLL_INSENSITIVE, 
+    ResultSet.CONCUR_UPDATABLE
+);
+
+()3. createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability):-
+यह सबसे एडवांस मेथड है, जो पिछले मेथड जैसी ही है, लेकिन इसमें एक तीसरा फीचर भी जुड़ जाता है।
+यह क्या करता है: यह टाइप और कॉनकरेंसी के साथ-साथ यह भी तय करता है कि जब आप ट्रांजेक्शन को commit() (सेव) कर देते हैं, तो रिज़ल्ट सेट खुला रहेगा या बंद हो जाएगा।
+पैरामीटर्स:-
+resultSetType (वही जो ऊपर था)
+resultSetConcurrency (वही जो ऊपर था)
+resultSetHoldability: यह तय करता है कि कमिट होने पर रिज़ल्ट का क्या होगा।
+ResultSet.HOLD_CURSORS_OVER_COMMIT: कमिट होने के बाद भी रिज़ल्ट सेट खुला रहेगा।
+ResultSet.CLOSE_CURSORS_AT_COMMIT: कमिट होते ही रिज़ल्ट सेट अपने आप बंद हो जाएगा (यह परफॉर्मेंस के लिए अच्छा होता है)।
+Java
+Statement stmt = conn.createStatement(
+    ResultSet.TYPE_SCROLL_INSENSITIVE, 
+    ResultSet.CONCUR_UPDATABLE, 
+    ResultSet.HOLD_CURSORS_OVER_COMMIT
+);
+
+
+()ResultSet two Type:-
+
+()ResultSet.TYPE_FORWARD_ONLY to next row:-
+Cursor movement control.
+
+Allowed:-
+rs.next()
+
+Not allowed:-
+rs.previous()
+
+()TYPE_SCROLL_INSENSITIVE:-
+
+ResultSet.TYPE_SCROLL_INSENSITIVE
+DB changes reflect ho sakte hain.
+Forward + backward.
+Allowed:-
+rs.next()
+rs.previous()
+rs.first()
+rs.last()
+rs.absolute(2)
+
+ResultSet.TYPE_SCROLL_SENSITIVE
+Forward + backward.
+DB changes reflect ho sakte hain.
+ResultSet.TYPE_SCROLL_SENSITIVE
+
+---------------------------------------------------------------------------------------------------------------------------------
+()Connection इंटरफ़ेस के ये prepareStatement() मेथड्स PreparedStatement ऑब्जेक्ट बनाने के लिए उपयोग किए जाते हैं।
+Statement के मुकाबले PreparedStatement का सबसे बड़ा फायदा यह है कि इसमें SQL क्वेरी पहले से कंपाइल (Pre-compiled) हो जाती है,
+जिससे यह तेज़ चलती है और SQL Injection जैसे सुरक्षा खतरों से बचाती है।
+
+2. PreparedStatement Methods:-
+prepareStatement(String sql)
+prepareStatement(String sql,int autoGeneratedKeys)
+prepareStatement(String sql,int[] columnIndexes)
+prepareStatement(String sql,String[] columnNames)
+prepareStatement(String sql,int,int)
+prepareStatement(String sql,int,int,int)
+
+1. prepareStatement(String sql):-
+यह सबसे ज़्यादा इस्तेमाल होने वाला और डिफ़ॉल्ट मेथड है।
+यह क्या करता है: यह एक साधारण PreparedStatement ऑब्जेक्ट बनाता है जिसमें आप पैरामीटर्स (Placeholder ?) वाली SQL क्वेरी भेजते हैं।
+विशेषताएं: इससे मिलने वाला ResultSet डिफ़ॉल्ट रूप से Forward-Only और Read-Only होता है।
+उपयोग: साधारण SELECT, INSERT, UPDATE, या DELETE क्वेरीज़ चलाने के लिए।
+Java
+String sql = "INSERT INTO users (name, email) VALUES (?, ?)";
+PreparedStatement pstmt = conn.prepareStatement(sql);
+
+2. prepareStatement(String sql, int autoGeneratedKeys):-
+यह मेथड तब बहुत काम आता है जब आप डेटाबेस में कोई नई रो (Row) इन्सर्ट कर रहे हों और उसकी ऑटो-इन्क्रीमेंट (Auto-increment) आईडी जानना चाहते हों।
+यह क्या करता है: यह ड्राइवर को बताता है कि क्या उसे डेटाबेस द्वारा ऑटोमैटिक जनरेट की गई चाबियाँ (जैसे id कॉलम) वापस लेनी हैं या नहीं।
+पैरामीटर: इसमें Statement.RETURN_GENERATED_KEYS या Statement.NO_GENERATED_KEYS पास किया जाता है।
+उपयोग: जब आप कोई नया रिकॉर्ड इन्सर्ट करते हैं और तुरंत उसकी जनरेट हुई ID पाना चाहते हैं।
+Java
+String sql = "INSERT INTO employees (name) VALUES (?)";
+PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+
+3. prepareStatement(String sql, int[] columnIndexes):-
+यह ऊपर वाले मेथड का ही एक रूप है, लेकिन यह अधिक सटीक (Specific) है।
+यह क्या करता है: यह ड्राइवर को बताता है कि इन्सर्ट ऑपरेशन के बाद केवल उन्हीं कॉलम्स की ऑटो-जनरेटेड वैल्यूज वापस चाहिए, जिनके इंडेक्स (नंबर) इस एरे (Array) में दिए गए हैं।
+पैरामीटर: int[] columnIndexes - उन कॉलम्स के पोसिशन नंबर्स का एरे (जैसे new int[]{1} यानी पहला कॉलम)।
+उपयोग: जब टेबल में एक से ज़्यादा ऑटो-जनरेटेड कॉलम हों और आपको किसी खास कॉलम की ही वैल्यू चाहिए।
+Java
+int[] columns = {1}; // मान लेते हैं पहला कॉलम ID है
+PreparedStatement pstmt = conn.prepareStatement(sql, columns);
+
+4. prepareStatement(String sql, String[] columnNames):-
+यह भी ऑटो-जनरेटेड वैल्यूज पाने का एक तरीका है, लेकिन इंडेक्स नंबर की जगह नाम का इस्तेमाल करता है।
+यह क्या करता है: यह ड्राइवर को बताता है कि इन्सर्ट के बाद केवल उन्हीं कॉलम्स की ऑटो-जनरेटेड वैल्यूज वापस चाहिए, जिनके नाम इस एरे में दिए गए हैं।
+पैरामीटर: String[] columnNames - कॉलम के नामों का एरे (जैसे new String[]{"user_id"}).
+उपयोग: इंडेक्स नंबर याद रखने से बेहतर है कि कॉलम के नाम का उपयोग किया जाए, ताकि कोड समझने में आसानी हो।
+Java
+String[] columnNames = {"emp_id"};
+PreparedStatement pstmt = conn.prepareStatement(sql, columnNames);
+5. prepareStatement(String sql, int resultSetType, int resultSetConcurrency)
+यह मेथड आपको PreparedStatement के रिज़ल्ट सेट के व्यवहार को बदलने की अनुमति देता है।
+यह क्या करता है: यह तय करता है कि क्वेरी से मिलने वाले ResultSet में आप आगे-पीछे स्क्रॉल (Scroll) कर सकते हैं या नहीं, 
+और क्या आप उस रिज़ल्ट सेट से डेटा अपडेट कर सकते हैं।
+पैरामीटर्स:-
+resultSetType: (जैसे ResultSet.TYPE_SCROLL_INSENSITIVE - ऊपर-नीचे स्क्रॉल करने के लिए)
+resultSetConcurrency: (जैसे ResultSet.CONCUR_UPDATABLE - रिज़ल्ट सेट से डेटा बदलने के लिए)
+Java
+PreparedStatement pstmt = conn.prepareStatement(sql, 
+    ResultSet.TYPE_SCROLL_INSENSITIVE, 
+    ResultSet.CONCUR_UPDATABLE
+);
+
+6. prepareStatement(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability):-
+यह सबसे एडवांस मेथड है जो स्क्रॉलिंग और अपडेटिंग के साथ-साथ ट्रांजैक्शन व्यवहार को भी नियंत्रित करता है।
+यह क्या करता है: यह टाइप और कॉनकरेंसी के साथ यह भी तय करता है कि जब आप डेटाबेस में commit() (डेटा सेव) करते हैं, तो आपका ResultSet खुला रहेगा या बंद हो जाएगा।
+पैरामीटर्स: पहले दो पैरामीटर ऊपर वाले ही हैं। तीसरा resultSetHoldability है:-
+ResultSet.HOLD_CURSORS_OVER_COMMIT: कमिट के बाद भी रिज़ल्ट खुला रहेगा।
+ResultSet.CLOSE_CURSORS_AT_COMMIT: कमिट होते ही रिज़ल्ट बंद हो जाएगा।
+Java
+PreparedStatement pstmt = conn.prepareStatement(sql, 
+    ResultSet.TYPE_SCROLL_INSENSITIVE, 
+    ResultSet.CONCUR_UPDATABLE, 
+    ResultSet.HOLD_CURSORS_OVER_COMMIT
+);
+
+--------------------------------------------------------------------------------------------------------------------------------------
+()Connection इंटरफ़ेस के prepareCall() मेथड्स का उपयोग डेटाबेस में पहले से बने Stored Procedures और Functions को कॉल (execute) करने के लिए किया जाता है। 
+यह CallableStatement ऑब्जेक्ट रिटर्न करता है।
+CallableStatement की खास बात यह है कि यह तीनों तरह के पैरामीटर्स को हैंडल कर सकता है: IN (डेटा भेजने के लिए), 
+OUT (डेटा वापस पाने के लिए), और INOUT (भेजने और पाने दोनों के लिए)।
+prepareCall() के कुल 3 ओवरलोडेड वर्शन्स (Overloaded Versions) होते हैं:-
+
+1. prepareCall(String sql):-
+यह सबसे बेसिक और सबसे ज़्यादा इस्तेमाल होने वाला वर्जन है।
+यह क्या करता है: यह एक साधारण CallableStatement ऑब्जेक्ट बनाता है जो डिफ़ॉल्ट व्यवहार (Default behavior) के साथ काम करता है।
+विशेषताएं: इससे मिलने वाला ResultSet (यदि प्रोसीजर कोई रिजल्ट टेबल लौटाता है) Forward-Only और Read-Only होता है।
+उपयोग: जब आपको किसी साधारण स्टोर्ड प्रोसीजर को कॉल करना हो और डिफ़ॉल्ट सेटिंग्स से काम चल जाए।
+Java
+// SQL में प्रोसीजर कॉल करने का सिंटैक्स
+String sql = "{call get_employee_salary(?, ?)}"; 
+CallableStatement cstmt = conn.prepareCall(sql);
+
+2. prepareCall(String sql, int resultSetType, int resultSetConcurrency):-
+यह मेथड तब काम आता है जब आपका स्टोर्ड प्रोसीजर एक ResultSet (डेटा की टेबल) रिटर्न कर रहा हो और आप उसके व्यवहार को बदलना चाहते हों।
+यह क्या करता है: यह आपको यह तय करने की आज़ादी देता है कि प्रोसीजर से मिलने वाले रिज़ल्ट सेट में आप आगे-पीछे स्क्रॉल (Scroll) कर सकते हैं या नहीं, और क्या आप उस रिज़ल्ट सेट के ज़रिए डेटाबेस को अपडेट कर सकते हैं।
+पैरामीटर्स:-
+resultSetType: (जैसे ResultSet.TYPE_SCROLL_INSENSITIVE - रिज़ल्ट में ऊपर-नीचे मूव करने के लिए)
+resultSetConcurrency: (जैसे ResultSet.CONCUR_UPDATABLE - रिज़ल्ट सेट से सीधे डेटा अपडेट करने के लिए)
+Java
+String sql = "{call get_all_employees()}";
+CallableStatement cstmt = conn.prepareCall(
+    sql, 
+    ResultSet.TYPE_SCROLL_INSENSITIVE, 
+    ResultSet.CONCUR_READ_ONLY
+);
+
+3. prepareCall(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability):-
+यह सबसे एडवांस वर्जन है, जो स्क्रॉलिंग और कॉनकरेंसी के साथ-साथ ट्रांजैक्शन के व्यवहार को भी नियंत्रित करता है।
+यह क्या करता है: यह पिछले मेथड की तरह ही काम करता है, लेकिन इसमें एक तीसरा पैरामीटर जुड़ जाता है 
+जो यह तय करता है कि जब डेटाबेस में commit() (डेटा सेव) किया जाएगा, तो प्रोसीजर द्वारा खोला गया ResultSet खुला रहेगा या बंद हो जाएगा।
+पैरामीटर्स: पहले दो पैरामीटर ऊपर वाले ही हैं। तीसरा है:
+3.  resultSetHoldability:
+*   ResultSet.HOLD_CURSORS_OVER_COMMIT: कमिट होने के बाद भी कर्सर/रिज़ल्ट खुला रहेगा।
+*   ResultSet.CLOSE_CURSORS_AT_COMMIT: कमिट होते ही कर्सर/रिज़ल्ट बंद हो जाएगा।
+Java
+String sql = "{call get_financial_report()}";
+CallableStatement cstmt = conn.prepareCall(
+    sql, 
+    ResultSet.TYPE_SCROLL_INSENSITIVE, 
+    ResultSet.CONCUR_READ_ONLY, 
+    ResultSet.HOLD_CURSORS_OVER_COMMIT
+);
+---------------------------------------------------------------------------------------
+1. setAutoCommit() और getAutoCommit():-
+बाय-डिफ़ॉल्ट जावा में हर लाइन तुरंत डेटाबेस में सेव हो जाती है। अगर अमित के अकाउंट से पैसे कट गए और उसी वक़्त लाइट चली गई, 
+तो राहुल के पास पैसे नहीं पहुँचेंगे और अमित के पैसे कट चुके होंगे। इसे रोकने के लिए हम ऑटो-कमिट बंद करते हैं।
+
+setAutoCommit(false): यह डेटाबेस को बोलता है—"भाई, अभी जो भी क्वेरी चलाऊँगा, उसे तुरंत सेव मत करना। जब तक मैं खुद commit() न बोलूँ, तब तक होल्ड पर रखना।"
+
+getAutoCommit(): यह चेक करने के लिए है कि अभी ऑटो-सेव चालू है या बंद।
+Java
+// बैंक ट्रांसफर शुरू करने से पहले ऑटो-कमिट बंद करेंगे
+conn.setAutoCommit(false); 
+
+2. commit() और rollback():-
+--commit(): जब सारे काम सही-सलामत हो जाएं, तो डेटा को पक्का (Permanent) सेव करने के लिए।
+
+--rollback(): अगर बीच में कोई भी गड़बड़ (Error) हो जाए, तो सब कुछ पहले जैसा (Undo) करने के लिए।
+Java
+try {
+    conn.setAutoCommit(false);
+
+    // स्टेप 1: अमित के अकाउंट से ₹1000 काटे
+    stmt.executeUpdate("UPDATE accounts SET balance = balance - 1000 WHERE name = 'Amit'");
+
+    // स्टेप 2: राहुल के अकाउंट में ₹1000 जोड़े
+    stmt.executeUpdate("UPDATE accounts SET balance = balance + 1000 WHERE name = 'Rahul'");
+
+    // अगर दोनों स्टेप सही रहे, तो डेटाबेस में सेव कर दो
+    conn.commit(); 
+    System.out.println("पैसा ट्रांसफर हो गया!");
+
+} catch (SQLException e) {
+    // अगर स्टेप 1 के बाद एरर आ गया, तो अमित के कटे हुए पैसे भी वापस आ जाएंगे
+    conn.rollback(); 
+    System.out.println("ट्रांसफर फेल! सब कुछ पहले जैसा कर दिया गया है।");
+}
+
+3. Savepoint मेथड्स (छोटे-छोटे चेकपॉइंट्स):-
+सोचो आप एक गेम खेल रहे हो, और बीच में गेम सेव (Checkpoint) कर लेते हो ताकि अगर आगे मरो, तो गेम शुरू से नहीं बल्कि उसी चेकपॉइंट से शुरू हो। Savepoint भी यही है।
+
+--setSavepoint() और setSavepoint(String name): ट्रांजैक्शन के बीच में एक स्टॉप (चेकपॉइंट) बनाना।
+
+--rollback(Savepoint): पूरी मेहनत बेकार करने के बजाय, सिर्फ उस खास चेकपॉइंट तक की गड़बड़ी को रोलबैक (Undo) करना।
+
+--releaseSavepoint(Savepoint): उस चेकपॉइंट को डिलीट करना (जब उसकी ज़रूरत खत्म हो जाए)।
+
+इसका मस्त उदाहरण:-
+मानो बैंक ट्रांसफर तो हो गया, लेकिन बैंक अमित को एक सक्सेस SMS भी भेजना चाहता है जिसके लिए डेटाबेस के sms_log टेबल में एंट्री करनी है। अगर SMS लॉग फेल भी हो जाए,
+तो हम नहीं चाहते कि राहुल के पैसे वापस कटें।
+Java
+// मुख्य ट्रांसफर सफल रहा
+stmt.executeUpdate("UPDATE accounts SET balance = balance - 1000 WHERE name = 'Amit'");
+stmt.executeUpdate("UPDATE accounts SET balance = balance + 1000 WHERE name = 'Rahul'");
+
+// यहाँ एक चेकपॉइंट बना दिया क्योंकि पैसा ट्रांसफर हो चुका है
+Savepoint smsCheckpoint = conn.setSavepoint("SmsSentPoint");
+
+try {
+    // अब रिस्की काम: SMS लॉग इन्सर्ट करना
+    stmt.executeUpdate("INSERT INTO sms_log VALUES ('Amit', 'Money Sent')");
+} catch (SQLException e) {
+    // अगर SMS लॉग फेल हुआ, तो सिर्फ SMS वाले काम को रोलबैक करो
+    // राहुल और अमित के पैसों का ट्रांसफर सुरक्षित रहेगा!
+    conn.rollback(smsCheckpoint); 
+}
+
+conn.commit(); // फाइनल सेव
+
+---------
+1. setTransactionIsolation(int level):-
+यह मेथड डेटाबेस कनेक्शन को बताता है कि उसे सिक्योरिटी और स्पीड के बीच कैसा बैलेंस रखना है। इसमें जावा के 4 मुख्य लेवल्स (Constants) पास किए जाते हैं:
+
+1. Connection.TRANSACTION_READ_UNCOMMITTED (सबसे कम सुरक्षित):-
+मतलब: यहाँ कोई प्राइवेसी नहीं है। अगर अमित अपने अकाउंट में कुछ बदलाव कर रहा है और उसने अभी तक commit() नहीं किया है, तब भी राहुल उस अधूरे बदलाव को देख सकता है।
+
+समस्या (Dirty Read):- मान लो अमित ने ₹5000 ट्रांसफर करने की क्वेरी चलाई, राहुल ने अपनी स्क्रीन पर देखा कि ₹5000 आ गए, 
+लेकिन अचानक अमित का ट्रांजैक्शन फेल हो गया और rollback() हो गया। अब राहुल को जो ₹5000 दिखे थे, वो गायब हो गए! इसे Dirty Read कहते हैं।
+
+2. Connection.TRANSACTION_READ_COMMITTED (डिफ़ॉल्ट और बैलेंस):-
+मतलब: यह लेवल 'Dirty Read' की समस्या को खत्म करता है। राहुल को अमित का डेटा तभी दिखेगा जब अमित उसे commit() (फाइनल सेव) कर देगा।
+
+समस्या (Non-Repeatable Read): मान लो राहुल एक ही ट्रांजैक्शन में अमित का बैलेंस दो बार चेक करता है। पहली बार देखने पर ₹10,000 दिखते हैं। 
+उसी बीच अमित ₹2000 और जमा करके commit कर देता है। राहुल जब दोबारा देखता है, तो उसे ₹12,000 दिखते हैं।
+ राहुल सोचेगा—"एक ही ट्रांजैक्शन में दो अलग-अलग वैल्यू कैसे दिख रही हैं?"
+
+3. Connection.TRANSACTION_REPEATABLE_READ (काफी सुरक्षित):-
+मतलब: यह नियम लगाता है कि जब तक राहुल अमित का डेटा पढ़ (Read) रहा है, तब तक अमित उस डेटा को बदल (Update/Delete) नहीं सकता। यानी राहुल जितनी बार भी पढ़ेगा,
+उसे एक ही वैल्यू मिलेगी।
+
+समस्या (Phantom Read): अमित पुराना डेटा बदल तो नहीं सकता, लेकिन टेबल में एक नई रो (New Row) इन्सर्ट कर सकता है। 
+इससे राहुल को पहली बार में 10 रिकॉर्ड दिख रहे थे, तो दूसरी बार में अचानक 11 रिकॉर्ड दिखने लगेंगे (भूतिया रिकॉर्ड या Phantom Row)।
+
+4. Connection.TRANSACTION_SERIALIZABLE (सुपर कड़क सिक्योरिटी):-
+मतलब: यह सबसे सुरक्षित लेवल है। यह 'Dirty Read', 'Non-Repeatable Read' और 'Phantom Read' तीनों को ब्लॉक कर देता है।
+
+यह कैसे काम करता है: यह ट्रांजैक्शंस को एक लाइन में खड़ा कर देता है (Like a Queue)। 
+जब तक पहला यूजर अपना पूरा काम खत्म करके commit नहीं कर देता, तब तक दूसरा यूजर उस टेबल को छू भी नहीं सकता।
+
+नुकसान: यह बहुत धीमा (Slow) होता है क्योंकि सबको अपनी बारी का इंतज़ार करना पड़ता है।
+
+2. getTransactionIsolation():-
+यह मेथड बस यह चेक करने के लिए है कि वर्तमान में आपका डेटाबेस कनेक्शन किस सुरक्षा स्तर (Isolation Level) पर चल रहा है। 
+यह एक int वैल्यू लौटता है, जो ऊपर दिए गए चारों लेवल्स में से किसी एक के कोड से मैच करती है।
+
+कोड उदाहरण (Code Example):-
+आइए देखते हैं कि कोड में इसका इस्तेमाल कैसे करते हैं:
+
+Java
+import java.sql.Connection;
+import java.sql.DriverManager;
+
+public class IsolationExample {
+    public static void main(String[] args) {
+        try {
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/bank_db", "user", "pass");
+
+            // 1. पहले चेक करते हैं कि अभी कौन सा लेवल सेट है
+            int currentLevel = conn.getTransactionIsolation();
+            System.out.println("डिफ़ॉल्ट आइसोलेशन लेवल कोड: " + currentLevel);
+
+            // 2. अब बैंक ट्रांसफर जैसे संवेदनशील काम के लिए हम कड़क सिक्योरिटी सेट करते हैं
+            conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+            System.out.println("अब लेवल बदलकर SERIALIZABLE कर दिया गया है।");
+
+            // यहाँ आपका बैंक ट्रांसफर का ट्रांजैक्शन कोड आएगा...
+            conn.setAutoCommit(false);
+            // queries...
+            conn.commit();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+----------------------------------------------------------------------------------------
+()1. close():-
+यह JDBC का सबसे महत्वपूर्ण सफाई (Clean-up) मेथड है।
+यह क्या करता है: यह वर्तमान डेटाबेस कनेक्शन को तुरंत बंद (Terminate) कर देता है और उससे जुड़े सभी रिसोर्सेज (जैसे मेमोरी, सॉकेट्स) को फ्री कर देता है।
+
+Connection conn = null;
+try {
+    conn = DriverManager.getConnection(url, user, pass);
+    // यहाँ डेटाबेस का काम करें...
+} catch (SQLException e) {
+    e.printStackTrace();
+} finally {
+    // काम पूरा हो या एरर आए, कनेक्शन बंद होना ही चाहिए
+    if (conn != null) {
+        try {
+            conn.close(); 
+            System.out.println("कनेक्शन सुरक्षित रूप से बंद हो गया।");
+        } catch (SQLException e) { e.printStackTrace(); }
+    }
+}
+
+2. isClosed():-
+यह मेथड बस यह पता लगाने के लिए एक चेकर की तरह काम करता है कि कनेक्शन खुला है या बंद।
+if (!conn.isClosed()) {
+    System.out.println("कनेक्शन अभी भी खुला है, आप काम कर सकते हैं।");
+}
+
+3. isValid(int timeout):-
+यह मेथड नेटवर्क की सेहत और डेटाबेस सर्वर की एक्टिविटी को चेक करने का सबसे सटीक तरीका है।
+यह क्या करता है: यह डेटाबेस को एक इंटरनल सिग्नल (Ping) भेजकर चेक करता है कि क्या कनेक्शन अभी भी असली में चालू (Alive) है और काम कर रहा है।
+पैरामीटर (timeout): इसमें सेकंड्स में समय दिया जाता है। उतने समय तक अगर डेटाबेस जवाब नहीं देता, तो यह मान लिया जाता है कि कनेक्शन टूट चुका है। (अगर 0 दें, तो कोई टाइमआउट नहीं होता)।
+रिटर्न टाइप: boolean (काम कर रहा है तो true, वरना false)।
+
+isClosed() से अंतर: isClosed() सिर्फ यह देखता है कि जावा में close() दबाया गया या नहीं। 
+लेकिन मान लो पीछे से इंटरनेट केबल कट गई, तो isClosed() बोलेगा false (यानी खुला है), लेकिन isValid() असली में टेस्ट करके बोलेगा false (यानी कनेक्शन टूट चुका है)।
+Java
+// चेक करो कि क्या कनेक्शन अगले 5 सेकंड में रिस्पॉन्स दे रहा है
+if (conn.isValid(5)) {
+    System.out.println("डेटाबेस से संपर्क एकदम मजबूत है!");
+} else {
+    System.out.println("नेटवर्क डाउन है या डेटाबेस सर्वर बंद हो गया है।");
+}
+
+4. abort(Executor executor):-
+यह close() का बड़ा भाई है, लेकिन यह बहुत गुस्से वाला और तुरंत एक्शन लेने वाला मेथड है।
+यह क्या करता है: यह कनेक्शन को तुरंत और जबरदस्ती (Forcefully) बंद कर देता है।
+पैरामीटर (Executor): यह बैकग्राउंड में इस टास्क को चलाने के लिए एक थ्रेड पूल (Thread Pool) लेता है, ताकि आपकी मुख्य एप्लीकेशन हैंग न हो।
+उपयोग: इसका उपयोग तब किया जाता है जब कोई सुरक्षा खतरा (Security Threat) हो, या डेटाबेस हैंग हो गया हो और आपको तुरंत कनेक्शन काटना हो।
+Java
+import java.util.concurrent.Executors;
+
+// एक थ्रेड पूल बनाया
+var executor = Executors.newSingleThreadExecutor();
+
+try {
+    // किसी इमरजेंसी स्थिति में कनेक्शन को तुरंत जबरदस्ती बंद करना
+    conn.abort(executor);
+    System.out.println("कनेक्शन को तुरंत और बलपूर्वक बंद कर दिया गया।");
+} catch (SQLException e) {
+    e.printStackTrace();
+} finally {
+    executor.shutdown(); // थ्रेड पूल बंद करना न भूलें
+}
+------------------------------------------------------
+1. getMetaData();-
+यह इस ग्रुप का सबसे शक्तिशाली (Powerful) मेथड है।
+यह क्या करता है: यह एक DatabaseMetaData ऑब्जेक्ट लौटाता है। इस ऑब्जेक्ट की मदद से आप अपने डेटाबेस का पूरा 'बायोडेटा' निकाल सकते हैं।
+आप क्या पता कर सकते हैं:-
+डेटाबेस का नाम और वर्जन क्या है? (जैसे MySQL 8.0 या Oracle 19c)
+डेटाबेस का ड्राइवर कौन सा है?
+डेटाबेस में कौन-कौन सी टेबल्स मौजूद हैं?
+क्या यह डेटाबेस ट्रांजैक्शंस सपोर्ट करता है?
+उपयोग: जब आप ऐसा डायनामिक कोड लिख रहे हों जो किसी भी डेटाबेस पर चल सके, तब यह मेथड बहुत काम आता है।
+Java
+DatabaseMetaData dbmd = conn.getMetaData();
+System.out.println("डेटाबेस का नाम: " + dbmd.getDatabaseProductName());
+System.out.println("ड्राइवर का वर्जन: " + dbmd.getDriverVersion());
+-------------------
+2. getCatalog() और setCatalog(String catalog):-
+डेटाबेस की दुनिया में Catalog का मतलब आमतौर पर आपके Database Name (डेटाबेस के नाम) से होता है (जैसे MySQL में हर एक अलग डेटाबेस एक कैटलॉग है)।
+
+()getCatalog():-
+यह क्या करता है: यह बताता है कि आपका वर्तमान कनेक्शन अभी किस डेटाबेस (Catalog) से जुड़ा हुआ है।
+रिटर्न टाइप: String (डेटाबेस का नाम)
+
+()setCatalog(String catalog):-
+यह क्या करता है: यह चालू कनेक्शन के दौरान ही आपका डेटाबेस बदल देता है। आपको नया कनेक्शन बनाने की जरूरत नहीं पड़ती।
+उदाहरण: जैसे SQL में हम USE database_name; कमांड चलाते हैं, यह जावा में वही काम करता है।
+
+Java
+// 1. चेक करो अभी कौन सा डेटाबेस खुला है
+System.out.println("अभी का डेटाबेस: " + conn.getCatalog()); // मान लो आउटपुट आया: test_db
+
+// 2. बिना कनेक्शन बंद किए दूसरा डेटाबेस ओपन करो
+conn.setCatalog("production_db"); 
+System.out.println("अब नया डेटाबेस: " + conn.getCatalog()); // आउटपुट: production_db
+--------------
+3. getSchema() और setSchema(String schema):-
+Schema (स्कीमा) का मतलब होता है एक ही डेटाबेस के अंदर टेबल्स, व्यूज और इंडेक्स का एक ग्रुप या कंटेनर।
+(नोट: MySQL में Catalog और Schema को एक ही माना जाता है, लेकिन Oracle, SQL Server या PostgreSQL में एक Database (Catalog) के अंदर कई अलग-अलग Users या Schemas हो सकते हैं)।
+
+()getSchema():-
+यह क्या करता है: यह बताता है कि आप अभी किस स्कीमा के अंदर काम कर रहे हैं और आपकी क्वेरीज किस स्कीमा की टेबल्स को हिट करेंगी।
+रिटर्न टाइप: String
+
+()setSchema(String schema):-
+यह क्या करता है: यह आपके कनेक्शन का वर्तमान स्कीमा बदल देता है। इसके बाद आप जो भी क्वेरी लिखेंगे, वो नए स्कीमा की टेबल्स पर चलेगी।
+Java
+// मान लो आप PostgreSQL यूज़ कर रहे हो जहाँ एक डेटाबेस में 'public' और 'hr' नाम के दो स्कीमा हैं
+System.out.println("अभी का स्कीमा: " + conn.getSchema()); // आउटपुट: public
+
+// अब स्कीमा बदलकर 'hr' कर देते हैं
+conn.setSchema("hr");
+
+// अब अगर आप "SELECT * FROM employees" चलाएंगे, तो वो 'hr.employees' टेबल से डेटा लाएगा
+कैटलॉग (Catalog) और स्कीमा (Schema) में अंतर (सरल शब्दों में)
+अगर हम डेटाबेस को एक मल्टीप्लेक्स (Multiplex) मान लें:
+
+Catalog: वह स्क्रीन या हॉल नंबर है (जैसे Screen 1, Screen 2)। setCatalog() से आप एक हॉल से दूसरे हॉल में चले जाते हैं।
+
+Schema: उस हॉल के अंदर की सीटें या केबिन हैं (जैसे Executive, Premium)। setSchema() से आप उसी हॉल के अंदर अपनी सीटिंग का एरिया बदलते हैं।
+----------------------------------------------------------------------------------------------------------------------------------
+()JDBC में Warning Methods का उपयोग डेटाबेस ऑपरेशन्स के दौरान आने वाली चेतावनियों (Warnings) को संभालने के लिए किया जाता है।
+अक्सर लोग Exception और Warning में कंफ्यूज हो जाते हैं। दोनों में बड़ा अंतर यह है:
+Exception (अपवाद): यह एक गंभीर एरर है। जब यह आती है, तो आपका प्रोग्राम बीच में ही रुक जाता है (क्रैश हो जाता है) और कोड सीधे catch ब्लॉक में चला जाता है।
+Warning (चेतावनी): यह कोई गंभीर एरर नहीं है। आपकी SQL क्वेरी सफलतापूर्वक चल जाती है, 
+डेटाबेस अपना काम भी कर देता है, लेकिन वह बैकग्राउंड में एक छोटा सा मैसेज छोड़ देता है कि "सब कुछ ठीक तो है,
+पर इस बात का ध्यान रखना।" (जैसे: डेटा का साइज बड़ा था तो वह कट (Truncate) गया, या कोई पुराना/Deprecated फीचर इस्तेमाल हुआ)।
+ 
+1. getWarnings():-
+यह मेथड डेटाबेस कनेक्शन पर आई पहली चेतावनी को देखने के लिए इस्तेमाल होता है।
+यह क्या करता है: यह कनेक्शन ऑब्जेक्ट से जुड़े SQLWarning ऑब्जेक्ट को लौटाता है।
+चेन सिस्टम (Chaining): अगर एक से ज़्यादा चेतावनियाँ आई हैं, तो वे एक चेन (कड़ी) की तरह जुड़ी होती हैं।
+पहली चेतावनी मिलने के बाद आप .getNextWarning() का उपयोग करके अगली चेतावनी देख सकते हैं।
+रिटर्न टाइप: SQLWarning (अगर कोई चेतावनी नहीं है, तो यह null लौटाता है)। 
+
+2. clearWarnings():-
+यह मेथड पुराने अलर्ट्स या चेतावनियों के कचरे को साफ करने के लिए है।
+यह क्या करता है: यह वर्तमान कनेक्शन ऑब्जेक्ट पर जमा हुई सभी पुरानी चेतावनियों को डिलीट (Clear) कर देता है।
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLWarning;
+import java.sql.Statement;
+
+public class WarningExample {
+    public static void main(String[] args) {
+        try {
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/my_db", "user", "pass");
+            Statement stmt = conn.createStatement();
+
+            // 1. कोई भी नया काम करने से पहले पुरानी चेतावनियों को साफ (Clear) कर लें
+            conn.clearWarnings();
+
+            // एक ऐसी क्वेरी चलाना जिससे डेटा ट्रंकेट (कट) होने की चेतावनी आ सकती है
+            stmt.executeUpdate("INSERT INTO users VALUES ('अमित कुमार श्रीवास्तव')"); 
+
+            // 2. अब चेक करते हैं कि क्या डेटाबेस ने कोई चेतावनी दी है
+            SQLWarning warning = conn.getWarnings();
+
+            if (warning != null) {
+                System.out.println("⚠️ डेटाबेस से एक चेतावनी मिली है:");
+                
+                // लूप चलाकर सारी चेतावनियाँ प्रिंट करना (Warning Chaining)
+                while (warning != null) {
+                    System.out.println("मैसेज: " + warning.getMessage());
+                    System.out.println("SQL स्टेट कोड: " + warning.getSQLState());
+                    System.out.println("एरर कोड: " + warning.getErrorCode());
+                    
+                    // अगली चेतावनी पर जाएँ
+                    warning = warning.getNextWarning(); 
+                }
+            } else {
+                System.out.println("सब चंगा सी! कोई चेतावनी नहीं मिली।");
+            }
+
+        } catch (Exception e) {
+            // गंभीर एरर यहाँ पकड़ी जाएगी
+            e.printStackTrace();
+        }
+    }
+}
+-------------------------------------------------------------------------------------
+1. createBlob():-
+BLOB का मतलब होता है Binary Large Object।
+यह क्या करता है: यह एक खाली Blob ऑब्जेक्ट बनाता है।
+किसके लिए उपयोग होता है: इमेज (Images), ऑडियो (Audio), वीडियो (Video), या किसी भी प्रकार की बाइनरी फाइल (.pdf, .exe) को डेटाबेस में स्टोर करने के लिए।
+उदाहरण: जैसे आपको यूज़र की प्रोफाइल फोटो डेटाबेस में सेव करनी है।
+Java
+// 1. खाली Blob ऑब्जेक्ट बनाया
+Blob photoBlob = conn.createBlob();
+
+// 2. जावा के बाइनरी स्ट्रीम से इसमें डेटा भरा
+OutputStream os = photoBlob.setBinaryStream(1);
+// (यहाँ फाइल का डेटा स्ट्रीम में राइट करेंगे...)
+
+// 3. PreparedStatement में सेट कर दिया
+pstmt.setBlob(1, photoBlob);
+
+2. createClob() और createNClob():-
+CLOB का मतलब होता है Character Large Object और NClob का मतलब होता है National Character Large Object (जो Unicode/International भाषाओं जैसे हिंदी, चीनी, जापानी आदि के लिए इस्तेमाल होता है)।
+ये क्या करते हैं: ये खाली Clob या NClob ऑब्जेक्ट्स बनाते हैं।
+किसके लिए उपयोग होते हैं: बहुत बड़े टेक्स्ट डेटा को स्टोर करने के लिए, जो साधारण String (VARCHAR) की लिमिट से बाहर हो। 
+जैसे—पूरी की पूरी ई-बुक, ब्लॉग आर्टिकल्स, या कानूनी दस्तावेज़ (Legal Documents)।
+उदाहरण: जैसे किसी वेबसाइट का 'Terms and Conditions' का बहुत बड़ा पेज डेटाबेस में डालना।
+Java
+Clob longTextClob = conn.createClob();
+Writer writer = longTextClob.setCharacterStream(1);
+writer.write("यहाँ बहुत लंबा टेक्स्ट या पैराग्राफ आएगा...");
+pstmt.setClob(2, longTextClob);
+
+3. createSQLXML():-
+यह क्या करता है: यह एक खाली SQLXML ऑब्जेक्ट बनाता है जो SQL के XML डेटा टाइप को सपोर्ट करता है।
+किसके लिए उपयोग होता है: जब आपको डेटाबेस के किसी कॉलम में पूरा का पूरा XML डेटा (Tags के साथ) स्टोर करना हो या वहां से रीड करना हो।
+उदाहरण: कॉन्फ़िगरेशन फाइल्स या एपीआई (API) का XML रिस्पॉन्स स्टोर करने के लिए।
+Java
+SQLXML xmlObj = conn.createSQLXML();
+xmlObj.setString("<user><id>101</id><name>Amit</name></user>");
+pstmt.setSQLXML(3, xmlObj);
+
+4. createArrayOf(String typeName, Object[] elements):-
+यह क्या करता है: यह जावा के नॉर्मल एरे को SQL के Array ऑब्जेक्ट में बदल देता है।
+पैरामीटर्स:-
+typeName: डेटाबेस का डेटा टाइप (जैसे INTEGER, VARCHAR).
+elements: जावा का नॉर्मल एरे ऑब्जेक्ट।
+उदाहरण: एक छात्र के पसंदीदा विषयों (Subjects) की लिस्ट को एक ही कॉलम में सेव करना।
+Java
+String[] mySubjects = {"Maths", "Science", "Computers"};
+
+// जावा एरे को SQL Array में बदला
+java.sql.Array sqlArray = conn.createArrayOf("VARCHAR", mySubjects);
+pstmt.setArray(4, sqlArray);
+
+5. createStruct(String typeName, Object[] attributes):-
+कई डेटाबेस (जैसे Oracle) आपको खुद का एक कस्टमाइज्ड डेटा टाइप (User-Defined Type या Object Type) बनाने की अनुमति देते हैं।
+--typeName: डेटाबेस में बने कस्टमाइज्ड टाइप का नाम।
+--attributes: उस स्ट्रक्चर के अंदर आने वाली वैल्यूज का एरे।
+उदाहरण: मान लो डेटाबेस में ADDRESS_TYPE नाम का एक कस्टमाइज्ड टाइप बना है जिसमें (City, Pincode) आता है।
+Java
+// डेटाबेस के कस्टमाइज्ड टाइप के हिसाब से वैल्यूज तैयार कीं
+Object[] addressData = {"Delhi", 110001};
+// SQL Struct ऑब्जेक्ट बनाया
+Struct addressStruct = conn.createStruct("ADDRESS_TYPE", addressData);
+pstmt.setObject(5, addressStruct);
+----------------------------------------------------------------------------------------------------
+()nativeSQL(String sql):-
+यह क्या करता है: जावा में हम जो SQL लिखते हैं, ड्राइवर उसे डेटाबेस की असली (Native) बोली या सिंटैक्स में बदलता है।(जैसे Oracle या MySQL) के असली रूप में बदल कर दिखाएगा।
+--String nativeQuery = conn.nativeSQL("{d '2026-05-17'}");
+System.out.println(nativeQuery); // डेटाबेस के हिसाब से बदला हुआ असली SQL दिखेगा
+
+()setClientInfo() और getClientInfo():-
+ये क्या करते हैं: ये आपके कनेक्शन के साथ कुछ एक्स्ट्रा जानकारी (Client Info) जोड़ने के काम आते हैं, जैसे—एप्लीकेशन का नाम क्या है, इसे कौन सा यूज़र चला रहा है, या क्लाइंट का कंप्यूटर नाम क्या है।
+फायदा: डेटाबेस एडमिनिस्ट्रेटर (DBA) को जब डेटाबेस की मॉनिटरिंग करनी होती है,
+तो वो इन इंफो की मदद से पहचान सकते हैं कि कौन सी क्वेरी किस ऐप या किस यूज़र की तरफ से आ रही है।
+Java
+// क्लाइंट की जानकारी सेट करना
+Properties info = new Properties();
+info.put("ApplicationName", "MyBillingApp");
+conn.setClientInfo(info);
+// जानकारी वापस पाना
+String appName = conn.getClientInfo("ApplicationName");
+------------------------------------------------------------------
+()setNetworkTimeout() और getNetworkTimeout():-
+ये क्या करते हैं: मान लो आपने डेटाबेस को कोई क्वेरी भेजी और अचानक नेटवर्क डाउन हो गया या डेटाबेस हैंग हो गया। 
+आप नहीं चाहेंगे कि आपका जावा प्रोग्राम हमेशा के लिए अटका रहे। setNetworkTimeout() से आप टाइम लिमिट (मिलिसेकंड्स में) तय कर सकते हैं 
+कि अगर उतने समय में जवाब नहीं मिला, तो कनेक्शन तोड़ दिया जाए।
+Java
+import java.util.concurrent.Executors;
+
+// 5 सेकंड (5000ms) का नेटवर्क टाइमआउट सेट किया
+conn.setNetworkTimeout(Executors.newSingleThreadExecutor(), 5000);
+
+()unwrap(Class<T> iface) और isWrapperFor(Class<?> iface):-
+ये क्या करते हैं: कई बार जब हम किसी फ्रेमवर्क (जैसे Spring, Hibernate) या कनेक्शन पूल का इस्तेमाल करते हैं,
+तो वो असली डेटाबेस कनेक्शन ऑब्जेक्ट को एक नकली 'कवर' या रैपर (Wrapper) के अंदर छुपा देते हैं।
+
+--unwrap(): यह उस कवर को फाड़कर अंदर का असली, ओरिजिनल डेटाबेस कनेक्शन ऑब्जेक्ट (जैसे MySQL का अपना स्पेसिफिक कनेक्शन) बाहर निकाल देता है, ताकि आप उसके खास फीचर्स यूज़ कर सकें।
+
+--isWrapperFor(): यह सिर्फ चेक करता है कि क्या यह ऑब्जेक्ट उस खास असली क्लास को अपने अंदर छुपाए हुए है या नहीं।
+Java
+if (conn.isWrapperFor(com.mysql.cj.jdbc.ConnectionImpl.class)) {
+    // असली MySQL कनेक्शन को बाहर निकाला
+    var mysqlConn = conn.unwrap(com.mysql.cj.jdbc.ConnectionImpl.class);
+}
+--------------------------------------------------------------------------------
+10. Holdability Methods (होल्डेबिलिटी मेथड्स):-
+Holdability का सीधा सा मतलब है—"जब मैं डेटाबेस में अपना ट्रांजैक्शन commit() (सेव) करूँ, तो जो ResultSet (डेटा की टेबल) खुला हुआ है, उसका कर्सर खुला रहना चाहिए या तुरंत बंद हो जाना चाहिए?"
+
+()setHoldability(int holdability):-
+यह क्या करता है: यह पूरे कनेक्शन के लिए डिफ़ॉल्ट होल्डेबिलिटी बिहेवियर सेट कर देता है। इसमें 2 कांस्टेंट्स पास किए जाते हैं:
+
+--ResultSet.HOLD_CURSORS_OVER_COMMIT: ट्रांजैक्शन कमिट होने के बाद भी आपका रिज़ल्ट सेट खुला रहेगा और आप आगे का डेटा रीड कर सकते हैं।
+
+--ResultSet.CLOSE_CURSORS_AT_COMMIT: जैसे ही कमिट होगा, रिज़ल्ट सेट अपने आप बंद हो जाएगा (यह परफॉरमेंस और मेमोरी के लिए बहुत अच्छा माना जाता है)।
+
+()getHoldability():-
+यह क्या करता है: यह चेक करता है कि आपके इस कनेक्शन पर वर्तमान में कौन सी सेटिंग (Hold या Close) लागू है।
+Java
+// पूरे कनेक्शन के लिए सेटिंग बदलें कि कमिट होते ही रिजल्ट्स क्लोज हो जाएं
+conn.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
+
+// चेक करना कि अभी क्या सेटिंग है
+int currentHoldability = conn.getHoldability(); 
+if(currentHoldability == ResultSet.CLOSE_CURSORS_AT_COMMIT) {
+    System.out.println("कमिट होते ही कर्सर बंद हो जाएगा।");
+}
+--------------------------------------------------------------------------------------------------------------------------------
+practical->>>>>>>>........>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+-----------------------------------------------------------------------------------------------------------------------------------
+यहाँ आपके द्वारा पूछे गए सभी JDBC मेथड्स (Connection, Statement, PreparedStatement, CallableStatement, और Transaction) का अलग-अलग, 
+पूरा और वर्किंग जावा कोड (Imports के साथ) और उनके संभावित आउटपुट दिए गए हैं।
+इन उदाहरणों को चलाने के लिए मान लिया गया है कि आपके पास localhost पर एक test_db नाम का डेटाबेस है और उसमें ज़रूरी टेबल्स मौजूद हैं।
+
+1. Statement Methods:-
+ये मेथड्स स्टैटिक SQL क्वेरीज़ चलाने के लिए उपयोग होते हैं।
+
+कोड उदाहरण:
+Java
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
+public class StatementMethodsDemo {
+    public static void main(String[] args) {
+        String url = "jdbc:mysql://localhost:3306/test_db";
+        String user = "root";
+        String pass = "root";
+
+        try (Connection conn = DriverManager.getConnection(url, user, pass)) {
+            
+            // 1. createStatement() - डिफ़ॉल्ट (Forward-only, Read-only)
+            Statement stmt1 = conn.createStatement();
+            ResultSet rs1 = stmt1.executeQuery("SELECT id, name FROM employees");
+            System.out.println("--- createStatement() Output ---");
+            while (rs1.next()) {
+                System.out.println("ID: " + rs1.getInt("id") + ", Name: " + rs1.getString("name"));
+            }
+
+            // 2. createStatement(int, int) - स्क्रॉल करने और अपडेट करने योग्य
+            Statement stmt2 = conn.createStatement(
+                ResultSet.TYPE_SCROLL_INSENSITIVE, 
+                ResultSet.CONCUR_UPDATABLE
+            );
+            ResultSet rs2 = stmt2.executeQuery("SELECT id, name FROM employees");
+            System.out.println("\n--- createStatement(int, int) Output ---");
+            if (rs2.last()) { // सीधे आखिरी रो पर जाएँ (स्क्रॉलिंग)
+                System.out.println("Last Employee: " + rs2.getString("name"));
+            }
+
+            // 3. createStatement(int, int, int) - होल्डेबिलिटी के साथ
+            Statement stmt3 = conn.createStatement(
+                ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY,
+                ResultSet.CLOSE_CURSORS_AT_COMMIT // कमिट होते ही कर्सर बंद होगा
+            );
+            System.out.println("\n--- createStatement(int, int, int) ---");
+            System.out.println("Statement Object Created Successfully with Holdability!");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+संभावित आउटपुट:
+
+Plaintext
+--- createStatement() Output ---
+ID: 101, Name: Amit
+ID: 102, Name: Rahul
+
+--- createStatement(int, int) Output ---
+Last Employee: Rahul
+
+--- createStatement(int, int, int) ---
+Statement Object Created Successfully with Holdability!
+
+2. PreparedStatement Methods:-
+ये मेथड्स पैरामीटर वाली प्री-कंपाइल्ड क्वेरीज़ चलाने और जनरेटेड कीज़ (Keys) पाने के लिए उपयोग होते हैं।
+
+कोड उदाहरण:
+Java
+import java.sql.*;
+
+public class PreparedStatementMethodsDemo {
+    public static void main(String[] args) {
+        String url = "jdbc:mysql://localhost:3306/test_db";
+        String user = "root";
+        String pass = "root";
+
+        try (Connection conn = DriverManager.getConnection(url, user, pass)) {
+            
+            // 1. prepareStatement(String sql) - बेसिक
+            String sql1 = "INSERT INTO employees (name, salary) VALUES (?, ?)";
+            PreparedStatement pstmt1 = conn.prepareStatement(sql1);
+            pstmt1.setString(1, "Vikram");
+            pstmt1.setDouble(2, 50000.0);
+            int rows1 = pstmt1.executeUpdate();
+            System.out.println("Rows Inserted (Basic): " + rows1);
+
+            // 2. prepareStatement(String sql, int autoGeneratedKeys)
+            String sql2 = "INSERT INTO employees (name, salary) VALUES (?, ?)";
+            PreparedStatement pstmt2 = conn.prepareStatement(sql2, Statement.RETURN_GENERATED_KEYS);
+            pstmt2.setString(1, "Raj");
+            pstmt2.setDouble(2, 60000.0);
+            pstmt2.executeUpdate();
+            ResultSet keys = pstmt2.getGeneratedKeys();
+            if (keys.next()) {
+                System.out.println("Auto Generated Key (ID): " + keys.getInt(1));
+            }
+
+            // 3. prepareStatement(String sql, int[] columnIndexes)
+            int[] colIndexes = {1}; // मान लेते हैं पहला कॉलम Auto-increment ID है
+            PreparedStatement pstmt3 = conn.prepareStatement(sql2, colIndexes);
+            pstmt3.setString(1, "Simran");
+            pstmt3.setDouble(2, 55000.0);
+            pstmt3.executeUpdate();
+            System.out.println("pstmt3 Created using Column Indexes.");
+
+            // 4. prepareStatement(String sql, String[] columnNames)
+            String[] colNames = {"id"};
+            PreparedStatement pstmt4 = conn.prepareStatement(sql2, colNames);
+            pstmt4.setString(1, "Karan");
+            pstmt4.setDouble(2, 65000.0);
+            pstmt4.executeUpdate();
+            System.out.println("pstmt4 Created using Column Names.");
+
+            // 5. prepareStatement(String sql, int, int)
+            String selectSql = "SELECT * FROM employees";
+            PreparedStatement pstmt5 = conn.prepareStatement(selectSql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            ResultSet rs5 = pstmt5.executeQuery();
+            System.out.println("pstmt5 Created with Scrollable ResultSet.");
+
+            // 6. prepareStatement(String sql, int, int, int)
+            PreparedStatement pstmt6 = conn.prepareStatement(selectSql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            System.out.println("pstmt6 Created with Holdability Setting.");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+संभावित आउटपुट:
+
+Plaintext
+Rows Inserted (Basic): 1
+Auto Generated Key (ID): 105
+pstmt3 Created using Column Indexes.
+pstmt4 Created using Column Names.
+pstmt5 Created with Scrollable ResultSet.
+pstmt6 Created with Holdability Setting.
+
+3. CallableStatement Methods (Stored Procedure):-
+यह डेटाबेस के अंदर बने स्टोर्ड प्रोसीजर या फंक्शन को कॉल करने के लिए उपयोग होता है। मान लें डेटाबेस में get_emp_salary(IN emp_id INT, OUT emp_sal DOUBLE) नाम का प्रोसीजर है।
+
+कोड उदाहरण:
+Java
+import java.sql.*;
+
+public class CallableStatementDemo {
+    public static void main(String[] args) {
+        String url = "jdbc:mysql://localhost:3306/test_db";
+        String user = "root";
+        String pass = "root";
+
+        try (Connection conn = DriverManager.getConnection(url, user, pass)) {
+            
+            // 1. Overload 1: prepareCall(String sql) - डिफ़ॉल्ट
+            String query1 = "{call get_emp_salary(?, ?)}";
+            CallableStatement cstmt1 = conn.prepareCall(query1);
+            cstmt1.setInt(1, 101); // IN parameter
+            cstmt1.registerOutParameter(2, Types.DOUBLE); // OUT parameter
+            cstmt1.execute();
+            System.out.println("Employee Salary: " + cstmt1.getDouble(2));
+
+            // 2. Overload 2: prepareCall(String sql, int, int)
+            String query2 = "{call get_all_employees()}"; // मान लें यह ResultSet लौटाता है
+            CallableStatement cstmt2 = conn.prepareCall(query2, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            System.out.println("cstmt2 Created for Scrollable Procedures.");
+
+            // 3. Overload 3: prepareCall(String sql, int, int, int)
+            CallableStatement cstmt3 = conn.prepareCall(query2, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT);
+            System.out.println("cstmt3 Created with Holdability.");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+संभावित आउटपुट:
+
+Plaintext
+Employee Salary: 45000.0
+cstmt2 Created for Scrollable Procedures.
+cstmt3 Created with Holdability.
+4. Transaction Methods & Savepoints
+यह पूरे बैंक ट्रांसफर या मल्टीपल क्वेरीज़ को एक साथ सुरक्षित चलाने और बीच में चेकपॉइंट्स (Savepoints) बनाने के लिए उपयोग होता है।
+
+कोड उदाहरण:
+Java
+import java.sql.*;
+
+public class TransactionMethodsDemo {
+    public static void main(String[] args) {
+        String url = "jdbc:mysql://localhost:3306/test_db";
+        String user = "root";
+        String pass = "password";
+
+        try (Connection conn = DriverManager.getConnection(url, user, pass)) {
+            
+            // 1. getAutoCommit() - डिफ़ॉल्ट स्थिति चेक करें
+            System.out.println("Default Auto-Commit: " + conn.getAutoCommit());
+
+            // 2. setAutoCommit(false) - ट्रांजैक्शन शुरू करें
+            conn.setAutoCommit(false);
+            System.out.println("Auto-Commit turned OFF.");
+
+            Statement stmt = conn.createStatement();
+            
+            // काम 1: अमित के अकाउंट से पैसे काटना
+            stmt.executeUpdate("UPDATE accounts SET balance = balance - 1000 WHERE name = 'Amit'");
+            System.out.println("Step 1: Deduced 1000 from Amit.");
+
+            // 3. setSavepoint() - बिना नाम का सेवपॉइंट (चेकपॉइंट)
+            Savepoint sp1 = conn.setSavepoint();
+            System.out.println("Savepoint 1 created.");
+
+            // 4. setSavepoint(String name) - नाम वाला सेवपॉइंट
+            Savepoint sp2 = conn.setSavepoint("SmsCheckPoint");
+            System.out.println("Savepoint 2 (Named) created.");
+
+            try {
+                // काम 2: रिस्की काम (मानो SMS लॉग टेबल में एंट्री करना जो फेल हो सकता है)
+                stmt.executeUpdate("INSERT INTO invalid_table_name VALUES (1)"); // यह फेल होगा
+            } catch (SQLException e) {
+                System.out.println("⚠️ Step 2 failed! Rolling back to Savepoint 1...");
+                // 5. rollback(Savepoint) - सिर्फ रिस्की काम को कैन्सिल करना
+                conn.rollback(sp1); 
+            }
+
+            // 6. releaseSavepoint(Savepoint) - सेवपॉइंट का काम खत्म, डिलीट करें
+            // नोट: कुछ डेटाबेस (जैसे MySQL) डायरेक्ट release/rollback पर सेवपॉइंट हटा देते हैं।
+            try {
+                conn.releaseSavepoint(sp2);
+            } catch (Exception e) { /* Handling if not supported direct */ }
+
+            // काम 3: राहुल के अकाउंट में पैसे जोड़ना (यह सही चलेगा)
+            stmt.executeUpdate("UPDATE accounts SET balance = balance + 1000 WHERE name = 'Rahul'");
+            System.out.println("Step 3: Added 1000 to Rahul.");
+
+            // 7. commit() - सब सही रहा, डेटाबेस में परमानेंट सेव करें
+            conn.commit();
+            System.out.println("Transaction Committed Successfully!");
+
+            // 8. Isolation Levels
+            System.out.println("Current Isolation Level: " + conn.getTransactionIsolation());
+            conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+            System.out.println("New Isolation Level set to SERIALIZABLE.");
+
+        } catch (Exception e) {
+            System.out.println("Main Transaction Failed! Total Rollback.");
+            // अगर मुख्य काम में एरर आता तो पूरा rollback() होता
+        }
+    }
+}
+संभावित आउटपुट:
+
+Plaintext
+Default Auto-Commit: true
+Auto-Commit turned OFF.
+Step 1: Deduced 1000 from Amit.
+Savepoint 1 created.
+Savepoint 2 (Named) created.
+⚠️ Step 2 failed! Rolling back to Savepoint 1...
+Step 3: Added 1000 to Rahul.
+Transaction Committed Successfully!
+Current Isolation Level: 2
+New Isolation Level set to SERIALIZABLE.
+ 
+9. Advanced Methods
+ये मेथड्स नेटवर्क सेटिंग्स, इंटरनल डेटाबेस डिक्शनरी और कस्टमाइज्ड टाइप्स (TypeMap) के लिए उपयोग होते हैं।
+
+कोड उदाहरण:
+Java
+import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.Executors;
+
+public class AdvancedMethodsDemo {
+    public static void main(String[] args) {
+        String url = "jdbc:mysql://localhost:3306/test_db";
+        String user = "root";
+        String pass = "password";
+
+        try (Connection conn = DriverManager.getConnection(url, user, pass)) {
+            
+            // 1. nativeSQL(String sql)
+            String standardSQL = "{d '2026-05-18'}";
+            String nativeSQL = conn.nativeSQL(standardSQL);
+            System.out.println("Native SQL Format: " + nativeSQL);
+
+            // 2. setClientInfo() और getClientInfo()
+            Properties clientInfo = new Properties();
+            clientInfo.put("ApplicationName", "JavaEnterpriseApp");
+            try {
+                conn.setClientInfo(clientInfo);
+                System.out.println("Client App Name: " + conn.getClientInfo("ApplicationName"));
+            } catch (SQLClientInfoException e) {
+                System.out.println("Client Info not fully supported by this driver.");
+            }
+
+            // 3. getTypeMap() और setTypeMap()
+            Map<String, Class<?>> typeMap = conn.getTypeMap();
+            System.out.println("Default Type Map Size: " + typeMap.size());
+            // नया मैप सेट करना (Custom SQL Types के लिए)
+            Map<String, Class<?>> customMap = new HashMap<>();
+            // customMap.put("MY_CUSTOM_TYPE", MyClass.class); 
+            conn.setTypeMap(customMap);
+            System.out.println("Custom Type Map applied.");
+
+            // 4. setNetworkTimeout() और getNetworkTimeout()
+            // 5000 मिलिसेकंड (5 सेकंड) का टाइमआउट सेट किया
+            conn.setNetworkTimeout(Executors.newSingleThreadExecutor(), 5000);
+            System.out.println("Network Timeout: " + conn.getNetworkTimeout() + " ms");
+
+            // 5. isWrapperFor() और unwrap()
+            if (conn.isWrapperFor(Connection.class)) {
+                Connection rawConn = conn.unwrap(Connection.class);
+                System.out.println("Successfully unwrapped raw connection object: " + rawConn.getClass().getName());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+संभावित आउटपुट:
+
+Plaintext
+Native SQL Format: DATE '2026-05-18'
+Client Info not fully supported by this driver.
+Default Type Map Size: 0
+Custom Type Map applied.
+Network Timeout: 5000 ms
+Successfully unwrapped raw connection object: com.mysql.cj.jdbc.ConnectionImpl
+
+///////////////////////
+////////////*
+()Kya ise ek line me likh sakte hain? Haan, bilkul likh sakte hain! Java ko isse koi farq nahi padta. 
+Agar aap ise bina tode ek single line me likhenge, toh ye bilkul sahi chalega:-
+Java
+String APPLICATION_NAMES = "select name from identityiq.spt_application where name not like 'Test_%' and name not like '%Demo%' and type not in ('DelimitedFile','IdentityIQ Workgroups')";
+⚠️ Ek Badi Galti (Space Trap): Aapke code me pehli line %'_ par khatam ho rahi hai aur doosri line "and se shuru ho rahi hai. 
+Jab Java in dono ko jodega, toh wo ban jayega '%Demo%'and type. 
+Dekhiye '%Demo%' aur and ke beech ka space gayab ho gaya! Is wajah se SQL query database me fail ho sakti hai. 
+Hamesha doosri line ke shuru me ek space dena chahiye, jaise: " and type...".
+
+2. Kya SQL likhne ka koi fixed sequence (tarteeb) hota hai?
+Haan, SQL ka ek ekdum fixed sequence hota hai. Database aapke "words" ko tabhi samajhta hai jab wo ek proper standard sequence me likhe hon.
+Aap is sequence ko aage-piche nahi kar sakte.Standard SQL Query ka sequence yeh hota hai:-
+
+Sequence Order	         Keyword	    Aapke Code Me Kya Likha Hai	                       Kaam (Purpose)
+1 (Sabse Pehle)----------SELECT----------------select name-------------------Kaun sa column chahiye? (Hume sirf 'name' chahiye).
+2-------------------------FROM------------from identityiq.spt_application----------Kaun se table se data nikalna hai?
+3-------------------------WHERE-------------where name not like...-----------------Data filter karne ki pehli condition.
+4-------------------------AND / OR----------and type not in...------------Pehli condition ke saath doosri extra condition jodna.
+
+
+()SQL Query likhne ka standard format (syntax) toh wahi rehta hai jo humne upar dekha (SELECT -> FROM -> WHERE), 
+lekin usko Java/SailPoint code ke andar likhne ke alag-alag styles (formats) zaroor hote hain.
+
+1. Modern Java Format: Text Blocks (Triple Quotes """)
+Agar aap SailPoint ke naye versions (jo Java 15 ya usse upar support karte hain) use kar rahe hain, 
+toh aapko + lagane ki ya line todne ki zaroorat nahi hai. Aap jaise normal notebook me likhte hain, waise hi likh sakte hain:-
+Java
+String APPLICATION_NAMES = """
+    SELECT name 
+    FROM identityiq.spt_application 
+    WHERE name NOT LIKE 'Test_%' 
+      AND name NOT LIKE '%Demo%'
+      AND type NOT IN ('DelimitedFile', 'IdentityIQ Workgroups')
+    """;
+Fayda: Isme space ki galti hone ka darr nahi rehta aur padhne me sabse aasan hota hai.
+
+2. Standard Builder Format: StringBuilder:-
+Bohot se developers + sign use karne ki jagah StringBuilder ka use karte hain, 
+kyunki ye memory ke liye thoda zyada efficient hota hai jab query bohot badi ho.
+Java
+StringBuilder query = new StringBuilder();
+query.append("SELECT name ");
+query.append("FROM identityiq.spt_application ");
+query.append("WHERE name NOT LIKE 'Test_%' ");
+query.append("AND name NOT LIKE '%Demo%' ");
+query.append("AND type NOT IN ('DelimitedFile','IdentityIQ Workgroups')");
+String APPLICATION_NAMES = query.toString();
+Fayda: Isme aap har line ke aakhiri me khud ek space (jaise "SELECT name ") dhyan se jod sakte hain taaki Words aapas me 
+chipke na.
+
+3. SailPoint Style: Bina SQL ke Query chalana (QueryOptions)
+Ye sabse important point hai! SailPoint me database se direct SQL chalanā (context.getJdbcConnection()) achha nahi mana jata 
+(jab tak bohot zaroori na ho). SailPoint ka khud ka ek tarika hai jisse bina SQL likhe data nikal aata hai,
+use QueryOptions kehte hain.
+
+Aapka poora kaam bina ek bhi line SQL likhe aise ho sakta hai:-
+Java
+import sailpoint.object.Filter;
+import sailpoint.object.QueryOptions;
+import sailpoint.object.Application;
+
+QueryOptions qo = new QueryOptions();
+
+// Saari conditions (Filters) yahan add kar di
+qo.addFilter(Filter.not(Filter.like("name", "Test_", Filter.MatchMode.START)));
+qo.addFilter(Filter.not(Filter.like("name", "Demo", Filter.MatchMode.ANYWHERE)));
+qo.addFilter(Filter.not(Filter.in("type", Arrays.asList("DelimitedFile", "IdentityIQ Workgroups"))));
+
+// Database se direct objects nikal liye
+Iterator it = context.search(Application.class, qo, "name");
+while (it.hasNext()) {
+    Object[] row = (Object[]) it.next();
+    String appName = (String) row[0];
+    // Aapka aage ka logic...
+}
+*////////////
+-----------------------------------------------------------------------------
+// 1. Maan lo DB se saara data is list me aa gaya hai
+List<Employee> allEmployees = getAllEmployeesFromDB(); 
+
+// 2. Ek nayi khali list banayi filtered data rakhne ke liye
+List<Employee> filteredEmployees = new ArrayList<>();
+
+// 3. Traditional For-Each Loop lagaya (Koi lambda nahi)
+for (Employee emp : allEmployees) {
+    if (emp.getSalary() > 5000) { // Simple IF condition se filter
+        filteredEmployees.add(emp); // Agar condition match hui toh nayi list me daal do
+    }
+}
+
+// 4. Ab aapke paas filtered data taiyar hai
+for (Employee emp : filteredEmployees) {
+    System.out.println(emp.getName());
+}
+
+SQL Query Ka Format (Syntax)
+SQL
+INSERT INTO employee(id, name, salary) VALUES
+(2, 'meganfox', 4548),
+(4, 'optimus', 9999),
+(5, 'starscream', 8500);
+-----------------------------------------------------------------------------
+()String sql = "INSERT INTO employee(id,name,email) VALUES(?,?,?)"; 
+// PreparedStatement object create
+            PreparedStatement ps =
+                    conn.prepareStatement(sql);
+
+            // ? placeholders me value set
+            ps.setInt(1,101);
+            ps.setString(2,"Kishan");
+            ps.setString(3,"kishan@gmail.com");
+
+---ps.executeUpdate();
+-----------------------------------------------------------------------------------------------------
+()INSERT INTO employee (id, name, salary) VALUES (101, 'Kishan Kumar', 85000);
+()String sql ="UPDATE employee SET name=? WHERE id=?"; ----ps.executeUpdate();--"Employee table mein jaao, aur jis employee ki ID hum batayenge, uska naam badal kar naya naam daal do."
+()String sql ="DELETE FROM employee WHERE id=?"; ---ps.executeUpdate();
+()String sql ="CREATE TABLE employee(id INT,name VARCHAR(50))"; ---ps.executeUpdate();--"Database ke andar ek nayi table banao jiska naam 'employee' ho, aur usme do columns (fields) hon—ek ID ke liye aur ek Name ke liye."
+int rows = ps.executeUpdate();
+System.out.println("Inserted Rows : " + rows);
+
+3. ps.executeQuery():-
+Ye SELECT / GET data ke liye.
+
+String sql = "SELECT * FROM employee WHERE id=?";
+
+PreparedStatement ps = conn.prepareStatement(sql);
+ps.setInt(1,101);
+ResultSet rs = ps.executeQuery();
+
+4. ps.execute():-
+Ye generic method hai.
+INSERT/UPDATE/DELETE/SELECT sab me use ho sakta hai.
+Example:-
+SELECT
+String sql = "SELECT * FROM employee";
+PreparedStatement ps = conn.prepareStatement(sql);
+boolean result = ps.execute();
+
+-------------------------------------------------------------------------------------------------------------------------
+SQL_query="SELECT 1 FROM FinancialAndForecastingProvisioningRule.employee_roles WHERE id=? AND roleId=?";
+insertMapSQL = "INSERT IGNORE INTO financial_planning_and_forecasting.employee_roles(employeeId,roleId) VALUES (?, ?)";
+String updateQuery = "UPDATE financial_planning_and_forecasting.employees SET empStatus = ? WHERE employeeId = ?";
+
+1. SELECT 1 Ka Kya Matlab Hai?
+Normal queries me hum SELECT * (saare columns) ya SELECT roleId likhte hain. 
+Lekin jab hume sirf yeh check karna ho ki "kya record database me maujood hai ya nahi", toh hum SELECT 1 use karte hain.
+1a. Table ke sath (SELECT 1 FROM table_name;):-
+Agar aap kisi real table ke sath SELECT 1 FROM users; chalate hain, toh yeh table ke actual data columns ko ignore kar deta hai.
+Yeh table ki har ek row ke badle pure 1 return karega.
+Agar table mein 5 rows hain, toh yeh 5 rows return karega aur har row mein sirf 1 hoga.
+Agar table khali (empty) hai, toh yeh kuch bhi return nahi karega (0 rows).

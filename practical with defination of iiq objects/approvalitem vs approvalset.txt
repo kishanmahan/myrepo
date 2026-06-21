@@ -1,0 +1,16 @@
+()ApprovalSet kya hai?
+SailPoint IdentityIQ (IIQ) ke andar build()
+ApprovalSet ek aisi utility ya method hai jiska kaam raw cart requests (requested roles, entitlements, ya accounts) ko read karke
+ek structured sailpoint.object.ApprovalSet object taiyar karna hota hai.
+
+Jab koi user Access Request (LCM) submit karta hai, toh uske cart mein mix items ho sakte hain—jaise 2 Roles aur 3 Entitlements.
+buildApprovalSet in saare items ko uthata hai aur unhe individual ApprovalItem object ke roop mein ek single bucket(ApprovalSet)
+mein wrap kar deta hai, taaki aage chal kar approvers ko dikhaya ja sake ki kis-kis cheez ka approval lena hai.
+
+()ApprovalItem kya hai?
+ApprovalItem: Iske andar har ek single request ki specific details hoti hain:-
+Application: Kis application ka access manga gaya hai (e.g., Active Directory).
+Name: Attribute ka naam (e.g., memberOf ya roles).
+Value: Actual value jo request ki gayi hai (e.g., CN=Finance-Group).
+Operation: Operation type (jaise Add ya Remove).
+State: Current approval state (jaise Pending, Approved, ya Rejected).

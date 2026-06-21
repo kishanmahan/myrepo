@@ -1,0 +1,58 @@
+
+()evaluate ya evaluation ka matlab in sailpoint ?
+--kisi rule, policy, ya condition ko check karna ki wo satisfy ho rahi hai ya nahi.
+🔹 1. Simple Example (Real Life):-
+Maan lo:-
+👉 Rule: “User ka role Admin nahi hona chahiye”
+Evaluation kya karega?
+User ka data lega
+Check karega: kya role = Admin hai?
+Result dega: ✅ Pass / ❌ Fail
+
+🔹 2. SailPoint me Evaluation kaha use hota hai?
+1️⃣ Policy Evaluation:-
+👉 Jab policies run hoti hain
+Example:-
+SoD Policy (Segregation of Duties)
+Password Policy
+Access Policy
+Process:-
+Identity ka data uthata hai
+Roles / Entitlements check karta hai
+Violation hai ya nahi → evaluate karta hai.
+
+2️⃣ Rule Evaluation:-
+👉 SailPoint me bahut saare rules hote hain (Java based)
+Example:-
+if (identity.getDepartment().equals("IT")) {
+    return true;
+}
+👉 Ye condition jab run hoti hai → isko evaluate bolte hain.
+
+3️⃣ Provisioning me Evaluation:-
+👉 Jab provisioning hoti hai (account create/update/delete)
+Plan validate hota hai
+Attributes check hote hain
+Dependencies check hoti hain
+👉 Ye sab internally evaluate hote hain.
+
+4️⃣ Workflow Evaluation:-
+👉 Workflow me conditions hoti hain:-
+<Step condition="identity.manager != null">
+👉 System evaluate karega:-
+Manager hai ya nahi?
+True → next step
+False → skip
+
+🔹 3. Technical Meaning (Important):-
+👉 Evaluation ka matlab hota hai:-
+✔ Expression execute karna
+✔ Condition check karna
+✔ Result return karna (true/false / value).
+
+🔹 4. SailPoint me kaun evaluate karta hai?
+Mostly ye components:-
+PolicyEvaluator (policy check karta hai)
+Rule Engine (rules run karta hai)
+Workflow Engine (conditions check karta hai)
+Provisioner (plan validate karta hai).

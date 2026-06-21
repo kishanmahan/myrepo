@@ -1,0 +1,493 @@
+()AccountConfig SailPoint me ek configuration object hai jo specific account settings ko define karta hai.
+Ye basically batata hai ki kisi particular application/account ka data kaise handle hoga,
+attributes ka mapping kaise hoga, aur provisioning/reconciliation rules kya hain.
+ye define karta hai ki identity ke attributes database ya external account fields ke saath kaise map honge.
+
+3️⃣ AccountConfig ka kaam:-
+Mapping define karna → kaunsa identity attribute kaunsa account field se link hoga,
+Connector ko bataana → database, LDAP, SAP, ya Salesforce connector kaise identity fields ko handle kare,
+Aggregation/Provisioning ke liye blueprint → jab aggregation/provisioning run hoga, system mapping ko follow karega.
+
+()AccountConfig ke Important methods:-
+        Method	                                               Purpose	                                                 Example / Explanation
+setUsernameAttribute(String attributeName)--Identity ke username ko account field ke saath map karta hai.-----------accountConfig.setUsernameAttribute("username"); → Identity ka username database ke username column se linked ho gaya
+setPasswordAttribute(String attributeName)--Identity ke password ko account field se map karta hai.-----------------accountConfig.setPasswordAttribute("password"); → Identity ka password database ke password column me linked
+setEmailAttribute(String attributeName)-----Identity ka email account field se map karta hai.-----------------------accountConfig.setEmailAttribute("email");
+setActiveAttribute(String attributeName)----Identity active/inactive status ko account field se map karta hai.------accountConfig.setActiveAttribute("isActive");
+setAttributes(Map<String, Object> attrs)----Custom attributes ko account fields se map karta hai--------------------Map<String,Object> custom = new HashMap<>(); custom.put("dept", "department"); accountConfig.setAttributes(custom);
+setAggregationEnabled(Boolean flag)---------Decide karta hai aggregation enable hoga ya nahi------------------------accountConfig.setAggregationEnabled(true); → Agar false hota, aggregation skip ho jaata
+setProvisioningEnabled(Boolean flag)--------Decide karta hai provisioning enable hoga ya nahi-----------------------accountConfig.setProvisioningEnabled(true); → Agar false, provisioning skip
+getUsernameAttribute()----------------------Returns mapped username attribute---------------------------------------String unameAttr = accountConfig.getUsernameAttribute();
+getPasswordAttribute()----------------------Returns mapped password attribute---------------------------------------String pwdAttr = accountConfig.getPasswordAttribute();
+getEmailAttribute()-------------------------Returns mapped email attribute------------------------------------------String emailAttr = accountConfig.getEmailAttribute();
+---------------------------------------------------------------------------------
+()setAggregationEnabled(Boolean flag) ko true karne se kya aggregation automaic star hoga?
+--Ye sirf ek flag set karta hai ki is account ke liye aggregation allow hai ya nahi.
+Aggregation = Database / LDAP / SAP etc. se identity ka data read karna.
+Flag	                      Result
+true:-------Aggregation allowed → jab tu aggregation run karega, system data fetch karega
+false:------Aggregation skip → system data fetch nahi karega, aggregation call hone par bhi ignore ho jayega
+
+------------------------------------------------------------------------------
+1️⃣ setConfig(String name, Object value) kya karta hai?
+setConfig ek generic method hai AccountConfig me.
+Ye allow karta hai extra/advanced configuration define karne ke liye jo ki specific attributes mapping se alag hai.
+Basically, tu custom properties, flags, ya limits define kar sakta hai connector/account ke liye.
+
+2️⃣ Parameters:-
+Parameter	                      Meaning
+name:---------------------Config ka naam, jaise "maxLoginAttempts" ya "passwordExpiryDays"
+value:--------------------Config ka value, jo Object type ka ho sakta hai (Integer, Boolean, String, etc.)
+
+3️⃣ Use Case Example:-
+import sailpoint.object.AccountConfig;
+
+public class SetConfigExample {
+    public static void main(String[] args) {
+        AccountConfig accountConfig = new AccountConfig();
+
+        // Basic mappings
+        accountConfig.setUsernameAttribute("username");
+        accountConfig.setPasswordAttribute("password");
+
+        // Extra configuration
+        accountConfig.setConfig("maxLoginAttempts", 5);       // Max login attempts allowed
+        accountConfig.setConfig("passwordExpiryDays", 90);   // Password expires after 90 days
+        accountConfig.setConfig("allowMultipleSessions", true); // Allow multiple logins
+
+        // Retrieve config using getConfig (agar available ho)
+        System.out.println("Max Login Attempts: " + accountConfig.getConfig("maxLoginAttempts"));
+    }
+}
+Output (Example):-
+Max Login Attempts: 5
+
+2️⃣ Kaam kaise karta hai?
+Developer call karta hai:-
+accountConfig.setConfig("maxLoginAttempts", 5);
+AccountConfig internally store kar leta hai:
+
+configMap = {
+   "maxLoginAttempts" : 5
+}
+
+Jab aggregation/provisioning run hota hai:-
+SailPoint connector check karta hai agar koi config relevant hai
+Agar relevant hai → use execution ke dauraan apply karta hai
+Dhyaan: Ye logic System ke predefined methods me hota hai,
+developer ko sirf config name aur value set karni hoti hai.
+-------------------------------------------------------------------------------------------
+1️⃣ getApplication() / setApplication(Application app):-
+Method	                                   Kya karta hai	                                                                     Example
+getApplication()-----------------Ye return karta hai kaunsa Application object is account ke liye linked hai:-------Application app = accountConfig.getApplication();
+setApplication(Application app)--Ye AccountConfig ko bataata hai kaunsa application ke liye mapping/config hai:-----accountConfig.setApplication(myApp);
+Explanation:-
+Har account kisi application se linked hota hai (e.g., Active Directory, SAP, Database)
+Ye methods accountConfig ke liye application set ya get karne ke liye hain.
+
+3️⃣ getProvisioningMode() / setProvisioningMode(String mode):-
+Method	                                         Kya karta hai	                                                           Example
+getProvisioningMode():--------------Batata hai ki account provisioning kaise hoga (create, update, delete):------------String mode = accountConfig.getProvisioningMode();
+setProvisioningMode(String mode):---Account provisioning mode set karta hai. Common values: "FULL", "UPDATE_ONLY"------accountConfig.setProvisioningMode("FULL");
+Explanation:-
+"FULL" → Create/Update/Delete operations allowed,
+"UPDATE_ONLY" → Sirf existing accounts update honge, new accounts create nahi honge.
+
+4️⃣ getReconciliationEnabled() / setReconciliationEnabled(Boolean flag):-
+Method	                                            Kya karta hai	                                                               Example
+getReconciliationEnabled():---------------Check karta hai ki reconciliation is account ke liye enable hai ya nahi------Boolean enabled = accountConfig.getReconciliationEnabled();
+setReconciliationEnabled(Boolean flag):---Reconciliation enable/disable karta hai--------------------------------------accountConfig.setReconciliationEnabled(true);
+Explanation:-
+Reconciliation → System ke data ko SailPoint identity ke data se match karna,
+Agar true → aggregation ke dauraan reconciliation run ho sakta hai.
+
+5️⃣ getSchema() / setSchema(Schema schema):-
+Method	                       Kya karta hai	                                            Example
+getSchema():----------------Account ka linked Schema object return karta hai:------Schema schema = accountConfig.getSchema();
+setSchema(Schema schema):---Account config me schema link karta hai:---------------accountConfig.setSchema(mySchema);
+Explanation:-
+Schema → Define karta hai kaunse attributes exist karte hain aur kaunse required hain.
+
+1️⃣ getSchema() / setSchema(Schema schema):-
+Purpose:-
+Schema object define karta hai account ke attributes aur unke types.
+getSchema() → linked schema return karta hai
+setSchema(schema) → accountConfig ke liye schema set karta hai.
+Ye methods account ke liye attribute blueprint define karte hain.
+Example:-
+import sailpoint.object.AccountConfig;
+import sailpoint.object.Schema;
+import sailpoint.object.Attribute;
+
+public class SchemaExample {
+    public static void main(String[] args) {
+        // 1. AccountConfig create
+        AccountConfig accountConfig = new AccountConfig();
+
+        // 2. Schema create
+        Schema schema = new Schema();
+        schema.addAttribute(new Attribute("username", "String", true)); // required attribute
+        schema.addAttribute(new Attribute("email", "String", false));   // optional attribute
+
+        // 3. Schema set karna
+        accountConfig.setSchema(schema);
+
+        // 4. Schema get karna
+        Schema linkedSchema = accountConfig.getSchema();
+        System.out.println("Schema attributes: " + linkedSchema.getAttributes());
+    }
+}
+Output (example):-
+Schema attributes: [username, email]
+///////////*
+()schema.addAttribute(new Attribute("username", "String", true)); 
+schema.addAttribute(new Attribute("email", "String", false)); 
+in dono me pata kaise chalega ki koun kaise required hai aur koun kaise optional  
+aur kya ye  accountConfig.setSchema(schema); karne se account ke attributes link ho jayega schema se?
+--1️⃣ Attribute ka required ya optional hona:-
+Jab tu Attribute object create karta hai:-
+schema.addAttribute(new Attribute("username", "String", true)); // required
+schema.addAttribute(new Attribute("email", "String", false));   // optional
+kyuki
+Syntax: new Attribute(String name, String type, boolean isRequired)
+
+--2️⃣ accountConfig.setSchema(schema) ka effect:-
+accountConfig.setSchema(schema);
+Ye accountConfig ko batata hai ki is account ke liye ye schema follow karo
+Iska matlab:-
+Aggregation/provisioning ye schema follow karega,
+Required attribute agar missing ho → validation fail ho sakta hai.
+Optional attributes missing ho → koi problem nahi,
+Important: Ye automatically attribute values link nahi karta,
+Mapping values tab hoti hai jab tu accountConfig me setAttributes() ya connector aggregation run karta hai,
+Schema sirf rules aur structure define karta hai.
+
+
+*///////////
+--------------------
+3️⃣ clone():-
+Purpose:-
+clone() banata hai deep copy of AccountConfig,
+Useful agar tu same configuration multiple accounts me reuse karna chahta hai.
+Example:-
+AccountConfig original = new AccountConfig();
+original.setUsernameAttribute("username");
+original.setPasswordAttribute("password");
+
+// Clone
+AccountConfig copy = original.clone();
+
+System.out.println("Original username: " + original.getUsernameAttribute());
+System.out.println("Cloned username: " + copy.getUsernameAttribute());
+
+✅ Explanation:-
+Original aur cloned object independent hain,
+Cloned object me changes karne par original unaffected rahega.
+-----------------------
+4️⃣ toString():-
+Purpose:-
+Readable string representation return karta hai
+Mostly debug aur log ke liye use hota hai
+Example:-
+System.out.println(accountConfig.toString());
+Output (example):
+AccountConfig[username=username, password=password, schema=Schema[username, email], aggregationE.
+-------------------------------------------------------------------------------------------------
+1️⃣ accountConfig.validate() kya hai?
+Purpose: Ye method check karta hai ki AccountConfig properly set hai ya nahi.
+Matlab: mapping, schema, required attributes, aur rules sahi tarah define hue hain ya nahi.
+Agar koi required attribute missing hai ya invalid mapping hai → ye exception throw karega.
+Aggregation/provisioning run karne se pehle ye best practice hai, taki errors runtime me na aaye.
+
+2️⃣ Validation ka kya check hota hai?
+Required attributes present hain ya nahi (schema me isRequired=true)
+Username/password/email mapping properly defined hai
+Schema set hai ya nahi
+Custom attribute mappings valid hain
+Provisioning/aggregation flags boolean hai.
+------------------------------------------------------------------------------------------
+import sailpoint.object.AccountConfig;
+import sailpoint.object.Attribute;
+import sailpoint.object.Schema;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class AccountConfigValidationExample {
+
+    public static void main(String[] args) {
+
+        // 1️⃣ Create AccountConfig
+        AccountConfig accountConfig = new AccountConfig();
+        accountConfig.setUsernameAttribute("username");
+        accountConfig.setPasswordAttribute("password");
+        accountConfig.setEmailAttribute("email");
+
+        // Set aggregation/provisioning flags
+        accountConfig.setAggregationEnabled(true);
+        accountConfig.setProvisioningEnabled(true);
+
+        // 2️⃣ Set custom attributes mapping
+        Map<String, Object> customAttrs = new HashMap<>();
+        customAttrs.put("role", "roleName");
+        customAttrs.put("department", "deptName");
+        accountConfig.setAttributes(customAttrs);
+
+        // 3️⃣ Create Schema
+        Schema schema = new Schema();
+        schema.addAttribute(new Attribute("username", "String", true)); // required
+        schema.addAttribute(new Attribute("password", "String", true)); // required
+        schema.addAttribute(new Attribute("email", "String", false));   // optional
+        schema.addAttribute(new Attribute("role", "String", false));    // optional
+        accountConfig.setSchema(schema);
+
+        // 4️⃣ Set actual attribute values (simulate missing required)
+        Map<String, Object> attrValues = new HashMap<>();
+        attrValues.put("username", "rahul123"); // required
+        attrValues.put("password", "pass123");  // required
+        attrValues.put("email", "rahul@example.com"); // optional
+        attrValues.put("role", "Admin");        // optional
+        // attrValues.put("department", "IT");  // optional, let's leave missing
+        accountConfig.setAttributes(attrValues);
+
+        // 5️⃣ Manual Validation logic (similar to accountConfig.validate())
+        try {
+            validateAccountConfig(accountConfig);
+            System.out.println("✅ AccountConfig is valid!");
+        } catch (Exception e) {
+            System.out.println("❌ Validation failed: " + e.getMessage());
+        }
+    }
+
+    // Validation method
+    public static void validateAccountConfig(AccountConfig accountConfig) throws Exception {
+
+        // 1️⃣ Check schema is set
+        if (accountConfig.getSchema() == null) {
+            throw new Exception("Schema is not set!");
+        }
+
+        // 2️⃣ Check required attributes from schema
+        Map<String,Object> attrs = accountConfig.getAttributes();
+        for (Attribute attr : accountConfig.getSchema().getAttributes()) {
+            if (attr.isRequired()) {
+                if (!attrs.containsKey(attr.getName()) || attrs.get(attr.getName()) == null) {
+                    throw new Exception("Required attribute '" + attr.getName() + "' is missing");
+                }
+            }
+        }
+
+        // 3️⃣ Check username/password/email mapping properly defined
+        if (accountConfig.getUsernameAttribute() == null || accountConfig.getUsernameAttribute().isEmpty()) {
+            throw new Exception("Username mapping not defined");
+        }
+        if (accountConfig.getPasswordAttribute() == null || accountConfig.getPasswordAttribute().isEmpty()) {
+            throw new Exception("Password mapping not defined");
+        }
+        if (accountConfig.getEmailAttribute() == null || accountConfig.getEmailAttribute().isEmpty()) {
+            throw new Exception("Email mapping not defined");
+        }
+
+        // 4️⃣ Check custom attribute mapping validity
+        Map<String,Object> customAttrs = accountConfig.getAttributes();
+        for (String key : customAttrs.keySet()) {
+            if (customAttrs.get(key) == null) {
+                throw new Exception("Custom attribute '" + key + "' has null value");
+            }
+        }
+
+        // 5️⃣ Check aggregation/provisioning flags are boolean (true/false)
+        if (accountConfig.getAggregationEnabled() == null) {
+            throw new Exception("Aggregation flag not set");
+        }
+        if (accountConfig.getProvisioningEnabled() == null) {
+            throw new Exception("Provisioning flag not set");
+        }
+    }
+}
+✅ Output Example:-
+✅ AccountConfig is valid!
+/////////////*
+()attr.getName() ka matlab simple hai:-
+👉 Ye Attribute object ka naam (attribute name) return karta hai.
+
+1️⃣ Example samajh:-
+schema.addAttribute(new Attribute("username", "String", true));
+schema.addAttribute(new Attribute("email", "String", false));
+
+Yahan 2 attribute create hue:-
+Attribute	Type	Required
+username----String---true
+email-------String---false
+
+Ab agar loop chalate hain:-
+for(Attribute attr : schema.getAttributes()) {
+    System.out.println(attr.getName());
+}
+Output
+username
+email
+
+*/////////////
+-----------------------------------------------
+Full Example – accountConfig.validate() (Advanced)
+import sailpoint.object.AccountConfig;
+import sailpoint.object.Schema;
+import sailpoint.object.Attribute;
+import sailpoint.object.Application;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class AccountConfigValidateDemo {
+
+    public static void main(String[] args) {
+
+        try {
+
+            // 1️⃣ Create AccountConfig
+            AccountConfig accountConfig = new AccountConfig();
+
+            // 2️⃣ Username / Password / Email mapping
+            accountConfig.setUsernameAttribute("username");
+            accountConfig.setPasswordAttribute("password");
+            accountConfig.setEmailAttribute("email");
+
+            // 3️⃣ Provisioning mode
+            accountConfig.setProvisioningMode("FULL");
+
+            // 4️⃣ Enable Aggregation / Provisioning
+            accountConfig.setAggregationEnabled(true);
+            accountConfig.setProvisioningEnabled(true);
+
+            // 5️⃣ Create Application
+            Application app = new Application();
+            app.setName("HR_DATABASE");
+
+            // Link application
+            accountConfig.setApplication(app);
+
+            // 6️⃣ Create Schema
+            Schema schema = new Schema();
+
+            // Required attributes
+            Attribute usernameAttr = new Attribute("username", "String", true);
+            Attribute passwordAttr = new Attribute("password", "String", true);
+
+            // Optional attributes
+            Attribute emailAttr = new Attribute("email", "String", false);
+            Attribute roleAttr = new Attribute("role", "String", false);
+            Attribute deptAttr = new Attribute("department", "String", false);
+
+            // Add attributes to schema
+            schema.addAttribute(usernameAttr);
+            schema.addAttribute(passwordAttr);
+            schema.addAttribute(emailAttr);
+            schema.addAttribute(roleAttr);
+            schema.addAttribute(deptAttr);
+
+            // 7️⃣ Link schema
+            accountConfig.setSchema(schema);
+
+            // 8️⃣ Custom attribute values
+            Map<String, Object> attributes = new HashMap<>();
+
+            attributes.put("username", "rahul123");
+            attributes.put("password", "pass@123");
+            attributes.put("email", "rahul@example.com");
+            attributes.put("role", "Admin");
+            attributes.put("department", "IT");
+
+            accountConfig.setAttributes(attributes);
+
+            // 9️⃣ Print config before validation
+            System.out.println("AccountConfig before validation:");
+            System.out.println(accountConfig.toString());
+
+            // 🔟 Run validation
+            accountConfig.validate();
+
+            System.out.println("\n✅ AccountConfig validation successful!");
+
+        } catch (Exception e) {
+
+            System.out.println("\n❌ Validation failed: " + e.getMessage());
+
+        }
+
+    }
+}
+Possible Output
+AccountConfig before validation:
+AccountConfig[username=username,password=password,email=email]
+
+✅ AccountConfig validation successful!
+------------------------------------------------------------------------------------------
+1️⃣ Example Code
+import sailpoint.object.Schema;
+import sailpoint.object.Attribute;
+import sailpoint.object.AccountConfig;
+
+import java.util.List;
+
+public class AccountSchemaExample {
+
+    public static void main(String[] args) {
+
+        // Create Schema
+        Schema schema = new Schema();
+
+        // Add attributes
+        schema.addAttribute(new Attribute("username", "String", false));
+        schema.addAttribute(new Attribute("email", "String", false));
+        schema.addAttribute(new Attribute("department", "String", false));
+        schema.addAttribute(new Attribute("roles", "String", true));
+
+        // Create AccountConfig
+        AccountConfig accountConfig = new AccountConfig();
+        accountConfig.setSchema(schema);
+
+        // Get attributes
+        List<Attribute> attributes = accountConfig.getSchema().getAttributes();
+
+        // Print attributes
+        for(Attribute attr : attributes) {
+
+            System.out.println("Name: " + attr.getName());
+            System.out.println("Type: " + attr.getType());
+            System.out.println("Multi: " + attr.isMulti());
+            System.out.println("-------------------");
+        }
+
+    }
+}
+2️⃣ Output
+Name: username
+Type: String
+Multi: false
+-------------------
+
+Name: email
+Type: String
+Multi: false
+-------------------
+
+Name: department
+Type: String
+Multi: false
+-------------------
+
+Name: roles
+Type: String
+Multi: true
+-------------------
+3️⃣ Actual Return Object
+
+accountConfig.getSchema().getAttributes() internally aisa data return karta hai:
+
+[
+ Attribute{name=username, type=String, multi=false},
+ Attribute{name=email, type=String, multi=false},
+ Attribute{name=department, type=String, multi=false},
+ Attribute{name=roles, type=String, multi=true}
+]

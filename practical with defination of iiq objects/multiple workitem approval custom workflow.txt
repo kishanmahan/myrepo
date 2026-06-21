@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow name="Custom Parallel Approval Workflow" type="IdentityLifecycle">
+
+  <!-- ===================================================================== -->
+  <!-- WORKFLOW INPUT VARIABLES                                              -->
+  <!-- ===================================================================== -->
+  <Variable input="true" name="identityName" type="string">
+    <Description>Jis Identity par kaam ho raha hai uska naam.</Description>
+  </Variable>
+  <Variable input="true" name="launcher" type="string">
+    <Description>Workflow start karne wale ka naam.</Description>
+  </Variable>
+  <Variable input="true" name="approvalSet" type="sailpoint.object.ApprovalSet">
+    <Description>Cart ya requested items ka data.</Description>
+  </Variable>
+  
+  <!-- Approvers ke naam (Aap inhe rule ya script se bhi populate kar sakte hain) -->
+  <Variable initializer="string:spadmin" name="manager1" type="string"/>
+  <Variable initializer="string:spadmin" name="manager2" type="string"/>
+  <Variable initializer="string:spadmin" name="manager3" type="string"/>
+
+  <!-- ===================================================================== -->
+  <!-- STEPS EXECUTION                                                       -->
+  <!-- ===================================================================== -->
+
+  <!-- 1. Start Step -->
+  <Step icon="Start" name="Start">
+    <Transition to="Parallel Approvals"/>
+  </Step>
+
+  <!-- 2. Parallel Approval Step -->
+  <!-- Note: Parallel mode mein jab tak teeno approvers apna decision nahi le lete, -->
+  <!-- workflow isi step par wait karega. -->
+  <Step icon="Approval" name="Parallel Approvals">
+    <Approval mode="parallel" return="approvalSet">
+      
+      <!-- Pehla WorkItem: Manager 1 ke liye -->
+      <Approval name="App1" owner="ref:manager1" renderer="workflow.xhtml">
+        <Arg name="workItemDescription" value="Parallel Approval Task - Level 1"/>
+      </Approval>
+      
+      <!-- Dusra WorkItem: Manager 2 ke liye -->
+      <Approval name="App2" owner="ref:manager2" renderer="workflow.xhtml">
+        <Arg name="workItemDescription" value="Parallel Approval Task - Level 2"/>
+      </Approval>
+      
+      <!-- Tisra WorkItem: Manager 3 ke liye -->
+      <Approval name="App3" owner="ref:manager3" renderer="workflow.xhtml">
+        <Arg name="workItemDescription" value="Parallel Approval Task - Level 3"/>
+      </Approval>
+      
+    </Approval>
+    <Transition to="Process Decisions"/>
+  </Step>
+
+  <!-- 3. Post-Approval Processing Step -->
+  <Step icon="Task" name="Process Decisions">
+    <Script>
+      <Source>
+        import sailpoint.object.ApprovalSet;
+        import org.apache.log4j.Logger;
+
+        Logger log = Logger.getLogger("customworkflow.parallel");
+
+        if (approvalSet != null) {
+            log.info("Is approved? " + approvalSet.isApproved());
+            // Yahan aap check kar sakte hain ki kisne approve kiya aur kisne reject
+        } else {
+            log.warn("ApprovalSet khali mila!");
+        }
+      </Source>
+    </Script>
+    <Transition to="Stop"/>
+  </Step>
+
+  <!-- 4. End Step -->
+  <Step icon="Stop" name="Stop"/>
+
+</Workflow>

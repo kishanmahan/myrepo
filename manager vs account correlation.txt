@@ -1,0 +1,21 @@
+1. Manager Correlation (Neeche wala section - Jo aapne set kiya hai):-
+Kya ho raha hai: Aapne Workday ke MANAGER_ID attribute ko SailPoint Identity ke Employee Id ke sath map kiya hai.
+Backend Logic:-
+Jab aap is application ka aggregation run karenge, toh SailPoint har account ka MANAGER_ID attribute read karega.
+Uske baad, SailPoint apne database (Identity Cubes) mein search karega ki kis Identity ka Employee Id exactly us MANAGER_ID ki value ke barabar hai.
+Jab Workday account ka MANAGER_ID aur SailPoint Identity ka Employee Id aapas mein match ho jayenge,
+toh SailPoint us matching Identity ko MANAGER_ID assign kar dega.
+
+()Isko ek live project ke example se samajhte hain:-
+Maan lijiye do log hain: Employee A aur Manager B.
+SailPoint Employee A ka Workday account read karta hai.
+Us account ke andar MANAGER_ID ki value aati hai, maan lijiye "EMP-999".
+Ab SailPoint apne database mein search karta hai ki kis Identity ka Employee Id "EMP-999" hai.
+Usey pata chalta hai ki yeh Manager B ki Identity hai.
+Toh ab SailPoint, Employee A ki Identity Cube ke andar jayega aur uske manager attribute mein Manager B ko set kar dega.
+
+2. Account Correlation (Upar wala section - Jo abhi blank hai):-
+Kya ho raha hai: Yahan abhi koi configuration select nahi ki gayi hai.
+Iska Kaam: Yeh section SailPoint ko batata hai ki Workday se aane wale raw accounts ko kis existng SailPoint Identity ke sath jorna (link)
+karna hai. Example ke liye, yahan rule set karna padta hai ki Workday ka Email = SailPoint ka email attribute. 
+Jab tak yeh set nahi hoga, naye accounts "Uncorrelated" reh sakte hain.

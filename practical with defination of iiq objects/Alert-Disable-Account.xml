@@ -1,0 +1,119 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE sailpoint PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<sailpoint>
+<Workflow explicitTransitions="true" name="Alert - Disable Account" type="Alert">
+  <Variable input="true" name="alertDefinition" required="true">
+    <Description>The alertDefinition object that matched the alert.</Description>
+  </Variable>
+  <Variable input="true" name="alertId" required="true">
+    <Description>The id of the Alert that triggered the workflow.</Description>
+  </Variable>
+  <Variable name="plan" output="true">
+    <Description>ProvisioningPlan generated for the Alert.</Description>
+  </Variable>
+  <Variable name="project" output="true">
+    <Description>The compiled project from the plan</Description>
+  </Variable>
+  <Variable initializer="Disable" name="op">
+    <Description>Operation to take.</Description>
+  </Variable>
+  <Description>Disable accounts when alert is triggered.
+
+    If the alert's targetType is Identity, this will set the Identity inactive.
+
+    If the alert's targetType is Link, this will disable the account associated to the link.</Description>
+  <Step icon="Start" name="Start" posX="28" posY="10">
+    <Transition to="Build Provisioning Plan"/>
+  </Step>
+  <Step action="buildAlertPlan" icon="Task" name="Build Provisioning Plan" posX="98" posY="10" resultVariable="plan">
+    <Arg name="op" value="ref:op"/>
+    <Arg name="alertId" value="ref:alertId"/>
+    <Description>Build the Provisioning plan to disable the correct account</Description>
+    <Transition to="Compile Plan"/>
+  </Step>
+  <Step action="compileProvisioningProject" icon="Task" name="Compile Plan" posX="312" posY="10" resultVariable="project">
+    <Arg name="plan" value="ref:plan"/>
+    <Transition to="Provision"/>
+  </Step>
+  <Step action="provisionProject" icon="Provision" name="Provision" posX="438" posY="10">
+    <Arg name="project" value="ref:project"/>
+    <Transition to="Stop"/>
+  </Step>
+  <Step icon="Stop" name="Stop" posX="540" posY="10"/>
+</Workflow>
+</sailpoint>
+/////////////*
+()1. Alert kaun generate (create) karta hai?
+SailPoint IdentityIQ mein Alerts aamtaur par do main tariko se generate hote hain:
+
+(a)Target Systems / Applications dwara (Most Common):-
+Jab aapki kisi application (jaise Active Directory, Azure, Salesforce, etc.) mein koi aisi activity hoti hai jo security ke 
+khilaf ho, toh woh system SailPoint ko ek alert bhejta hai.
+Example: Agar kisi employee ne Active Directory mein lagatar 5 baar galat password dala,
+ya kisi ne achanak se koi sensitive admin permission le li, toh AD iska alert SailPoint ko bhej dega.
+
+(b)SailPoint ke Inbuilt Analytics aur Rules dwara:-
+SailPoint ke andar chalne wale IdentityCube scanning tasks, IdentityIQ Policy violations (jaise Separation of Duties - SoD), 
+ya Risk Model assessments bhi internally alerts generate karte hain agar unhe koi gadbadi dikhti hai.
+Jab yeh alert SailPoint ke paas aata hai, toh SailPoint ka Alert Matcher system active hota hai. 
+Woh dekhta hai ki "Accha, is type ke alert ke liye hume 'Alert - Disable Account' wala workflow chalana hai." 
+Aur tab yeh workflow trigger hota hai.
+----------------------------------------------------------------
+
+()action="buildAlertPlan":-yaha action kya hai kya karta hai aur ye buildAlertPlan kya hai kya karta hai?
+
+-->action kya hai?
+action = workflow step ke andar chalne wala kaam / method / function.
+Syntax:-
+<Step action="koiActionName">
+Matlab:-"Is step me ye action execute karo."
+
+-->2. buildAlertPlan kya karta hai? (Deep Dive)
+Jaise hi workflow shuru hota hai, uske paas sirf alert ki basic jankari hoti hai 
+(jaise: Alert ID, kis target par alert aaya hai, etc.). Woh jankari abhi sirf text form mein hoti hai, 
+use seedhe disable nahi kiya ja sakta.Yahan par buildAlertPlan action parde ke peeche yeh 3 bade kaam karta hai:-
+
+-->Target ka Pata Lagana (Target Identification):
+Yeh action alert ke andar ki details ko check karta hai. Woh dekhta hai ki alert ka targetType kya hai:
+Agar targetType Identity hai: Toh yeh samajh jata hai ki puri ki puri person/employee identity ko hi inactive karna hai.
+Agar targetType Link hai: Toh yeh samajh jata hai ki kisi specific application ke account (jaise sirf uske Salesforce account) ko target karna hai.
+
+-->Operation (Op) ko Map karna:-
+Aapne jo argument pass kiya tha <Arg name="op" value="ref:op"/> (jiski value "Disable" thi), 
+yeh action us instruction ko leta hai aur target account ke upar apply karne ke liye ready karta hai.
+
+-->Blueprint taiyar karna (Provisioning Plan):-
+Yeh SailPoint ka ek blank Provisioning Plan object banata hai aur usme likhta hai: "Mera target yeh account hai, 
+aur mujhe is par 'Disable' operation chalana hai."
+--------------------------------------------------
+()<Arg name="alertId" value="ref:alertId"/>:-ye value kisko pass kar rahi hai jabki value mila hi nahi?
+-->ref:alertId ki value is line se aa rahi hai: <Variable input="true" name="alertId" required="true">. 
+Yahan input="true" ka matlab hai ki jab bhi koi Alert is workflow ko start karegā, 
+toh SailPoint ka system khud us Alert ki ID isme daal kar (pass kar ke) bhejega.
+
+-->Haan, <Arg> ke andar jitne bhi values aur references (ref:) diye gaye hain,
+ woh sab ke sab usi Task/Action ko bheje ja rahe hain jo us Step mein action="..." ke roop mein define hai.
+Ise ek simple programming function ke roop mein samajhiye:-
+action="buildAlertPlan" ek Function (Method) hai.
+<Arg> ke andar di gayi cheezein us function ke Arguments (Parameters/Inputs) hain.
+// Ek tarah se backend mein yeh function call ho raha hai:-
+buildAlertPlan(op, alertId);
+
+3. action="compileProvisioningProject" kaun sa action hai?
+Yeh bhi SailPoint ka ek core inbuilt action hai.
+Yeh kya karta hai? Pichle step mein jo plan (raw blueprint) bana tha, yeh use check karta hai. 
+Yeh dekhta hai ki user ke paas kya-kya roles hain, kya policies hain, 
+aur unke mutabik workflow ko aage badhane ke liye ek final execution plan taiyar karta hai 
+jise SailPoint ki bhasha mein Project (ProvisioningProject) kehte hain.
+
+4. action="provisionProject" kaun sa action hai?
+Yeh SailPoint ka sabse aakhiri aur main action hota hai jo badlavo ko sach mein apply karta hai.
+Yeh kya karta hai? compileProvisioningProject ne jo Project taiyar kiya tha, 
+yeh action use lekar actual target system (jaise Active Directory, Salesforce, ya koi database) ke paas jata hai
+aur wahan ke account ko sach mein Disable kar deta hai. Yaani action isi step mein hota hai.
+
+()<Arg name="project" value="ref:project"/> yaha argument name kya hai,kya ye name kahi define hai?
+-->
+
+*/////////////////
+

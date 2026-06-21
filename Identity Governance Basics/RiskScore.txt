@@ -1,0 +1,581 @@
+()🔥 RiskScore kya hai?
+👉 RiskScore = ek numeric value (number)
+jo batata hai ki user / role / entitlement kitna risky hai
+🧠 Simple example:-
+User A → RiskScore = 20  (safe)
+User B → RiskScore = 80  (high risk 🚨)
+👉 Matlab:-
+Jitna zyada score → utna zyada security risk
+
+🎯 RiskScore kya karta hai?
+👉 Ye help karta hai:-
+🔐 High-risk users identify karna
+🚨 Sensitive access track karna
+📊 Audit & compliance me Policy violation detect karna.
+------------------------------------------------------------------------------------------------
+🧱 RiskScore ke andar kya hota hai?
+RiskScore normally direct value nahi hota, ye calculate hota hai multiple cheezon se 👇
+
+🔹 1. Entitlements Risk:-
+👉 Agar user ke paas dangerous access hai:-
+Admin access → high risk
+Normal user → low risk
+
+🔹 2. Role Risk:-
+👉 Role ka bhi apna risk hota hai:-
+Role: Database Admin → Risk = 90
+Role: Viewer → Risk = 10
+
+🔹 3. Application Risk:-
+👉 Kuch apps sensitive hote hai:-
+SAP → high risk
+Email → medium risk
+
+🔹 4. Policy Violations
+👉 Agar user rule tod raha hai:-
+SoD violation → risk increase
+
+🔹 5. Weight (Importance):-
+👉 Har cheez ka weight hota hai:-
+Entitlement weight = 50%
+Role weight = 30%
+Policy = 20%
+👉 Final RiskScore calculate hota hai.
+--------------------------------------------------
+⚙️ Internally kaise banta hai?
+RiskScore = (Entitlements Risk × weight)
+          + (Role Risk × weight)
+          + (Policy Risk × weight)
+------------------------------------------------------
+💻 Example (Real Feel):-
+User ke paas:-
+Admin entitlement → 80
+Role → 50
+Policy violation → 20
+Final RiskScore ≈ 65
+-----------------------------------------
+🗄️ Kya ye DB me store hota hai?
+👉 ✅ Haan bhai — DB me store hota hai
+📌 Kaha store hota hai?
+Mostly:-
+Identity object
+Role (Bundle)
+Entitlement
+-----------------------------------------
+🧠 Example (Identity DB):-
+Identity Table:-
+Name     RiskScore
+Kishan   65
+Rahul    20
+---------------------------------------
+🔄 Kab update hota hai?
+👉 RiskScore change hota hai jab:-
+Aggregation hota hai
+New entitlement milta hai
+Role assign/remove hota hai
+Policy violation hoti hai
+----------------------------------------------
+🔹 Identity:-
+getRiskScore()
+setRiskScore(int riskScore)
+
+🔹 Role (Bundle):-
+getRiskScore()
+setRiskScore(int riskScore)
+getRiskScoreWeight()
+setRiskScoreWeight(int weight)
+
+🔹 Entitlement (ManagedAttribute):-
+getRiskScore()
+setRiskScore(int riskScore)
+
+🔹 Related (Risk Calculation Support):-
+getPolicyViolations()
+setPolicyViolations(java.util.List violations)
+getRoles()
+setRoles(java.util.List roles)
+getLinks()
+setLinks(java.util.List links)
+getEntitlements()
+setEntitlements(java.util.List entitlements)
+
+🔹 Custom / Rule Based (User-defined):-
+calculateRiskScore()
+updateRiskScore()
+---------------------------------------------------------------------------------------------------------------------------------------
+1. getRiskScore():-
+👉 User ka final overall risk score deta hai
+int risk = identity.getRiskScore();
+System.out.println(risk);
+✅ Output:-
+65
+🧠 Matlab:-
+👉 Ye user ka total risk hai (roles + entitlements + policy se mila ke)
+
+2. setRiskScore(int riskScore):-
+👉 User ka risk manually set karta hai
+identity.setRiskScore(80);
+✅ Output (after save):-
+Identity RiskScore = 80
+------------------------------------------------------------------
+3. getRiskScore():-
+👉 Role ka khud ka risk batata hai
+int roleRisk = role.getRiskScore();
+System.out.println(roleRisk);
+✅ Output:-
+50
+🧠 Matlab:-
+👉 Ye role kitna dangerous hai
+
+4. setRiskScore(int riskScore):-
+👉 Role ka risk set karta hai
+role.setRiskScore(70);
+✅ Output:-
+Role RiskScore = 70
+
+5. getRiskScoreWeight():-
+👉 Role ka contribution kitna hai final risk me
+int weight = role.getRiskScoreWeight();
+System.out.println(weight);
+✅ Output:-
+30
+🧠 Matlab:-
+👉 Ye role total risk me 30% contribute karega
+
+6. setRiskScoreWeight(int weight):-
+👉 Role ka weight set karta hai
+role.setRiskScoreWeight(40);
+✅ Output:-
+Role Weight = 40%
+---------------------------------------------------------------------
+7. getRiskScore():-
+👉 Ek access/group ka risk batata hai
+int entRisk = entitlement.getRiskScore();
+System.out.println(entRisk);
+✅ Output:-
+80
+🧠 Matlab:-
+👉 Ye access risky hai (jaise Admin group)
+
+8. setRiskScore(int riskScore):-
+👉 Entitlement ka risk set karta hai
+entitlement.setRiskScore(90);
+✅ Output:-
+Entitlement RiskScore = 90
+----------------------------------------------------------------------------
+🔥 🔹 getPolicyViolations():-
+👉 User ne kaun-kaun se policy rules tod diye (SoD violation etc.)
+java.util.List violations = identity.getPolicyViolations();
+System.out.println(violations);
+✅ Output:-
+[SoD_Violation_Admin_And_Approver, High_Risk_Access]
+🧠 Matlab:-
+👉 Jitni zyada violations → utna zyada RiskScore
+
+🔹 setPolicyViolations(List violations):-
+👉 Violations manually set karta hai
+java.util.List list = new java.util.ArrayList();
+list.add("SoD_Violation");
+identity.setPolicyViolations(list);
+✅ Output:-
+Policy violations updated
+
+🔥 🔹 getRoles():-
+👉 User ke paas kaun-kaun se roles hai
+java.util.List roles = identity.getRoles();
+System.out.println(roles);
+✅ Output:-
+[Admin Role, Manager Role]
+🧠 Matlab:-
+👉 Role ka risk + weight → final RiskScore me add hota hai
+
+🔹 setRoles(List roles):-
+👉 User ko roles assign karta hai
+identity.setRoles(rolesList);
+✅ Output:-
+Roles assigned to identity
+
+🔥 🔹 getLinks():-
+👉 User ke saare accounts (applications ke)
+java.util.List links = identity.getLinks();
+System.out.println(links);
+✅ Output:-
+[
+  Link{app=AD, user=ksingh},
+  Link{app=SAP, user=K123}
+]
+🧠 Matlab:-
+👉 Yahi se entitlements aate hai → risk calculate hota hai
+
+🔹 setLinks(List links):-
+👉 User ke accounts set karta hai
+identity.setLinks(linkList);
+
+🔥 🔹 getEntitlements():-
+👉 User ke paas kaun-kaun se access/group hai
+java.util.List ents = identity.getEntitlements();
+System.out.println(ents);
+
+✅ Output:-
+[Admins, Finance_Read, HR_Write]
+🧠 Matlab:-
+👉 Har entitlement ka risk hota hai → final RiskScore me add hota hai.
+
+🔹 setEntitlements(List entitlements):-
+👉 User ke entitlements set karta hai
+identity.setEntitlements(entList);
+-----------------------------------------------------------------------------------------------------------------
+import sailpoint.object.Identity;
+import sailpoint.object.Bundle;
+import sailpoint.object.ManagedAttribute;
+
+public class RiskUtil {
+
+    public static int calculateRiskScore(Identity identity) {
+
+        int totalRisk = 0;
+
+        // 🔹 Entitlements risk
+        java.util.List<ManagedAttribute> ents = identity.getEntitlements();
+        for (ManagedAttribute ent : ents) {
+            totalRisk += ent.getRiskScore();
+        }
+
+        // 🔹 Roles risk with weight
+        java.util.List<Bundle> roles = identity.getRoles();
+        for (Bundle role : roles) {
+            int roleRisk = role.getRiskScore();
+            int weight = role.getRiskScoreWeight();
+
+            totalRisk += (roleRisk * weight) / 100;
+        }
+
+        // 🔹 Policy violations
+        java.util.List violations = identity.getPolicyViolations();
+        totalRisk += violations.size() * 10;
+
+        return totalRisk;
+    }
+}
+✅ Output:-
+int risk = RiskUtil.calculateRiskScore(identity);
+System.out.println(risk);
+65
+/////////*
+()🔥 1. violations.size() * 10:-
+👉 Ye policy violations ka risk add karne ka logic hai
+
+🧠 Samajh:-
+totalRisk += violations.size() * 10;
+
+👉 Matlab:-
+Har violation = 10 risk points
+Jitni violations → utna risk badhega
+
+🎯 Example:-
+violations = ["SoD1", "SoD2", "SoD3"];
+
+👉 Size:-
+violations.size() = 3
+
+👉 Calculation:-
+3 × 10 = 30
+
+✅ Output:-
+30 risk add hoga
+⚠️ Important:-
+👉 10 fixed nahi hota
+👉 Tu change kar sakta hai.
+------------------------------------
+🔥 2. (roleRisk * weight) / 100:-
+👉 Ye role ka weighted contribution nikalta hai
+
+🧠 Samajh:-
+totalRisk += (roleRisk * weight) / 100;
+
+👉 Matlab:-
+Role ka pura risk nahi add hoga
+Sirf uska weighted part add hoga
+
+🎯 Example:-
+roleRisk = 50
+weight   = 30
+
+👉 Calculation:-
+(50 × 30) / 100 = 15
+
+✅ Output:-
+15 risk add hoga
+
+🧠 Kyun /100?
+👉 Kyunki weight percentage me hai (30%)
+👉 Isko decimal me convert karne ke liye:
+30 / 100 = 0.3
+*//////////
+------------------------------------------------------------------------------------------
+🔥 🔹 2. updateRiskScore():-
+👉 Ye method:-
+Risk calculate karta hai
+Identity me set karta hai
+DB me save bhi karta hai
+
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.tools.GeneralException;
+
+public class RiskUpdater {
+
+    public static void updateRiskScore(SailPointContext context, Identity identity) throws GeneralException {
+
+        int risk = RiskUtil.calculateRiskScore(identity);
+
+        // 🔹 set risk
+        identity.setRiskScore(risk);
+
+        // 🔹 save in DB
+        context.saveObject(identity);
+        context.commitTransaction();
+
+        System.out.println("RiskScore updated: " + risk);
+    }
+}
+✅ Output
+RiskScore updated: 65
+
+⚡ Difference samajh le (IMPORTANT 🔥):-
+Method	                  Kaam
+calculateRiskScore:-----Sirf calculate karta hai
+updateRiskScore:--------Calculate + set + DB save.
+---------------------------------------------------------------------------------------------------------------------
+()1️⃣ Risk kya hota hai?
+Risk matlab uncertainty jo loss ya problem la sakti hai.
+Example:-
+Company ka server crash ho sakta hai → data loss ka risk.
+Stock market me invest karna → paisa lose karne ka risk.
+
+2️⃣ Risk Management ka process:-
+Risk management generally 4 main steps me hota hai:-
+
+()Risk Identification (Risk pehchanna):-
+Sabse pehle ye check karte hain ki kaunse areas me problems ya losses ho sakte hain.
+Example: IT system, finance, human resources, projects
+
+()Risk Analysis (Risk ka analysis karna):-
+Risk ke impact aur probability ko samjhte hain
+Example: Agar server crash hua → company ka loss ₹1 crore ho sakta hai
+
+()Risk Evaluation (Risk ko rank karna):-
+Kaunsa risk sabse zyada dangerous hai, kaunsa kam dangerous
+High, Medium, Low risk me categorize karte hain
+
+()Risk Treatment / Mitigation (Risk ko control karna):-
+Risk ko avoid, reduce, share, ya accept karna
+Example: Backup servers lagana → data loss ka risk kam ho jata hai.
+
+()Risk scoring kya hai?
+--1️⃣ Risk Scoring ka matlab:-
+Risk ko quantify karna (number me convert karna)
+Ye score risk ke probability × impact se nikalta hai
+Formula:-
+Risk Score=Probability of Risk×Impact of Risk
+Risk Score=Probability of Risk×Impact of Risk
+
+Example:-
+Server crash hone ka probability = 0.2 (20%)
+Impact = ₹1,00,000
+Risk Score = 0.2 × 1,00,000 = ₹20,000
+Matlab ye risk moderate hai, zyada nahi.
+
+////////*
+probability basically ye batati hai ki koi particular risk kitni chances hai ki actually ho jaye.
+Medium Probability → Risk ka chance moderate.
+Data Breach ka matlab hai ki sensitive ya confidential data unauthorized logon ke haath lag jana. Ye company, users, ya organizations ke liye kaafi bada risk hai.
+
+Key Points:-
+
+Data Types Affected:-
+Personal information (name, address, phone)
+Financial data (credit card, bank info)
+Login credentials (username, passwords)
+Business secrets (trade secrets, internal documents)
+
+Causes:-
+Hacking ya cyber attacks
+Phishing emails ya social engineering
+Weak passwords ya unsecured systems
+Insider threats (employees se leak)
+Lost/stolen devices
+
+Consequences:-
+Financial loss
+Reputation damage
+Legal penalties (jaise GDPR violations)
+Customer trust loss
+
+Prevention:kaise roke:-
+Strong passwords & multi-factor authentication(mfa)
+Data encryption
+Regular security audits
+Employee training
+Limited access (least privilege principle)
+
+Example:-
+Maan lo, ek company ke 100 projects me 10 projects ke database me unauthorized access hua, to Data Breach probability = 10/100 = 0.1 ya 10%.
+*//////////
+
+2️⃣ Risk Scoring ke steps:-
+-Risk identify karna:-
+Example: Data leak, server down, project delay
+
+-Probability assign karna:-
+High → 0.7-1
+Medium → 0.4-0.6
+Low → 0.1-0.3
+
+-Impact assign karna:-
+High → ₹1,00,000+
+Medium → ₹50,000-₹1,00,000
+Low → ₹10,000-₹50,000
+
+-Score calculate karna:-
+Risk Score = Probability × Impact
+
+-Prioritize karna:-
+High score wale risk pe pehle kaam karo
+Low score wale risk baad me handle kar sakte ho.
+
+3️⃣ Risk Score Example Table:-
+Risk Type	    Probability	   Impact (₹)	     Risk Score (₹)	 Priority
+Server Crash--------0.2--------1,00,000------------20,000---------Medium
+Data Leak-----------0.5--------2,00,000------------1,00,000-------High
+Project Delay-------0.3--------50,000--------------15,000---------Low
+
+Example:-
+Maan lo, ek company me 100 projects hote hain aur pichle 10 projects me 5 me data breach hua.
+To probability hogi:-
+𝑃=5/10=0.5 ya 50%
+
+()Java Project: Risk Management with Risk Scoring:-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+// Risk class
+class Risk {
+    private String name;
+    private double probability; // 0.0 to 1.0
+    private double impact;      // in currency
+    private double score;
+    private String priority;
+
+    // Constructor
+    public Risk(String name, double probability, double impact) {
+        this.name = name;
+        this.probability = probability;
+        this.impact = impact;
+        calculateScore();
+        assignPriority();
+    }
+
+    // Score calculation
+    private void calculateScore() {
+        this.score = this.probability * this.impact;
+    }
+
+    // Priority assignment
+    private void assignPriority() {
+        if (score >= 75000) {
+            this.priority = "High";
+        } else if (score >= 25000) {
+            this.priority = "Medium";
+        } else {
+            this.priority = "Low";
+        }
+    }
+
+    // Display Risk
+    public void displayRisk() {
+        System.out.println("Risk Name   : " + name);
+        System.out.println("Probability : " + probability);
+        System.out.println("Impact      : " + impact);
+        System.out.println("Risk Score  : " + score);
+        System.out.println("Priority    : " + priority);
+        System.out.println("--------------------------");
+    }
+}
+
+// Main class
+public class RiskManagementProject {
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        List<Risk> riskList = new ArrayList<>();
+
+        System.out.println("=== Risk Management & Scoring Project ===");
+
+        while (true) {
+            System.out.println("\n1. Add Risk");
+            System.out.println("2. Show All Risks");
+            System.out.println("3. Exit");
+            System.out.print("Choose option: ");
+            int choice = sc.nextInt();
+            sc.nextLine(); // Consume newline
+
+            if (choice == 1) {
+                System.out.print("Enter Risk Name: ");
+                String name = sc.nextLine();
+
+                System.out.print("Enter Probability (0.0 - 1.0): ");
+                double prob = sc.nextDouble();
+
+                System.out.print("Enter Impact (₹): ");
+                double impact = sc.nextDouble();
+
+                Risk r = new Risk(name, prob, impact);
+                riskList.add(r);
+                System.out.println("✅ Risk added successfully!");
+
+            } else if (choice == 2) {
+                if (riskList.isEmpty()) {
+                    System.out.println("No risks added yet.");
+                } else {
+                    System.out.println("\n--- All Risks ---");
+                    for (Risk r : riskList) {
+                        r.displayRisk();
+                    }
+                }
+            } else if (choice == 3) {
+                System.out.println("Exiting... Bye!");
+                break;
+            } else {
+                System.out.println("Invalid choice! Try again.");
+            }
+        }
+
+        sc.close();
+    }
+}
+Output Example:-
+=== Risk Management & Scoring Project ===
+
+1. Add Risk
+2. Show All Risks
+3. Exit
+Choose option: 1
+Enter Risk Name: Server Crash
+Enter Probability (0.0 - 1.0): 0.2
+Enter Impact (₹): 100000
+✅ Risk added successfully!
+
+1. Add Risk
+2. Show All Risks
+3. Exit
+Choose option: 2
+
+--- All Risks ---
+Risk Name   : Server Crash
+Probability : 0.2
+Impact      : 100000.0
+Risk Score  : 20000.0
+Priority    : Low
+--------------------------

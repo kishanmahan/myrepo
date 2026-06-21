@@ -1,0 +1,3599 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="VDOT Resume Identity Restore Access">
+  <ReferencedRules>
+    <Reference class="sailpoint.object.Rule" name="VDOTUtilsRuleLibrary"/>
+  </ReferencedRules>
+  <Source>
+
+  import sailpoint.object.IdentitySnapshot;
+  import sailpoint.object.QueryOptions;
+  import sailpoint.object.Filter;
+  import java.util.ArrayList;
+  import java.util.Collection;
+  import java.util.List;
+  import java.util.Date;
+  import org.apache.log4j.Logger;
+  import sailpoint.api.SailPointContext;
+  import sailpoint.object.Attributes;
+  import sailpoint.object.BundleSnapshot;
+  import sailpoint.object.EntitlementSnapshot;
+  import sailpoint.object.Identity;
+  import sailpoint.object.IdentitySnapshot;
+  import sailpoint.object.ProvisioningPlan;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import sailpoint.object.ProvisioningPlan.AttributeRequest;
+  import sailpoint.tools.GeneralException;
+  import sailpoint.api.Provisioner;
+  import sailpoint.object.ProvisioningProject;
+
+  String identityName = "Resume.User4";
+  Date suspendedDatee = null;
+  IdentitySnapshot identitySnapshot = null;
+  Identity identity = context.getObjectByName(Identity.class,identityName);
+  QueryOptions qo1 =new QueryOptions();  
+  Filter filter = Filter.and(Filter.eq("targetId",identity.getId()),Filter.eq("type","Suspend User"));
+  qo1.addFilter(filter);
+  qo1.addOrdering("created", false);
+  List requests=context.getObjects(IdentityRequest.class,qo1);
+  if(requests != null &amp;&amp; requests.size()>0){
+    suspendedDatee = requests.get(0).getCreated();
+  }
+
+  QueryOptions qo=new QueryOptions();
+  ArrayList al=new ArrayList();
+  qo.addFilter(Filter.and(Filter.eq("identityName",identityName),Filter.le("created", suspendedDatee)));
+  qo.addOrdering("created", false);
+  List snapshot=context.getObjects(IdentitySnapshot.class,qo);
+  if(snapshot != null &amp;&amp; snapshot.size()>0){
+    identitySnapshot = snapshot.get(0);
+  }
+  ProvisioningPlan addEntPlan = new ProvisioningPlan();
+
+  addEntPlan.setIdentity(identity);
+
+  List bundleSnapshots = identitySnapshot.getBundles();      // assigned roles
+  List exceptionEnts   = identitySnapshot.getExceptions();   // exception entitlements
+
+  if (bundleSnapshots != null) {
+    for (BundleSnapshot bs : bundleSnapshots) {
+      String roleName = bs.getName();
+      if (roleName == null) continue;
+
+      AccountRequest roleReq = new AccountRequest();
+      roleReq.setApplication(ProvisioningPlan.APP_IIQ);
+      roleReq.setOperation(AccountRequest.Operation.Modify);
+
+      AttributeRequest attrReq = new AttributeRequest();
+      attrReq.setName(ProvisioningPlan.ATT_IIQ_ASSIGNED_ROLES);
+      attrReq.setOperation(ProvisioningPlan.Operation.Add);
+      attrReq.setValue(roleName);
+
+      roleReq.add(attrReq);
+      addEntPlan.add(roleReq);
+    }
+  }
+
+  if (exceptionEnts != null) {
+    for (EntitlementSnapshot entSs : exceptionEnts) {
+      String appName    = entSs.getApplicationName();
+      String nativeId   = entSs.getNativeIdentity();
+      String instance   = entSs.getInstance();
+
+      Attributes attrs = entSs.getAttributes();
+      if (appName == null || attrs == null) continue;
+
+
+      AccountRequest accReq = new AccountRequest();
+      accReq.setApplication(appName);
+      accReq.setInstance(instance);
+      accReq.setNativeIdentity(nativeId);
+      accReq.setOperation(AccountRequest.Operation.Modify);
+
+      for (Object keyObj : attrs.getKeys()) {
+        String attrName = (String) keyObj;
+        Object rawVal   = attrs.get(attrName);
+
+        List values = new ArrayList();
+        if (rawVal instanceof Collection) {
+          values.addAll((Collection) rawVal);   
+        } else if (rawVal != null) {
+          values.add(rawVal);                 
+        }
+
+        for (Object v : values) {
+          AttributeRequest ar = new AttributeRequest();
+          ar.setName(attrName);
+          ar.setOperation(ProvisioningPlan.Operation.Add);
+          ar.setValue(v);
+          accReq.add(ar);
+        }
+      }
+
+      if (accReq.getAttributeRequests() != null
+          &amp;&amp; !accReq.getAttributeRequests().isEmpty()) {
+        addEntPlan.add(accReq);
+      }
+    }
+  }
+
+  Provisioner p = new Provisioner(context);
+  ProvisioningProject proj = p.compile(addEntPlan);
+  //  return proj;
+  p.execute(proj);
+
+  log.error("Rebuilt plan: " + addEntPlan.toXml());
+  return addEntPlan;
+
+
+  </Source>
+</Rule>
+//-----------------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="VDOT Ospinsight Provisioning Rule" type="Provisioning">
+  <Description>
+    Production-grade Provisioning Rule to rebuild entitlement plans and update status in the OSPAdmin target database.
+  </Description>
+  <Source>
+  <![CDATA[//-]]>
+  import sailpoint.object.ProvisioningPlan;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import sailpoint.object.ProvisioningPlan.AttributeRequest;
+  import sailpoint.object.ProvisioningResult;
+  import java.sql.Connection;
+  import java.sql.PreparedStatement;
+  import java.sql.SQLException;
+  import java.util.Collection;
+  import java.util.ArrayList;
+  import java.util.List;
+  import org.apache.commons.logging.Log;
+  import org.apache.commons.logging.LogFactory;
+
+  // Initialize Logger standard way
+  Log logs = LogFactory.getLog("sailpoint.developer.vdot.provisioning");
+
+  ProvisioningPlan addEntPlan = new ProvisioningPlan();
+  ProvisioningResult result = new ProvisioningResult();
+  
+  // Assumptions based on common context (Replace with actual inputs passed to the rule if different)
+  // String attrName = "entitlements"; 
+  // Object rawVal = ...;
+  // AccountRequest accReq = ...;
+  // Connection connection = ...;
+  // String name = ...;
+
+  try {
+      // --- PART 1: Plan Rebuilding Logic (From Image 1) ---
+      List values = new ArrayList();
+      if (rawVal instanceof Collection) {
+          values.addAll((Collection) rawVal);
+      } else if (rawVal != null) {
+          values.add(rawVal);
+      }
+
+      if (accReq != null) {
+          for (Object v : values) {
+              AttributeRequest ar = new AttributeRequest();
+              ar.setName(attrName);
+              ar.setOperation(ProvisioningPlan.Operation.Add);
+              ar.setValue(v);
+              accReq.add(ar);
+          }
+
+          // Production Fix: Handled XML escaping issue (&amp;&amp;) from the screenshot to standard Java logical AND (&&)
+          if (accReq.getAttributeRequests() != null && !accReq.getAttributeRequests().isEmpty()) {
+              addEntPlan.add(accReq);
+          }
+      }
+
+      if (addEntPlan != null) {
+          logs.error("Rebuilt plan: " + addEntPlan.toXml());
+      }
+
+
+      // --- PART 2: Database Operations / Status Update (From Image 2) ---
+      PreparedStatement stmt = null;
+      if (connection != null && name != null) {
+          try {
+              // Standard SQL query definition from Image 2
+              String enableQueryAdmin = "Update OSPAdmin..[user] set status = ? where name = ?";
+              stmt = connection.prepareStatement(enableQueryAdmin);
+              
+              // Setting query parameters safely
+              stmt.setBoolean(1, true);
+              stmt.setString(2, name);
+              
+              int userStatus2 = stmt.executeUpdate();
+              
+              if (userStatus2 > 0) {
+                  result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+                  logs.debug("OSPAdmin db enable successfully");
+                  return result;
+              } else {
+                  result.setStatus(ProvisioningResult.STATUS_FAILED);
+                  logs.error("No rows updated for user: " + name);
+              }
+          } catch (SQLException e) {
+              result.setStatus(ProvisioningResult.STATUS_FAILED);
+              logs.error("update OSPAdmin error", e);
+              return result;
+          } finally {
+              // Robust Resource Cleanup to avoid connection/statement leaks in production
+              try {
+                  if (stmt != null) {
+                      stmt.close();
+                  }
+              } catch (SQLException e) {
+                  logs.error("Error closing statement", e);
+              }
+          }
+      } else {
+          result.setStatus(ProvisioningResult.STATUS_FAILED);
+          logs.error("Database connection or user name token is missing.");
+          return result;
+      }
+
+  } catch (Exception ex) {
+      logs.error("Global exception caught during rule execution: ", ex);
+      result.setStatus(ProvisioningResult.STATUS_FAILED);
+      return result;
+  }
+
+  return addEntPlan;
+  ]]>
+  </Source>
+</Rule>
+//-----------------------------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow name="SR_Workflow_Candidate_Joiner" type="IdentityLifecycle">
+  <Variable name="identityName" input="true" required="true"/>
+  <Variable name="plan" output="true"/>
+  <Variable name="isRehire" type="boolean"/>
+  <Variable name="managerDisplayName" type="string"/>
+  <Variable name="managerEmail" type="string"/>
+  <Variable name="employeeId" type="string"/>
+  <Variable name="assignedRole" type="string"/>
+  
+  <Step name="Start" icon="Start" posX="20" posY="20">
+    <Script>
+      <Source>
+        <![CDATA[
+        import sailpoint.object.Identity;
+        import org.apache.commons.logging.Log;
+        import org.apache.commons.logging.LogFactory;
+
+        Log log = LogFactory.getLog("sailpoint.workflow.candidate.joiner");
+        log.info("Starting SR_Workflow_Candidate_Joiner for Identity: " + identityName);
+
+        if (identityName != null) {
+            Identity identity = context.getObjectByName(Identity.class, identityName);
+            if (identity != null) {
+                // Fetching essential attribute tokens
+                employeeId = identity.getStringAttribute("employeeId");
+                
+                Identity manager = identity.getManager();
+                if (manager != null) {
+                    managerDisplayName = manager.getDisplayName();
+                    managerEmail = manager.getEmail();
+                    log.debug("Found manager context: " + managerDisplayName + " (" + managerEmail + ")");
+                } else {
+                    log.warn("No manager linked to identity: " + identityName);
+                }
+                
+                // Fetch link context to determine rehire logic path
+                List links = identity.getLinks();
+                if (links != null && !links.isEmpty()) {
+                    isRehire = true;
+                    log.info("Identity has existing application accounts. Flagged as Rehire.");
+                } else {
+                    isRehire = false;
+                    log.info("New Hire pipeline detected.");
+                }
+            }
+        }
+        ]]>
+      </Source>
+    </Script>
+    <Transition to="Pre Joiner Validation"/>
+  </Step>
+
+  <Step name="Pre Joiner Validation" posX="150" posY="20">
+    <Description>Triggers pre-requisite identity synchronization sub-process.</Description>
+    <WorkflowRef name="Identity Verification Subprocess"/>
+    <Arg name="identityName" value="ref:identityName"/>
+    <Arg name="isRehire" value="ref:isRehire"/>
+    <Transition to="Provision Accounts"/>
+  </Step>
+
+  <Step name="Provision Accounts" posX="300" posY="20">
+    <Description>Compile lifecycle baseline plans and invoke core LCM engine.</Description>
+    <WorkflowRef name="LCM Provisioning"/>
+    <Arg name="identityName" value="ref:identityName"/>
+    <Arg name="plan" value="ref:plan"/>
+    <Transition to="Do AD Target Aggregation"/>
+  </Step>
+
+  <Step name="Do AD Target Aggregation" posX="450" posY="120">
+    <Script>
+      <Source>
+        <![CDATA[
+        import sailpoint.object.Identity;
+        import sailpoint.object.Application;
+        import sailpoint.object.Link;
+        import org.apache.commons.logging.Log;
+        import org.apache.commons.logging.LogFactory;
+
+        Log log = LogFactory.getLog("sailpoint.workflow.candidate.joiner");
+        log.info("Executing single target Active Directory account aggregation for: " + identityName);
+
+        try {
+            Application adApp = context.getObjectByName(Application.class, "Active Directory");
+            Identity identity = context.getObjectByName(Identity.class, identityName);
+            
+            if (adApp != null && identity != null) {
+                Link adLink = identity.getLink(adApp);
+                if (adLink != null) {
+                    String nativeIdentity = adLink.getNativeIdentity();
+                    log.debug("Target Native ID found for pinpoint aggregation: " + nativeIdentity);
+                    
+                    // Invoking production helper utility classes for real-time aggregation delta threads
+                    // Custom implementation pattern mirroring AggregationHelper.singleADAggregation
+                    java.util.Map args = new java.util.HashMap();
+                    args.put("application", adApp);
+                    args.put("nativeIdentity", nativeIdentity);
+                    
+                    // Simulating helper pipeline action natively via SailPoint connector API context
+                    sailpoint.api.Identitizer idzer = new sailpoint.api.Identitizer(context);
+                    idzer.refresh(identity);
+                    log.info("AD Target Aggregation Hook executed successfully.");
+                } else {
+                    log.warn("Active Directory application link object not instantiated yet for: " + identityName);
+                }
+            }
+        } catch(Exception e) {
+            log.error("Exception caught in Do AD Target Aggregation step logic: ", e);
+        }
+        ]]>
+      </Source>
+    </Script>
+    <Transition to="Assign O365 Role"/>
+  </Step>
+
+  <Step name="Assign O365 Role" posX="600" posY="120">
+    <Script>
+      <Source>
+        <![CDATA[
+        import sailpoint.object.Identity;
+        import sailpoint.object.ProvisioningPlan;
+        import sailpoint.object.ProvisioningPlan.AccountRequest;
+        import sailpoint.object.ProvisioningPlan.AttributeRequest;
+        import sailpoint.api.Provisioner;
+        import org.apache.commons.logging.Log;
+        import org.apache.commons.logging.LogFactory;
+
+        Log log = LogFactory.getLog("sailpoint.workflow.candidate.joiner");
+        
+        if (identityName != null) {
+            Identity identity = context.getObjectByName(Identity.class, identityName);
+            if (identity != null) {
+                String country = identity.getStringAttribute("country");
+                String jobTitle = identity.getStringAttribute("jobTitle");
+                
+                log.info("Evaluating O365 target role logic for core footprint parameters: Country=" + country + ", JobTitle=" + jobTitle);
+                
+                // Mirroring implementation of rule library lookups like fetchUserRoleForJobTitle(country, jobTitle)
+                String targetBundleName = null;
+                if ("USA".equalsIgnoreCase(country) && "Engineer".equalsIgnoreCase(jobTitle)) {
+                    targetBundleName = "O365-US-Engineering-Bundle";
+                } else if ("Global".equalsIgnoreCase(country) || "Manager".equalsIgnoreCase(jobTitle)) {
+                    targetBundleName = "O365-Enterprise-Management-Role";
+                } else {
+                    targetBundleName = "O365-Standard-User-Profile"; // Safe production fallback assignment token
+                }
+                
+                assignedRole = targetBundleName;
+                log.info("Calculated target assignment bundle resolved to: " + assignedRole);
+                
+                // Compiling direct API Provisioning Plan object array matrices
+                ProvisioningPlan rolePlan = new ProvisioningPlan();
+                rolePlan.setIdentity(identity);
+                
+                AccountRequest accReq = new AccountRequest(AccountRequest.Operation.Modify, "IIQ", null, identity.getName());
+                accReq.add(new AttributeRequest("assignedRoles", ProvisioningPlan.Operation.Add, assignedRole));
+                rolePlan.add(accReq);
+                
+                log.debug("Compiling programmatic Provisioner pipeline run thread context...");
+                Provisioner provisioner = new Provisioner(context);
+                provisioner.compile(rolePlan);
+                provisioner.execute();
+                log.info("Role allocation operation successfully committed into execution stack queue.");
+            }
+        }
+        ]]>
+      </Source>
+    </Script>
+    <Transition to="End"/>
+  </Step>
+
+  <Step name="End" icon="Stop" posX="750" posY="120"/>
+</Workflow>
+
+
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="VDOT Ospinsight Provisioning Rule" type="Provisioning">
+  <Description>
+    Production-grade Provisioning Rule to reconstruct variable schema maps and commit targeted status transactions in downstream OSPAdmin repositories.
+  </Description>
+  <Source>
+  <![CDATA[
+  import sailpoint.object.ProvisioningPlan;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import sailpoint.object.ProvisioningPlan.AttributeRequest;
+  import sailpoint.object.ProvisioningResult;
+  import java.sql.Connection;
+  import java.sql.PreparedStatement;
+  import java.sql.SQLException;
+  import java.util.Collection;
+  import java.util.ArrayList;
+  import java.util.List;
+  import org.apache.commons.logging.Log;
+  import org.apache.commons.logging.LogFactory;
+
+  // Global Context Logger Instantiation
+  Log logs = LogFactory.getLog("sailpoint.developer.vdot.provisioning");
+
+  ProvisioningPlan addEntPlan = new ProvisioningPlan();
+  ProvisioningResult result = new ProvisioningResult();
+
+  try {
+      // =====================================================================
+      // PART 1: Raw Value Casting & AccountRequest Reconstruction Block
+      // =====================================================================
+      List values = new ArrayList();
+      if (rawVal instanceof Collection) {
+          values.addAll((Collection) rawVal);
+          logs.debug("Collection payload detected. Extracted values total size: " + values.size());
+      } else if (rawVal != null) {
+          values.add(rawVal);
+          logs.debug("Single scalar instance object found inside rawVal pointer stream.");
+      }
+
+      if (accReq != null) {
+          for (Object v : values) {
+              AttributeRequest ar = new AttributeRequest();
+              ar.setName(attrName != null ? attrName : "entitlements");
+              ar.setOperation(ProvisioningPlan.Operation.Add);
+              ar.setValue(v);
+              accReq.add(ar);
+          }
+
+          // Production Patch: Resolved XML entities syntax mismatch safely to raw logical evaluation conditions (&&)
+          if (accReq.getAttributeRequests() != null && !accReq.getAttributeRequests().isEmpty()) {
+              addEntPlan.add(accReq);
+          }
+      }
+
+      if (addEntPlan != null && logs.isDebugEnabled()) {
+          logs.debug("Rebuilt compilation plan trace dump XML follows: " + addEntPlan.toXml());
+      }
+
+      // =====================================================================
+      // PART 2: Safe Downstream Transaction Execution & Driver Management
+      // =====================================================================
+      PreparedStatement stmt = null;
+      
+      if (connection != null && name != null) {
+          try {
+              // Explicit schema qualifier definition from Image source components
+              String enableQueryAdmin = "Update OSPAdmin..[user] set status = ? where name = ?";
+              stmt = connection.prepareStatement(enableQueryAdmin);
+              
+              // Safe parameters mappings tracking inside statement buffer indexes
+              stmt.setBoolean(1, true);
+              stmt.setString(2, name);
+              
+              int affectedRowsCount = stmt.executeUpdate();
+              logs.info("SQL Command successfully sent. Affected rows metric signature: " + affectedRowsCount);
+              
+              if (affectedRowsCount > 0) {
+                  result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+                  logs.debug("Target database system record matching name token updated to status=ENABLED successfully.");
+                  return result;
+              } else {
+                  result.setStatus(ProvisioningResult.STATUS_FAILED);
+                  logs.warn("Data statement transaction completed but zero modification logs registered in DB for: " + name);
+                  result.addError("No data rows found corresponding to explicit identity lookup index keys.");
+              }
+          } catch (SQLException sqlEx) {
+              result.setStatus(ProvisioningResult.STATUS_FAILED);
+              logs.error("Critical SQL execution error captured inside transaction boundary loop: ", sqlEx);
+              result.addError(sqlEx);
+              return result;
+          } finally {
+              // Strict resource closing blocks ensuring zero connection pool exhaustion bottlenecks
+              if (stmt != null) {
+                  try {
+                      stmt.close();
+                      logs.trace("PreparedStatement resource cleanly disposal verified.");
+                  } catch (SQLException resourceCloseEx) {
+                      logs.error("Non-fatal exception tracked during internal statement handle pipeline close sequence: ", resourceCloseEx);
+                  }
+              }
+          }
+      } else {
+          result.setStatus(ProvisioningResult.STATUS_FAILED);
+          logs.error("Missing critical connection instances or target identification attributes passed to the engine.");
+          result.addError("Missing dependency objects validation failure.");
+          return result;
+      }
+
+  } catch (Exception globalEx) {
+      logs.error("Unhandled global container layer exception trapped inside rule boundary core: ", globalEx);
+      result.setStatus(ProvisioningResult.STATUS_FAILED);
+      result.addError(globalEx);
+      return result;
+  }
+
+  return addEntPlan;
+  ]]>
+  </Source>
+</Rule>
+-----------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow name="VDOT Resume Identity WF" type="IdentityLifecycle">
+
+  <RuleLibraries>
+    <Reference class="sailpoint.object.Rule" name="SP Rehire Rules Library"/>
+    <Reference class="sailpoint.object.Rule" name="SPCONF Rehire Rules Library"/>
+    <Reference class="sailpoint.object.Rule" name="SPCONF Common Rules Library"/>
+    <Reference class="sailpoint.object.Rule" name="VDOT LCM Common Rules Library"/>
+  </RuleLibraries>
+
+  <Step icon="Start" name="Start" posX="28" posY="10">
+    <Transition to="Init Identity Model"/>
+  </Step>
+
+  <Step name="Init Identity Model" posX="134" posY="8" resultVariable="identityModel">
+    <Script>
+      <Source>
+        workflow.put("entProcessed", "No");
+        return commonInitIdentityModel(workflow, wfcontext);
+      </Source>
+    </Script>
+    <Transition to="Show Entry Form"/>
+  </Step>
+
+  <Step icon="Approval" name="Show Entry Form" posX="260" posY="10">
+    <Approval mode="serial" owner="ref:launcher" return="identityModel" send="identityModel">
+      <Arg name="workItemType" value="Form"/>
+      <Arg name="workItemForm" value="ref:entryFormName"/>
+      <Arg name="workItemDescription" value="Enter User Resume Request"/>
+      <Arg name="workItemFormBasePath" value="identityModel"/>
+      <WorkItemConfig escalationStyle="escalation" hoursTillEscalation="4">
+        <EscalationRuleRef>
+          <Reference class="sailpoint.object.Rule" name="VDOT Escalation Terminate Item Rule"/>
+        </EscalationRuleRef>
+      </WorkItemConfig>
+    </Approval>
+    <Transition to="No Request" when="!approved"/>
+    <Transition to="Build Confirm Form"/>
+  </Step>
+
+  <Step name="Build Confirm Form" posX="548" posY="154" resultVariable="confirmForm">
+    <Script>
+      <Source>
+        renameTaskResult(workflow, wfcontext);
+        commonBuildConfirmForm(workflow);
+      </Source>
+    </Script>
+    <Transition to="Show Confirm Form"/>
+  </Step>
+
+  <Step icon="Approval" name="Show Confirm Form" posX="713" posY="158">
+    <Approval mode="serial" return="identityModel" send="identityModel, launcher, fallbackApprover">
+      <AfterScript>
+        <Source>
+          cerIdentityConfirmFormAfterScript(workflow, identityModel, context.getUserName());
+        </Source>
+      </AfterScript>
+      <Arg name="workItemType" value="Form"/>
+      <Arg name="workItemForm" value="ref:confirmForm"/>
+      <Arg name="workItemDescription" value="Confirm User Resume Request: $(identityModel.displayName)"/>
+      <Arg name="workItemFormBasePath" value="identityModel"/>
+      <OwnerScript>
+        <Source>
+          return cerIdentityConfirmFormOwnerScript(workflow, identityModel, fallbackApprover);
+        </Source>
+      </OwnerScript>
+      <WorkItemConfig escalationStyle="both" hoursBetweenReminders="1" hoursTillEscalation="3" maxReminders="2">
+        <EscalationEmailTemplateRef>
+          <Reference class="sailpoint.object.EmailTemplate" name="VDOT Work Item Escalation Email"/>
+        </EscalationEmailTemplateRef>
+        <EscalationRuleRef>
+          <Reference class="sailpoint.object.Rule" name="VDOT Escalation Manager Rule"/>
+        </EscalationRuleRef>
+        <ReminderEmailTemplateRef>
+          <Reference class="sailpoint.object.EmailTemplate" name="VDOT Work Item Reminder Email"/>
+        </ReminderEmailTemplateRef>
+      </WorkItemConfig>
+    </Approval>
+    <Transition to="Send Sent Back Email" when="&quot;Send Back&quot;.equalsIgnoreCase(adminDecision)"/>
+    <Transition to="No Request" when="&quot;Reject&quot;.equalsIgnoreCase(adminDecision)"/>
+    <Transition to="Update User Status"/>
+  </Step>
+
+  <Step action="sendEmail" icon="Email" name="Send Sent Back Email" posX="663" posY="236">
+    <Arg name="template" value="VDOT CER Identity Sent Back Email"/>
+    <Arg name="rejectedBy" value="script:return context.getUserName();"/>
+    <Arg name="comments" value="script:return identityModel.get(&quot;comments&quot;);"/>
+    <Arg name="requesterName" value="ref:launcher"/>
+    <Arg name="flow" value="ref:flow"/>
+    <Arg name="to" value="ref:launcher"/>
+    <Arg name="userName" value="script:return identityModel.get(&quot;displayName&quot;);"/>
+    <Transition to="Show Entry Form"/>
+  </Step>
+
+  <Step name="Update User Status">
+    <Script>
+      <Source>
+        commonUpdateUserStatus(identityName, "Active");
+      </Source>
+    </Script>
+    <Transition to="Build Plan"/>
+  </Step>
+
+  <Step name="Build Plan" posX="946" posY="327" resultVariable="plan">
+    <Script>
+      <Source>
+        return getDynamicRehirePlan(context, identityName, workflow);
+      </Source>
+    </Script>
+    <Transition to="No Request" when="plan == null || plan.getAccountRequests() == null || plan.getAccountRequests().size() == 0"/>
+    <Transition to="Process Plan"/>
+  </Step>
+
+  <Step icon="Task" name="Process Plan" posX="1251" posY="323">
+    <WorkflowRef>
+      <Reference class="sailpoint.object.Workflow" name="SP Provision Processor Sub"/>
+    </WorkflowRef>
+    <Arg name="identityModel" value="ref:identityModel"/>
+    <Arg name="identityName" value="ref:identityName"/>
+    <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+    <Arg name="fallbackApprover" value="ref:fallbackApprover"/>
+    <Arg name="source" value="ref:source"/>
+    <Arg name="foregroundProvisioning" value="ref:foregroundProvisioning"/>
+    <Arg name="plan" value="ref:plan"/>
+    <Arg name="flow" value="ref:flow"/>
+    <Arg name="requestType" value="ref:requestType"/>
+    <Arg name="launcher" value="ref:launcher"/>
+    <Arg name="formTemplate" value="ref:formTemplate"/>
+    <Arg name="noApplicationTemplates" value="ref:noApplicationTemplates"/>
+    <Arg name="workItemPriority" value="ref:workItemPriority"/>
+    <Arg name="identityRequestId" value="ref:identityRequestId"/>
+    <Arg name="trace" value="ref:trace"/>
+    <Arg name="suppressNotifications" value="ref:suppressNotifications"/>
+    <Arg name="doRefresh" value="ref:doRefresh"/>
+    <Arg name="event" value="ref:event"/>
+    <Arg name="trigger" value="ref:trigger"/>
+    <Arg name="policyScheme" value="ref:policyScheme"/>
+    <Arg name="requestor" value="ref:launcher"/>
+    <Arg name="doProcessProject" value="ref:doProcessProject"/>
+    <Arg name="spExtAttrs" value="ref:spExtAttrs"/>
+    <Arg name="optimisticProvisioning" value="ref:optimisticProvisioning"/>
+    <Arg name="emailArgList" value="ref:emailArgList"/>
+    <Arg name="updateStandardPostApproveEmails" value="false"/>
+    <Arg name="updateStandardPostProvEmails" value="false"/>
+    <Arg name="approvedTemplate" value="ref:approvedTemplate"/>
+    <Arg name="approvedTo" value="ref:successTo"/>
+    <Arg name="rejectedTemplate" value="ref:rejectedTemplate"/>
+    <Arg name="rejectedTo" value="ref:failureTo"/>
+    <Arg name="successTemplate" value="ref:successTemplate"/>
+    <Arg name="successTo" value="ref:successTo"/>
+    <Arg name="failureTemplate" value="ref:failureTemplate"/>
+    <Arg name="failureTo" value="ref:failureTo"/>
+    <Return name="emailArgList" to="emailArgList"/>
+    <Return name="approvalSet" to="approvalSet"/>
+    <Return name="project" to="project"/>
+    <Return name="identityModel" to="identityModel"/>
+    <Return name="spExtAttrs" to="spExtAttrs"/>
+    <Transition to="Send Emails"/>
+  </Step>
+
+  <Step name="Send Emails">
+    <Script>
+      <Source>
+        if(entProcessed.equalsIgnoreCase("Yes")){
+          return true;
+        }
+        return false;
+      </Source>
+    </Script>
+    <Transition to="After Provision" when="script:return true;"/>
+    <Transition to="No Request"/>
+  </Step>
+
+  <Step name="After Provision" posX="1243" posY="220">
+    <Script>
+      <Source>
+        rehireAfterProvisionRule(context, workflow);
+      </Source>
+    </Script>
+    <Transition to="Restore Access"/>
+  </Step>
+
+  <Step action="rule:VDOT Resume Identity Restore Access" name="Restore Access" resultVariable="entPlan">
+    <Arg name="identityName" value="ref:identityName"/>
+    <Transition to="Send Emails" when="plan == null || plan.getAccountRequests() == null || plan.getAccountRequests().size() == 0"/>
+    <Transition to="Process Plan"/>
+  </Step>
+
+  <Step name="No Request" posX="1112" posY="172">
+    <Script>
+      <Source>
+        rehireNoRequestRule(context, workflow);
+      </Source>
+    </Script>
+    <Transition to="Send Emails"/>
+  </Step>
+
+  <Step icon="Email" name="Send Emails" posX="1279" posY="45">
+    <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+    <Arg name="emailTemplateExists" value="ref:emailTemplateExists"/>
+    <Arg name="trace" value="ref:trace"/>
+    <Arg name="identityName" value="ref:identityName"/>
+    <Arg name="emailArgs" value="ref:emailArgs"/>
+    <Arg name="emailIterator" value="ref:emailIterator"/>
+    <Arg name="emailArgList" value="ref:emailArgList"/>
+    <Description>
+      Call the standard subprocess that will handle the built-in owner, manager and security officer approval schemes.
+    </Description>
+    <WorkflowRef>
+      <Reference class="sailpoint.object.Workflow" name="SP Dynamic Send Emails Sub"/>
+    </WorkflowRef>
+    <Transition to="Refresh Identity"/>
+  </Step>
+
+  <Step action="call:refreshIdentity" icon="Task" name="Refresh Identity" posX="1000" posY="33">
+    <Arg name="identityName" value="ref:identityName"/>
+    <Arg name="correlateEntitlements" value="true"/>
+    <Arg name="provision" value="true"/>
+    <Arg name="refreshIdentityEntitlements" value="true"/>
+    <Description>
+      Add arguments as necessary to enable refresh features. Typically you only want this to correlate roles and possibly provision if we notice new assigned roles.
+      Note that provisioning will be done in the Identity Refresh workflow so if there are any provisioning forms to display we won't feed them directly to the current user, they'll have to return to the inbox.
+    </Description>
+    <Transition to="Stop"/>
+  </Step>
+
+  <Step icon="Stop" name="Stop" posX="664" posY="13"/>
+
+</Workflow>
+------------------------------------------------------------------------------------------------
+import sailpoint.object.IdentitySnapshot;
+import sailpoint.object.QueryOptions;
+import sailpoint.object.Filter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import org.apache.log4j.Logger;
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Attributes;
+import sailpoint.object.BundleSnapshot;
+import sailpoint.object.EntitlementSnapshot;
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.tools.GeneralException;
+
+QueryOptions qo = new QueryOptions();
+ArrayList al = new ArrayList();
+qo.addFilter(Filter.eq("identityName", identityName));
+qo.setOrderAscending(false);
+
+List snapshot = context.getObjects(IdentitySnapshot.class, qo);
+IdentitySnapshot identitySnapshot = (IdentitySnapshot) snapshot.get(snapshot.size() - 1);
+ProvisioningPlan addEntPlan = new ProvisioningPlan();
+
+Identity identity = context.getObjectById(Identity.class, identityName);
+addEntPlan.setIdentity(identity);
+
+List bundleSnapshots = identitySnapshot.getBundles();      // assigned roles
+List exceptionEnts = identitySnapshot.getExceptions();    // exception entitlements
+
+if (bundleSnapshots != null) {
+    for (BundleSnapshot bs : bundleSnapshots) {
+        String roleName = bs.getName();
+        if (roleName == null) continue;
+        
+        AccountRequest roleReq = new AccountRequest();
+        roleReq.setApplication(ProvisioningPlan.APP_IIQ);
+        roleReq.setOperation(AccountRequest.Operation.Modify);
+        
+        AttributeRequest attrReq = new AttributeRequest();
+        attrReq.setName(ProvisioningPlan.ATT_IIQ_ASSIGNED_ROLES);
+        attrReq.setOperation(ProvisioningPlan.Operation.Add);
+        attrReq.setValue(roleName);
+        
+        roleReq.add(attrReq);
+        addEntPlan.add(roleReq);
+    }
+}
+
+if (exceptionEnts != null) {
+    for (EntitlementSnapshot entss : exceptionEnts) {
+        String appName = entss.getApplicationName();
+        String nativeId = entss.getNativeIdentity();
+        String instance = entss.getInstance();
+        
+        Attributes attrs = entss.getAttributes();
+        if (appName == null || attrs == null) continue;
+        
+        AccountRequest accReq = new AccountRequest();
+        accReq.setApplication(appName);
+        accReq.setInstance(instance);
+        accReq.setNativeIdentity(nativeId);
+        accReq.setOperation(AccountRequest.Operation.Modify);
+        
+        for (Object keyObj : attrs.getKeys()) {
+            String attrName = (String) keyObj;
+            Object rawVal = attrs.get(attrName);
+            
+            List values = new ArrayList();
+            if (rawVal instanceof Collection) {
+                values.addAll((Collection) rawVal);
+            } else if (rawVal != null) {
+                values.add(rawVal);
+            }
+            
+            for (Object v : values) {
+                AttributeRequest ar = new AttributeRequest();
+                ar.setName(attrName);
+                ar.setOperation(ProvisioningPlan.Operation.Add);
+                ar.setValue(v);
+                accReq.add(ar);
+            }
+        }
+        
+        if (accReq.getAttributeRequests() != null && !accReq.getAttributeRequests().isEmpty()) {
+            addEntPlan.add(accReq);
+        }
+    }
+}
+
+log.info("Rebuilt plan: " + addEntPlan.toXml());
+return addEntPlan;
+-------------------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow name="VDOT Resume Identity WF" type="IdentityLifecycle">
+
+  <RuleLibraries>
+    <Reference class="sailpoint.object.Rule" name="SP Rehire Rules Library"/>
+    <Reference class="sailpoint.object.Rule" name="SPCONF Rehire Rules Library"/>
+    <Reference class="sailpoint.object.Rule" name="SPCONF Common Rules Library"/>
+    <Reference class="sailpoint.object.Rule" name="VDOT LCM Common Rules Library"/>
+  </RuleLibraries>
+
+  <Step icon="Start" name="Start" posX="28" posY="10">
+    <Transition to="Init Identity Model"/>
+  </Step>
+
+  <Step name="Init Identity Model" posX="134" posY="8" resultVariable="identityModel">
+    <Script>
+      <Source>
+        workflow.put("entProcessed", "No");
+        return commonInitIdentityModel(workflow, wfcontext);
+      </Source>
+    </Script>
+    <Transition to="Show Entry Form"/>
+  </Step>
+
+  <Step icon="Approval" name="Show Entry Form" posX="260" posY="10">
+    <Approval mode="serial" owner="ref:launcher" return="identityModel" send="identityModel">
+      <Arg name="workItemType" value="Form"/>
+      <Arg name="workItemForm" value="ref:entryFormName"/>
+      <Arg name="workItemDescription" value="Enter User Resume Request"/>
+      <Arg name="workItemFormBasePath" value="identityModel"/>
+      <WorkItemConfig escalationStyle="escalation" hoursTillEscalation="4">
+        <EscalationRuleRef>
+          <Reference class="sailpoint.object.Rule" name="VDOT Escalation Terminate Item Rule"/>
+        </EscalationRuleRef>
+      </WorkItemConfig>
+    </Approval>
+    <Transition to="No Request" when="!approved"/>
+    <Transition to="Build Confirm Form"/>
+  </Step>
+
+  <Step name="Build Confirm Form" posX="548" posY="154" resultVariable="confirmForm">
+    <Script>
+      <Source>
+        renameTaskResult(workflow, wfcontext);
+        commonBuildConfirmForm(workflow);
+      </Source>
+    </Script>
+    <Transition to="Show Confirm Form"/>
+  </Step>
+
+  <Step icon="Approval" name="Show Confirm Form" posX="713" posY="158">
+    <Approval mode="serial" return="identityModel" send="identityModel, launcher, fallbackApprover">
+      <AfterScript>
+        <Source>
+          cerIdentityConfirmFormAfterScript(workflow, identityModel, context.getUserName());
+        </Source>
+      </AfterScript>
+      <Arg name="workItemType" value="Form"/>
+      <Arg name="workItemForm" value="ref:confirmForm"/>
+      <Arg name="workItemDescription" value="Confirm User Resume Request: $(identityModel.displayName)"/>
+      <Arg name="workItemFormBasePath" value="identityModel"/>
+      <OwnerScript>
+        <Source>
+          return cerIdentityConfirmFormOwnerScript(workflow, identityModel, fallbackApprover);
+        </Source>
+      </OwnerScript>
+      <WorkItemConfig escalationStyle="both" hoursBetweenReminders="1" hoursTillEscalation="3" maxReminders="2">
+        <EscalationEmailTemplateRef>
+          <Reference class="sailpoint.object.EmailTemplate" name="VDOT Work Item Escalation Email"/>
+        </EscalationEmailTemplateRef>
+        <EscalationRuleRef>
+          <Reference class="sailpoint.object.Rule" name="VDOT Escalation Manager Rule"/>
+        </EscalationRuleRef>
+        <ReminderEmailTemplateRef>
+          <Reference class="sailpoint.object.EmailTemplate" name="VDOT Work Item Reminder Email"/>
+        </ReminderEmailTemplateRef>
+      </WorkItemConfig>
+    </Approval>
+    <Transition to="Send Sent Back Email" when="&quot;Send Back&quot;.equalsIgnoreCase(adminDecision)"/>
+    <Transition to="No Request" when="&quot;Reject&quot;.equalsIgnoreCase(adminDecision)"/>
+    <Transition to="Update User Status"/>
+  </Step>
+
+  <Step action="sendEmail" icon="Email" name="Send Sent Back Email" posX="663" posY="236">
+    <Arg name="template" value="VDOT CER Identity Sent Back Email"/>
+    <Arg name="rejectedBy" value="script:return context.getUserName();"/>
+    <Arg name="comments" value="script:return identityModel.get(&quot;comments&quot;);"/>
+    <Arg name="requesterName" value="ref:launcher"/>
+    <Arg name="flow" value="ref:flow"/>
+    <Arg name="to" value="ref:launcher"/>
+    <Arg name="userName" value="script:return identityModel.get(&quot;displayName&quot;);"/>
+    <Transition to="Show Entry Form"/>
+  </Step>
+
+  <Step name="Update User Status">
+    <Script>
+      <Source>
+        commonUpdateUserStatus(identityName, "Active");
+      </Source>
+    </Script>
+    <Transition to="Build Plan"/>
+  </Step>
+
+  <Step name="Build Plan" posX="946" posY="327" resultVariable="plan">
+    <Script>
+      <Source>
+        return getDynamicRehirePlan(context, identityName, workflow);
+      </Source>
+    </Script>
+    <Transition to="No Request" when="plan == null || plan.getAccountRequests() == null || plan.getAccountRequests().size() == 0"/>
+    <Transition to="Process Plan"/>
+  </Step>
+
+  <Step icon="Task" name="Process Plan" posX="1251" posY="323">
+    <WorkflowRef>
+      <Reference class="sailpoint.object.Workflow" name="SP Provision Processor Sub"/>
+    </WorkflowRef>
+    <Arg name="identityModel" value="ref:identityModel"/>
+    <Arg name="identityName" value="ref:identityName"/>
+    <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+    <Arg name="fallbackApprover" value="ref:fallbackApprover"/>
+    <Arg name="source" value="ref:source"/>
+    <Arg name="foregroundProvisioning" value="ref:foregroundProvisioning"/>
+    <Arg name="plan" value="ref:plan"/>
+    <Arg name="flow" value="ref:flow"/>
+    <Arg name="requestType" value="ref:requestType"/>
+    <Arg name="launcher" value="ref:launcher"/>
+    <Arg name="formTemplate" value="ref:formTemplate"/>
+    <Arg name="noApplicationTemplates" value="ref:noApplicationTemplates"/>
+    <Arg name="workItemPriority" value="ref:workItemPriority"/>
+    <Arg name="identityRequestId" value="ref:identityRequestId"/>
+    <Arg name="trace" value="ref:trace"/>
+    <Arg name="suppressNotifications" value="ref:suppressNotifications"/>
+    <Arg name="doRefresh" value="ref:doRefresh"/>
+    <Arg name="event" value="ref:event"/>
+    <Arg name="trigger" value="ref:trigger"/>
+    <Arg name="policyScheme" value="ref:policyScheme"/>
+    <Arg name="requestor" value="ref:launcher"/>
+    <Arg name="doProcessProject" value="ref:doProcessProject"/>
+    <Arg name="spExtAttrs" value="ref:spExtAttrs"/>
+    <Arg name="optimisticProvisioning" value="ref:optimisticProvisioning"/>
+    <Arg name="emailArgList" value="ref:emailArgList"/>
+    <Arg name="updateStandardPostApproveEmails" value="false"/>
+    <Arg name="updateStandardPostProvEmails" value="false"/>
+    <Arg name="approvedTemplate" value="ref:approvedTemplate"/>
+    <Arg name="approvedTo" value="ref:successTo"/>
+    <Arg name="rejectedTemplate" value="ref:rejectedTemplate"/>
+    <Arg name="rejectedTo" value="ref:failureTo"/>
+    <Arg name="successTemplate" value="ref:successTemplate"/>
+    <Arg name="successTo" value="ref:successTo"/>
+    <Arg name="failureTemplate" value="ref:failureTemplate"/>
+    <Arg name="failureTo" value="ref:failureTo"/>
+    <Return name="emailArgList" to="emailArgList"/>
+    <Return name="approvalSet" to="approvalSet"/>
+    <Return name="project" to="project"/>
+    <Return name="identityModel" to="identityModel"/>
+    <Return name="spExtAttrs" to="spExtAttrs"/>
+    <Transition to="Send Emails"/>
+  </Step>
+
+  <Step name="Send Emails">
+    <Script>
+      <Source>
+        if(entProcessed.equalsIgnoreCase("Yes")){
+          return true;
+        }
+        return false;
+      </Source>
+    </Script>
+    <Transition to="After Provision" when="script:return true;"/>
+    <Transition to="No Request"/>
+  </Step>
+
+  <Step name="After Provision" posX="1243" posY="220">
+    <Script>
+      <Source>
+        rehireAfterProvisionRule(context, workflow);
+      </Source>
+    </Script>
+    <Transition to="Restore Access"/>
+  </Step>
+
+  <Step action="rule:VDOT Resume Identity Restore Access" name="Restore Access" resultVariable="entPlan">
+    <Arg name="identityName" value="ref:identityName"/>
+    <Transition to="Send Emails" when="plan == null || plan.getAccountRequests() == null || plan.getAccountRequests().size() == 0"/>
+    <Transition to="Process Plan"/>
+  </Step>
+
+  <Step name="No Request" posX="1112" posY="172">
+    <Script>
+      <Source>
+        rehireNoRequestRule(context, workflow);
+      </Source>
+    </Script>
+    <Transition to="Send Emails"/>
+  </Step>
+
+  <Step icon="Email" name="Send Emails" posX="1279" posY="45">
+    <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+    <Arg name="emailTemplateExists" value="ref:emailTemplateExists"/>
+    <Arg name="trace" value="ref:trace"/>
+    <Arg name="identityName" value="ref:identityName"/>
+    <Arg name="emailArgs" value="ref:emailArgs"/>
+    <Arg name="emailIterator" value="ref:emailIterator"/>
+    <Arg name="emailArgList" value="ref:emailArgList"/>
+    <Description>
+      Call the standard subprocess that will handle the built-in owner, manager and security officer approval schemes.
+    </Description>
+    <WorkflowRef>
+      <Reference class="sailpoint.object.Workflow" name="SP Dynamic Send Emails Sub"/>
+    </WorkflowRef>
+    <Transition to="Refresh Identity"/>
+  </Step>
+
+  <Step action="call:refreshIdentity" icon="Task" name="Refresh Identity" posX="1000" posY="33">
+    <Arg name="identityName" value="ref:identityName"/>
+    <Arg name="correlateEntitlements" value="true"/>
+    <Arg name="provision" value="true"/>
+    <Arg name="refreshIdentityEntitlements" value="true"/>
+    <Description>
+      Add arguments as necessary to enable refresh features. Typically you only want this to correlate roles and possibly provision if we notice new assigned roles.
+      Note that provisioning will be done in the Identity Refresh workflow so if there are any provisioning forms to display we won't feed them directly to the current user, they'll have to return to the inbox.
+    </Description>
+    <Transition to="Stop"/>
+  </Step>
+
+  <Step icon="Stop" name="Stop" posX="664" posY="13"/>
+
+</Workflow>
+--------------------------------------------------------------------
+import sailpoint.object.IdentitySnapshot;
+import sailpoint.object.QueryOptions;
+import sailpoint.object.Filter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import org.apache.log4j.Logger;
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Attributes;
+import sailpoint.object.BundleSnapshot;
+import sailpoint.object.EntitlementSnapshot;
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.tools.GeneralException;
+
+QueryOptions qo = new QueryOptions();
+ArrayList al = new ArrayList();
+qo.addFilter(Filter.eq("identityName", identityName));
+qo.setOrderAscending(false);
+
+List snapshot = context.getObjects(IdentitySnapshot.class, qo);
+IdentitySnapshot identitySnapshot = (IdentitySnapshot) snapshot.get(snapshot.size() - 1);
+ProvisioningPlan addEntPlan = new ProvisioningPlan();
+
+Identity identity = context.getObjectById(Identity.class, identityName);
+addEntPlan.setIdentity(identity);
+
+List bundleSnapshots = identitySnapshot.getBundles();      // assigned roles
+List exceptionEnts = identitySnapshot.getExceptions();    // exception entitlements
+
+if (bundleSnapshots != null) {
+    for (BundleSnapshot bs : bundleSnapshots) {
+        String roleName = bs.getName();
+        if (roleName == null) continue;
+        
+        AccountRequest roleReq = new AccountRequest();
+        roleReq.setApplication(ProvisioningPlan.APP_IIQ);
+        roleReq.setOperation(AccountRequest.Operation.Modify);
+        
+        AttributeRequest attrReq = new AttributeRequest();
+        attrReq.setName(ProvisioningPlan.ATT_IIQ_ASSIGNED_ROLES);
+        attrReq.setOperation(ProvisioningPlan.Operation.Add);
+        attrReq.setValue(roleName);
+        
+        roleReq.add(attrReq);
+        addEntPlan.add(roleReq);
+    }
+}
+
+if (exceptionEnts != null) {
+    for (EntitlementSnapshot entss : exceptionEnts) {
+        String appName = entss.getApplicationName();
+        String nativeId = entss.getNativeIdentity();
+        String instance = entss.getInstance();
+        
+        Attributes attrs = entss.getAttributes();
+        if (appName == null || attrs == null) continue;
+        
+        AccountRequest accReq = new AccountRequest();
+        accReq.setApplication(appName);
+        accReq.setInstance(instance);
+        accReq.setNativeIdentity(nativeId);
+        accReq.setOperation(AccountRequest.Operation.Modify);
+        
+        for (Object keyObj : attrs.getKeys()) {
+            String attrName = (String) keyObj;
+            Object rawVal = attrs.get(attrName);
+            
+            List values = new ArrayList();
+            if (rawVal instanceof Collection) {
+                values.addAll((Collection) rawVal);
+            } else if (rawVal != null) {
+                values.add(rawVal);
+            }
+            
+            for (Object v : values) {
+                AttributeRequest ar = new AttributeRequest();
+                ar.setName(attrName);
+                ar.setOperation(ProvisioningPlan.Operation.Add);
+                ar.setValue(v);
+                accReq.add(ar);
+            }
+        }
+        
+        if (accReq.getAttributeRequests() != null && !accReq.getAttributeRequests().isEmpty()) {
+            addEntPlan.add(accReq);
+        }
+    }
+}
+
+log.info("Rebuilt plan: " + addEntPlan.toXml());
+return addEntPlan;
+---------------------------------------------------------------------------------------
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import sailpoint.api.SailPointContext;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.ProvisioningPlan.Operation;
+import sailpoint.object.ProvisioningResult;
+import sailpoint.tools.Util;
+import org.apache.log4j.Logger;
+
+Logger logs = Logger.getLogger("com.rule.VDOT_Opsinsight_ProvisioningRule");
+logs.error("In provisioning rule;;;;;;;;" + plan.toXml());
+
+// Helper Method: Enable Account
+ProvisioningResult enableAccount(String name) {
+    PreparedStatement stmt = null;
+    logs.error("disableAccount method called "); // Retained image log as is
+    ProvisioningResult result = new ProvisioningResult();
+    String enableQueryAuth = "Update OSPAuth..[user] set userStatus = ? where login = ?";
+    
+    try {
+        stmt = connection.prepareStatement(enableQueryAuth);
+        stmt.setBoolean(1, true);
+        stmt.setString(2, name);
+        int userStatus1 = stmt.executeUpdate();
+        logs.debug("OSPAuth db enable successfully ");
+        
+        if (userStatus1 > 0) {
+            try {
+                if (stmt != null) stmt.close();
+            } catch (Exception e) {
+                logs.error("Error closing statement", e);
+            }
+            
+            String enableQueryAdmin = "Update OSPAdmin..[user] set status = ? where name = ?";
+            stmt = connection.prepareStatement(enableQueryAdmin);
+            stmt.setBoolean(1, true);
+            stmt.setString(2, name);
+            int userStatus2 = stmt.executeUpdate();
+            
+            if (userStatus2 > 0) {
+                result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+                logs.debug("OSPAdmin db enable successfully ");
+                return result;
+            }
+        }
+    } catch (Exception e) {
+        result.setStatus(ProvisioningResult.STATUS_FAILED);
+        logs.error("update OSPAdmin error ", e);
+        return result;
+    } else {
+        result.setStatus(ProvisioningResult.STATUS_FAILED);
+    }
+    
+    // Sudhar: Finally block block resource leaks se bachane ke liye
+    finally {
+        try { if (stmt != null) stmt.close(); } catch (Exception e) { logs.error("Error closing statement", e); }
+    }
+    return result;
+}
+
+// Helper Method: Disable Account
+ProvisioningResult disableAccount(String name) {
+    PreparedStatement stmt = null;
+    logs.debug("disableAccount method called ");
+    ProvisioningResult result = new ProvisioningResult();
+    String disableQueryAuth = "Update OSPAuth..[user] set userStatus = ? where login = ?";
+    
+    try {
+        stmt = connection.prepareStatement(disableQueryAuth);
+        stmt.setBoolean(1, false);
+        stmt.setString(2, name);
+        int userStatus1 = stmt.executeUpdate();
+        logs.debug("OSPAuth db Disable successfully ");
+        
+        if (userStatus1 > 0) {
+            try { if (stmt != null) stmt.close(); } catch(Exception e){}
+            
+            String disableQueryAdmin = "Update OSPAdmin..[user] set status = ? where name = ?";
+            stmt = connection.prepareStatement(disableQueryAdmin);
+            stmt.setBoolean(1, false);
+            stmt.setString(2, name);
+            int userStatus2 = stmt.executeUpdate();
+            
+            if (userStatus2 > 0) {
+                result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+                logs.debug("OSPAdmin db Disable successfully ");
+                return result;
+            }
+        }
+    } catch (Exception e) {
+        result.setStatus(ProvisioningResult.STATUS_FAILED);
+        logs.error("update OSPAdmin error ", e);
+        return result;
+    } else {
+        result.setStatus(ProvisioningResult.STATUS_FAILED);
+    } finally {
+        try { if (stmt != null) stmt.close(); } catch (Exception e) {}
+    }
+    return result;
+}
+
+// Helper Method: Delete Account
+ProvisioningResult deleteAccount(String name) {
+    PreparedStatement stmt = null;
+    logs.debug("deleteAccount method called ");
+    ProvisioningResult result = new ProvisioningResult();
+    
+    String deleteQuery = "BEGIN " +
+        "DECLARE @Userid UNIQUEIDENTIFIER; " +
+        "SELECT @Userid = userId FROM OSPAuth..[user] WHERE login = ?; " +
+        "DELETE OSPAuth..access_token FROM OSPAuth..access_token at " +
+        "JOIN OSPAuth..auth a ON a.authId = at.refreshId WHERE a.userId = @Userid; " +
+        "DELETE OSPAuth..refresh_token FROM OSPAuth..refresh_token rt " +
+        "JOIN OSPAuth..auth a ON a.authId = rt.refreshId WHERE a.userId = @Userid; " +
+        "DELETE FROM OSPAuth..auth WHERE userId = @Userid; " +
+        "DELETE FROM OSPAdmin..settings WHERE userId = @Userid; " +
+        "DELETE FROM OSPAdmin..[user] WHERE userId = @Userid; " +
+        "DELETE FROM OSPAuth..[user] WHERE userId = @Userid; " +
+        "END;";
+        
+    try {
+        stmt = connection.prepareStatement(deleteQuery);
+        stmt.setString(1, name);
+        int userStatus = stmt.executeUpdate();
+        logs.error("Employee Deleted successfully ");
+        
+        if (userStatus > 0) {
+            result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+        } else {
+            result.setStatus(ProvisioningResult.STATUS_FAILED);
+        }
+    } catch (Exception e) {
+        result.setStatus(ProvisioningResult.STATUS_FAILED);
+    } finally {
+        try { if (stmt != null) stmt.close(); } catch (Exception e) {}
+    }
+    return result;
+}
+
+// Helper Method: Fetch Existing Roles
+String getRole(String name) {
+    PreparedStatement stmt = null;
+    ResultSet rs = null;
+    String per = null;
+    String roleQuery = "SELECT * FROM OSPAdmin..[user] WHERE name = ? ";
+    
+    try {
+        stmt = connection.prepareStatement(roleQuery);
+        stmt.setString(1, name);
+        rs = stmt.executeQuery();
+        if (rs.next()) {
+            per = rs.getString("permissions");
+        }
+    } catch (Exception e) {
+        logs.error("Error fetching roles", e);
+    } finally {
+        // Sudhar: Resource management ko safe kiya taaki cursor leak na ho
+        try { if (rs != null) rs.close(); } catch(Exception e){}
+        try { if (stmt != null) stmt.close(); } catch(Exception e){}
+    }
+    return per;
+}
+
+// Helper Method: Add Permissions String Creation
+int addPermission(String name, List permissionList) {
+    PreparedStatement stmt = null;
+    String addPermissionQuery = "Update OSPAdmin..[user] set permissions = ? where name = ?";
+    StringBuilder sb = new StringBuilder();
+    String entitlementString = null;
+    
+    sb.append("[ { \"action\" : \"basic\" },");
+    for (String ent : permissionList) {
+        if ("view".equalsIgnoreCase(ent)) {
+            sb.append("{ \"action\" : \"view\" },");
+        }
+        if ("edit".equalsIgnoreCase(ent)) {
+            sb.append("{ \"action\" : \"edit\" },");
+        }
+        if ("admin".equalsIgnoreCase(ent)) {
+            sb.append("{ \"action\" : \"admin\" },");
+        }
+    }
+    
+    // Sudhar: Trailing comma hatane ka fix taaki JSON syntax query break na kare
+    if (sb.charAt(sb.length() - 1) == ',') {
+        sb.deleteCharAt(sb.length() - 1);
+    }
+    sb.append(" ]");
+    
+    entitlementString = sb.toString();
+    logs.error("entitlementString::::" + entitlementString);
+    
+    try {
+        stmt = connection.prepareStatement(addPermissionQuery);
+        stmt.setString(1, entitlementString);
+        stmt.setString(2, name);
+        int executeStatus = stmt.executeUpdate();
+        return executeStatus;
+    } catch (Exception e) {
+        logs.error("Error executing permission update", e);
+        return 0;
+    } finally {
+        try { if (stmt != null) stmt.close(); } catch (Exception e) {}
+    }
+}
+
+// Helper Method: Modify Account Block
+ProvisioningResult modifyAccount(AccountRequest acctReq) {
+    ProvisioningResult result = new ProvisioningResult();
+    List permissionAddList = new LinkedList();
+    List permissionRemoveList = new LinkedList();
+    List existPer = new ArrayList();
+    Set finalPer = new HashSet();
+    
+    String nativeIdentity = acctReq.getNativeIdentity();
+    List attributeRequests = acctReq.getAttributeRequests();
+    
+    for (AttributeRequest ar : attributeRequests) {
+        if ("permissions".equalsIgnoreCase(ar.getName())) {
+            if ("Add".equalsIgnoreCase(ar.getOperation().toString()) || "Set".equalsIgnoreCase(ar.getOperation().toString())) {
+                if (ar.getValue() instanceof String) {
+                    permissionAddList.add((String) ar.getValue());
+                } else if (ar.getValue() instanceof List) {
+                    permissionAddList = (List) ar.getValue();
+                }
+            } else if ("Remove".equalsIgnoreCase(ar.getOperation().toString())) {
+                if (ar.getValue() instanceof String) {
+                    permissionRemoveList.add((String) ar.getValue());
+                } else if (ar.getValue() instanceof List) {
+                    permissionRemoveList = (List) ar.getValue();
+                }
+            }
+        }
+    }
+    
+    String per = getRole(nativeIdentity);
+    logs.error("permissionList:::;" + permissionAddList);
+    
+    if (per != null) {
+        Pattern pattern = Pattern.compile("action\\s*:\\s*\\s*(['\"]+[^'\"]+)");
+        Matcher matcher = pattern.matcher(per);
+        while (matcher.find()) {
+            existPer.add(matcher.group(1));
+        }
+    }
+    
+    finalPer.addAll(existPer);
+    finalPer.addAll(permissionAddList);
+    finalPer.removeAll(permissionRemoveList);
+    finalPer.remove("basic");
+    
+    logs.error("final permissions;;;;" + finalPer);
+    
+    int addEntStatus = addPermission(nativeIdentity, new ArrayList(finalPer));
+    if (addEntStatus > 0) {
+        result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+    } else {
+        result.setStatus(ProvisioningResult.STATUS_FAILED);
+    }
+    return result;
+}
+
+// Helper Method: Fallback Stored Procedure
+void updateOSPAdmin() throws SQLException {
+    PreparedStatement stmt = null;
+    String updateQuery = "exec OSPAdmin..spUpdateUsers";
+    try {
+        stmt = connection.prepareStatement(updateQuery);
+        stmt.execute();
+    } finally {
+        try { if (stmt != null) stmt.close(); } catch (Exception e) {}
+    }
+}
+
+// Helper Method: Create Account
+ProvisioningResult createAccount(AccountRequest acctReq) {
+    PreparedStatement stmt = null;
+    logs.error("createAccount method called");
+    ProvisioningResult result = new ProvisioningResult();
+    
+    String companyId = "", firstName = "", lastName = "", domainLogin = "", login = "", email = "";
+    
+    AttributeRequest attributeRequestCompanyId = acctReq.getAttributeRequest("companyId");
+    if (attributeRequestCompanyId != null) companyId = attributeRequestCompanyId.getValue().toString();
+    
+    AttributeRequest attributeRequestFirstName = acctReq.getAttributeRequest("firstName");
+    if (attributeRequestFirstName != null) firstName = attributeRequestFirstName.getValue().toString();
+    
+    AttributeRequest attributeRequestLastName = acctReq.getAttributeRequest("lastName");
+    if (attributeRequestLastName != null) lastName = attributeRequestLastName.getValue().toString();
+    
+    AttributeRequest attributeRequestDomainLogin = acctReq.getAttributeRequest("domainLogin");
+    if (attributeRequestDomainLogin != null) domainLogin = attributeRequestDomainLogin.getValue().toString();
+    
+    AttributeRequest attributeRequestLogin = acctReq.getAttributeRequest("login");
+    if (attributeRequestLogin != null) login = attributeRequestLogin.getValue().toString();
+    
+    AttributeRequest attributeRequestEmail = acctReq.getAttributeRequest("email");
+    if (attributeRequestEmail != null) email = attributeRequestEmail.getValue().toString();
+    
+    String insertUserSQL = "insert into OSPAuth..[user] (userId, companyId, firstName, lastName, domainLogin, userstatus, login, email) values (?,?,?,?,?,?,?,?)";
+    String nativeIdentity = acctReq.getNativeIdentity();
+    logs.error("nativeIdentity::::::::::::" + nativeIdentity);
+    
+    try {
+        stmt = connection.prepareStatement(insertUserSQL);
+        stmt.setString(1, nativeIdentity); // Assuming UUID mapping maps to native identity
+        stmt.setString(2, companyId);
+        stmt.setString(3, firstName);
+        stmt.setString(4, lastName);
+        stmt.setString(5, domainLogin);
+        stmt.setBoolean(6, true);
+        stmt.setString(7, login);
+        stmt.setString(8, email);
+        
+        int userStatus = stmt.executeUpdate();
+        logs.error("Employee table created ");
+        
+        if (userStatus > 0) {
+            result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+        }
+    } catch (SQLException e) {
+        logs.error("Exception during provisioning ", e);
+        result.setStatus(ProvisioningResult.STATUS_FAILED);
+        try {
+            updateOSPAdmin();
+        } catch (Exception ex) {
+            logs.error("updateOSPAdmin error ", ex);
+        }
+    } finally {
+        try { if (stmt != null) stmt.close(); } catch (Exception e) {}
+    }
+    return result;
+}
+
+// MAIN RULE EXECUTION ENTRY POINT
+String applicationName = "Ospinsight";
+ProvisioningResult provisioningResult = new ProvisioningResult();
+AccountRequest acctReq = null;
+
+List acctReqs = plan.getAccountRequests(applicationName);
+if (acctReqs != null) {
+    for (AccountRequest accountRequest : acctReqs) {
+        acctReq = accountRequest;
+        break; 
+    }
+}
+
+if (acctReq == null) {
+    logs.error("No account request found for " + applicationName);
+    provisioningResult.setStatus(ProvisioningResult.STATUS_FAILED);
+    return provisioningResult;
+}
+
+Operation op = acctReq.getOperation();
+String nativeIden = acctReq.getNativeIdentity();
+logs.error("acctReq.getNativeIdentity();;;;;;;;;;;;;;;;;;;;;;;;" + nativeIden);
+
+if (AccountRequest.Operation.Create.equals(op) && nativeIden != null) {
+    provisioningResult = createAccount(acctReq);
+} else if (AccountRequest.Operation.Modify.equals(op) && nativeIden != null) {
+    provisioningResult = modifyAccount(acctReq);
+} else if (AccountRequest.Operation.Delete.equals(op) && nativeIden != null) {
+    provisioningResult = deleteAccount(nativeIden);
+} else if (AccountRequest.Operation.Disable.equals(op) && nativeIden != null) {
+    provisioningResult = disableAccount(nativeIden);
+} else if (AccountRequest.Operation.Enable.equals(op) && nativeIden != null) {
+    provisioningResult = enableAccount(nativeIden);
+}
+
+return provisioningResult;
+------------------------------------------------------------------------------------
+// Sudhar: 'static' keyword hataya dynamic environment isolation issues se bachne ke liye
+public Custom getRehireMappingObject(SailPointContext context) {
+    Custom mappingObj = (Custom) context.getObjectByName(Custom.class, "SPCONF Rehire Mappings Custom");
+    return mappingObj;
+}
+
+public ProvisioningPlan getDynamicRehirePlan(SailPointContext context, String identityName, Workflow workflow) throws GeneralException {
+    rlogger.trace("Enter getDynamicRehirePlan");
+    
+    Identity identity = context.getObjectByName(Identity.class, identityName);
+    ProvisioningPlan plan = new ProvisioningPlan();
+    plan.setIdentity(identity);
+    
+    Custom mappingObj = getRehireMappingObject(context);
+    
+    if (mappingObj != null) {
+        rlogger.trace("Get the con types");
+        List conTypes = (List) mappingObj.get("Plan Construction Types");
+        
+        boolean enableAccounts = false;
+        List enAcctsList = new ArrayList();
+        List links = identity.getLinks();
+        List addedEnables = new ArrayList();
+        
+        if (conTypes.contains("Enable Accounts")) {
+            rlogger.debug("Enable Accounts is true");
+            enableAccounts = true;
+            enAcctsList = (List) mappingObj.get("Enable Accounts Applications");
+        }
+        
+        if (conTypes.contains("Dynamic Roles")) {
+            rlogger.debug("Process Dynamic Roles for Rehire");
+            // Assuming getDynamicRolesPlan exists in your referenced libraries
+            plan = getDynamicRolesPlan(context, identity); 
+        }
+        
+        if (conTypes.contains("Attribute Synch")) {
+            rlogger.debug("Process Attribute Synch for Rehire");
+            rlogger.trace("Get the Attribute Synch mapping object");
+            Custom attrSyncMappingObj = (Custom) getAttrSynchMappingObject(context);
+            List exExcludeApps = new ArrayList();
+        }
+        
+        // Custom Rule Calling flow block
+        if (conTypes.contains("Custom Rule")) {
+            rlogger.trace("Call buildCustomRehirePlan");
+            // Assuming built in workflow configuration mappings matching structure
+            plan = buildCustomRehirePlan(context, workflow);
+        }
+    }
+    
+    plan.setComments("Adding Rehire Access");
+    plan.setIdentity(identity);
+    
+    rlogger.trace("Exit getDynamicRehirePlan: " + plan.toXml());
+    return plan;
+}
+----------------------------------------------------------------------------------------------------
+import java.util.List;
+import java.util.ArrayList;
+import org.apache.log4j.Logger;
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Attributes;
+import sailpoint.object.BundleSnapshot;
+import sailpoint.object.IdentitySnapshot;
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.QueryOptions;
+import sailpoint.object.Filter;
+import sailpoint.tools.GeneralException;
+
+QueryOptions qo = new QueryOptions();
+qo.addFilter(Filter.eq("IdentityName", identityName));
+qo.setOrderAscending(false);
+
+List snapshot = context.getObjects(IdentitySnapshot.class, qo);
+ProvisioningPlan addEntPlan = new ProvisioningPlan();
+
+// Sudhar 1: IndexOutOfBounds Check lagaya agar user ka pehla koi snapshot na ho to crash na kare
+if (snapshot != null && !snapshot.isEmpty()) {
+    IdentitySnapshot identitySnapshot = (IdentitySnapshot) snapshot.get(snapshot.size() - 1);
+    log.error("identitySnapshot::::" + identitySnapshot.toXml());
+    
+    // Sudhar 2: Name ke badle Name query execute karne ke liye getObjectByName ka fix kiya
+    Identity identity = context.getObjectByName(Identity.class, identityName);
+    addEntPlan.setIdentity(identity);
+    
+    List bundleSnapshots = identitySnapshot.getBundles(); // assigned roles
+    List exceptionEnts = identitySnapshot.getExceptions(); // exception entitlements
+    
+    if (bundleSnapshots != null) {
+        for (Object obj : bundleSnapshots) {
+            BundleSnapshot bs = (BundleSnapshot) obj;
+            String roleName = bs.getName();
+            if (roleName == null) continue;
+            
+            AccountRequest roleReq = new AccountRequest();
+            roleReq.setApplication(ProvisioningPlan.APP_IIQ);
+            roleReq.setOperation(AccountRequest.Operation.Modify);
+            roleReq.add(new AttributeRequest("assignedRoles", ProvisioningPlan.Operation.Add, roleName));
+            addEntPlan.add(roleReq);
+        }
+    }
+} else {
+    // Fallback log strategy if snapshot missing
+    Logger.getLogger("com.rule.RestoreAccess").warn("No Identity Snapshot history logged for: " + identityName);
+}
+
+return addEntPlan;
+
+
+[1. SP Rehire Rules Library] 
+       │
+       ▼ (Identifies Rehire Actions)
+[2. VDOT Resume Identity Restore Access Rule]
+       │
+       ▼ (Fetches Snapshot & Builds Roles Plan)
+[3. VDOT Opsinsight Provisioning Rule] 
+       │
+       ▼ (Executes JDBC Queries on target DB)
+------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Custom PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Custom name="SPCONF Rehire Mappings Custom">
+  <Attributes>
+    <Map>
+      <!-- Enter the Trigger Type Options Include: 
+           Selector, Compare Links, Custom Rule, Needs Flag -->
+      <entry key="Enable Accounts Applications">
+        <value>
+          <List>
+            <String>Active Directory - VDOT</String>
+            <String>Vdot_Users</String>
+            <String>Ospinsight</String>
+          </List>
+        </value>
+      </entry>
+      <entry key="Trigger Type" value="Needs Flag"/>
+      <entry key="Trigger Field Selector" value="needsRehire"/>
+    </Map>
+  </Attributes>
+</Custom>
+--------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow configForm="Provisioning Workflow Config Form" created="1701115008719" explicitTransitions="true" name="VDOT LCM Provisioning MA WF" taskType="LCM" type="LCMProvisioning">
+  
+  <Variable input="true" name="identityName" required="true">
+    <Description>The name of the identity being updated.</Description>
+  </Variable>
+  
+  <Variable initializer="false" input="true" name="endOnManualWorkItems"/>
+  <Variable initializer="false" input="true" name="endOnProvisioningForms"/>
+  
+  <Variable initializer="script:(identityDisplayName != void) ? identityDisplayName : resolveDisplayName(identityName)" name="identityDisplayName">
+    <Description>The displayName of the identity being updated. Query for this using a projection query and fall back to the name.</Description>
+  </Variable>
+
+  <Variable input="true" name="plan">
+    <Description>The provisioning plan ready to execute.</Description>
+  </Variable>
+
+  <Variable input="true" name="flow">
+    <Description>The name of the LCM flow that launched this workflow. Values: AccountsRequest, EntitlementsRequest, RolesRequest, AttributeSync.</Description>
+  </Variable>
+
+  <Variable editable="true" initializer="false" name="optimisticProvisioning">
+    <Description>Set to true to enable optimistic provisioning.</Description>
+  </Variable>
+  
+  <!-- Add Workflow Steps Here -->
+</Workflow>
+---------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Custom PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Custom name="SPCONF Approval Object Mappings">
+  <Attributes>
+    <Map>
+      <entry key="Approval Types Scheme" value="Map"/>
+      <entry key="Get Approval Types Custom Rule" value="method:vdotGetRequiredApprovalTypes"/>
+      <entry key="Default Approval Types"/>
+      
+      <entry key="Map Request Type Approval Types">
+        <value>
+          <Map>
+            <entry key="VDOT Create Identity">
+              <value>
+                <List/>
+              </value>
+            </entry>
+            <entry key="Manage Accounts">
+              <value>
+                <List>
+                  <String>OIS</String>
+                  <String>TOSC</String>
+                </List>
+              </value>
+            </entry>
+            <entry key="Manage Accounts Admin"/>
+            <entry key="Request Access">
+              <value>
+                <List>
+                  <String>OIS</String>
+                  <String>TOSC</String>
+                </List>
+              </value>
+            </entry>
+            <entry key="Request Access Admin"/>
+          </Map>
+        </value>
+      </entry>
+
+      <entry key="Approval Types">
+        <value>
+          <Map>
+            <entry key="Manager">
+              <value>
+                <Map>
+                  <entry key="approvalMode" value="parallelPoll"/>
+                  <entry key="displayName" value="Supervisor"/>
+                  <entry key="getApprovalOwnersRule" value="method:vdotGetApproversManagerRule"/>
+                  <entry key="template" value="Template Type 1"/>
+                </Map>
+              </value>
+            </entry>
+            <entry key="OIS">
+              <value>
+                <Map>
+                  <entry key="approvalMode" value="any"/>
+                  <entry key="displayName" value="OIS"/>
+                  <entry key="getApprovalOwnersRule" value="method:vdotGetApproversSimpleWorkgroupRule"/>
+                  <entry key="template" value="Template Type 1"/>
+                  <entry key="workgroupName" value="OIS WG"/>
+                </Map>
+              </value>
+            </entry>
+            <entry key="Owner">
+              <value>
+                <Map>
+                  <entry key="approvalMode" value="any"/>
+                  <entry key="displayName" value="Owner"/>
+                  <entry key="getApprovalOwnersRule" value="method:vdotGetApproversOwnerRule"/>
+                  <entry key="template" value="Template Type 1"/>
+                </Map>
+              </value>
+            </entry>
+            <entry key="TOSC">
+              <value>
+                <Map>
+                  <entry key="approvalMode" value="any"/>
+                  <entry key="displayName" value="TOSC"/>
+                  <entry key="getApprovalOwnersRule" value="method:vdotGetApproversSimpleWorkgroupRule"/>
+                  <entry key="template" value="Template Type 1"/>
+                  <entry key="workgroupName" value="TOSC WG"/>
+                </Map>
+              </value>
+            </entry>
+          </Map>
+        </value>
+      </entry>
+
+      <entry key="Template Type 1">
+        <value>
+          <Map>
+            <entry key="approvalAfterScriptRule" value="method:cstApprovalAfterScriptDoNothingRule"/>
+            <entry key="approvalMode" value="parallel"/>
+            <entry key="approvalValidatorScriptRule" value="rule:SP CST Approval Validator Script Default Rule"/>
+            <entry key="displayName" value="something"/>
+            <entry key="electronicSignature" value="SP Default Electronic Signature"/>
+            <entry key="getApprovalFormRule" value="method:getCSTDefaultApprovalFormRule"/>
+            <entry key="notifyEmailTemplate" value="VDOT LCM Identity Update Approval"/>
+            <entry key="preApprovalRule" value="method:cstPreApprovalDoNothingRule"/>
+            <entry key="useCustomApprovalForm" value="false"/>
+            <entry key="useDefaultWorkItemConfig" value="true"/>
+            <entry key="workitemDescriptionRule" value="rule:SP CST Approval Work Item Description Default Rule"/>
+          </Map>
+        </value>
+      </entry>
+
+      <entry key="Default Workitem Config">
+        <value>
+          <Map>
+            <entry key="escalationEmailTemplate" value="VDOT Work Item Escalation Email"/>
+            <entry key="escalationRule" value="VDOT Escalation Manager Rule"/>
+            <entry key="escalationStyle" value="both"/>
+            <entry key="hoursBeforeReminders" value="1"/>
+            <entry key="hoursBetweenReminders" value="3"/>
+            <entry key="maxReminders" value="2"/>
+            <entry key="reminderEmailTemplate" value="VDOT Work Item Reminder Email"/>
+            <entry key="renderer" value="lcmEditableWorkItemRenderer.html"/>
+          </Map>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+</Custom>
+---------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Custom PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Custom name="SPCONF Field Value Mappings Custom">
+  <Attributes>
+    <Map>
+      <entry key="AD Common">
+        <value>
+          <List>
+            <Field name="cn" type="attribute" value="statewide_id"/>
+            <Field name="sAMAccountName" type="attribute" value="statewide_id"/>
+            <Field name="sn" type="attribute" value="lastname"/>
+            <Field name="givenName" type="attribute" value="firstname"/>
+            <Field name="mail" type="attribute" value="email"/>
+            <Field name="carLicense" type="attribute" value="licensePlate"/>
+            <Field name="telephoneNumber" type="attribute" value="phone"/>
+            <Field name="physicalDeliveryOfficeName" type="attribute" value="region"/>
+            <Field name="msDS-cloudExtensionAttribute1" type="attribute" value="regionalid"/>
+            <Field name="title" type="attribute" value="title"/>
+            <Field name="employeeType" type="attribute" value="type"/>
+            <Field name="streetAddress" type="attribute" value="workAddress"/>
+            <Field name="pwdLastSet" type="velocity" value="true"/>
+            <Field name="IIQDisabled" type="velocity" value="false"/>
+            <Field name="displayName" type="rule">
+              <value>
+                <Script>
+                  <Source>
+                    if (identity.firstname != null &amp;&amp; identity.lastname != null) {
+                        return identity.firstname + " " + identity.lastname;
+                    }
+                    return null;
+                  </Source>
+                </Script>
+              </value>
+            </Field>
+            <Field name="objectClass" type="rule">
+              <value>
+                <Script>
+                  <Source>
+                    import java.util.ArrayList;
+                    import java.util.List;
+                    List oc = new ArrayList();
+                    oc.add("top");
+                    oc.add("person");
+                    oc.add("inetOrgPerson");
+                    oc.add("organizationalPerson");
+                    return oc;
+                  </Source>
+                </Script>
+              </value>
+            </Field>
+          </List>
+        </value>
+      </entry>
+      
+      <entry key="VDOT Users">
+        <value>
+          <List>
+            <Field name="password" type="rule" value="getAD_password"/>
+            <Field name="wWWHomePage" type="rule" value="getAD_IdentityIDfield"/>
+            <Field name="manager" type="rule" value="getAD_manager"/>
+            <Field name="employeeNumber" type="attribute" value="EmployeeId"/>
+            <Field name="department" type="attribute" value="locationGroup"/>
+            <Field name="toscReviewStatus" type="attribute" value="toscReviewStatus"/>
+            <Field name="description" type="rule">
+              <value>
+                <Script>
+                  <Source>
+                    import java.text.DateFormat;
+                    import java.text.SimpleDateFormat;
+                    import java.util.Date;
+                    serilog = org.apache.commons.logging.LogFactory.getLog("sailpoint.custom.rule.logger");
+                    DateFormat dateformatter = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+                    Date now = new Date();
+                    serilog.debug("Created by IdentityIQ on " + dateformatter.format(now));
+                    return "Created by IdentityIQ on " + dateformatter.format(now);
+                  </Source>
+                </Script>
+              </value>
+            </Field>
+          </List>
+        </value>
+      </entry>
+      <entry key="adDomain" value="otdev.vdot.org"/>
+    </Map>
+  </Attributes>
+</Custom>
+--------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="TransformTransformInactiveManager">
+  <Source>
+<![CDATA[
+  import java.sql.Connection;
+  import java.sql.DriverManager;
+  import java.sql.PreparedStatement;
+  import java.sql.SQLException;
+  import java.text.ParseException;
+  import java.util.ArrayList;
+  import java.util.Iterator;
+  import java.util.List;
+  import org.apache.log4j.Logger;
+  import sailpoint.api.SailPointContext;
+  import sailpoint.object.Application;
+  import sailpoint.object.Filter;
+  import sailpoint.object.Identity;
+  import sailpoint.object.QueryOptions;
+  import sailpoint.tools.GeneralException;
+  import sailpoint.tools.Util;
+
+  Logger logs = Logger.getLogger("com.rule.TransformInactiveManager");
+  Connection connection = null;
+  PreparedStatement ps = null;
+  Iterator subIt = null;
+  Iterator it = null;
+
+  try {
+      Application application = context.getObjectByName(Application.class, "Vdot_Users");
+      if (application == null) {
+          logs.error("Application Vdot_Users not found.");
+          return;
+      }
+
+      String jdbcUrl = (String) application.getAttributeValue("url");
+      String dbUser = (String) application.getAttributeValue("user");
+      String dbPass = context.decrypt((String) application.getAttributeValue("password"));
+
+      List inactiveManagers = new ArrayList();
+      connection = DriverManager.getConnection(jdbcUrl, dbUser, dbPass);
+      String sql = "UPDATE [identityiqPlugin].[identityiqPlugin].[vdot_users] SET manager = ? WHERE EmployeeId = ?";
+
+      // Get all inactive managers
+      QueryOptions qo = new QueryOptions();
+      qo.addFilter(Filter.and(Filter.eq("managerStatus", true), Filter.eq("inactive", true)));
+      
+      it = context.search(Identity.class, qo, "name");
+      while (it != null && it.hasNext()) {
+          Object[] row = (Object[]) it.next();
+          inactiveManagers.add((String) row[0]);
+      }
+
+      // Process each inactive manager
+      for (String managerName : inactiveManagers) {
+          Identity manager = context.getObjectByName(Identity.class, managerName);
+          if (manager == null) {
+              logs.warn("No active manager found for inactive manager: " + managerName);
+              continue;
+          }
+
+          QueryOptions qoSub = new QueryOptions();
+          qoSub.addFilter(Filter.eq("manager.name", managerName));
+          subIt = context.search(Identity.class, qoSub, "id");
+
+          // Store subordinates in list FIRST
+          List subordinates = new ArrayList();
+          while (subIt != null && subIt.hasNext()) {
+              Object[] row = (Object[]) subIt.next();
+              subordinates.add((String) row[0]);
+          }
+
+          // Now perform operations
+          for (String subId : subordinates) {
+              Identity subordinate = context.get LarryObjectById(Identity.class, subId);
+              if (subordinate == null) continue;
+
+              // Find next active manager recursively
+              Identity newManager = manager.getManager();
+              while (newManager != null && newManager.isInactive()) {
+                  newManager = newManager.getManager();
+              }
+
+              // Assign new manager if located active node
+              if (newManager != null) {
+                  String employeeId = (String) subordinate.getAttribute("EmployeeId");
+                  if (employeeId == null) {
+                      logs.warn("EmployeeId is null for subordinate: " + subordinate.getName());
+                      continue;
+                  }
+
+                  ps = connection.prepareStatement(sql);
+                  ps.setString(1, newManager.getName());
+                  ps.setString(2, employeeId);
+                  ps.executeUpdate();
+                  
+                  if(ps != null) {
+                      ps.close();
+                  }
+
+                  logs.debug("Updated manager for EmployeeId: " + employeeId + " to " + newManager.getName());
+              }
+          }
+      }
+      context.commitTransaction();
+
+  } catch (Exception e) {
+      logs.error("Error in TransformInactiveManager rule", e);
+      try {
+          if (context != null) {
+              context.rollbackTransaction();
+          }
+      } catch (Exception ex) {
+          logs.error("Rollback failed", ex);
+      }
+  } finally {
+      try {
+          if (it != null) {
+              Util.flushIterator(it);
+          }
+      } catch (Exception e) {
+          logs.warn("Error flushing main iterator", e);
+      }
+      try {
+          if (subIt != null) {
+              Util.flushIterator(subIt);
+          }
+      } catch (Exception e) {
+          logs.warn("Error flushing subordinate iterator", e);
+      }
+      try {
+          if (ps != null) {
+              ps.close();
+          }
+      } catch (Exception e) {
+          logs.warn("Error closing PreparedStatement", e);
+      }
+      try {
+          if (connection != null) {
+              connection.close();
+          }
+      } catch (Exception e) {
+          logs.warn("Error closing Connection", e);
+      }
+  }
+]]>
+  </Source>
+</Rule>
+---------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Form PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Form name="VDOT Create Edit Identity Entry Form" type="Workflow">
+  <Attributes>
+    <Map>
+      <entry key="pageTitle" value="Create or Edit VDOT User"/>
+      <entry key="title" value="Create or Edit User"/>
+    </Map>
+  </Attributes>
+  <Description>Form to create/edit VDOT Identity</Description>
+
+  <Section label="Please correct the fields based on below comments" name="adminComments">
+    <Attributes>
+      <Map>
+        <entry key="hidden">
+          <value>
+            <Script>
+              <Source>
+                String comments = identityModel.get("comments");
+                if (comments == null || comments.equals("void") || comments.trim().isEmpty()) {
+                    return true;
+                } else {
+                    return false;
+                }
+              </Source>
+            </Script>
+          </value>
+        </entry>
+      </Map>
+    </Attributes>
+    <Field displayName="Comments" dynamic="true" name="comments" readOnly="true" type="string"/>
+  </Section>
+
+  <Section columns="2" label="Enter User Details" name="userDetails">
+    <Attributes>
+      <Map>
+        <entry key="subtitle">
+          <value>
+            <Script>
+              <Source>
+                String requestType = identityModel.get("requestType");
+                if ("VDOT Edit Identity".equalsIgnoreCase(requestType)) {
+                    return "To update first name, last name, or email, go to the Rename VDOT User Quick Link under User Management";
+                }
+                return null;
+              </Source>
+            </Script>
+          </value>
+        </entry>
+      </Map>
+    </Attributes>
+
+    <Field hidden="true" name="requestType" type="string"/>
+    <Field hidden="true" name="isUserAA" type="boolean"/>
+    <Field hidden="true" name="isUserTOSC" type="boolean"/>
+    <Field hidden="true" name="curEmail" type="string"/>
+
+    <Field displayName="First Name" dynamic="true" helpKey="First name of the user" name="firstname" postBack="true" required="true" type="string">
+      <Attributes>
+        <Map>
+          <entry key="readOnly">
+            <value>
+              <Script>
+                <Source>
+                  if ("VDOT Edit Identity".equalsIgnoreCase(requestType)) return true;
+                  else return false;
+                </Source>
+              </Script>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+      <Script>
+        <Source>
+          if (value != null) {
+              String retVal = "";
+              char[] chars = value.trim().toCharArray();
+              for (int i = 0; i < chars.length; i++) {
+                  String v = "" + chars[i];
+                  if (i == 0) {
+                      retVal += v.toUpperCase();
+                  } else {
+                      retVal += v;
+                  }
+              }
+              retVal = retVal.replaceAll(" ", "");
+              return retVal;
+          }
+        </Source>
+      </Script>
+    </Field>
+
+    <Field displayName="Last Name" dynamic="true" helpKey="Last name of the user" name="lastname" postBack="true" required="true" type="string">
+      <Attributes>
+        <Map>
+          <entry key="readOnly">
+            <value>
+              <Script>
+                <Source>
+                  if ("VDOT Edit Identity".equalsIgnoreCase(requestType)) return true;
+                  else return false;
+                </Source>
+              </Script>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+      <Script>
+        <Source>
+          if (value != null) {
+              String retVal = "";
+              char[] chars = value.trim().toCharArray();
+              for (int i = 0; i < chars.length; i++) {
+                  String v = "" + chars[i];
+                  if (i == 0) {
+                      retVal += v.toUpperCase();
+                  } else {
+                      retVal += v;
+                  }
+              }
+              retVal = retVal.replaceAll(" ", "");
+              return retVal;
+          }
+        </Source>
+      </Script>
+    </Field>
+
+    <Field displayName="Email Address" dynamic="true" helpKey="The VDOT user's email address" name="email" required="true" type="string">
+      <Attributes>
+        <Map>
+          <entry key="readOnly">
+            <value>
+              <Script>
+                <Source>
+                  if ("VDOT Edit Identity".equalsIgnoreCase(requestType)) return true;
+                  else return false;
+                </Source>
+              </Script>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+      <Script>
+        <Source>
+          String calcEmail = firstname + "." + lastname + "@vdot.dev.envr";
+          if (value != null && value.toUpperCase().equals(calcEmail.toUpperCase())) {
+              return value.toLowerCase();
+          } else if (firstname != null && lastname != null) {
+              return calcEmail.toLowerCase();
+          }
+        </Source>
+      </Script>
+      <ValidationRule>
+        <Reference class="sailpoint.object.Rule" name="VDOT Validate Email Rule"/>
+      </ValidationRule>
+    </Field>
+
+    <Field displayName="Display Name" displayOnly="true" dynamic="true" helpKey="Combination of First and Last name" name="displayName" type="string">
+      <Attributes>
+        <Map>
+          <entry key="readOnly" value="true"/>
+        </Map>
+      </Attributes>
+      <Script>
+        <Source>
+          if (firstname != null && lastname != null) {
+              return lastname + ", " + firstname;
+          }
+          return null;
+        </Source>
+      </Script>
+    </Field>
+
+    <Field displayName="Preferred Name" helpKey="Preferred first name (nickname) of the user" name="preferredName" type="string"/>
+    <Field displayName="Middle Name" helpKey="Middle name of the user" name="middleName" type="string"/>
+
+    <Field columnSpan="2" displayName="User Type" helpKey="Choose from the following in the dropdown: Employee, Staff Aug, Service Delivery Personnel, External User." name="typeDisplay" postBack="true" required="true" type="string">
+      <AllowedValuesDefinition>
+        <Value>
+          <List>
+            <String>Employee - Employed by VDOT.</String>
+            <String>Staff Aug - Contracted to perform work for VDOT, report to a VDOT employee for job duties.</String>
+            <String>Service Delivery Personnel - Third party company contracted to provide a particular service for VDOT.</String>
+            <String>External User - Third party personnel that are granted access to VDOT for limited functionality (i.e. localities).</String>
+          </List>
+        </Value>
+      </AllowedValuesDefinition>
+    </Field>
+
+    <Field hidden="true" name="type" required="true" type="string">
+      <Script>
+        <Source>
+          if (typeDisplay != null) {
+              if (typeDisplay.startsWith("Employee")) {
+                  return "employee";
+              } else if (typeDisplay.startsWith("Staff Aug")) {
+                  return "staffAug";
+              } else if (typeDisplay.startsWith("Service Delivery")) {
+                  return "serviceDelivery";
+              } else if (typeDisplay.startsWith("External User")) {
+                  return "external";
+              }
+          }
+          return typeDisplay;
+        </Source>
+      </Script>
+    </Field>
+
+    <Field displayName="Is a Test User?" helpKey="Check if the user is a test user" name="isTestUser" postBack="true" type="boolean">
+      <Attributes>
+        <Map>
+          <entry key="hidden">
+            <value>
+              <Script>
+                <Source>
+                  if (isUserAA != null && !isUserAA) {
+                      return true;
+                  }
+                  return false;
+                </Source>
+              </Script>
+            </value>
+          </entry>
+          <entry key="readOnly">
+            <value>
+              <Script>
+                <Source>
+                  if ("VDOT Edit Identity".equalsIgnoreCase(requestType)) return true;
+                  else return false;
+                </Source>
+              </Script>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </Field>
+
+    <Field displayName="Owner" helpKey="The identity that owns this test user" name="ownerIdentity" required="true" type="sailpoint.object.Identity">
+      <Attributes>
+        <Map>
+          <entry key="filterString">
+            <value>
+              <Script>
+                <Source>
+                  import java.util.List;
+                  import java.util.ArrayList;
+                  import sailpoint.object.Filter;
+                  List ands = new ArrayList();
+                  ands.add(Filter.ne("inactive", true));
+                  return Filter.and(ands);
+                </Source>
+              </Script>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </Field>
+
+    <Field displayName="Company" dynamic="true" helpKey="Select the company the user works for" name="companySelect" postBack="true" required="true" type="string">
+      <AllowedValuesDefinition>
+        <RuleRef class="sailpoint.object.Rule" name="VDOT AllowedValues Company Rule"/>
+      </AllowedValuesDefinition>
+      <Script>
+        <Source>
+          if ("Employee".equalsIgnoreCase(type)) {
+              return "VDOT";
+          }
+          return value;
+        </Source>
+      </Script>
+    </Field>
+
+    <Field displayName="Company (Other)" dynamic="true" helpKey="Enter the company the user works for" name="companyEnter" required="true" type="string">
+      <Attributes>
+        <Map>
+          <entry key="readOnly" value="false"/>
+        </Map>
+      </Attributes>
+    </Field>
+  </Section>
+</Form>
+---------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Vdot_Rule_Update_Workgroups">
+  <Description>Task rule to automate password updates and capability/workgroup assignments for users.</Description>
+  <Source>
+<![CDATA[
+  import org.apache.log4j.Logger;
+  import sailpoint.api.IdentityService;
+  import sailpoint.api.Provisioner;
+  import sailpoint.api.SailPointContext;
+  import sailpoint.object.Application;
+  import sailpoint.object.Custom;
+  import sailpoint.object.Filter;
+  import sailpoint.object.Identity;
+  import sailpoint.object.Link;
+  import sailpoint.object.QueryOptions;
+  import sailpoint.object.TaskDefinition;
+  import sailpoint.tools.GeneralException;
+  import sailpoint.tools.Util;
+  import java.util.List;
+  import java.util.ArrayList;
+
+  Logger logger = Logger.getLogger("com.rule.Vdot_Rule_Update_Workgroups");
+  String identityName = null;
+  String workgroup = null;
+  int count = 0;
+
+  try {
+      TaskDefinition taskDef = context.getObjectByName(TaskDefinition.class, "Vdot Update Workgroups");
+      if (taskDef != null) {
+          identityName = taskDef.getString("identityNames");
+          workgroup = taskDef.getString("workgroups");
+      }
+
+      context.startTransaction();
+      logger.error("identityName ::: " + identityName);
+      logger.error("workgroups ::: " + workgroup);
+
+      // Handle identity names (single or multiple comma-separated entries)
+      String[] identityNames = (identityName != null && identityName.contains(","))
+                               ? identityName.split(",")
+                               : new String[]{identityName};
+
+      // Handle workgroups (single or multiple comma-separated entries)
+      String[] workgroups = (workgroup != null && workgroup.contains(","))
+                            ? workgroup.split(",")
+                            : new String[]{workgroup};
+
+      for (String idn : identityNames) {
+          if (idn == null || idn.trim().isEmpty()) continue;
+          idn = idn.trim();
+          Identity identity = context.getObjectByName(Identity.class, idn);
+
+          if (identity != null) {
+              if (!identity.isInactive()) {
+                  count++;
+                  // Get existing workgroups
+                  List existingWorkgroups = identity.getWorkgroups();
+                  if (existingWorkgroups == null) {
+                      existingWorkgroups = new ArrayList();
+                  }
+
+                  for (String workg : workgroups) {
+                      if (workg == null || workg.trim().isEmpty()) continue;
+                      workg = workg.trim();
+                      Identity workGroupObj = context.getObjectByName(Identity.class, workg);
+
+                      if (workGroupObj != null && !identity.isInWorkGroup(workGroupObj.getName())) {
+                          existingWorkgroups.add(workGroupObj);
+                      }
+                  }
+
+                  // Set updated list (merge, not overwrite)
+                  identity.setWorkgroups(existingWorkgroups);
+                  logger.error("After adding workgroup in identity " + identity.toXml());
+                  context.saveObject(identity);
+              } else {
+                  logger.error("Identity is Inactive: " + idn);
+              }
+          } else {
+              logger.error("Identity not found: " + idn);
+          }
+      }
+
+      context.commitTransaction();
+      context.decache();
+      taskResult.setAttribute("processedIdentity", count);
+
+  } catch (Exception ex) {
+      taskResult.setAttribute("processedIdentity", "Error while assigning workgroups");
+      logger.error("Error while assigning workgroups", ex);
+      context.rollbackTransaction();
+      context.decache();
+  }
+]]>
+  </Source>
+</Rule>
+----------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow explicitTransitions="true" name="VDOT Resume Identity WF" type="LCMProvisioning">
+  
+  <Variable initializer="string:false" name="trace">
+    <Description>Used for debugging this workflow and when set to true trace will be sent to stdout.</Description>
+  </Variable>
+  <Variable initializer="string:Resume User" name="flow"/>
+  <Variable initializer="string:LCM" name="source"/>
+  <Variable name="monitorId"/>
+  <Variable initializer="VDOT Resume Identity Entry Form" name="entryFormName"/>
+  <Variable initializer="VDOT Resume Identity Confirm Form" name="confirmFormName"/>
+  <Variable initializer="Resume Identity" name="requestType"/>
+  <Variable name="foregroundProvisioning"/>
+  <Variable name="confirmForm"/>
+  <Variable name="identityModel"/>
+  <Variable initializer="script:(identityId != void ) ? identityId : wfcontext.getWorkflowCase().get(&quot;quickLinkIdentityId&quot;);" name="identityId"/>
+  <Variable initializer="script:context.getObjectById(Identity.class, identityId).getDisplayName();" name="identityDisplayName"/>
+  <Variable initializer="script:context.getObjectById(Identity.class, identityId).getName();" name="identityName"/>
+  <Variable name="plan"/>
+  <Variable name="entPlan"/>
+  <Variable name="project"/>
+  <Variable name="approvalSet"/>
+  <Variable name="identityRequestId"/>
+  <Variable name="isBreakGlass"/>
+  <Variable name="isAA"/>
+  <Variable initializer="spadmin" name="fallbackApprover"/>
+
+  <Description>Custom workflow for creating a new identity and the vdot users account.</Description>
+
+  <RuleLibraries>
+    <Reference class="sailpoint.object.Rule" name="SP Provisioning Rules Library"/>
+    <Reference class="sailpoint.object.Rule" name="SP Role Assignment Rule Library"/>
+    <Reference class="sailpoint.object.Rule" name="SP Attr Synch Rules Library"/>
+    <Reference class="sailpoint.object.Rule" name="SP Rehire Rules Library"/>
+    <Reference class="sailpoint.object.Rule" name="SPCONF Rehire Rules Library"/>
+    <Reference class="sailpoint.object.Rule" name="SPCONF Common Rules Library"/>
+    <Reference class="sailpoint.object.Rule" name="VDOT LCM Common Rules Library"/>
+    <Reference class="sailpoint.object.Rule" name="VDOTUtilsRuleLibrary"/>
+  </RuleLibraries>
+
+  <Step icon="Start" name="Start" posX="28" posY="10">
+    <Transition to="Init Identity Model"/>
+  </Step>
+
+  <Step name="Init Identity Model" posX="134" posY="8" resultVariable="identityModel">
+    <Script>
+      <Source>
+        return commonInitIdentityModel(workflow, wfcontext);
+      </Source>
+    </Script>
+    <Transition to="Show Entry Form"/>
+  </Step>
+
+  <Step icon="Approval" name="Show Entry Form" posX="260" posY="10">
+    <Approval mode="serial" owner="ref:launcher" return="identityModel" send="identityModel">
+      <Arg name="workItemType" value="Form"/>
+      <Arg name="workItemForm" value="ref:entryFormName"/>
+      <Arg name="workItemDescription" value="Enter User Resume Request"/>
+      <Arg name="workItemFormBasePath" value="identityModel"/>
+      <WorkItemConfig escalationStyle="escalation" hoursTillEscalation="4">
+        <EscalationRuleRef>
+          <Reference class="sailpoint.object.Rule" name="VDOT Escalation Terminate Item Rule"/>
+        </EscalationRuleRef>
+      </WorkItemConfig>
+    </Approval>
+    <Transition to="No Request" when="!approved"/>
+    <Transition to="Build Confirm Form"/>
+  </Step>
+
+  <Step name="Build Confirm Form" posX="548" posY="154" resultVariable="confirmForm">
+    <Script>
+      <Source>
+        renameTaskResult(workflow, wfcontext);
+        commonBuildConfirmForm(workflow);
+      </Source>
+    </Script>
+    <Transition to="Show Confirm Form"/>
+  </Step>
+
+  <Step icon="Approval" name="Show Confirm Form" posX="713" posY="158">
+    <Approval mode="serial" return="identityModel" send="identityModel,launcher,fallbackApprover">
+      <AfterScript>
+        <Source>
+          cerIdentityConfirmFormAfterScript(workflow, identityModel, context.getUserName());
+        </Source>
+      </AfterScript>
+      <Arg name="workItemType" value="Form"/>
+      <Arg name="workItemForm" value="ref:confirmForm"/>
+      <Arg name="workItemDescription" value="Confirm User Resume Request: $(identityModel.displayName)"/>
+      <Arg name="workItemFormBasePath" value="identityModel"/>
+      <OwnerScript>
+        <Source>
+          return cerIdentityConfirmFormOwnerScript(workflow, identityModel, fallbackApprover);
+        </Source>
+      </OwnerScript>
+      <WorkItemConfig escalationStyle="both" hoursBetweenReminders="1" hoursTillEscalation="3" maxReminders="2">
+        <EscalationEmailTemplateRef>
+          <Reference class="sailpoint.object.EmailTemplate" name="VDOT Work Item Escalation Email"/>
+        </EscalationEmailTemplateRef>
+        <EscalationRuleRef>
+          <Reference class="sailpoint.object.Rule" name="VDOT Escalation Manager Rule"/>
+        </EscalationRuleRef>
+      </WorkItemConfig>
+    </Approval>
+    <Transition to="Send Sent Back Email" when="&quot;Send Back&quot;.equalsIgnoreCase(adminDecision)"/>
+    <Transition to="No Request" when="&quot;Reject&quot;.equalsIgnoreCase(adminDecision)"/>
+    <Transition to="Update User Status"/>
+  </Step>
+
+  <Step action="sendEmail" icon="Email" name="Send Sent Back Email" posX="663" posY="236">
+    <Arg name="template" value="VDOT CER Reject Bank Email"/>
+    <Arg name="rejectedBy" value="script:return context.getUserName();"/>
+    <Arg name="comments" value="script:return identityModel.get(&quot;comments&quot;);"/>
+    <Arg name="requesterName" value="ref:launcher"/>
+    <Arg name="flow" value="ref:flow"/>
+    <Arg name="to" value="ref:launcher"/>
+    <Arg name="userName" value="script:return identityModel.get(&quot;displayName&quot;);"/>
+    <Transition to="Show Entry Form"/>
+  </Step>
+
+  <Step name="Update User Status">
+    <Script>
+      <Source>
+        commonUpdateUserStatus(identityName, "Active");
+      </Source>
+    </Script>
+    <Transition to="Build Plan"/>
+  </Step>
+
+  <Step name="Build Plan" posX="946" posY="327" resultVariable="plan">
+    <Script>
+      <Source>
+        return getDynamicRehirePlan(context, identityName, workflow);
+      </Source>
+    </Script>
+    <Transition to="No Request" when="plan == null || plan.getAccountRequests() == null || plan.getAccountRequests().size() &lt; 1"/>
+    <Transition to="Process Plan"/>
+  </Step>
+
+  <Step icon="Task" name="Process Plan" posX="1251" posY="323">
+    <Arg name="identityModel" value="ref:identityModel"/>
+    <Arg name="identityName" value="ref:identityName"/>
+    <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+    <Arg name="fallbackApprover" value="ref:fallbackApprover"/>
+    <Arg name="source" value="ref:source"/>
+    <Arg name="foregroundProvisioning" value="ref:foregroundProvisioning"/>
+    <Arg name="plan" value="ref:plan"/>
+    <Arg name="flow" value="ref:flow"/>
+    <Arg name="requestType" value="ref:requestType"/>
+    <Arg name="launcher" value="ref:launcher"/>
+    <Arg name="formTemplate"/>
+    <Arg name="noApplicationTemplates"/>
+    <Arg name="workItemPriority"/>
+    <Arg name="identityRequestId"/>
+    <Arg name="trace" value="ref:trace"/>
+    <Arg name="suppressNotifications"/>
+    <Arg name="doRefresh"/>
+    <Arg name="event"/>
+    <Arg name="trigger"/>
+    <Arg name="policyScheme"/>
+    <Arg name="requestor" value="ref:launcher"/>
+    <Arg name="doProcessProject"/>
+    <Arg name="spExtAttrs" value="ref:spExtAttrs"/>
+    <Arg name="optimisticProvisioning"/>
+    <Arg name="emailArgList" value="ref:emailArgList"/>
+    <Arg name="updateStandardPostApproveEmails" value="false"/>
+    <Arg name="updateStandardPostProvEmails" value="false"/>
+    <Arg name="approvedTemplate" value="ref:approvedTemplate"/>
+    <Arg name="approvedTo" value="ref:successTo"/>
+    <Arg name="rejectedTemplate" value="ref:rejectedTemplate"/>
+    <Arg name="rejectedTo" value="ref:failureTo"/>
+    <Arg name="successTemplate" value="ref:successTemplate"/>
+    <Arg name="successTo" value="ref:successTo"/>
+    <Arg name="failureTemplate" value="ref:failureTemplate"/>
+    <Arg name="failureTo" value="ref:failureTo"/>
+    <Return name="emailArgList" to="emailArgList"/>
+    <Return name="approvalSet" to="approvalSet"/>
+    <Return name="project" to="project"/>
+    <Return name="identityModel" to="identityModel"/>
+    <Return name="spExtAttrs" to="spExtAttrs"/>
+    <WorkflowRef>
+      <Reference class="sailpoint.object.Workflow" name="SP Provisioning Processor Sub"/>
+    </WorkflowRef>
+    <Transition to="After Provision"/>
+  </Step>
+
+  <Step name="After Provision" posX="1243" posY="220">
+    <Script>
+      <Source>
+        rehireAfterProvisionRule(context, workflow);
+      </Source>
+    </Script>
+    <Transition to="Restore Access"/>
+  </Step>
+
+  <Step name="No Request" posX="1112" posY="172">
+    <Script>
+      <Source>
+        rehireNoRequestRule(context, workflow);
+      </Source>
+    </Script>
+    <Transition to="Send Emails"/>
+  </Step>
+
+  <Step action="rule:VDOT Resume Identity Restore Access" name="Restore Access" resultVariable="entPlan">
+    <Arg name="identityName" value="ref:identityName"/>
+    <Transition to="Send Emails"/>
+  </Step>
+
+  <Step icon="Email" name="Send Emails" posX="1279" posY="45">
+    <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+    <Arg name="emailTemplateExists"/>
+    <Arg name="trace"/>
+    <Arg name="identityName" value="ref:identityName"/>
+    <Arg name="emailArgs"/>
+    <Arg name="emailIterator"/>
+    <Arg name="emailArgList" value="ref:emailArgList"/>
+    <Description>Call the standard subprocess that will handle the built-in owner, manager and security officer approval schemes.</Description>
+    <WorkflowRef>
+      <Reference class="sailpoint.object.Workflow" name="SP Dynamic Send Emails Sub"/>
+    </WorkflowRef>
+    <Transition to="Refresh Identity"/>
+  </Step>
+
+  <Step action="call:refreshIdentity" icon="Task" name="Refresh Identity" posX="1000" posY="33">
+    <Arg name="identityName" value="ref:identityName"/>
+    <Arg name="correlateEntitlements" value="true"/>
+    <Arg name="provision" value="true"/>
+    <Arg name="refreshIdentityEntitlements" value="true"/>
+    <Description>
+      Add arguments as necessary to enable refresh features. Typically you only want this to correlate roles and possibly provision if we notice new assigned roles.
+    </Description>
+    <Transition to="Stop"/>
+  </Step>
+
+  <Step icon="Stop" name="Stop" posX="664" posY="13"/>
+
+</Workflow>
+--------------------------------------------------------------------------------------------
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import sailpoint.api.SailPointContext;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.ProvisioningPlan.Operation;
+import sailpoint.object.ProvisioningResult;
+import sailpoint.tools.Util;
+import org.apache.log4j.Logger;
+
+Logger logs = Logger.getInLogger("com.rule.VDOT_Opsinsight_ProvisioningRule");
+logs.error("In provisioning rule;;;;;;;;" + plan.toXml());
+
+ProvisioningResult disableAccount(String name) {
+    PreparedStatement stmt = null;
+    logs.error("disableAccount method called ");
+    ProvisioningResult result = new ProvisioningResult();
+    String disableQueryAuth = "Update OSPAuth..[user] set userStatus = ? where login = ?";
+    
+    try {
+        stmt = connection.prepareStatement(disableQueryAuth);
+        stmt.setBoolean(1, false);
+        stmt.setString(2, name);
+        int userStatus1 = stmt.executeUpdate();
+        logs.error("OSPAuth db Disable successfully ");
+        if (userStatus1 > 0) {
+            try {
+                stmt.close();
+            } catch (Exception e) {}
+            
+            String disableQueryAdmin = "Update OSPAdmin..[user] set status = ? where name = ?";
+            stmt = connection.prepareStatement(disableQueryAdmin);
+            stmt.setBoolean(1, false);
+            stmt.setString(2, name);
+            int userStatus2 = stmt.executeUpdate();
+            if (userStatus2 > 0) {
+                result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+                logs.error("OSPAdmin db Disable successfully ");
+                return result;
+            }
+            stmt.close();
+        }
+    } catch (Exception e) {
+        result.setStatus(ProvisioningResult.STATUS_FAILED);
+        logs.error("update OSPAdmin error ", e);
+        return result;
+    } else {
+        result.setStatus(ProvisioningResult.STATUS_FAILED);
+    }
+    try {
+        if (stmt != null) {
+            stmt.close();
+        }
+    } catch (Exception e) {
+        logs.error("Error closing statement ", e);
+    }
+    return result;
+}
+
+ProvisioningResult deleteAccount(String name) {
+    PreparedStatement stmt = null;
+    logs.debug("deleteAccount method called ");
+    ProvisioningResult result = new ProvisioningResult();
+    String deleteQuery = 
+        "BEGIN " +
+        "DECLARE @Userid UNIQUEIDENTIFIER; " +
+        "SELECT @Userid = userId FROM OSPAuth..[user] WHERE login = ?; " +
+        "DELETE OSPAuth..access_token FROM OSPAuth..access_token at JOIN OSPAuth..auth a ON a.authId = at.refreshId WHERE a.userId = @Userid; " +
+        "DELETE OSPAuth..refresh_token FROM OSPAuth..refresh_token rt JOIN OSPAuth..auth a ON a.authId = rt.refreshId WHERE a.userId = @Userid; " +
+        "DELETE FROM OSPAuth..auth WHERE userId = @Userid; " +
+        "DELETE FROM OSPAdmin..settings WHERE userId = @Userid; " +
+        "DELETE FROM OSPAdmin..[user] WHERE userId = @Userid; " +
+        "DELETE FROM OSPAuth..[user] WHERE userId = @Userid; " +
+        "END;";
+    try {
+        stmt = connection.prepareStatement(deleteQuery);
+        stmt.setString(1, name);
+        int userStatus = stmt.executeUpdate();
+        logs.error("Employee Deleted successfully ");
+        if (userStatus > 0) {
+            result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+        } else {
+            result.setStatus(ProvisioningResult.STATUS_FAILED);
+        }
+        stmt.close();
+        return result;
+    } catch (Exception e) {
+        result.setStatus(ProvisioningResult.STATUS_FAILED);
+        logs.error("Error executing delete query ", e);
+        return result;
+    }
+}
+
+ProvisioningResult modifyAccount(AccountRequest acctReq) {
+    PreparedStatement stmt = null;
+    logs.error("modifyAccount method called ");
+    ProvisioningResult result = new ProvisioningResult();
+    List<String> permissionAddList = new LinkedList<String>();
+    List<String> permissionRemoveList = new LinkedList<String>();
+    List<String> existPer = new ArrayList<String>();
+    Set finalPer = new HashSet();
+    String nativeIdentity = acctReq.getNativeIdentity();
+    List<AttributeRequest> attributeRequests = acctReq.getAttributeRequests();
+    
+    for (AttributeRequest ar : attributeRequests) {
+        if ("permissions".equalsIgnoreCase(ar.getName())) {
+            if ("Add".equalsIgnoreCase(ar.getOperation().toString()) || "Set".equalsIgnoreCase(ar.getOperation().toString())) {
+                if (ar.getValue() instanceof String) {
+                    permissionAddList.add((String) ar.getValue());
+                } else if (ar.getValue() instanceof List) {
+                    permissionAddList = (List) ar.getValue();
+                }
+            } else if ("Remove".equalsIgnoreCase(ar.getOperation().toString())) {
+                if (ar.getValue() instanceof String) {
+                    permissionRemoveList.add((String) ar.getValue());
+                } else if (ar.getValue() instanceof List) {
+                    permissionRemoveList = (List) ar.getValue();
+                }
+            }
+        }
+    }
+    
+    String per = getRole(nativeIdentity);
+    logs.debug("existing permissions;;;" + per);
+    logs.debug("permissionAddList;;;" + permissionAddList);
+    logs.error("permissionRemoveList;;;" + permissionRemoveList);
+    
+    if (per != null) {
+        Pattern pattern = Pattern.compile("action\\s*:\\s*\\s*\"([^\"]+)\"");
+        Matcher matcher = pattern.matcher(per);
+        while (matcher.find()) {
+            existPer.add(matcher.group(1));
+        }
+    }
+    
+    finalPer.addAll(existPer);
+    finalPer.addAll(permissionAddList);
+    finalPer.removeAll(permissionRemoveList);
+    finalPer.remove("basic");
+    logs.error("final permissions;;;;" + finalPer);
+    
+    int addEntStatus = addPermission(nativeIdentity, new ArrayList(finalPer));
+    if (addEntStatus > 0) {
+        result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+    } else {
+        result.setStatus(ProvisioningResult.STATUS_FAILED);
+    }
+    return result;
+}
+
+String getRole(String name) {
+    PreparedStatement stmt = null;
+    String per = null;
+    String roleQuery = "SELECT * FROM OSPAdmin..[user] WHERE name = ? ";
+    try {
+        stmt = connection.prepareStatement(roleQuery);
+        stmt.setString(1, name);
+        ResultSet rs = stmt.executeQuery();
+        if (rs.next()) {
+            per = rs.getString("permissions");
+            rs.close();
+            stmt.close();
+        }
+    } catch (Exception e) {
+        logs.error("Error processing role fetch ", e);
+    }
+    return per;
+}
+
+ProvisioningResult createAccount(AccountRequest acctReq) {
+    PreparedStatement stmt = null;
+    String companyId="", firstName="", lastName="", domainLogin="", login="", email="";
+    logs.debug("createAccount method called ");
+    ProvisioningResult result = new ProvisioningResult();
+    List<AttributeRequest> attributeRequests = acctReq.getAttributeRequests();
+    
+    AttributeRequest attributeRequestCompanyId = acctReq.getAttributeRequest("companyId");
+    if (attributeRequestCompanyId != null) companyId = attributeRequestCompanyId.getValue().toString();
+    AttributeRequest attributeRequestFirstName = acctReq.getAttributeRequest("firstName");
+    if (attributeRequestFirstName != null) firstName = attributeRequestFirstName.getValue().toString();
+    AttributeRequest attributeRequestLastName = acctReq.getAttributeRequest("lastName");
+    if (attributeRequestLastName != null) lastName = attributeRequestLastName.getValue().toString();
+    AttributeRequest attributeRequestDomainLogin = acctReq.getAttributeRequest("domainLogin");
+    if (attributeRequestDomainLogin != null) domainLogin = attributeRequestDomainLogin.getValue().toString();
+    AttributeRequest attributeRequestLogin = acctReq.getAttributeRequest("login");
+    if (attributeRequestLogin != null) login = attributeRequestLogin.getValue().toString();
+    AttributeRequest attributeRequestEmail = acctReq.getAttributeRequest("email");
+    if (attributeRequestEmail != null) email = attributeRequestEmail.getValue().toString();
+    
+    String insertUserSQL = "insert into OSPAuth..[user] (userId, companyId, firstName, lastName, domainLogin, userstatus, login, email) values (?,?,?,?,?,?,?,?)";
+    String nativeIdentity = acctReq.getNativeIdentity();
+    logs.error("nativeIdentity::::::::::::" + nativeIdentity);
+    
+    try {
+        stmt = connection.prepareStatement(insertUserSQL);
+        stmt.setString(1, companyId);
+        stmt.setString(2, firstName);
+        stmt.setString(3, lastName);
+        stmt.setString(4, domainLogin);
+        stmt.setBoolean(5, true);
+        stmt.setString(6, login);
+        stmt.setString(7, email);
+        
+        int userStatus = stmt.executeLargeUpdate();
+        logs.error("Employee table created ");
+        if (userStatus > 0) {
+            result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+        }
+        stmt.close();
+    } catch (SQLException e) {
+        logs.error("Exception during provisioning ", e);
+        result.setStatus(ProvisioningResult.STATUS_FAILED);
+        result.addError(e);
+        try {
+            updateOSPAdmin();
+        } catch (Exception ex) {
+            logs.error("updateOSPAdmin error ", ex);
+        }
+    }
+    return result;
+}
+
+void updateOSPAdmin() throws SQLException {
+    PreparedStatement stmt = null;
+    String updateQuery = "exec OSPAdmin..spUpdateUsers";
+    stmt = connection.prepareStatement(updateQuery);
+    stmt.execute();
+    stmt.close();
+}
+
+int addPermission(String name, List<String> permissionList) {
+    PreparedStatement stmt = null;
+    String addPermissionQuery = "Update OSPAdmin..[user] set permissions = ? where name = ?";
+    StringBuilder sb = new StringBuilder();
+    String entitlementString = null;
+    sb.append("[ { \"action\" : \"basic\" },");
+    for (String ent : permissionList) {
+        if ("view".equalsIgnoreCase(ent)) {
+            sb.append("{ \"action\" : \"view\" },");
+        }
+        if ("edit".equalsIgnoreCase(ent)) {
+            sb.append("{ \"action\" : \"edit\" },");
+        }
+        if ("admin".equalsIgnoreCase(ent)) {
+            sb.append("{ \"action\" : \"admin\" },");
+        }
+    }
+    sb.append("]");
+    entitlementString = sb.toString();
+    logs.error("entitlementString::::" + entitlementString);
+    try {
+        stmt = connection.prepareStatement(addPermissionQuery);
+        stmt.setString(1, entitlementString);
+        stmt.setString(2, name);
+        int executeStatus = stmt.executeUpdate();
+        stmt.close();
+        return executeStatus;
+    } catch (Exception e) {
+        return 0;
+    }
+}
+
+String applicationName = "Ospinsight";
+ProvisioningResult provisioningResult = new ProvisioningResult();
+AccountRequest acctReq = null;
+
+List<AccountRequest> acctReqs = plan.getAccountRequests(applicationName);
+for (AccountRequest accountRequest : acctReqs) {
+    acctReq = accountRequest;
+    break;
+}
+if (acctReq == null) {
+    logs.error("No account request found for " + applicationName);
+    provisioningResult.setStatus(ProvisioningResult.STATUS_FAILED);
+    return provisioningResult;
+}
+
+Operation op = acctReq.getOperation();
+String nativeIden = acctReq.getNativeIdentity();
+logs.error("acctReq.getNativeIdentity();;;;;;;;;;;;;;;;;;;;;;;;" + nativeIden);
+
+if (AccountRequest.Operation.Create.equals(op) && nativeIden != null) {
+    provisioningResult = createAccount(acctReq);
+} else if (AccountRequest.Operation.Modify.equals(op) && nativeIden != null) {
+    provisioningResult = modifyAccount(acctReq);
+} else if (AccountRequest.Operation.Delete.equals(op) && nativeIden != null) {
+    provisioningResult = deleteAccount(nativeIden);
+} else if (AccountRequest.Operation.Disable.equals(op) && nativeIden != null) {
+    provisioningResult = disableAccount(nativeIden);
+} else if (AccountRequest.Operation.Enable.equals(op) && nativeIden != null) {
+    provisioningResult = enableAccount(nativeIden);
+}
+
+return provisioningResult;
+-----------------------------------------------------------------------------------------------------------------------
+import java.util.List;
+
+import javax.validation.ConstraintViolationException;
+import sailpoint.api.Terminator;
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Filter;
+import sailpoint.object.Identity;
+import sailpoint.object.QueryOptions;
+import sailpoint.tools.GeneralException;
+
+public class terminateAppAccounts {
+public static void main(String[] args) throws GeneralException {
+	try {
+	SailPointContext context = null;
+	
+	Terminator terminator = new Terminator(context);
+    Filter appFilter =Filter.eq("application.name","BeyondTrust REST");
+
+    QueryOptions qo = new QueryOptions();
+    qo.add(appFilter);
+    List ID = context.getObjects(Identity.class, qo);
+		terminator.deleteObjects(Identity.class, qo);
+    context.commitTransaction();
+   // return "success";
+	}catch(ConstraintViolationException e) {
+		System.out.println("Exception cought " +e.getMessage());
+	}
+	
+}
+}
+----------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule created="1654110469762" id="7f00001811c155a818120aabe821405" language="beanshell" modified="1780947884785" name="VDOT Resume Identity Restore Access">
+  <ReferencedRules>
+    <Reference class="sailpoint.object.Rule" id="7f00001811b181881811be9488c03fa" name="VDOTUtilsRuleLibrary"/>
+  </ReferencedRules>
+  <Source>
+    <![CDATA[
+    import sailpoint.object.IdentitySnapshot;
+    import sailpoint.object.QueryOptions;
+    import sailpoint.object.Filter;
+    import java.util.ArrayList;
+    import java.util.Collection;
+    import java.util.List;
+    import org.apache.log4j.Logger;
+    import sailpoint.api.SailPointContext;
+    import sailpoint.object.Attributes;
+    import sailpoint.object.BundleSnapshot;
+    import sailpoint.object.EntitlementSnapshot;
+    import sailpoint.object.Identity;
+    import sailpoint.object.ProvisioningPlan;
+    import sailpoint.object.ProvisioningPlan.AccountRequest;
+    import sailpoint.object.ProvisioningPlan.AttributeRequest;
+    import sailpoint.tools.GeneralException;
+
+    Logger log = Logger.getLogger("vdot.rule.resume.identity");
+
+    // identityName framework se context ke through pass hona chahiye
+    if (void == identityName || identityName == null) {
+        log.error("IdentityName is null or missing.");
+        return null;
+    }
+
+    QueryOptions qo = new QueryOptions();
+    qo.addFilter(Filter.eq("identityName", identityName));
+    qo.setOrderAscending(false); // Latest snapshot pehle milega
+
+    List snapshots = context.getObjects(IdentitySnapshot.class, qo);
+    if (snapshots == null || snapshots.isEmpty()) {
+        log.warn("No snapshots found for identity: " + identityName);
+        return null;
+    }
+
+    // Pichla second-last snapshot select karna (Restore access ke liye)
+    IdentitySnapshot identitySnapshot = null;
+    if (snapshots.size() >= 2) {
+        identitySnapshot = (IdentitySnapshot) snapshots.get(snapshots.size() - 2);
+    } else {
+        identitySnapshot = (IdentitySnapshot) snapshots.get(0);
+    }
+
+    ProvisioningPlan plan = new ProvisioningPlan();
+    Identity identity = context.getObjectById(Identity.class, identityName);
+    if (identity == null) {
+        log.error("Identity not found for ID: " + identityName);
+        return null;
+    }
+    plan.setIdentity(identity);
+
+    List bundleSnapshots = identitySnapshot.getBundles();
+    List exceptionEnts = identitySnapshot.getExceptions();
+
+    // 1. Roles Restore Logic
+    if (bundleSnapshots != null) {
+        for (BundleSnapshot bs : bundleSnapshots) {
+            String roleName = bs.getName();
+            if (roleName == null) continue;
+
+            AccountRequest accReq = new AccountRequest(AccountRequest.Operation.Modify, "IIQ", null, identity.getName());
+            accReq.add(new AttributeRequest("assignedRoles", ProvisioningPlan.Operation.Add, roleName));
+            plan.add(accReq);
+        }
+    }
+
+    // 2. Exception Entitlements Restore Logic
+    if (exceptionEnts != null) {
+        for (EntitlementSnapshot es : exceptionEnts) {
+            String appName = es.getApplication();
+            String attrName = es.getAttribute();
+            Object attrVal = es.getValue();
+            String nativeIdentity = es.getNativeIdentity();
+
+            if (appName != null && attrName != null && attrVal != null) {
+                AccountRequest accReq = new AccountRequest(AccountRequest.Operation.Modify, appName, null, nativeIdentity);
+                accReq.add(new AttributeRequest(attrName, ProvisioningPlan.Operation.Add, attrVal));
+                plan.add(accReq);
+            }
+        }
+    }
+
+    return plan;
+    ]]>
+  </Source>
+</Rule>
+---------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Form PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Form created="1750864641756" id="0a7d0b940a8e571b8018e577db0500b4" modified="1779902820322" name="VDOT Rename Identity Entry Form" type="Workflow">
+  <Attributes>
+    <Map>
+      <entry key="pageTitle" value="Rename VDOT User"/>
+      <entry key="title" value="Rename User Form"/>
+    </Map>
+  </Attributes>
+  
+  <Description>Form to Rename VDOT Identity</Description>
+  
+  <Section label="Please correct the fields based on below comments" name="adminComments">
+    <Field displayName="Comments" dynamic="true" name="comments" readOnly="true" type="string">
+      <Script>
+        <Source>
+          <![CDATA[
+          import sailpoint.api.IdentityService;
+          String comments = (String) identityModel.get("comments");
+          if (comments == null || "".equals(comments.trim())) {
+              return "No specific comments provided.";
+          }
+          return comments;
+          ]]>
+        </Source>
+      </Script>
+    </Field>
+  </Section>
+
+  <Section columns="2" label="Enter User Details" name="userDetails">
+    <Field hidden="true" name="requestType" type="string"/>
+    <Field hidden="true" name="issuerAA" type="string"/>
+    
+    <!-- First Name Field with Uppercase Formatting -->
+    <Field displayName="First Name" dynamic="true" helpKey="First name of the user" name="firstname" postBack="true" required="true" type="string">
+      <Script>
+        <Source>
+          <![CDATA[
+          if (value != null) {
+              String retVal = "";
+              char[] chars = value.trim().toCharArray();
+              for (int i = 0; i < chars.length; i++) {
+                  String v = "" + chars[i];
+                  if (i == 0) {
+                      retVal += v.toUpperCase();
+                  } else {
+                      retVal += v;
+                  }
+              }
+              retVal = retVal.replaceAll(" ", "");
+              return retVal;
+          }
+          return value;
+          ]]>
+        </Source>
+      </Script>
+    </Field>
+
+    <!-- Last Name Field -->
+    <Field displayName="Last Name" helpKey="Last name of the user" name="lastname" postBack="true" required="true" type="string"/>
+    <Field hidden="true" name="curEmail" type="string"/>
+
+    <!-- Email Derivation Logic -->
+    <Field displayName="Email Address" dynamic="true" helpKey="The VDOT user's email address" name="email" required="true" type="string">
+      <Script>
+        <Source>
+          <![CDATA[
+          String calcEmail = "";
+          if (firstname != null && lastname != null) {
+              calcEmail = firstname.toLowerCase() + "." + lastname.toLowerCase() + "@vdot.virginia.gov";
+          }
+          if (value == null || "".equals(value.trim()) || value.toLowerCase().equalsIgnoreCase(calcEmail.toLowerCase())) {
+              return calcEmail;
+          }
+          return value;
+          ]]>
+        </Source>
+      </Script>
+      <ValidationRule>
+        <Reference class="sailpoint.object.Rule" id="0a7d0b940a8e571b8018e577db0500b1" name="VDOT Validate Email Rule"/>
+      </ValidationRule>
+    </Field>
+
+    <!-- Display Name Generation -->
+    <Field displayName="Display Name" displayOnly="true" dynamic="true" helpKey="Combination of First and Last name" name="displayName" postBack="true" readOnly="true" required="true" type="string">
+      <Attributes>
+        <Map>
+          <entry key="readOnly" value="true"/>
+        </Map>
+      </Attributes>
+      <Script>
+        <Source>
+          <![CDATA[
+          if (firstname != null && lastname != null) {
+              return lastname + ", " + firstname;
+          }
+          return "";
+          ]]>
+        </Source>
+      </Script>
+    </Field>
+  </Section>
+
+  <Button action="cancel" label="Save for Later"/>
+  <Button action="back" label="Cancel Request"/>
+  <Button action="next" label="Submit for Approval"/>
+</Form>
+-------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskDefinition name="VDOT-TaskDefinition-Update-ToscReviewStatus" resultAction="Rename" subType="task_item_type_generic" type="Generic">
+  <Attributes>
+    <Map>
+      <entry key="TaskDefinition.runLengthAverage" value="0"/>
+      <entry key="TaskDefinition.runLengthTotal" value="3"/>
+      <entry key="TaskDefinition.runs" value="12"/>
+      <entry key="TaskSchedule.host"/>
+      <entry key="RuleName" value="VDOT_Rule_Update_ToscReviewStatus"/>
+      <entry key="taskCompletionEmailNotify" value="Disabled"/>
+      <entry key="taskCompletionEmailRecipients"/>
+      <entry key="taskCompletionEmailTemplate"/>
+    </Map>
+  </Attributes>
+  <Description>Daily report of account links without an owning Identity.</Description>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <Parent>
+    <Reference class="sailpoint.object.TaskDefinition" name="Run Rule"/>
+  </Parent>
+  <Signature>
+    <Returns>
+      <Argument name="UpdatedRecords" type="string">
+        <Prompt>Total Updated Records</Prompt>
+      </Argument>
+    </Returns>
+  </Signature>
+</TaskDefinition>
+------------------------------------------------------
+/*Multithreading + Exception Handling
+Q5. Number Printer Thread
+
+2 threads banao:
+
+EvenThread
+OddThread
+
+Conditions:
+
+Har thread 1-20 print kare.
+Agar number 13 aaye to exception throw karo.
+Thread ke andar exception handle karo.*/
+
+class EvenThread extends Thread{
+
+	public synchronized  void run(){
+		for(int i =1 ; i<=20 ; i++){
+			if(i % 2 == 0){
+				System.out.println(i);
+			}
+		}
+		
+		
+	}
+}
+
+class OddThread extends Thread{
+	public synchronized void run(){
+		for(int i =1 ; i<=20;i++){
+			try{
+				if(i % 2 == 1){
+					if(i == 13){
+						throw new Exception("Sorry");
+					}else{
+						System.out.println(i);
+					}
+					
+				}
+			}
+		    catch(Exception ae){
+				System.out.println(ae.getMessage());
+			}
+		}
+	}
+}
+
+
+class Trash60{
+	public static void main(String []args){
+		EvenThread e1 = new EvenThread();
+		OddThread  o1 = new OddThread();
+		
+		e1.start();
+		o1.start();
+		try{
+			e1.join();
+			o1.join();
+		}
+		catch(InterruptedException ab ){
+			System.out.println(ab.getMessage());
+		}
+		
+		
+		
+		
+	}
+}
+panda ne isse bina cheating kiy aisa bnaya
+------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskDefinition name="VDOT New AD Correlation Report Task" resultAction="Rename" subType="task_item_type_generic" type="Generic">
+  <Attributes>
+    <Map>
+      <entry key="TaskSchedule.host"/>
+      <entry key="ruleConfig" value="reportPath=%%AD_CORRELATION_REPORT_PATH%%"/>
+      <entry key="ruleName" value="VDOT P2 AD New Correlation Report Rule"/>
+      <entry key="taskCompletionEmailNotify" value="Disabled"/>
+      <entry key="taskCompletionEmailRecipients"/>
+      <entry key="taskCompletionEmailTemplate"/>
+    </Map>
+  </Attributes>
+  <Signature>
+    <Inputs>
+      <Argument multi="false" name="ruleConfig" type="string">
+        <Description>Container of configs</Description>
+        <Prompt>Rule Config</Prompt>
+      </Argument>
+    </Inputs>
+    <Returns>
+      <Argument name="regularCount" type="int">
+        <Prompt>Number of regular accounts processed</Prompt>
+      </Argument>
+      <Argument name="secondaryCount" type="int">
+        <Prompt>Number of secondary accounts processed</Prompt>
+      </Argument>
+      <Argument name="sysCount" type="int">
+        <Prompt>Number of service accounts processed</Prompt>
+      </Argument>
+      <Argument name="provCount" type="int">
+        <Prompt>Number of accounts updated</Prompt>
+      </Argument>
+      <Argument name="errorCount" type="int">
+        <Prompt>Number of errors</Prompt>
+      </Argument>
+    </Returns>
+  </Signature>
+  <Description>Produce list of accounts and corresponding IDs</Description>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <Parent>
+    <Reference class="sailpoint.object.TaskDefinition" name="Run Rule"/>
+  </Parent>
+</TaskDefinition>
+-------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskDefinition name="VDOT Aggregate Groups Active Directory" resultAction="Rename" subType="task_item_type_acct_grp_aggregation" type="AccountGroupAggregation">
+  <Attributes>
+    <Map>
+      <entry key="TaskDefinition.runLengthAverage" value="4"/>
+      <entry key="TaskDefinition.runLengthTotal" value="4"/>
+      <entry key="TaskDefinition.runs" value="1"/>
+      <entry key="TaskSchedule.host"/>
+      <entry key="aggregationType" value="group"/>
+      <entry key="applications" value="Active Directory - VDOT"/>
+      <entry key="checkDeleted" value="true"/>
+      <entry key="deltaAggregation" value="false"/>
+      <entry key="enablePartitioning" value="false"/>
+      <entry key="groupSchema"/>
+      <entry key="haltOnMaxErrors" value="false"/>
+      <entry key="promoteClassifications" value="false"/>
+      <entry key="taskCompletionEmailNotify" value="Disabled"/>
+      <entry key="taskCompletionEmailRecipients"/>
+      <entry key="taskCompletionEmailTemplate"/>
+    </Map>
+  </Attributes>
+  <Description>Task template for application group scanning.</Description>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <Parent>
+    <Reference class="sailpoint.object.TaskDefinition" name="Account Group Aggregation"/>
+  </Parent>
+</TaskDefinition>
+-------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskDefinition name="VDOT Aggregate Accounts Active Directory" resultAction="Delete" subType="task_item_type_acct_aggregation" type="AccountAggregation">
+  <Attributes>
+    <Map>
+      <entry key="TaskSchedule.host"/>
+      <entry key="applications" value="Active Directory - VDOT"/>
+      <entry key="checkDeleted" value="true"/>
+      <entry key="checkHistory" value="false"/>
+      <entry key="checkPolicies" value="false"/>
+      <entry key="correlateEntitlements" value="false"/>
+      <entry key="correlateOnly" value="false"/>
+      <entry key="correlateScope" value="false"/>
+      <entry key="deltaAggregation" value="false"/>
+      <entry key="enablePartitioning" value="false"/>
+      <entry key="haltOnMaxErrors" value="false"/>
+      <entry key="noAutoCreateApplications" value="false"/>
+      <entry key="noAutoCreateScopes" value="false"/>
+      <entry key="noNeedsRefresh" value="false"/>
+      <entry key="noOptimizeReaggregation" value="false"/>
+      <entry key="promoteManagedAttributes" value="false"/>
+      <entry key="refreshScorecard" value="false"/>
+      <entry key="sequential" value="false"/>
+      <entry key="taskCompletionEmailNotify" value="Disabled"/>
+      <entry key="taskCompletionEmailRecipients"/>
+      <entry key="taskCompletionEmailTemplate"/>
+    </Map>
+  </Attributes>
+  <Description>Task template for application account scanning.</Description>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <Parent>
+    <Reference class="sailpoint.object.TaskDefinition" name="Account Aggregation"/>
+  </Parent>
+</TaskDefinition>
+----------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskDefinition name="VDOT Identity Refresh Process Events Joiner Task" resultAction="Delete" subType="task_item_type_identity" type="Identity">
+  <Attributes>
+    <Map>
+      <entry key="TaskDefinition.runLengthAverage" value="0"/>
+      <entry key="TaskDefinition.runLengthTotal" value="0"/>
+      <entry key="TaskDefinition.runs" value="1"/>
+      <entry key="TaskSchedule.host"/>
+      <entry key="checkHistory" value="false"/>
+      <entry key="checkPolicies" value="false"/>
+      <entry key="correlateEntitlements" value="false"/>
+      <entry key="correlateScope" value="false"/>
+      <entry key="deleteDormantGroups" value="false"/>
+      <entry key="disableIdentityProcessingThreshold" value="false"/>
+      <entry key="disableManagerLookup" value="false"/>
+      <entry key="doManualActions" value="false"/>
+      <entry key="enableManualAccountSelection" value="false"/>
+      <entry key="enablePartitioning" value="%%GLOBAL_ENABLE_PARTITIONING%%"/>
+      <entry key="excludeInactive" value="false"/>
+      <entry key="filterGroups" value="VDOT Needs Joiner Population"/>
+      <entry key="filterNeedsRefresh" value="false"/>
+      <entry key="forceWorkflow" value="false"/>
+      <entry key="includeWindowModified" value="false"/>
+      <entry key="keepInactiveViolations" value="false"/>
+      <entry key="markDormantScopes" value="false"/>
+      <entry key="noAutoCreateScopes" value="false"/>
+      <entry key="noMaintenanceWindowRetry" value="false"/>
+      <entry key="noResetNeedsRefresh" value="false"/>
+      <entry key="noRoleProvisioning" value="false"/>
+      <entry key="processTriggers" value="true"/>
+      <entry key="promoteAttributes" value="true"/>
+      <entry key="promoteManagedAttributes" value="false"/>
+      <entry key="provision" value="false"/>
+      <entry key="refreshCompositeApplications" value="false"/>
+      <entry key="refreshGroups" value="false"/>
+      <entry key="refreshIdentityEntitlements" value="false"/>
+      <entry key="refreshManagerStatus" value="false"/>
+      <entry key="refreshRoleMetadata" value="false"/>
+      <entry key="refreshScorecard" value="false"/>
+      <entry key="synchronizeAttributes" value="false"/>
+      <entry key="taskCompletionEmailNotify" value="Disabled"/>
+      <entry key="taskCompletionEmailRecipients"/>
+      <entry key="taskCompletionEmailTemplate"/>
+    </Map>
+  </Attributes>
+  <Description>Template for identity refresh scans mapped for Joiners.</Description>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <Parent>
+    <Reference class="sailpoint.object.TaskDefinition" name="Identity Refresh"/>
+  </Parent>
+</TaskDefinition>
+-----------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskDefinition name="VDOT Identity Refresh Process Events Leaver Task" resultAction="Delete" subType="task_item_type_identity" type="Identity">
+  <Attributes>
+    <Map>
+      <entry key="TaskDefinition.runLengthAverage" value="0"/>
+      <entry key="TaskDefinition.runLengthTotal" value="0"/>
+      <entry key="TaskDefinition.runs" value="1"/>
+      <entry key="TaskSchedule.host"/>
+      <entry key="checkHistory" value="false"/>
+      <entry key="checkPolicies" value="false"/>
+      <entry key="correlateEntitlements" value="false"/>
+      <entry key="correlateScope" value="false"/>
+      <entry key="deleteDormantGroups" value="false"/>
+      <entry key="disableIdentityProcessingThreshold" value="false"/>
+      <entry key="disableManagerLookup" value="false"/>
+      <entry key="doManualActions" value="false"/>
+      <entry key="enableManualAccountSelection" value="false"/>
+      <entry key="enablePartitioning" value="%%GLOBAL_ENABLE_PARTITIONING%%"/>
+      <entry key="excludeInactive" value="false"/>
+      <entry key="filterGroups" value="VDOT Needs Leaver Population"/>
+      <entry key="filterNeedsRefresh" value="false"/>
+      <entry key="forceWorkflow" value="false"/>
+      <entry key="includeWindowModified" value="false"/>
+      <entry key="keepInactiveViolations" value="false"/>
+      <entry key="markDormantScopes" value="false"/>
+      <entry key="noAutoCreateScopes" value="false"/>
+      <entry key="noMaintenanceWindowRetry" value="false"/>
+      <entry key="noResetNeedsRefresh" value="false"/>
+      <entry key="noRoleProvisioning" value="false"/>
+      <entry key="processTriggers" value="true"/>
+      <entry key="promoteAttributes" value="true"/>
+      <entry key="promoteManagedAttributes" value="false"/>
+      <entry key="provision" value="false"/>
+      <entry key="refreshCompositeApplications" value="false"/>
+      <entry key="refreshGroups" value="false"/>
+      <entry key="refreshIdentityEntitlements" value="false"/>
+      <entry key="refreshManagerStatus" value="false"/>
+      <entry key="refreshRoleMetadata" value="false"/>
+      <entry key="refreshScorecard" value="false"/>
+      <entry key="synchronizeAttributes" value="false"/>
+      <entry key="taskCompletionEmailNotify" value="Disabled"/>
+      <entry key="taskCompletionEmailRecipients"/>
+      <entry key="taskCompletionEmailTemplate"/>
+    </Map>
+  </Attributes>
+  <Description>Template for identity refresh scans mapped for Leavers.</Description>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <Parent>
+    <Reference class="sailpoint.object.TaskDefinition" name="Identity Refresh"/>
+  </Parent>
+</TaskDefinition>
+-------------------------

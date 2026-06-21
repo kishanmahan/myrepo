@@ -1,0 +1,28 @@
+
+
+//////////*
+1. account Object Kaha Se Aa Raha Hai?
+Jab aap Account Aggregation (ya Refresh) task chalate hain, toh SailPoint target application (jaise Active Directory, SAP, ya JDBC) se data fetch karta hai.
+Aggregation ke dauran, har ek entry (row/record) ek ResourceObject banti hai.
+SailPoint us ResourceObject ko account variable ke naam se aapke Correlation Rule ke andar "inject" kar deta hai.
+Isliye aapko code mein Account account = ... likhne ki zaroorat nahi padti, wo pehle se waha implicit object ke roop mein maujood hota hai.
+
+2. Kis Source Se Aa Raha Hai?
+Ye us Application source se aata hai jiske liye aapne rule likha hai.
+Agar aap Active Directory aggregate kar rahe hain, toh account.getStringAttribute("distinguishedName") kaam karega.
+Agar aap Database (JDBC) source use kar rahe hain, toh account.getStringAttribute("EMPLOYEE_ID") (jo aapne SQL query mein column name diya hoga) waha se aayega.
+
+3. Ek Advanced Example (Logic Clear karne ke liye)
+Aapne jo code pucha, usme ye data flow aise kaam karta hai:
+Java
+// Ye 'account' object SailPoint ne ResourceObject se convert karke diya hai
+String accountEmpId = account.getStringAttribute("EMPLOYEE_NUMBER"); 
+// 'EMPLOYEE_NUMBER' wahi attribute hona chahiye jo Application Schema mein 'Identity Attribute' ya 'Attribute' define hai.
+Correlation Rule ke Important Implicit Objects:
+Jab ye rule chalta hai, toh SailPoint aapko ye 4 cheezein deta hai:-
+context: SailPoint API se baat karne ke liye (SailPointContext).
+account: Target system ka wo account jo abhi process ho raha hai (Link object ka raw form).
+application: Jis application (source) se data aa raha hai uski details.
+environment: Current environment ki settings ka map.
+
+*/////////

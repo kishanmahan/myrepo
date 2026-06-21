@@ -1,0 +1,226 @@
+🔹 Approval kya hai?
+SailPoint me Approval sirf Identity changes ke liye nahi hota, ye kisi bhi object change ke liye ho sakta hai,
+Approval SailPoint me kisi bhi identity/sailpoint_object change ko confirm karne ka process hai.
+Jaise identity me change hota hai (role assign, entitlement add, identity disable, etc.) → Approval workflow trigger hota hai
+Approval workflow decide karta hai: ye change accept hoga ya reject
+🔹 Approval ke Components:-
+Request → Identity change ke liye request
+Approver → Jo person / role approve karega
+Workflow → Process jo approval check kare
+Status → PENDING / APPROVED / REJECTED.
+
+Approval ka matlab:-
+Approval = Kisi request ko authorize karna ya allow karna.
+Jab koi user request (jaise new account create, role assign) submit karta hai,
+to system ya organization ek approver decide karta hai ki ye request sahi hai ya nahi.
+Approver approve kare → request aage process hoti hai
+Approver reject kare → request cancel ho jati hai
+--------------------------------------------------------------------------------------------------------------------------------------------------
+🔹 Approval kya hai?
+👉 Approval = kisi request ko allow ya deny karne ka process
+Simple line:-
+👉 “Kya ye change karna allowed hai ya nahi — iska decision”
+
+🔥 SailPoint me Approval ka matlab:-
+👉 Jab koi user kuch change request karta hai, jaise:
+Role lena
+Access lena
+Email update
+Account enable/disable
+👉 To system direct change nahi karta ❌
+👉 Pehle Approval process chalta hai ✅
+
+🔹 Approval me kya hota hai?
+1️⃣ Request create hota hai:-
+User → request bhejta hai
+
+2️⃣ ApprovalRequest banta hai:-
+Poora request container
+
+3️⃣ ApprovalItems bante hain:-
+Har kaam ke liye alag item
+
+4️⃣ Approver decide karta hai:-
+👉 Approver ho sakta hai:-
+Manager
+Admin
+Security team
+
+5️⃣ Decision hota hai:-
+APPROVE ✅
+REJECT ❌
+
+6️⃣ Final result:-
+👉 Agar approve:-
+System change apply karega
+
+👉 Agar reject:-
+Koi change nahi hoga.
+--------------------------------------------------------------------------------------------------------------------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointFactory;
+import sailpoint.object.Approval;
+import sailpoint.object.Identity;
+import sailpoint.object.ApprovalRequest;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class ApprovalExample {
+    public static void main(String[] args) throws Exception {
+        // 1️⃣ SailPoint Context
+        SailPointContext context = SailPointFactory.getCurrentContext();
+
+        // 2️⃣ Identity fetch
+        Identity user = context.getObjectByName(Identity.class, "kishan");
+
+        // 3️⃣ Approval Request create
+        ApprovalRequest request = new ApprovalRequest();
+        request.setName("Role Assignment");
+        request.setTargetIdentity(user);
+        request.setAction("ASSIGN_ROLE");
+
+        // 4️⃣ Approvers set
+        List<String> approvers = new ArrayList<>();
+        approvers.add("rohith");  // manager
+        request.setApprovers(approvers);
+
+        // 5️⃣ Approval create and trigger
+        Approval approval = context.createObject(Approval.class);
+        approval.setRequest(request);
+        approval.setStatus("PENDING");
+        context.saveObject(approval);
+
+        System.out.println("Approval created for identity: " + user.getName());
+        System.out.println("Status: " + approval.getStatus());
+
+        // 6️⃣ Simulate Approver action
+        approval.approve();
+        context.saveObject(approval);
+
+        System.out.println("After approval, Status: " + approval.getStatus());
+    }
+}
+🔹 Expected Output:-
+Approval created for identity: kishan
+Status: PENDING
+After approval, Status: APPROVED
+-----------------------------------------------------------------------------------------------------------
+Approval Class Methods List (without description):-
+getStatus()
+setStatus(String status)
+getRequest()
+setRequest(ApprovalRequest request)
+getApprovers()
+setApprovers(List<String> approvers)
+getComments()
+setComments(List<String> comments)
+approve()
+reject()
+isApproved()
+isRejected()
+getCreated()
+setCreated(Date date)
+getModified()
+setModified(Date date)
+getCreatedBy()
+setCreatedBy(String user)
+getModifiedBy()
+setModifiedBy(String user)
+getId()
+setId(String id)
+clone()
+equals(Object obj)
+hashCode()
+toString()
+----------------------------------------------------------------------------------------------------------------------------------------------------
+🔹 1️⃣ Status related methods:-
+Method	                              Kya karta hai
+getStatus():----------------Current status return karta hai (PENDING / APPROVED / REJECTED)
+setStatus(String status):---Status set karta hai manually
+isApproved():---------------Returns true agar status APPROVED hai.
+isRejected():---------------Returns true agar status REJECTED hai.
+
+Example:-
+Approval approval = new Approval();
+approval.setStatus("PENDING");
+System.out.println("Status: " + approval.getStatus()); // PENDING
+
+approval.approve(); 
+System.out.println("Approved? " + approval.isApproved()); // true
+System.out.println("Status now: " + approval.getStatus()); // APPROVED
+
+Output:-
+Status: PENDING
+Approved? true
+Status now: APPROVED
+---------------------------------------------------------------------------------
+🔹 2️⃣ Request related methods:-
+Method	                                                   Kya karta hai
+getRequest()	                          Jo ApprovalRequest associated hai return karta hai
+setRequest(ApprovalRequest request)	      Approval me request assign karta hai
+ApprovalRequest req = new ApprovalRequest("Request-123");
+approval.setRequest(req);
+System.out.println("Request ID: " + approval.getRequest().getId());
+Output:-
+Request ID: Request-123
+---------------------------------------------------------------------------------
+🔹 3️⃣ Approvers / Comments methods:-
+Method	                                              Kya karta hai
+getApprovers():------------------------------Approvers ki list return karta hai.
+setApprovers(List<String> approvers):--------List set karta hai
+getComments():-------------------------------Comments list return karta hai
+setComments(List<String> comments):----------Comments set karta hai
+
+List<String> approvers = new ArrayList<String>();
+approvers.add("Alice");
+approvers.add("Bob");
+approval.setApprovers(approvers);
+System.out.println("Approvers: " + approval.getApprovers());
+
+List<String> comments = new ArrayList<String>();
+comments.add("Looks good");
+approval.setComments(comments);
+System.out.println("Comments: " + approval.getComments());
+
+Output:-
+Approvers: [Alice, Bob]
+Comments: [Looks good]
+----------------------------------------------------------------------------------------------
+🔹 4️⃣ Action methods:-
+Method	                             Kya karta hai
+approve()	Status APPROVED set karta hai, isApproved() true ho jata hai
+reject()	Status REJECTED set karta hai, isRejected() true ho jata hai
+approval.reject();
+System.out.println("Rejected? " + approval.isRejected()); // true
+System.out.println("Status now: " + approval.getStatus()); // REJECTED
+
+Output:-
+Rejected? true
+Status now: REJECTED
+-------------------------------------------------------------------------------------------------
+5️⃣ Created / Modified / User methods:-
+Method	                                         Kya karta hai
+getCreated() / setCreated(Date date)	       Approval creation date set / get
+getModified() / setModified(Date date)	       Last modified date set / get
+getCreatedBy() / setCreatedBy(String user)	   Created by user set / get
+getModifiedBy() / setModifiedBy(String user)   Modified by user set / get
+approval.setCreated(new Date());
+approval.setCreatedBy("Admin");
+System.out.println("Created by: " + approval.getCreatedBy());
+Output:-
+Created by: Admin
+-------------------------------------------------------------------------------------------------
+🔹 6️⃣ Object / Utility methods:-
+Method	                                     Kya karta hai
+getId() / setId(String id)	     Approval object ka unique ID set / get
+clone()	                         Approval object copy banata hai
+equals(Object obj)	             Compare karta hai do Approval objects
+hashCode()	                     Object hash return karta hai
+toString()	                     Approval object ka readable string return karta hai
+approval.setId("APP-001");
+System.out.println(approval.toString());
+
+Output (example):-
+Approval{id='APP-001', status='REJECTED', approvers=[Alice, Bob], comments=[Looks good]}
+---------------------------------------------------------------------------------------------------

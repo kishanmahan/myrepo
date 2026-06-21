@@ -1,0 +1,310 @@
+🔹 PreparedStatement kya hai?
+PreparedStatement ek precompiled SQL query hoti hai.
+
+👉 Matlab:-
+Query pehle compile ho jaati hai
+Baad me sirf values (parameters) pass karte ho
+SQL Injection se protection milta hai
+
+📦 Yeh interface hai:-
+java.sql.PreparedStatement
+--------------------------------------------------------------------------
+🔹 PreparedStatement kya kya karta hai?
+✅ 1. Query Compile karta hai (once):-
+String sql = "SELECT * FROM users WHERE id = ?";
+PreparedStatement ps = con.prepareStatement(sql);
+👉 Yaha query compile ho jaati hai
+
+✅ 2. Parameters bind karta hai:-
+ps.setInt(1, 10);
+👉 ? ki jagah value set karta hai
+
+✅ 3. Query execute karta hai:-
+ps.executeQuery();    // SELECT
+ps.executeUpdate();   // INSERT, UPDATE, DELETE
+
+✅ 4. SQL Injection se bachata hai:-
+❌ Unsafe:-
+SELECT * FROM users WHERE name = 'abc' OR '1'='1'
+✔ Safe:-
+ps.setString(1, name);
+👉 Values alag pass hoti hain, SQL modify nahi hota
+
+✅ 5. Performance improve karta hai:-
+Same query baar-baar compile nahi hoti
+Execution plan reuse hota hai
+
+✅ 6. Multiple execution support (reuse):-
+ps.setInt(1, 1);
+ps.executeUpdate();
+ps.setInt(1, 2);
+ps.executeUpdate();
+👉 Same statement ko reuse kar sakte ho
+
+✅ 7. Batch processing support karta hai:-
+ps.addBatch();
+ps.executeBatch();
+👉 Multiple queries ek saath execute.
+-----------------------------------------------
+🔹 3. Execution Plan (DB Level - MOST IMPORTANT):-
+Database (MySQL / Oracle) is query ka:-
+execution plan banata hai
+Example:-
+kaunsa index use karna hai
+kaunsi table scan hogi
+join kaise hoga
+
+👉 Ye plan:-
+cache hota hai
+baar-baar reuse hota hai.
+
+🔹 5. JDBC Driver Internal Object:-
+PreparedStatement actually driver ka object hota hai:-
+MySQL me: com.mysql.cj.jdbc.ClientPreparedStatement
+Oracle me: different implementation
+
+
+------------------------------------------------
+🔹 Important Methods:-
+1️⃣ Parameter Set Methods:-
+ps.setInt(1, 10);
+ps.setString(2, "abc");
+ps.setBoolean(3, true);
+ps.setDouble(4, 10.5);
+ps.setDate(5, new java.sql.Date(System.currentTimeMillis()));
+2️⃣ Execution Methods:-
+ps.executeQuery();    // SELECT query ke liye
+ps.executeUpdate();   // INSERT, UPDATE, DELETE ke liye
+ps.execute();         // General execution
+3️⃣ Get Methods:-
+ps.getResultSet();
+ps.getUpdateCount();
+4️⃣ Batch Processing
+ps.addBatch();
+ps.executeBatch();
+ps.clearBatch();
+👉 Multiple queries ek saath run karne ke liye
+5️⃣ Metadata:-
+ps.getMetaData();
+ps.getParameterMetaData();
+6️⃣ Close & Lifecycle:-
+ps.close();
+ps.isClosed();
+-------------------------------------------------------------------
+1️⃣ Parameter Set Methods:-
+👉 ps.setInt(1, 10);:-
+Kya karta hai:-
+First ? me integer value set karta hai
+Output / Effect:-
+Query me value bind ho jaati hai
+SELECT * FROM users WHERE id = 10
+👉 Console output nahi deta, bas parameter set karta hai
+
+👉 ps.setString(2, "abc");:-
+name = 'abc'
+
+👉 ps.setBoolean(3, true);:-
+is_active = true
+
+👉 ps.setDouble(4, 10.5);:-
+salary = 10.5
+
+👉 ps.setDate(5, new Date(...));:-
+created_date = '2026-04-02'
+
+🔥 Important:-
+👉 Ye methods koi output print nahi karte
+👉 Sirf query ke ? ko fill karte hain.
+------------------------------------------------------
+🔹 5️⃣ Metadata:-
+👉 ps.getMetaData();
+Kya karta hai:-
+ResultSet ke column info deta hai
+ResultSetMetaData meta = rs.getMetaData();
+Output:-
+Column 1: id
+Column 2: name
+
+👉 ps.getParameterMetaData();
+Kya karta hai:-
+query ke parameters ka info deta hai
+ParameterMetaData pmd = ps.getParameterMetaData();
+Output:-
+Total parameters: 2
+
+🔹 6️⃣ Close & Lifecycle:-
+👉 ps.close();
+Kya karta hai:-
+statement close karta hai
+memory release karta hai
+Output:-
+(no output)
+
+👉 ps.isClosed();:-
+Kya karta hai:-
+check karta hai statement close hai ya nahi
+boolean status = ps.isClosed();
+Output:-
+true  → closed
+false → open
+-------------------------------------------------------
+🔹 4️⃣ Batch Processing (Deep Explanation):-
+Batch processing ka use:-
+👉 Multiple SQL queries ek saath execute karne ke liye
+
+🔸 Problem without batch:-
+Agar tu 1000 queries run kare:-
+ps.executeUpdate();
+ps.executeUpdate();
+ps.executeUpdate();
+
+👉 Har query:-
+alag DB call karegi
+network overhead zyada
+slow performance
+
+🔸 Solution: Batch Processing:-
+
+🔹 1. ps.addBatch()
+👉 Kya karta hai:
+Query ko batch queue me add karta hai
+📌 Code:
+PreparedStatement ps = con.prepareStatement(
+    "INSERT INTO users (id, name) VALUES (?, ?)"
+);
+
+ps.setInt(1, 1);
+ps.setString(2, "A");
+ps.addBatch();
+
+ps.setInt(1, 2);
+ps.setString(2, "B");
+ps.addBatch();
+📊 Internal:-
+Queries memory me store hoti hain
+Abhi DB me nahi gayi.
+-------------------------------------------
+🔹 3. ps.clearBatch():-
+👉 Kya karta hai:-
+Batch ko clear karta hai
+📌 Code:-
+ps.clearBatch();
+📊 Output:-
+koi output nahi
+👉 Batch empty ho jata hai.
+-------------------------------------
+🔹 2️⃣ ps.executeBatch():-
+👉 Kya karta hai:
+addBatch() se jo queries collect hui hain
+un sab ko ek hi baar database me execute karta hai.
+
+🔍 Internal Working:
+addBatch() se queries memory me store hoti hain
+executeBatch() call hota hai
+JDBC driver:
+sab queries ko bulk request me convert karta hai
+DB:
+ek ek karke ya optimized way me execute karta hai
+Result ek array me return hota hai
+📌 Code Example:
+PreparedStatement ps = con.prepareStatement(
+    "INSERT INTO users (id, name) VALUES (?, ?)"
+);
+
+ps.setInt(1, 1);
+ps.setString(2, "A");
+ps.addBatch();
+
+ps.setInt(1, 2);
+ps.setString(2, "B");
+ps.addBatch();
+
+ps.setInt(1, 3);
+ps.setString(2, "C");
+ps.addBatch();
+
+int[] result = ps.executeBatch();
+📊 Output:
+[1, 1, 1]
+
+👉 Har element ka matlab:
+
+1 → query successful
+0 → fail / no row affected
+-1 → unknown result
+---------------------------------------------
+🔸 getUpdateCount():-
+👉 Kya karta hai:-
+Last DML query me kitni rows affect hui
+📌 Code:-
+ps.executeUpdate();
+int count = ps.getUpdateCount();
+📊 Output:-
+1
+👉 Meaning:-
+1 row update hua
+--------------------
+🔹 2️⃣ “Affected row” kya hota hai?
+👉 Affected row = kitni rows DB me change hui
+Example:-
+String sql = "UPDATE users SET age = ? WHERE id = ?";
+ps.executeUpdate();
+📊 Output:-
+Rows affected: 1
+------------------------------------------
+🔹 3️⃣ DML kya hota hai?
+👉 DML = Data Manipulation Language
+Ye kaam karta hai:-
+Data ko modify karna
+📌 DML Commands:-
+INSERT
+UPDATE
+DELETE
+📊 Output:-
+👉 DML ka output:-
+rows affected (int)
+
+affected==modify/update/change.
+----------------------------------------
+🔹 3️⃣ executeQuery() kya hai?
+🔹 1️⃣ “id = 1” kya hai?
+👉 Ye query ka condition (filter) hai, koi method nahi.
+
+String sql = "SELECT * FROM users WHERE id = ?";
+ps.setInt(1, 1);
+
+👉 Iska matlab:-
+? me value 1 set ho rahi hai
+DB me jo row hai jiska id = 1 → wahi fetch hogi
+📊 Example Table:-
+id | name | age
+1  | Kishan | 25
+2  | Rahul  | 30
+
+👉 Query:-
+SELECT * FROM users WHERE id = 1;
+
+👉 Output:-
+1 | Kishan | 25
+-----------------------------------------------
+🔹 2️⃣ SELECT kya hai?
+👉 SELECT ek SQL command hai
+👉 Kya karta hai:-
+Database se data read karta hai
+Data ko change nahi karta
+📌 Example:-
+SELECT * FROM users;
+
+👉 Output:-
+All rows of users table
+----------------------------------------------
+🔹 4️⃣ getResultSet() kya hai?
+👉 Ye method hai jo:-
+last executed SELECT ka result deta hai
+📌 Code:-
+ps.execute();  // execute query first
+
+ResultSet rs = ps.getResultSet();
+📊 Output:-
+ResultSet (data table)
+-----------------------------------------------

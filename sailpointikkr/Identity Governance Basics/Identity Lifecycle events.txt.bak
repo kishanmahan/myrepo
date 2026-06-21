@@ -1,0 +1,84 @@
+🔄 1️⃣6️⃣ Identity Lifecycle Events:-
+--1️⃣ Identity Lifecycle kya hai/
+Identity lifecycle ka matlab hai user account ka complete journey:
+Joiner → Mover → Leaver
+Yani:-
+Joiner → naya employee join karta hai
+Mover → employee ka department / role change hota hai
+Leaver → employee company chhod deta hai
+
+2️⃣ Important Identity Lifecycle Events:-
+1️⃣ Identity Creation (Joiner Event)
+
+Jab naya employee system me create hota hai.
+
+Example:
+
+HR System
+   ↓
+New Employee Record
+   ↓
+Identity Create in IAM
+Output:-
+User: Rahul
+Department: IT
+Access: Email + VPN
+
+2️⃣ Identity Update (Mover Event):-
+Jab employee ka role ya department change hota hai.
+
+Example:-
+Department change
+IT → Finance
+
+IAM kya karega:-
+old access remove karega
+new access assign karega
+Output:-
+Remove: IT Tools
+Add: Finance Application
+
+3️⃣ Identity Disable / Delete (Leaver Event):-
+Jab employee company chhod deta hai.
+System automatically:-
+account disable karega
+access revoke karega
+
+Example:-
+Employee resigned
+   ↓
+IAM disable accounts
+   ↓
+All access removed
+----------------------------------------------------
+()Rehire kya hai?
+--👉 Rehire ka matlab hai jab koi employee company chhodne ke baad dobara same company me join karta hai.
+
+1️⃣ Rehire kya hota hai?
+Example:-
+2023 → Rahul company join karta hai
+2024 → Rahul resign kar deta hai
+2025 → Rahul fir se company join karta hai
+Is situation ko Rehire bolte hain.
+
+2️⃣ IAM system Rehire me kya karta hai?
+Jab rehire hota hai to IAM system:-
+1️⃣ Old identity ko check karta hai
+2️⃣ Agar identity exist karti hai to reactivate karta hai
+3️⃣ Required access fir se assign karta hai
+
+Flow:-
+HR System
+   ↓
+Employee Rehire
+   ↓
+IAM detect rehire
+   ↓
+Identity Reactivate
+   ↓
+Access Provision
+------------------------------------------------------
+()Contractor lifecycle kya hai?
+
+
+---------------------------------------------------

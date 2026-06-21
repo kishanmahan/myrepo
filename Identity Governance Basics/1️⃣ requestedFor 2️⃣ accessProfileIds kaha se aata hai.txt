@@ -1,0 +1,433 @@
+1️⃣ requestedFor ID kaha se milti hai
+
+Ye Identity (User) ID hoti hai.
+
+Isko nikalne ke liye API call karte hain:
+
+GET /v3/identities
+Java example
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
+public class GetIdentities {
+
+    public static void main(String[] args) throws Exception {
+
+        URL url = new URL("https://tenant.api.identitynow.com/v3/identities");
+
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Authorization", "Bearer YOUR_ACCESS_TOKEN");
+
+        BufferedReader br = new BufferedReader(
+                new InputStreamReader(conn.getInputStream()));
+
+        String line;
+
+        while ((line = br.readLine()) != null) {
+            System.out.println(line);
+        }
+    }
+}
+Output example:-
+[
+ {
+  "id": "2c9180847e9b1a1f017e9c1111111111",
+  "name": "Rahul"
+ },
+ {
+  "id": "2c9180847e9b1a1f017e9c3333333333",
+  "name": "Amit"
+ }
+]
+👉 Yaha se User ID milti hai → ye hi requestedFor me use hoti hai.
+---------------------------------------------------------------------
+2️⃣ accessProfileIds kaha se milti hai
+
+Ye Access Profile ID hoti hai.
+
+Isko nikalne ke liye API:
+
+GET /v3/access-profiles
+Java example
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
+public class GetAccessProfiles {
+
+    public static void main(String[] args) throws Exception {
+
+        URL url = new URL("https://tenant.api.identitynow.com/v3/access-profiles");
+
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Authorization", "Bearer YOUR_ACCESS_TOKEN");
+
+        BufferedReader br = new BufferedReader(
+                new InputStreamReader(conn.getInputStream()));
+
+        String line;
+
+        while ((line = br.readLine()) != null) {
+            System.out.println(line);
+        }
+    }
+}
+Output example
+[
+ {
+  "id": "2c9180847e9b1a1f017e9c2222222222",
+  "name": "Salesforce Read Access"
+ },
+ {
+  "id": "2c9180847e9b1a1f017e9c4444444444",
+  "name": "SAP Finance Access"
+ }
+]
+
+👉 Yaha se Access Profile ID milti hai → ye accessProfileIds me use hoti hai.
+---------------------------------------------------------------------------------
+()1️⃣ IdentityNow me users kaha se aate hain?
+Users normally kisi source system se aate hain.
+Example:-
+Active Directory
+HR System
+Database
+Workday
+Jab aggregation hoti hai tab users import ho jate hain.
+
+Flow:-
+HR System / AD
+      ↓
+Aggregation
+      ↓
+IdentityNow
+      ↓
+Users create ho jate hain
+
+2️⃣ Example:-
+HR system me record hai:-
+EmployeeID : 1001
+Name : Rahul
+Email : rahul@company.com
+Aggregation ke baad IdentityNow me record banega:-
+{
+ "id": "2c9180847e9b1a1f017e9c1111111111",
+ "name": "Rahul",
+ "email": "rahul@company.com"
+}
+
+Isi tarah:-
+
+{
+ "id": "2c9180847e9b1a1f017e9c3333333333",
+ "name": "Amit"
+}
+------------------------------------------------------------------
+3️⃣ Jab API call karte ho:-
+GET /v3/identities
+Tab system database se users return karta hai.
+Output:-
+[
+ {
+  "id": "2c9180847e9b1a1f017e9c1111111111",
+  "name": "Rahul"
+ },
+ {
+  "id": "2c9180847e9b1a1f017e9c3333333333",
+  "name": "Amit"
+ }
+]
+Matlab:-
+Ye names system me already stored the
+API sirf unko fetch kar rahi hai.
+-------------------------------------------------------------------------
+()access-profiles ids kaha se milti hai?
+--1️⃣ Access Profile IDs kaha se milti hain
+Method 1: API se (Most common):-
+API call:-
+GET /v3/access-profiles
+Java example:-
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
+public class GetAccessProfiles {
+
+    public static void main(String[] args) throws Exception {
+
+        URL url = new URL("https://tenant.api.identitynow.com/v3/access-profiles");
+
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Authorization", "Bearer YOUR_ACCESS_TOKEN");
+
+        BufferedReader br = new BufferedReader(
+                new InputStreamReader(conn.getInputStream()));
+
+        String line;
+
+        while ((line = br.readLine()) != null) {
+            System.out.println(line);
+        }
+    }
+}
+2️⃣ Example Output:-
+System response:-
+[
+ {
+  "id": "2c9180847e9b1a1f017e9c2222222222",
+  "name": "Salesforce Read Access"
+ },
+ {
+  "id": "2c9180847e9b1a1f017e9c4444444444",
+  "name": "SAP Finance Access"
+ }
+]
+Yaha se milta hai:-
+Access Profile Name → Salesforce Read Access
+Access Profile ID → 2c9180847e9b1a1f017e9c2222222222
+--------
+
+
+-------------------------------------------------------------------------
+1️⃣ Project Structure:-
+IdentityNowAccessRequestProject:-
+│
+└── src
+    ├── EmployeeAccessRequest.java:-
+-------------------------------------------------
+2️⃣ Java Code (EmployeeAccessRequest.java)
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Scanner;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
+public class EmployeeAccessRequest {
+
+    public static void main(String[] args) {
+
+        try {
+
+            Scanner sc = new Scanner(System.in);
+
+            // Employee ID input
+            System.out.println("Enter Employee Identity ID:");
+            String employeeId = sc.nextLine();
+
+            // Access Profile choose
+            System.out.println("Choose Access Profile ID:");
+            System.out.println("1 → Salesforce Read Access");
+            System.out.println("2 → SAP Finance Access");
+
+            String choice = sc.nextLine();
+            String accessProfileId = "";
+
+            if(choice.equals("1")) {
+                accessProfileId = "2c9180847e9b1a1f017e9c2222222222";
+            } 
+            else if(choice.equals("2")) {
+                accessProfileId = "2c9180847e9b1a1f017e9c4444444444";
+            } 
+            else {
+                System.out.println("Invalid choice");
+                return;
+            }
+
+            // IdentityNow API
+            String apiUrl = "https://tenant.api.identitynow.com/v3/access-requests";
+
+            URL url = new URL(apiUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Authorization", "Bearer YOUR_ACCESS_TOKEN");
+            conn.setRequestProperty("Content-Type", "application/json");
+
+            conn.setDoOutput(true);
+
+            // Request Body
+            String requestBody = "{"
+                    + "\"requestedFor\": \"" + employeeId + "\","
+                    + "\"accessProfileIds\": [\"" + accessProfileId + "\"]"
+                    + "}";
+
+            // Send request
+            OutputStream os = conn.getOutputStream();
+            os.write(requestBody.getBytes());
+            os.flush();
+
+            int responseCode = conn.getResponseCode();
+
+            System.out.println("Response Code: " + responseCode);
+
+            BufferedReader br = new BufferedReader(
+                    new InputStreamReader(conn.getInputStream()));
+
+            String line;
+
+            System.out.println("Response Body:");
+
+            while((line = br.readLine()) != null) {
+                System.out.println(line);
+            }
+
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+3️⃣ Program Run Example
+
+Console Input:
+
+Enter Employee Identity ID:
+2c9180847e9b1a1f017e9c1111111111
+
+Choose Access Profile ID:
+1 → Salesforce Read Access
+2 → SAP Finance Access
+
+1
+4️⃣ System ko bheja gaya JSON
+{
+ "requestedFor": "2c9180847e9b1a1f017e9c1111111111",
+ "accessProfileIds": [
+   "2c9180847e9b1a1f017e9c2222222222"
+ ]
+}
+
+Meaning:
+
+Employee Rahul
+↓
+Salesforce Read Access request
+5️⃣ Example Output
+
+Console Output:
+
+Response Code: 202
+
+Response Body:
+{
+ "id": "9b8172b817e9c45678901234",
+ "requestedFor": "2c9180847e9b1a1f017e9c1111111111",
+ "accessProfileIds": [
+  "2c9180847e9b1a1f017e9c2222222222"
+ ],
+ "state": "PENDING_APPROVAL"
+}
+--------------------------------------------------------------------------------
+()1️⃣ IdentityNow me users kaha se aate hain?
+Users normally kisi source system se aate hain.
+Example:-
+Active Directory
+HR System
+Database
+Workday
+Jab aggregation hoti hai tab users import ho jate hain.
+
+Flow:-
+HR System / AD
+      ↓
+Aggregation
+      ↓
+IdentityNow
+      ↓
+Users create ho jate hain
+
+2️⃣ Example:-
+HR system me record hai:-
+EmployeeID : 1001
+Name : Rahul
+Email : rahul@company.com
+Aggregation ke baad IdentityNow me record banega:-
+{
+ "id": "2c9180847e9b1a1f017e9c1111111111",
+ "name": "Rahul",
+ "email": "rahul@company.com"
+}
+
+Isi tarah:-
+
+{
+ "id": "2c9180847e9b1a1f017e9c3333333333",
+ "name": "Amit"
+}
+------------------------------------------------------------------
+3️⃣ Jab API call karte ho:-
+GET /v3/identities
+Tab system database se users return karta hai.
+Output:-
+[
+ {
+  "id": "2c9180847e9b1a1f017e9c1111111111",
+  "name": "Rahul"
+ },
+ {
+  "id": "2c9180847e9b1a1f017e9c3333333333",
+  "name": "Amit"
+ }
+]
+Matlab:-
+Ye names system me already stored the
+API sirf unko fetch kar rahi hai.
+-------------------------------------------------------------------------
+()access-profiles ids kaha se milti hai?
+--1️⃣ Access Profile IDs kaha se milti hain
+Method 1: API se (Most common):-
+API call:-
+GET /v3/access-profiles
+Java example:-
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
+public class GetAccessProfiles {
+
+    public static void main(String[] args) throws Exception {
+
+        URL url = new URL("https://tenant.api.identitynow.com/v3/access-profiles");
+
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Authorization", "Bearer YOUR_ACCESS_TOKEN");
+
+        BufferedReader br = new BufferedReader(
+                new InputStreamReader(conn.getInputStream()));
+
+        String line;
+
+        while ((line = br.readLine()) != null) {
+            System.out.println(line);
+        }
+    }
+}
+2️⃣ Example Output:-
+System response:-
+[
+ {
+  "id": "2c9180847e9b1a1f017e9c2222222222",
+  "name": "Salesforce Read Access"
+ },
+ {
+  "id": "2c9180847e9b1a1f017e9c4444444444",
+  "name": "SAP Finance Access"
+ }
+]
+Yaha se milta hai:-
+Access Profile Name → Salesforce Read Access
+Access Profile ID → 2c9180847e9b1a1f017e9c2222222222
+--------

@@ -1,0 +1,654 @@
+6️⃣ SaaS Governance ke Important Operations / Methods:-
+IAM tools me commonly use hone wale operations:-
+
+()Common Methods / Functions of Identity Governance (SailPoint / IAM context):-
+createIdentity()
+updateIdentity()
+disableIdentity()
+enableIdentity()
+getIdentity()
+deleteIdentity()
+
+()Common Methods of Access Governance:-
+grantAccess(user, resource, entitlement)
+revokeAccess(user, resource)
+requestAccess(user, resource)
+approveAccess(request)
+
+()Common Methods Privileged Access Governance:-
+assignPrivilegedRole(user, role)
+revokePrivilegedRole(user, role)
+auditPrivilegedAccess()
+monitorPrivilegedActivity()
+
+()Common Methods of Data Governance:-
+classifyData(dataObject, sensitivityLevel)
+assignDataAccess(user, dataObject)
+auditDataAccess(user, dataObject)
+removeDataAccess(user, dataObject)
+
+()Common Methods / Tools of Risk Governance:-
+analyzeRisk()
+detectSoDViolations()
+generateRiskReport()
+remediateRisk(user, access)
+
+2️⃣ Account Methods
+createAccount()
+updateAccount()
+deleteAccount()
+disableAccount()
+getAccount()
+Example:-
+createAccount("salesforce")
+
+4️⃣ Role Methods:-
+assignRole()
+removeRole()
+getRoles()
+updateRole()
+Example:-
+assignRole("Rahul","Developer Role")
+
+5️⃣ Entitlement Methods:-
+addEntitlement()
+removeEntitlement()
+getEntitlements()
+updateEntitlement()
+
+6️⃣ Certification Methods:-
+Certification matlab manager access verify kare.
+createCertification()
+reviewCertification()
+completeCertification()
+revokeCertification()
+
+7️⃣ Provisioning Methods:-
+Provisioning matlab application me access create karna.
+provisionAccess()
+deprovisionAccess()
+syncAccounts()
+Example:-
+provisionAccess("Slack")
+
+1️⃣ Identity Governance Methods:-
+Method	                        Kya karta hai	                         Example	                                     Expected Output
+createIdentity():-----Naya user identity create karta hai IAM me:-------createIdentity("Rahul"):-----------------------"Identity Rahul created successfully"
+updateIdentity():-----Existing identity ke attributes update karta hai:-updateIdentity("Rahul", "department", "IT"):---"Identity Rahul updated: department=IT"
+disableIdentity():----User identity ko deactivate karta hai:------------disableIdentity("Rahul"):----------------------"Identity Rahul disabled"
+enableIdentity():-----Disable identity ko wapas active karta hai:-------enableIdentity("Rahul"):-----------------------"Identity Rahul enabled"
+getIdentity():--------User identity details fetch karta hai:------------getIdentity("Rahul"):--------------------------"Identity Details: Name=Rahul, Dept=IT, Status=Active"
+deleteIdentity():-----User identity permanently delete karta hai:-------deleteIdentity("Rahul"):-----------------------"Identity Rahul deleted"
+
+2️⃣ Access Governance Methods:-
+Method	                                             Kya karta hai	                                          Example	                                                 Expected Output
+grantAccess(user, resource, entitlement):-------User ko specific resource aur permission deta hai-------grantAccess("Rahul","Salesforce","Admin"):---------"Access granted: Rahul → Salesforce → Admin"
+revokeAccess(user, resource):-------------------User ka access remove karta hai-------------------------revokeAccess("Rahul","Salesforce"):----------------"Access revoked: Rahul → Salesforce"
+requestAccess(user, resource):------------------User access request karta hai---------------------------requestAccess("Rahul","GitHub"):-------------------"Access request submitted: Rahul → GitHub"
+approveAccess(request):-------------------------Manager / Approver access request approve karta hai-----approveAccess(requestId=101):----------------------"Access request 101 approved"
+
+3️⃣ Privileged Access Governance Methods:-
+Method	                                      Kya karta hai	                                                              Example	                                     Expected Output
+assignPrivilegedRole(user, role):-----User ko high-risk / admin role assign karta hai--------------------assignPrivilegedRole("Rahul","Cloud Admin"):-----------"Privileged role assigned: Rahul → Cloud Admin"
+revokePrivilegedRole(user, role):-----User ka privileged role remove karta hai---------------------------revokePrivilegedRole("Rahul","Cloud Admin"):-----------"Privileged role revoked: Rahul → Cloud Admin"
+auditPrivilegedAccess():--------------Admin / high-risk accounts ka audit report generate karta hai------auditPrivilegedAccess():-------------------------------"Privileged Access Audit: Rahul → Cloud Admin, Priya → DB Admin"
+monitorPrivilegedActivity():----------Admin account ka continuous monitoring karta hai-------------------monitorPrivilegedActivity():---------------------------"Monitoring: Rahul Cloud Admin active session"
+
+5️⃣ Risk Governance Methods:-
+Method	                              Kya karta hai	                                     Example	                         Expected Output
+analyzeRisk():-----------------System me potential risks detect karta hai-------------analyzeRisk()---------------"Risk Analysis: 2 users with toxic access"
+detectSoDViolations():---------Segregation of Duties violations detect karta hai------detectSoDViolations()-------"SoD Violations: Rahul has Approver+Requester"
+generateRiskReport():----------Risk report generate karta hai-------------------------generateRiskReport()--------"Risk Report: 2 SoD violations, 1 orphaned account"
+remediateRisk(user, access):---Risk fix karta hai, jaise access revoke----------------remediateRisk("Rahul","Salesforce Admin"):---"Risk remediated: Access revoked Rahul → Salesforce Admin"
+
+6️⃣ Account Methods:-
+Method	                        Kya karta hai	                       Example	                                                  Expected Output
+createAccount():-----Application account create karta hai--------createAccount("salesforce"):-------------------------------"Account created: salesforce"
+updateAccount():-----Account info update karta hai---------------updateAccount("salesforce","email","rahul@company.com")----"Account salesforce updated: email=rahul@company.com"
+deleteAccount():-----Account delete karta hai--------------------deleteAccount("salesforce")--------------------------------"Account deleted: salesforce"
+disableAccount():----Account disable karta hai-------------------disableAccount("salesforce")-------------------------------"Account disabled: salesforce"
+getAccount():--------Account details fetch karta hai-------------getAccount("salesforce")-----------------------------------"Account Details: salesforce, Status=Active"
+
+7️⃣ Role Methods:-
+Method	              Kya karta hai	                                               Example	                        Expected Output
+assignRole():-----User ko role assign karta hai------------------------assignRole("Rahul","Developer Role"):----------"Role assigned: Rahul → Developer Role"
+removeRole():-----Role remove karta hai--------------------------------removeRole("Rahul","Developer Role"):----------"Role removed: Rahul → Developer Role"
+getRoles():-------User ke roles fetch karta hai------------------------getRoles("Rahul"):-----------------------------"Roles: Developer Role, GitHub Access"
+updateRole():-----Role ka name ya entitlements update karta hai--------updateRole("Developer Role","Add Jira Access"):-"Role updated: Developer Role → Add Jira Access"
+
+8️⃣ Entitlement Methods:-
+Method	                    Kya karta hai	                         Example	                            Expected Output
+addEntitlement():------Naya permission add karta hai:-----addEntitlement("Salesforce","Read"):----------"Entitlement added: Salesforce → Read"
+removeEntitlement():---Permission remove karta hai:-------removeEntitlement("Salesforce","Read"):-------"Entitlement removed: Salesforce → Read"
+getEntitlements():-----Entitlements fetch karta hai:------getEntitlements("Rahul"):---------------------"Entitlements: Salesforce Admin, GitHub Read"
+updateEntitlement():---Entitlement update karta hai:------updateEntitlement("Salesforce","Read→Write"):--"Entitlement updated: Salesforce → Write"
+
+9️⃣ Certification Methods:-
+Method	                          Kya karta hai	                                                 Example	                              Expected Output
+createCertification():--Manager/auditor ke liye certification initiate karta hai:-----createCertification("Salesforce"):---------"Certification created for Salesforce"
+reviewCertification():--Manager review karta hai access-------------------------------reviewCertification(certId=101):-----------"Certification 101 reviewed"
+completeCertification():-Certification complete karta hai-----------------------------completeCertification(certId=101):---------"Certification 101 completed"
+revokeCertification():---Invalid access revoke karta hai------------------------------revokeCertification("Rahul","Salesforce Admin"):------"Certification revoked: Rahul → Salesforce Admin"
+
+🔟 Provisioning Methods:-
+Method	                Kya karta hai	                                          Example	                    Expected Output
+provisionAccess():---User ko application me access create karta hai:--------provisionAccess("Slack"):-------"Access provisioned: Slack for Rahul"
+deprovisionAccess():-Access remove karta hai:-------------------------------deprovisionAccess("Slack"):-----"Access deprovisioned: Slack for Rahul"
+syncAccounts():------System accounts sync karta hai:------------------------source ke saath	syncAccounts():-"Accounts synced with Salesforce, Slack, Jira"
+
+4️⃣ Data Governance Methods:-
+1️⃣ classifyData(dataObject, sensitivityLevel):-
+Kya karta hai?
+Ye method data ko classify karta hai ki wo kitna sensitive hai.
+Common sensitivity levels:-
+Public → sab log access kar sakte hain
+Internal → company ke employees ke liye
+Confidential → limited users
+Highly Confidential → sirf special authorized users.
+
+Example:-
+classifyData("Salary.xlsx", "Confidential");
+Expected Output:-
+Data Classified Successfully
+File: Salary.xlsx
+Sensitivity Level: Confidential
+Real Scenario:-
+HR department ke salary files ko Confidential mark kiya jata hai taaki sab employees access na kar saken.
+
+2️⃣ assignDataAccess(user, dataObject):-
+Kya karta hai?
+Ye method specific user ko specific data ka access deta hai.
+Example:-
+assignDataAccess("Rahul", "Salary.xlsx");
+Expected Output
+Access Granted
+User: Rahul
+Data: Salary.xlsx
+Permission: Read
+Real Scenario:-
+HR manager ko employee salary data ka access diya jata hai.
+
+3️⃣ auditDataAccess(user, dataObject):-
+Kya karta hai?
+Ye method check karta hai ki kis user ne data kab access kiya.
+Isse audit trail generate hota hai.
+Example:-
+auditDataAccess("Rahul", "Salary.xlsx");
+Expected Output
+Audit Log
+User: Rahul
+Data Accessed: Salary.xlsx
+Access Time: 15-Mar-2026 11:15 AM
+Action: View
+Real Scenario:-
+Agar kisi ne confidential document open kiya, system uska record store karta hai.
+
+4️⃣ removeDataAccess(user, dataObject):-
+Kya karta hai?
+Ye method user ka data access remove kar deta hai.
+Example:-
+removeDataAccess("Rahul", "Salary.xlsx");
+Expected Output
+Access Revoked
+User: Rahul
+Data: Salary.xlsx
+Real Scenario:-
+Employee department change kare ya resign kare to sensitive data access remove kar diya jata hai.
+----------------------------------------------------------------------------------------------------
+Java IAM Governance System (Without Lambda)
+import java.util.*;
+
+public class IAMGovernanceSystem {
+
+    static Map<String, String> identities = new HashMap<String, String>();
+    static Map<String, List<String>> userRoles = new HashMap<String, List<String>>();
+    static Map<String, List<String>> userAccess = new HashMap<String, List<String>>();
+
+    // ---------------- Identity Governance ----------------
+
+    public static void createIdentity(String name){
+        identities.put(name,"Active");
+        System.out.println("Identity created: "+name);
+    }
+
+    public static void updateIdentity(String name,String dept){
+        System.out.println("Identity updated: "+name+" department -> "+dept);
+    }
+
+    public static void disableIdentity(String name){
+        identities.put(name,"Disabled");
+        System.out.println("Identity disabled: "+name);
+    }
+
+    public static void enableIdentity(String name){
+        identities.put(name,"Active");
+        System.out.println("Identity enabled: "+name);
+    }
+
+    public static void getIdentity(String name){
+        System.out.println("Identity Status: "+name+" -> "+identities.get(name));
+    }
+
+    public static void deleteIdentity(String name){
+        identities.remove(name);
+        System.out.println("Identity deleted: "+name);
+    }
+
+
+    // ---------------- Access Governance ----------------
+
+    public static void grantAccess(String user,String resource,String entitlement){
+
+        if(!userAccess.containsKey(user)){
+            userAccess.put(user,new ArrayList<String>());
+        }
+
+        userAccess.get(user).add(resource+"-"+entitlement);
+
+        System.out.println("Access Granted: "+user+" -> "+resource+" ("+entitlement+")");
+    }
+
+    public static void revokeAccess(String user,String resource){
+
+        if(userAccess.containsKey(user)){
+
+            List<String> accessList = userAccess.get(user);
+
+            Iterator<String> iterator = accessList.iterator();
+
+            while(iterator.hasNext()){
+                String access = iterator.next();
+
+                if(access.startsWith(resource)){
+                    iterator.remove();
+                }
+            }
+        }
+
+        System.out.println("Access Revoked: "+user+" -> "+resource);
+    }
+
+    public static void requestAccess(String user,String resource){
+        System.out.println("Access Request Created: "+user+" -> "+resource);
+    }
+
+    public static void approveAccess(String request){
+        System.out.println("Access Request Approved: "+request);
+    }
+
+
+    // ---------------- Privileged Access Governance ----------------
+
+    public static void assignPrivilegedRole(String user,String role){
+        System.out.println("Privileged Role Assigned: "+user+" -> "+role);
+    }
+
+    public static void revokePrivilegedRole(String user,String role){
+        System.out.println("Privileged Role Revoked: "+user+" -> "+role);
+    }
+
+    public static void auditPrivilegedAccess(){
+        System.out.println("Privileged Access Audit Running...");
+    }
+
+    public static void monitorPrivilegedActivity(){
+        System.out.println("Monitoring Admin Activities...");
+    }
+
+
+    // ---------------- Data Governance ----------------
+
+    public static void classifyData(String data,String level){
+        System.out.println("Data Classified: "+data+" -> "+level);
+    }
+
+    public static void assignDataAccess(String user,String data){
+        System.out.println("Data Access Granted: "+user+" -> "+data);
+    }
+
+    public static void auditDataAccess(String user,String data){
+        System.out.println("Audit Log: "+user+" accessed "+data);
+    }
+
+    public static void removeDataAccess(String user,String data){
+        System.out.println("Data Access Revoked: "+user+" -> "+data);
+    }
+
+
+    // ---------------- Risk Governance ----------------
+
+    public static void analyzeRisk(){
+        System.out.println("Risk Analysis Completed");
+    }
+
+    public static void detectSoDViolations(){
+        System.out.println("SoD Violation Detected");
+    }
+
+    public static void generateRiskReport(){
+        System.out.println("Risk Report Generated");
+    }
+
+    public static void remediateRisk(String user,String access){
+        System.out.println("Risk Fixed: "+user+" -> "+access+" removed");
+    }
+
+
+    // ---------------- Account Methods ----------------
+
+    public static void createAccount(String app){
+        System.out.println("Account Created in "+app);
+    }
+
+    public static void updateAccount(String app){
+        System.out.println("Account Updated in "+app);
+    }
+
+    public static void deleteAccount(String app){
+        System.out.println("Account Deleted in "+app);
+    }
+
+    public static void disableAccount(String app){
+        System.out.println("Account Disabled in "+app);
+    }
+
+    public static void getAccount(String app){
+        System.out.println("Fetching Account Details from "+app);
+    }
+
+
+    // ---------------- Role Methods ----------------
+
+    public static void assignRole(String user,String role){
+
+        if(!userRoles.containsKey(user)){
+            userRoles.put(user,new ArrayList<String>());
+        }
+
+        userRoles.get(user).add(role);
+
+        System.out.println("Role Assigned: "+user+" -> "+role);
+    }
+
+    public static void removeRole(String user,String role){
+
+        if(userRoles.containsKey(user)){
+            userRoles.get(user).remove(role);
+        }
+
+        System.out.println("Role Removed: "+user+" -> "+role);
+    }
+
+    public static void getRoles(String user){
+        System.out.println("Roles for "+user+" : "+userRoles.get(user));
+    }
+
+    public static void updateRole(String role){
+        System.out.println("Role Updated: "+role);
+    }
+
+
+    // ---------------- Entitlement Methods ----------------
+
+    public static void addEntitlement(String app,String entitlement){
+        System.out.println("Entitlement Added: "+app+" -> "+entitlement);
+    }
+
+    public static void removeEntitlement(String app,String entitlement){
+        System.out.println("Entitlement Removed: "+app+" -> "+entitlement);
+    }
+
+    public static void getEntitlements(String app){
+        System.out.println("Fetching Entitlements for "+app);
+    }
+
+    public static void updateEntitlement(String entitlement){
+        System.out.println("Entitlement Updated: "+entitlement);
+    }
+
+
+    // ---------------- Certification ----------------
+
+    public static void createCertification(){
+        System.out.println("Certification Campaign Created");
+    }
+
+    public static void reviewCertification(){
+        System.out.println("Manager Reviewing Certification");
+    }
+
+    public static void completeCertification(){
+        System.out.println("Certification Completed");
+    }
+
+    public static void revokeCertification(){
+        System.out.println("Access Revoked During Certification");
+    }
+
+
+    // ---------------- Provisioning ----------------
+
+    public static void provisionAccess(String app){
+        System.out.println("Provisioning Access in "+app);
+    }
+
+    public static void deprovisionAccess(String app){
+        System.out.println("Deprovisioning Access from "+app);
+    }
+
+    public static void syncAccounts(){
+        System.out.println("Accounts Synced from Applications");
+    }
+
+
+    // ---------------- Main Method ----------------
+
+    public static void main(String[] args) {
+
+        createIdentity("Rahul");
+
+        assignRole("Rahul","Developer Role");
+
+        grantAccess("Rahul","Salesforce","Read");
+
+        provisionAccess("Slack");
+
+        classifyData("Salary.xlsx","Confidential");
+
+        analyzeRisk();
+
+        createCertification();
+
+        syncAccounts();
+    }
+}
+Program Output
+Identity created: Rahul
+Role Assigned: Rahul -> Developer Role
+Access Granted: Rahul -> Salesforce (Read)
+Provisioning Access in Slack
+Data Classified: Salary.xlsx -> Confidential
+Risk Analysis Completed
+Certification Campaign Created
+Accounts Synced from Applications
+-----------------------------------------------------------------------------------
+SaaS Governance Java Project (Without Lambda & Without * Import)
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+public class SaaSGovernanceSystem {
+
+    static Map<String,String> users = new HashMap<String,String>();
+    static Map<String,List<String>> userApps = new HashMap<String,List<String>>();
+    static List<String> auditLogs = new ArrayList<String>();
+
+
+    // ---------------- USER MANAGEMENT ----------------
+
+    public static void createUser(String name){
+
+        users.put(name,"Active");
+
+        System.out.println("User created: " + name);
+
+        auditLogs.add("User created -> " + name);
+    }
+
+    public static void disableUser(String name){
+
+        users.put(name,"Disabled");
+
+        System.out.println("User disabled: " + name);
+
+        auditLogs.add("User disabled -> " + name);
+    }
+
+    public static void getUserStatus(String name){
+
+        System.out.println("User Status: " + users.get(name));
+    }
+
+
+
+    // ---------------- SAAS APPLICATION ----------------
+
+    public static void addApplication(String user,String app){
+
+        if(!userApps.containsKey(user)){
+
+            userApps.put(user,new ArrayList<String>());
+        }
+
+        userApps.get(user).add(app);
+
+        System.out.println("Application Added: " + user + " -> " + app);
+
+        auditLogs.add("App access granted -> " + user + " -> " + app);
+    }
+
+    public static void removeApplication(String user,String app){
+
+        if(userApps.containsKey(user)){
+
+            List<String> list = userApps.get(user);
+
+            int i;
+
+            for(i=0;i<list.size();i++){
+
+                if(list.get(i).equals(app)){
+
+                    list.remove(i);
+
+                    break;
+                }
+            }
+        }
+
+        System.out.println("Application Removed: " + user + " -> " + app);
+
+        auditLogs.add("App access removed -> " + user + " -> " + app);
+    }
+
+
+
+    // ---------------- ACCESS REQUEST ----------------
+
+    public static void requestAccess(String user,String app){
+
+        System.out.println("Access request created: " + user + " -> " + app);
+
+        auditLogs.add("Access request -> " + user + " -> " + app);
+    }
+
+    public static void approveAccess(String user,String app){
+
+        addApplication(user,app);
+
+        System.out.println("Manager approved access");
+
+        auditLogs.add("Access approved -> " + user + " -> " + app);
+    }
+
+
+
+    // ---------------- PROVISIONING ----------------
+
+    public static void provisionAccount(String user,String app){
+
+        System.out.println("Provisioning account in " + app + " for " + user);
+
+        auditLogs.add("Provisioning -> " + user + " -> " + app);
+    }
+
+    public static void deprovisionAccount(String user,String app){
+
+        removeApplication(user,app);
+
+        System.out.println("Deprovisioning account from " + app);
+
+        auditLogs.add("Deprovision -> " + user + " -> " + app);
+    }
+
+
+
+    // ---------------- AUDIT ----------------
+
+    public static void showAuditLogs(){
+
+        System.out.println("------ AUDIT TRAIL ------");
+
+        int i;
+
+        for(i=0;i<auditLogs.size();i++){
+
+            System.out.println(auditLogs.get(i));
+        }
+    }
+
+
+
+    // ---------------- MAIN METHOD ----------------
+
+    public static void main(String[] args) {
+
+        createUser("Rahul");
+
+        requestAccess("Rahul","Slack");
+
+        approveAccess("Rahul","Slack");
+
+        provisionAccount("Rahul","Slack");
+
+        requestAccess("Rahul","Salesforce");
+
+        approveAccess("Rahul","Salesforce");
+
+        provisionAccount("Rahul","Salesforce");
+
+        showAuditLogs();
+    }
+}
+Program Output
+User created: Rahul
+Access request created: Rahul -> Slack
+Application Added: Rahul -> Slack
+Manager approved access
+Provisioning account in Slack for Rahul
+Access request created: Rahul -> Salesforce
+Application Added: Rahul -> Salesforce
+Manager approved access
+Provisioning account in Salesforce for Rahul
+
+------ AUDIT TRAIL ------
+User created -> Rahul
+Access request -> Rahul -> Slack
+App access granted -> Rahul -> Slack
+Access approved -> Rahul -> Slack
+Provisioning -> Rahul -> Slack
+Access request -> Rahul -> Salesforce
+App access granted -> Rahul -> Salesforce
+Access approved -> Rahul -> Salesforce
+Provisioning -> Rahul -> Salesforce

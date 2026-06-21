@@ -1,0 +1,277 @@
+()Technical Role kya hai?
+--Technical Role (Simplest Version)
+Definition: Ye system-specific role hai jo actual permissions aur access deta hai.
+Purpose: Business Role ke high-level access ko real system me implement karna.
+Ek line me:-
+“Technical Role = system/application me real access ka package”
+
+Example Table:-
+Technical Role	     Application	                  Permissions
+SAP Admin----------------SAP------------Read/Write Finance Reports, Payroll Access
+Salesforce User--------Salesforce-------View/Edit Leads, Opportunities
+Jira Developer-----------Jira-----------Create/Assign/Update Tickets
+
+5️⃣ Example Scenario (Code Concept):-
+Identity rahul = getIdentity("EMP12345");
+
+import java.util.ArrayList;
+import java.util.List;
+
+class TechnicalRole {
+
+    String roleName;
+    String application;
+    List<String> permissions = new ArrayList<String>();
+
+    TechnicalRole(String roleName) {
+        this.roleName = roleName;
+    }
+
+    void addPermission(String permission) {
+        permissions.add(permission);
+    }
+
+    void setApplication(String application) {
+        this.application = application;
+    }
+}
+
+class BusinessRole {
+
+    String roleName;
+    List<TechnicalRole> technicalRoles = new ArrayList<TechnicalRole>();
+
+    BusinessRole(String roleName) {
+        this.roleName = roleName;
+    }
+
+    void addTechnicalRole(TechnicalRole role) {
+        technicalRoles.add(role);
+    }
+}
+
+class Identity {
+
+    String empId;
+    List<BusinessRole> businessRoles = new ArrayList<BusinessRole>();
+
+    Identity(String empId) {
+        this.empId = empId;
+    }
+
+    void assignBusinessRole(BusinessRole role) {
+
+        businessRoles.add(role);
+
+        System.out.println("Business Role Assigned: " + role.roleName);
+
+        // Apply permissions automatically
+        for (TechnicalRole tRole : role.technicalRoles) {
+
+            System.out.println("Application: " + tRole.application);
+
+            for (String perm : tRole.permissions) {
+                System.out.println("Permission Granted: " + perm);
+            }
+        }
+
+        enforcePolicies(role);
+    }
+
+    void enforcePolicies(BusinessRole role) {
+
+        System.out.println("Checking Security Policies...");
+
+        // Example SoD Policy
+        boolean hasRead = false;
+        boolean hasWrite = false;
+
+        for (TechnicalRole tRole : role.technicalRoles) {
+            for (String perm : tRole.permissions) {
+
+                if (perm.equals("Read Finance Reports")) {
+                    hasRead = true;
+                }
+
+                if (perm.equals("Write Finance Reports")) {
+                    hasWrite = true;
+                }
+            }
+        }
+
+        if (hasRead && hasWrite) {
+            System.out.println("SoD Warning: User has both Read and Write Finance access.");
+        }
+
+        // MFA Simulation
+        System.out.println("MFA Required for Finance System Access.");
+    }
+}
+
+public class IAMExample {
+
+    static Identity getIdentity(String empId) {
+        return new Identity(empId);
+    }
+
+    public static void main(String[] args) {
+
+        Identity rahul = getIdentity("EMP12345");
+
+        // Define Technical Role
+        TechnicalRole sapAdmin = new TechnicalRole("SAP Admin");
+        sapAdmin.addPermission("Read Finance Reports");
+        sapAdmin.addPermission("Write Finance Reports");
+        sapAdmin.setApplication("SAP");
+
+        // Define Business Role
+        BusinessRole financeManager = new BusinessRole("Finance Manager");
+        financeManager.addTechnicalRole(sapAdmin);
+
+        // Assign Business Role
+        rahul.assignBusinessRole(financeManager);
+    }
+}
+///////*
+()role.technicalRoles:-
+➡ TechnicalRole objects ki list return karega,
+
+()agar tumne likha ye:-
+TechnicalRole sapAdmin = new TechnicalRole("SAP Admin");
+TechnicalRole sapViewer = new TechnicalRole("SAP Viewer");
+BusinessRole financeManager = new BusinessRole("Finance Manager");
+financeManager.addTechnicalRole(sapAdmin);
+financeManager.addTechnicalRole(sapViewer);
+
+To return hoga:-
+[SAP Admin, SAP Viewer]
+*//////
+------------------------------------------------------------------------------------------------------
+()multilple users with multiple technicalRoles:-
+------------------------------------------------------------------------------------------------------
+import java.util.ArrayList;
+import java.util.List;
+
+class TechnicalRole {
+
+    String roleName;
+    String application;
+    List<String> permissions = new ArrayList<String>();
+
+    TechnicalRole(String roleName) {
+        this.roleName = roleName;
+    }
+
+    void setApplication(String app) {
+        this.application = app;
+    }
+
+    void addPermission(String perm) {
+        permissions.add(perm);
+    }
+}
+
+class BusinessRole {
+
+    String roleName;
+    List<TechnicalRole> technicalRoles = new ArrayList<TechnicalRole>();
+
+    BusinessRole(String roleName) {
+        this.roleName = roleName;
+    }
+
+    void addTechnicalRole(TechnicalRole role) {
+        technicalRoles.add(role);
+    }
+}
+
+class Identity {
+
+    String name;
+    List<BusinessRole> roles = new ArrayList<BusinessRole>();
+
+    Identity(String name) {
+        this.name = name;
+    }
+
+    void assignBusinessRole(BusinessRole role) {
+
+        roles.add(role);
+
+        System.out.println("\nUser: " + name);
+        System.out.println("Business Role: " + role.roleName);
+
+        for (TechnicalRole tRole : role.technicalRoles) {
+
+            System.out.println(" Application: " + tRole.application);
+            System.out.println(" Technical Role: " + tRole.roleName);
+
+            for (String perm : tRole.permissions) {
+                System.out.println("  Permission: " + perm);
+            }
+        }
+    }
+}
+
+public class IAMSystem {
+
+    public static void main(String[] args) {
+
+        // Technical Role 1
+        TechnicalRole sapAdmin = new TechnicalRole("SAP Admin");
+        sapAdmin.setApplication("SAP");
+        sapAdmin.addPermission("Read Finance Reports");
+        sapAdmin.addPermission("Write Finance Reports");
+
+        // Technical Role 2
+        TechnicalRole oracleDBA = new TechnicalRole("Oracle DBA");
+        oracleDBA.setApplication("Oracle DB");
+        oracleDBA.addPermission("Read Database");
+        oracleDBA.addPermission("Modify Database");
+
+        // Business Role
+        BusinessRole financeManager = new BusinessRole("Finance Manager");
+
+        financeManager.addTechnicalRole(sapAdmin);
+        financeManager.addTechnicalRole(oracleDBA);
+
+        // Multiple Users
+        Identity rahul = new Identity("Rahul");
+        Identity ram = new Identity("Ram");
+        Identity raman = new Identity("Raman");
+
+        List<Identity> users = new ArrayList<Identity>();
+
+        users.add(rahul);
+        users.add(ram);
+        users.add(raman);
+
+        // Assign role to all users
+        for (Identity user : users) {
+            user.assignBusinessRole(financeManager);
+        }
+    }
+}
+
+Output Example:-
+User: Rahul
+Business Role: Finance Manager
+ Application: SAP
+ Technical Role: SAP Admin
+  Permission: Read Finance Reports
+  Permission: Write Finance Reports
+ Application: Oracle DB
+ Technical Role: Oracle DBA
+  Permission: Read Database
+  Permission: Modify Database
+
+User: Ram
+Business Role: Finance Manager
+ Application: SAP
+ Technical Role: SAP Admin
+  Permission: Read Finance Reports
+  Permission: Write Finance Reports
+ Application: Oracle DB
+ Technical Role: Oracle DBA
+  Permission: Read Database
+  Permission: Modify Database

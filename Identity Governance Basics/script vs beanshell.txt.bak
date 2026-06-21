@@ -1,0 +1,75 @@
+()Script vs Beanshell kya antar hai?
+--🟡 2. BeanShell kya hota hai?
+BeanShell = Specific scripting language
+Ye Java-based scripting language hai
+Java jaisa hi syntax hota hai
+SailPoint me mostly isi ka use hota hai,
+👉 Matlab:-
+BeanShell ek type ka script hai (Java jaisa).
+🔹 3. BeanShell (Java ka Lite Version);-
+BeanShell = Java-based scripting language
+Compile nahi karna padta
+Direct run hota hai
+Java jaisa syntax
+✔️ BeanShell Example:-
+System.out.println("Hello Bhai");
+int x = 10;
+print(x);
+👉 Note:-
+class, main() ki zarurat nahi
+Direct code likh ke run
+--------------------------------------------------
+🔹 1. Script (Sabse upar wala concept):-
+Script = Generic term
+Matlab: koi bhi code jo directly run hota hai
+Language koi bhi ho sakti:-
+JavaScript
+Python
+BeanShell
+Groovy
+👉 Simple:-
+Script = “koi bhi chhota program jo run ho”
+
+🔹 Script kya hai?
+👉 Script = aisa code jo directly run hota hai (compile ki zarurat nahi hoti)
+Short aur fast likha jata hai
+Mostly automation ya chhote tasks ke liye use hota hai
+📌 Simple line:-
+Script = Direct run hone wala code.
+
+❓ Kya saare languages script hote hain?
+👉 ❌ Nahi bhai, sab languages script nahi hote
+
+Languages 2 type ke hote hain 👇
+
+🔵 1. Scripting Languages:-
+Ye directly run ho jate hain (interpreter use hota hai):-
+✔️ Examples:-
+JavaScript
+Python
+BeanShell
+Bash
+👉 Inme:-
+Compile nahi karna
+Direct run
+
+🔴 2. Programming Languages (Compiled):-
+Ye pehle compile hote hain fir run
+✔️ Examples:-
+Java
+C
+C++
+👉 Inme:-
+.class ya .exe banta hai
+Fir run hota hai.
+
+-------------------------------------------------------
+🔥 Main Differences (Power Table):-
+Feature	    Script	         Java	            BeanShell
+Type	    Generic term	Language	       Script language
+Compile	    Depends	        ✅ Yes	             ❌ No
+Execution	Direct	     JVM via compile	     Direct
+Syntax	    Depends	        Strict	            Java jaisa
+Speed	    Medium	      🔥 Fast	              Slow
+Use	       Automation	Apps, backend	       SailPoint rules
+------------------------------------------------------------------------

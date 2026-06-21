@@ -1,0 +1,340 @@
+()🔹ResourceObject kya hai?
+👉 ResourceObject ek representation object hai,
+👉 Simple me:-
+“External system (AD, LDAP, DB, SAP) ka ek account/object ka data hold karta hai”
+🔥 Simple Hinglish:-
+👉
+“Target system (jaise Active Directory) ka user data SailPoint me lane ke liye ResourceObject use hota hai”
+“Jab SailPoint bahar ke system se user data uthata hai, wo pehle ResourceObject me aata hai”
+“ResourceObject external system se data laata bhi hai (aggregation) aur external system me data bhejta bhi hai (provisioning)”
+
+🔥 🔹 Ye karta kya hai?
+1️⃣ External data hold karta hai
+👉 Jaise:-
+username
+email
+roles
+groups
+--------------------------------------------
+🔹 2️⃣ Aggregation me ResourceObject ka use:-
+👉 Kya hota hai?
+👉 Jab SailPoint external system (AD/LDAP/DB) se data pull karta hai
+toh woh ResourceObject me hi hold hota hai.
+🔥 Real Flow:-
+Connector AD se data laata hai
+Har record ke liye ek ResourceObject banta hai
+Usme attributes fill hote hain
+🔹 Example:-
+👉 AD se data aaya:-
+Field	        Value
+sAMAccountName:-rahul
+mail:-------rahul@gmail.com
+👉 ResourceObject me convert:-
+nativeIdentity = rahul
+email = rahul@gmail.com
+department = IT
+------------------------------------------------------
+3️⃣ Provisioning me use hota hai?
+👉 Jab tu account create/update/delete karta hai,
+toh sailpoint ke through resourceobject hi data leke dusre external system(AD/SAP) me data bhejta hai.
+
+🔥 Real Flow:-
+Tu request deta hai (create/update/delete)
+ProvisioningPlan banta hai
+Connector call hota hai
+ResourceObject ban ke data bheja jata hai
+🔹 Example:-
+()👉 Tu new user create karta hai:-
+username = rahul
+email = rahul@gmail.com
+
+()👉 Ye ResourceObject banega:-
+operation = CREATE
+nativeIdentity = rahul
+email = rahul@gmail.com
+👉 Connector AD me push karega.
+------------------------------------------------------
+4️⃣ Attribute mapping karta hai:-
+👉 External → SailPoint mapping:-
+👉 External fields ko SailPoint ke fields me convert karta hai
+
+🔥 Problem samajh:-
+
+👉 AD me field:-
+sAMAccountName
+
+👉 SailPoint me:-
+name
+
+👉 Direct match nahi hai ❌
+
+🔥 Solution → Mapping
+👉 ResourceObject ke through mapping hoti hai:-
+sAMAccountName → name
+mail → email
+
+🔹 Example:-
+👉 ResourceObject:-
+sAMAccountName = rahul
+mail = rahul@gmail.com
+
+👉 Mapping ke baad:-
+Identity.name = rahul
+Identity.email = rahul@gmail.com
+----------------------------------------------------------------------------------------------------------------------------------------------
+🔥 🔹 DB me kya store hota hai?
+👉 ❌ ResourceObject directly DB me store nahi hota
+👉 Ye temporary runtime object hai.
+----------------------------------------------------------
+🔥 🔹 Andar kya kya hota hai?
+📌 1️⃣ Native Identity
+getNativeIdentity()
+👉 External system ka unique ID
+👉 Example:-
+CN=rahul,OU=Users,DC=company
+
+📌 2️⃣ Attributes (MOST IMPORTANT)
+getAttribute("email")
+getAttributes()
+👉 Map format me hota hai:-
+username = rahul
+email = rahul@gmail.com
+department = IT
+
+📌 3️⃣ Object Type:-
+getObjectClass()
+👉 Example:-
+account
+group
+
+📌 4️⃣ Operation:-
+getOperation()
+👉 CREATE / MODIFY / DELETE
+
+📌 5️⃣ Status:-
+isDisabled()
+isDeleted()
+--------------------------------------------------------------------------------------------
+🔥 1️⃣ ResourceObject Types (Detail me)
+👉 Ye decide karta hai ki object kis type ka hai (account, group, etc.)
+
+📌 1. ACCOUNT (Most Important):-
+👉 External system ka user account represent karta hai
+👉 Aggregation me user data aata hai aur provisioning me account create/update hota hai
+🔹 Example:-
+AD User: rahul
+DB User: rahul_db
+
+👉 Attributes:-
+username
+email
+department
+
+📌 2. GROUP:-
+👉 Security group ya distribution group represent karta hai
+👉 User ke access control aur membership manage karta hai
+🔹 Example:-
+IT_Admins
+HR_Team
+👉 Use:-
+Group membership mapping
+Entitlement assignment
+
+📌 3. ENTITLEMENT:-
+👉 Permissions ya access rights ko represent karta hai
+👉 Fine-grained access control ke liye use hota hai
+🔹 Example:-
+READ_ACCESS
+WRITE_ACCESS
+EXECUTE_ACCESS
+
+👉 Use:-
+Authorization
+Policy evaluation
+
+📌 4. ROLE:-
+👉 Business/application role represent karta hai
+👉 Multiple entitlements ka bundle hota hai
+
+🔹 Example:-
+Manager Role
+Admin Role
+
+👉 Use:-
+RBAC (Role-Based Access Control)
+
+📌 5. CUSTOM OBJECT:-
+👉 Jab application ka structure standard nahi hota
+👉 Tab custom object banaya jata hai
+🔹 Example:-
+InvoiceObject
+ProjectObject
+-------------------------------------------------------
+🔥 2️⃣ ResourceObject Status (ALL):-
+👉 Ye object ka current state batata hai
+
+📌 1. ACTIVE (Default):-
+👉 Account active hai
+👉 Login allowed hai
+
+📌 2. DISABLED:-
+👉 Account temporarily disabled hai
+👉 Login allowed nahi
+isDisabled()
+setDisabled(true)
+
+📌 3. DELETED:-
+👉 Account permanently remove ho gaya
+👉 System me exist nahi karta
+isDeleted()
+setDeleted(true)
+
+📌 4. LOCKED (Indirect):-
+👉 Account locked hai (failed login etc.)
+👉 Attribute based hota hai
+
+📌 5. EXPIRED:-
+👉 Password ya account expire ho gaya
+👉 Login restricted hai
+
+📌 6. PENDING / NEW:-
+👉 Account create hone wala hai
+👉 Provisioning pending hai
+
+📌 7. ENABLED:-
+👉 Disabled se wapas active hua
+-------------------------------------------------
+🔥 3️⃣ Operation Types (Provisioning):-
+👉 Ye batata hai kya action perform hoga
+Operation	Meaning
+CREATE	  new account
+MODIFY	   update
+DELETE	   remove
+ENABLE	   enable
+DISABLE	   disable
+--------------------------------------------------
+--------------------------------------------------------------------------------------------
+🔥 🔹 1️⃣ objectType kya hai?
+👉 objectType = actual object ka exact type (technical level)
+👉 Ye batata hai:
+ye object account hai
+ya group hai
+ya entitlement hai
+
+🔥 🔹 type kya karta hai?
+1️⃣ Categorize karta hai
+👉 Objects ko group karta hai
+admin user
+normal user
+guest user
+👉 manager, 
+developer,
+ employee, 
+ HR, 
+ owner — ye sab type ke examples ho sakte hain in
+ResourceObject.
+--------------------------------------------------------------------------------------------------------------------------------
+🔥 4️⃣ ResourceObject Methods (FULL LIST):-
+()👉 Saare methods ResourceObject (object) pe chalte hain,
+
+------------------------------------------------------
+📌 A. Identity / Core Methods
+getNativeIdentity():-
+👉 External system ka unique identifier return karta hai
+👉 Example: username ya DN
+
+setNativeIdentity(String id):-
+👉 External ID set karta hai
+👉 Provisioning me target account identify karta hai
+
+getObjectClass():-
+👉 Object ka type return karta hai (account/group)
+👉 Processing logic decide hota hai
+
+setObjectClass(String type):-
+👉 Object type set karta hai
+👉 Connector ko batata hai kya process karna hai.
+
+------------------------------------------------------
+📌 B. Attribute Methods (MOST IMPORTANT):-
+getAttribute(String name):-
+👉 Specific attribute ka value return karta hai
+👉 Mapping aur validation me use hota hai
+
+setAttribute(String name, Object value):-
+👉 Attribute value set karta hai
+👉 Provisioning me data send karne ke liye use hota hai
+
+getAttributes():-
+👉 Saare attributes ka map return karta hai
+👉 Debugging aur bulk processing me useful
+
+setAttributes(Map attrs):-
+👉 Multiple attributes ek saath set karta hai
+👉 Performance optimized approach hai
+
+📌 C. Operation Methods:-
+getOperation():-
+👉 Current operation return karta hai
+👉 Provisioning engine ko guide karta hai
+
+setOperation(Operation op):-
+👉 Operation type set karta hai
+👉 Connector ko action batata hai
+
+📌 D. Status Methods:-
+isDisabled():-
+👉 Check karta hai disabled hai ya nahi
+👉 True hone par login block
+
+setDisabled(boolean flag):-
+👉 Enable/disable karta hai account
+👉 Provisioning action control karta hai
+
+isDeleted():-
+👉 Check karta hai delete hua hai ya nahi
+👉 True hone par object invalid
+
+setDeleted(boolean flag):-
+👉 Object ko deleted mark karta hai
+👉 Aggregation/provisioning me delete indicate karta hai
+
+📌 E. Metadata Methods:-
+getDisplayName():-
+👉 User-friendly name return karta hai
+👉 UI aur logging me use hota hai
+
+setDisplayName(String name):-
+👉 Display name set karta hai
+👉 Reporting ke liye useful
+
+getType():-
+👉 Object ka higher-level classification return karta hai,
+👉 Ye batata hai object kis category ka hai,
+👉 Advanced processing me use hota hai.
+
+setType(String type):-
+👉 Type define karta hai
+👉 Custom logic ke liye use hota hai
+
+📌 F. Utility Methods:-
+addAttribute(String name, Object value):-
+👉 Existing attributes me naya value add karta hai
+👉 Multi-value fields ke liye useful
+
+removeAttribute(String name):-
+👉 Attribute remove karta hai
+👉 Cleanup ya update me use hota hai
+
+hasAttribute(String name):-
+👉 Check karta hai attribute exist karta hai ya nahi
+👉 Null-safe coding ke liye use hota hai
+
+📌 G. Schema Methods
+getSchema():-
+“Jo object ResourceObject represent kar raha hai (account/group/etc.), usi ka schema milega”
+👉 Attribute validation ke liye use hota hai
+
+setSchema(Schema schema):-
+👉 Schema assign karta hai
+👉 Connector ko structure batata hai

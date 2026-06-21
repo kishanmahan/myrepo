@@ -1,0 +1,185 @@
+----------------------------------------------------------------------------------------------------------
+7️⃣ Role Mining:-
+Role Mining ka use hota hai roles automatically discover karne ke liye.
+
+System check karta hai:-
+Kis department ke users ke paas same access hai.
+
+Fir suggest karta hai:-
+➡ Isko ek role bana do
+
+Example:-
+HR department ke sab users ke paas same access hai.
+
+System bolega:-
+Create role = HR Role
+
+1️⃣ Role Mining Overview:-
+Role Mining का main goal:-
+✔ Manual role creation कम करना
+✔ Users के access pattern analyze करना
+✔ Automatic role suggestion देना
+
+Process:-
+User Access Data
+      ↓
+Role Mining Analysis
+      ↓
+Suggested Roles
+      ↓
+Role Creation
+
+2️⃣ Role Mining Types:-
+1️⃣ Automatic Role Discovery
+System automatically roles suggest करता है।
+Example:-
+User A → App1 Read, App2 Write
+User B → App1 Read, App2 Write
+User C → App1 Read, App2 Write
+
+System बोलेगा:-
+Suggested Role:-
+Finance_Read_Write
+
+2️⃣ Manual Role Analysis:-
+Admin manually access pattern analyze करता है।
+Steps:-
+User access data देखना
+Common entitlements identify करना
+Role create करना
+-------------------------------------------------
+3️⃣ Role Mining Data Sources:-
+Role mining data कहाँ से आता है:
+✔ Aggregated accounts
+✔ Entitlements
+✔ Roles
+✔ Identity cube
+✔ Account groups
+
+4️⃣ Role Mining Process (Step by Step)
+Step 1
+Accounts aggregate करना
+
+Step 2
+Identity refresh करना
+
+Step 3
+Access pattern analyze करना
+
+Step 4
+Suggested roles generate करना
+
+Step 5
+Role create करना
+-----------------------------------------------
+5️⃣ Role Mining Algorithms;-
+Role mining analysis में algorithms use होते हैं।
+
+1️⃣ Frequency analysis:-
+सबसे common entitlements detect करता है।
+Example:-
+App1 Read → 90 users
+App2 Write → 80 users
+
+2️⃣ Clustering:-
+Similar users को group करता है।
+Example:-
+Group1 → HR users
+Group2 → Finance users
+
+3️⃣ Pattern detection:-
+Access combinations identify करता है।
+Example:-
+App1 Read + App2 Write + App3 Execute
+--------------------------------------------
+6️⃣ Role Mining Analysis:-
+Analysis में system check करता है:-
+✔ Common access
+✔ Entitlement combinations
+✔ User groups
+✔ Department access
+
+7️⃣ Role Mining Metrics:-
+System metrics generate करता है:
+
+--Coverage:-
+Role कितने users cover करता है
+Coverage = 70%
+
+--Confidence:-
+Role कितना accurate है
+Confidence = 85%
+
+--Risk Score:-
+Role का security risk
+
+8️⃣ Role Mining Output:-
+System role suggestions देता है।
+
+Example:-
+Suggested Role:-
+HR_Manager_Role
+
+Includes:-
+HR_App_Read
+HR_App_Write
+Payroll_View
+
+9️⃣ Role Mining Validation:-
+Admin verify करता है:-
+✔ Entitlements correct हैं या नहीं
+✔ Users सही हैं या नहीं
+✔ Risk acceptable है या नहीं
+
+🔟 Role Creation from Mining:-
+Admin suggested role को convert करता है।
+Steps:-
+Role Mining Result
+     ↓
+Admin Review
+     ↓
+Create Role
+     ↓
+Assign Role
+
+1️⃣1️⃣ Role Mining Configuration:-
+Admin configure करता है:-
+✔ Data sources
+✔ Analysis rules
+✔ Threshold values
+
+Example:-
+Minimum users = 10
+Confidence = 80%
+
+1️⃣2️⃣ Role Mining Reports
+Reports generate होते हैं।
+
+Examples:-
+✔ Role mining suggestions
+✔ Access patterns
+✔ Role coverage
+
+1️⃣3️⃣ Role Mining Benefits:-
+✔ Automatic role discovery
+✔ Less manual work
+✔ Better governance
+✔ Compliance improvement
+
+1️⃣4️⃣ Role Mining Challenges:-
+❌ Complex entitlement combinations
+❌ Large datasets
+❌ Incorrect suggestions
+
+1️⃣5️⃣ Role Mining Best Practices:-
+✔ Regular aggregation
+✔ Identity refresh
+✔ Role validation
+✔ Risk review
+
+🔥 Important Developer Concepts:-
+Developer को ये समझना जरूरी है:-
+✔ Identity cube
+✔ Entitlements
+✔ Role hierarchy
+✔ Access pattern

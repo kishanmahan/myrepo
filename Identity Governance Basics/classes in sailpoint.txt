@@ -1,0 +1,138 @@
+-----------------------------
+-----------------------------
+xml
+Configuration
+Connector
+ConnectorFactory
+ConnectorRule
+ConnectorConfig
+------------------------------
+------------------------------------------------------------------------------------------------------------
+()Notepad/standalone me run kar sake, bina Spring ya kisi framework ke, pure SailPoint SDK use karke.
+Ek SailPoint production project ke core components ki list ye rahi:-
+Core Components List
+Applications (Connectors)
+Identity Cubes (Profiles)
+Identity Mappings
+Correlation Rules
+Workflows (Business Processes)
+Business & IT Roles (RBAC)
+Entitlements
+Policies (SOD & Risk)
+Certification Campaigns
+Tasks (Aggregation, Refresh, Prune)
+Quicklinks & Launchpad
+Forms (Provisioning & Workflow Forms)
+Email Templates
+Audit Logs & Reports
+Scopes & Capabilities
+Plugins (Custom UI/Tools)
+Password Policies
+Object Config (Global Settings)
+
+()SailPoint Developer's Core Task List:-//ye karna hai niche ka.
+Rule Writing (BeanShell/Java)
+Workflow Designing (XML based business processes)
+Custom Connector Development (Java)
+XML Object Configuration (Import/Export/Debugging)
+Application Schema Mapping
+Correlation & Manager Correlation Logic
+Identity Attribute Transformations
+Form Development (Dynamic UI forms with validation)
+Email Template Customization (Velocity/HTML)
+Task Definition Creation (Custom background jobs)
+Plugin Development (Custom UI/API extensions)
+Build & Deployment Automation (SSB - SailPoint Services Build/IIQDA)
+API Integration (REST/SOAP calls via code)
+Unit Testing & Debugging (Using logs and console)
+Rule Libraries Creation (Reusable code functions)
+----------------------------------------------------------------
+💡 Rule vs ViolationRule (Full Detail – SailPoint):-
+🔹 1️⃣ Rule kya hota hai?
+
+👉 Rule = Reusable Java-based logic block
+Ye SailPoint ka core concept hai jahan tum custom logic likhte ho
+
+🔧 Rule kaha use hota hai?
+Identity creation/update
+Provisioning (account create/delete)
+Approval flow
+Attribute transformation
+Connector logic
+
+📦 Internally kya hota hai?
+Rule ek XML object hota hai
+Uske andar Java code hota hai
+SailPoint runtime pe execute karta hai
+
+🧠 Real Example:-
+<Rule name="CheckDepartmentRule" type="Identity">
+    <Source>
+        if(identity.getDepartment().equals("IT")) {
+            return true;
+        }
+        return false;
+    </Source>
+</Rule>
+🔍 Samajh:-
+👉 Ye rule bas ek condition check kar raha hai,
+👉 Koi violation ya risk detect nahi kar raha.
+
+🔹 2️⃣ ViolationRule kya hota hai?
+👉 ViolationRule = Special type ka Rule jo Policy violation detect karta hai,
+Ye normal rule nahi hai — ye specifically Policy Engine ke saath use hota hai.
+
+🔧 Ye kaha use hota hai?
+Policy check ke time
+SoD (Segregation of Duties)
+Compliance validation
+Access certification
+
+📦 Internally kya hota hai?
+Ye bhi XML + Java hota hai
+Lekin output me Violation object / message deta hai
+Policy system ko batata hai: "problem hai"
+
+🧠 Real Example:-
+<Rule name="SoDViolationRule" type="Violation">
+    <Source>
+        if(identity.hasRole("Admin") && identity.hasRole("Auditor")) {
+            return "Violation: Admin + Auditor not allowed";
+        }
+        return null;
+    </Source>
+</Rule>
+🔍 Samajh:-
+👉 Ye rule risk detect kar raha hai
+👉 Agar condition true → violation generate
+👉 Agar false → koi issue nahi.
+
+🔸 Execution Level difference:-
+Point	              Rule	                      ViolationRule
+Execution-----------Har jagah----------------Sirf Policy evaluation me
+Trigger-------------Developer call/config----Policy engine automatically
+Context-------------Flexible-----------------------Policy context
+
+🔸 Output Difference:-
+Rule Output	            ViolationRule Output
+boolean------------------Violation message
+object-------------------Risk / violation
+modified data------------compliance issue
+
+🔸 Real Life Mapping:-
+🔹 Rule (Normal Logic):-
+👉 "User IT department me hai ya nahi?"
+
+🔹 ViolationRule (Security Logic):-
+👉 "User ke paas dangerous combination access hai ya nahi?"
+
+👉 Rule = "Kya karna hai" define karta hai
+👉 ViolationRule = "Kya galat ho raha hai" detect karta hai.
+
+()Ek hi Rule engine hota hai:-
+Usme different types hote hain:-
+Identity Rule
+Provisioning Rule
+Approval Rule
+Violation Rule
+----------------------------------------------------------------------------------------------

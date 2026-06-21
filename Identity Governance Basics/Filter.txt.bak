@@ -1,0 +1,34 @@
+()1️⃣ Filter kya hai?
+Filter ek object hai jo query ke criteria define karta hai.
+Ye decide karta hai ki konsa object return hoga database se.
+Simple shabdo me:-
+"Filter = system ko bolna ki mujhe sirf ye data chahiye"
+
+2️⃣ Filter ka use kahan hota hai?
+IdentityIQ me jab hum getObjects(), searchObjects(), ya custom query karte hain.
+Example:-
+Sirf Identity jinka department = IT hai.
+Sirf Role jiska name = Admin hai.
+Sirf Application jiska type = LDAP hai.
+
+()SailPoint me Filter ke andar mostly ye kaam karne wale methods hote hain:-
+--equals – exact match:-
+Filter f = Filter.eq("name", "Admin");
+
+--notEquals – exact match ke opposite:-
+Filter f = Filter.notEquals("status", "Inactive");
+
+--contains / startsWith / endsWith – string match:-
+Filter f = Filter.contains("displayName", "joker");
+
+--and / or – multiple filters combine karne ke liye;-
+Filter f1 = Filter.eq("department", "IT");
+Filter f2 = Filter.eq("status", "Active");
+Filter combined = Filter.and(f1, f2);
+
+--in / notIn – value list ke basis pe filter:-
+Filter f = Filter.in("role", Arrays.asList("Admin","Manager"));
+
+--greaterThan / lessThan – numeric/date comparison:-
+Filter f = Filter.greaterThan("age", 25);
+--------------------------------------------------------------------------------------------------------------------------

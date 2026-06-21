@@ -1,0 +1,205 @@
+📘 TASKS & TASK SCHEDULER – ALL CHAPTERS:-
+🟢 CHAPTER 1: Tasks Overview
+
+Task kya hota hai?
+👉 Background job jo system activity perform karta hai automatically.
+
+Examples:-
+Aggregation
+Identity refresh
+Certification generation
+Report generation
+
+🟢 CHAPTER 2: Task Types
+Common task types in IdentityIQ:-
+1️⃣ Account Aggregation
+2️⃣ Group Aggregation
+3️⃣ Identity Refresh
+4️⃣ Role Mining
+5️⃣ Certification Generation
+6️⃣ Report Execution
+7️⃣ Policy Scan
+8️⃣ Lifecycle Event
+9️⃣ Custom Task
+
+🟢 CHAPTER 3: Account Aggregation Task
+Pulls accounts from application.
+Flow:-
+Application → Connector → IIQ → Account object update
+
+Options:-
+Delta aggregation
+Full aggregation
+Enable/Disable correlation
+
+🟢 CHAPTER 4: Group Aggregation Task
+Pulls:-
+Groups
+Roles
+Entitlements
+
+Important for:-
+Role-based access management.
+
+🟢 CHAPTER 5: Identity Refresh Task
+Most important task 🔥
+Recalculate karta hai:-
+✔ Role assignment
+✔ Policy violation
+✔ Risk score
+✔ Identity attributes
+
+Options:-
+Refresh assigned roles
+Check policies
+Promote managed attributes
+
+🟢 CHAPTER 6: Certification Generation Task
+Automatically generate karta hai:-
+✔ Manager certification
+✔ Application owner certification
+✔ Role certification
+Schedule-based compliance.
+
+🟢 CHAPTER 7: Report Execution Task
+Run report automatically.
+Output:-
+PDF
+CSV
+XLS
+Email distribution possible.
+
+🟢 CHAPTER 8: Policy Scan Task
+System-wide violation scan karta hai.
+Used when:-
+New policy activated.
+
+🟢 CHAPTER 9: Lifecycle Event Task
+Triggers:-
+✔ Joiner
+✔ Mover
+✔ Leaver
+Automates provisioning & deprovisioning.
+
+🟢 CHAPTER 10: Custom Task
+Developer bana sakta hai:-
+Java task
+Rule-based task
+Workflow-triggered task
+Used for special automation.
+
+🟢 CHAPTER 11: Task Definition
+Task define karta hai:-
+Name
+Type
+Parameters
+Scope
+Schedule
+Stored in database as TaskDefinition object.
+
+🟢 CHAPTER 12: Task Result
+Each task generate karta hai:-
+✔ TaskResult
+✔ Execution status
+✔ Start time
+✔ End time
+✔ Error log
+Troubleshooting me helpful.
+
+🟢 CHAPTER 13: Task Scheduler Overview
+Scheduler manage karta hai:-
+✔ When task run hoga
+✔ How frequently
+✔ Next execution time
+Works like cron engine.
+
+🟢 CHAPTER 14: Scheduling Options
+Options:-
+✔ Run once
+✔ Daily
+✔ Weekly
+✔ Monthly
+✔ Cron expression
+
+🟢 CHAPTER 15: Concurrent Task Handling
+Large environment me:-
+Multiple tasks run simultaneously
+Control:-
+✔ Thread pool
+✔ Max task limit
+✔ Queue management
+
+🟢 CHAPTER 16: Task Performance Optimization
+Best practices:-
+✔ Avoid full aggregation daily
+✔ Use delta where possible
+✔ Schedule heavy tasks off-hours
+✔ Monitor DB load
+
+🟢 CHAPTER 17: Task Dependencies
+Example:-
+Aggregation →
+Identity Refresh →
+Policy Scan
+Sequence important hai.
+
+🟢 CHAPTER 18: Troubleshooting Tasks
+Scenario 1:
+Task stuck in running
+→ Check server logs
+
+Scenario 2:
+Aggregation failed
+→ Check connector config
+
+Scenario 3:
+Identity refresh slow
+→ Check policies & role size
+
+🟢 CHAPTER 19: Task Monitoring
+Monitor via:-
+✔ Task Results page
+✔ Logs (catalina.out)
+✔ DB status
+
+🟢 CHAPTER 20: Distributed Task Execution
+In clustered setup:-
+Tasks run on multiple nodes
+Load balancing possible
+Important for enterprise deployment.
+
+🟢 CHAPTER 21: Task Security
+Control:-
+✔ Who can run task
+✔ Who can schedule task
+✔ Restrict critical tasks
+Role-based control required.
+
+🟢 CHAPTER 22: Real Project Scenarios
+Scenario 1:
+Nightly SAP aggregation
+→ 2 AM schedule
+
+Scenario 2:
+Quarterly certification generation
+→ 1st day of quarter
+
+Scenario 3:
+Immediate identity refresh after HR load
+
+🟢 CHAPTER 23: Best Practices
+✔ Schedule heavy jobs after business hours
+✔ Monitor failed tasks daily
+✔ Avoid overlapping heavy tasks
+✔ Document task dependencies
+✔ Archive old task results
+
+🟢 CHAPTER 24: End-to-End Automation Flow
+HR load →
+Aggregation task →
+Identity refresh →
+Role assignment →
+Policy scan →
+Certification →
+Report generation
+Full governance automation 🔥

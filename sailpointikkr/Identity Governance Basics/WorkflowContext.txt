@@ -1,0 +1,58 @@
+()WorkflowContext kya hai?
+WorkflowContext ek object/class hai jo current workflow execution ke environment aur data ko represent karta hai SailPoint me.
+Matlab: Jab bhi workflow run hoti hai, WorkflowContext me saari information available hoti hai jaise:-
+Workflow ke variables
+Arguments (inputs)
+Execution status
+Output/result
+Ye basically workflow ke “runtime environment” ka container hai.
+
+🔹 WorkflowContext ke main uses:-
+Arguments set aur get karna
+Workflow ke input ya output variables ko handle karna
+Execution status check karna
+Workflow successful hai ya failed
+Workflow ke results access karna
+Workflow me messages add karna
+Launch message, UI message, logs
+
+--------------------------------------------
+()sare methods workflowcontext ke:-
+------------------------------------------
+getArguments
+setArguments
+getExecutionResult
+getLastExecutionStatus
+getExecutionTime
+getLaunchMessage
+setLaunchMessage
+addLaunchMessage
+addMessage
+getMessage
+getProperty
+isProperty
+commit
+rollback
+getWorkflow
+getWorkflowName
+getWorkflowDefinition
+getApplication
+setApplication
+getScope
+setScope
+getPopulation
+setPopulation
+getCreated
+getModified
+getCreatedBy
+getModifiedBy
+toXml
+fromXml
+toMap
+fromMap
+validate
+clone
+equals
+hashCode
+toString
+---------------------------------------------------------------------------

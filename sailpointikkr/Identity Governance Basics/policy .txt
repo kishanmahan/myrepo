@@ -1,0 +1,40 @@
+()9️⃣ Policy
+Policy policy:-
+Kya hai: Ye rules ka set hai jo access aur entitlements ko govern karta hai.
+Kya karta hai:-
+Access reviews, SoD, Least Privilege enforce karta hai
+Violations detect karta hai.
+
+1️⃣ Identity/Access Policy:-
+Ye define karti hai ki ek user ko kaunse system, application ya data ka access milega.
+Example: "Finance team ke employees sirf finance application access kar sakte hain."
+
+2️⃣ Entitlement Policy:-
+Ye specific permissions ya roles ke liye rules define karti hai.
+Example: "Manager role wale users ko payroll data read karne ki permission milegi, write nahi."
+
+3️⃣ Password/Authentication Policy:-
+Ye security rules define karti hai login ke liye.
+Example: "Password kam se kam 8 characters ka ho, aur 90 din me change karna mandatory ho."
+
+4️⃣ Policy Violation:-
+Jab koi user defined rules ko violate karta hai, to system usko detect karta hai.
+Example: Agar koi employee sensitive data ko unauthorized share karta hai, to Policy Violation trigger hoti hai.
+
+1️⃣ Policy Object ke Common Methods:-
+Method	Description
+getName()----------------------------Policy ka naam return karta hai.
+getType()--Policy ka type return karta hai, jaise "EntitlementPolicy", "AccountPolicy" ya "ApplicationPolicy".
+getDescription()---------------------Policy ki description deta hai.
+getEnabled()-------------------------Boolean value return karta hai ki policy active hai ya nahi.
+getRules()---------------------------Policy ke andar jo rules define hai unko return karta hai.
+getViolations()----------------------Agar koi violation hua hai, to ye list return karta hai.
+getOwner()---------------------------Policy ka owner ya responsible identity return karta hai.
+evaluate(Identity identity)----------Kisi specific identity ke against policy evaluate karta hai.
+getApplication()---------------------Agar policy application specific hai, to ye application return karta hai.
+setEnabled(boolean)------------------Policy ko enable ya disable karne ke liye.
+addRule(Rule rule)-------------------Policy me naya rule add karne ke liye.
+removeRule(Rule rule)----------------Policy se rule remove karne ke liye.
+save()-------------------------------Policy changes ko save karta hai SailPoint me.
+delete()-----------------------------Policy object ko delete karta hai.
+

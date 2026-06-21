@@ -1,0 +1,193 @@
+()misuse ka matlab hota hai kisi cheez ka galat tareeke se use karna ya jiska use allowed nahi hai waisa use karna.
+Simple Meaning:-
+Misuse = Wrong use / Abuse
+Examples:-
+
+1️⃣ Data Misuse
+Agar kisi company ke paas user ka email, phone number hai aur wo us data ko bina permission kisi aur ko bech de → ye data misuse hai.
+
+2️⃣ System Misuse
+Employee ko sirf read access diya gaya hai, lekin wo system hack karke data delete kar de → ye system misuse hai.
+
+3️⃣ Password Misuse
+Koi employee kisi aur ka login password use karke system access kare → ye bhi misuse hai.
+
+IAM / Security me:-
+Misuse ka matlab hota hai:-
+Unauthorized access
+Wrong permissions use karna
+Sensitive data ka galat use
+
+Example:-
+Rahul ko sirf Finance data dekhne ka access hai
+lekin wo HR data bhi dekh raha hai
+→ ye misuse hai
+----------------------------------------------------------------------------------------
+2️⃣ Misuse:-
+Meaning: Jab user apne given access ka galat ya unauthorized use karta hai.
+
+Examples:-
+Rahul apne “Finance Manager” access se HR ya Payroll data edit kar de
+IT Admin server me unauthorized config changes kar de
+
+SailPoint Prevention:-
+Certification workflows: Managers regularly review access
+Least Privilege principle: Users ko sirf zaruri access mile
+Audit & Logs: Sab actions track hote hain.
+
+3️⃣ Time-Bound Access:-
+Meaning: Access ko sirf limited time ke liye allow karna.
+Purpose: Risk kam karna, misuse prevent karna
+Example:-
+IT Admin ko server config ka access sirf 2 hours ke liye diya
+Finance Manager ko payroll approval access sirf end-of-month me.
+
+example code:-
+grantTemporaryAccess(rahul, "Finance Reports Write", Duration.ofHours(2));
+
+// Automatic revoke after 2 hours
+revokeAccessAfterTime(rahul, "Finance Reports Write", 2);
+
+Enterprise Level Time-Bound Access Code
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+class Permission {
+
+    String name;
+
+    Permission(String name) {
+        this.name = name;
+    }
+}
+
+class Role {
+
+    String roleName;
+    List<Permission> permissions = new ArrayList<Permission>();
+
+    Role(String roleName) {
+        this.roleName = roleName;
+    }
+
+    void addPermission(Permission p) {
+        permissions.add(p);
+    }
+}
+
+class AccessGrant {
+
+    Role role;
+    Date startDate;
+    Date endDate;
+
+    AccessGrant(Role role, Date startDate, Date endDate) {
+        this.role = role;
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
+
+    boolean isActive() {
+
+        Date today = new Date();
+
+        return today.after(startDate) && today.before(endDate);
+    }
+}
+
+class Identity {
+
+    String name;
+    List<AccessGrant> grants = new ArrayList<AccessGrant>();
+
+    Identity(String name) {
+        this.name = name;
+    }
+
+    void grantRole(Role role, Date start, Date end) {
+
+        AccessGrant grant = new AccessGrant(role, start, end);
+        grants.add(grant);
+
+        System.out.println("Role " + role.roleName + " granted to " + name +
+                " from " + start + " to " + end);
+    }
+
+    void checkAccess() {
+
+        System.out.println("Checking active permissions for " + name);
+
+        for (AccessGrant g : grants) {
+
+            if (g.isActive()) {
+
+                for (Permission p : g.role.permissions) {
+                    System.out.println("Active Permission: " + p.name);
+                }
+
+            } else {
+                System.out.println("Access expired for role: " + g.role.roleName);
+            }
+        }
+    }
+}
+
+public class TimeBoundAccessExample {
+
+    public static void main(String[] args) {
+
+        Role financeRole = new Role("Finance Role");
+
+        financeRole.addPermission(new Permission("Read Finance Reports"));
+        financeRole.addPermission(new Permission("Write Finance Reports"));
+
+        Identity rahul = new Identity("Rahul");
+
+        Date start = new Date(); // now
+
+        Date end = new Date(System.currentTimeMillis() + (3 * 24 * 60 * 60 * 1000));
+        // 3 days access
+
+        rahul.grantRole(financeRole, start, end);
+
+        rahul.checkAccess();
+    }
+}
+Example Output
+Role Finance Role granted to Rahul from Sun Mar 08 to Wed Mar 11
+Checking active permissions for Rahul
+Active Permission: Read Finance Reports
+Active Permission: Write Finance Reports
+
+Agar date expire ho jaye:
+
+Access expired for role: Finance Role
+/////////*
+()1️⃣ today
+Date today = new Date();
+Ye current date/time hai.
+Example:-
+8 Mar 2026
+
+2️⃣ today.after(startDate)
+Check karta hai:-
+kya current date startDate ke baad hai?
+Example:-
+startDate = 7 Mar
+today = 8 Mar
+
+Result:-
+true
+
+3️⃣ today.before(endDate):-
+Check karta hai:-
+kya current date endDate se pehle hai?
+Example:-
+endDate = 10 Mar
+today = 8 Mar
+
+Result:-
+true
+*//////////
+----------------------------

@@ -1,0 +1,142 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="WorkItem Forward Rule" type="WorkItemForward">
+  <Signature>
+    <Inputs>
+      <Argument name="context" type="SailPointContext">
+        <Description>
+          A sailpoint.api.SailPointContext object that can be used to query
+          the system or execute other SailPointContext services.
+        </Description>
+      </Argument>
+      <Argument name="item">
+        <Description>
+          The WorkItem being opened or forwarded.
+        </Description>
+      </Argument>
+      <Argument name="owner">
+        <Description>
+          The Identity that currently owns the work item.
+        </Description>
+      </Argument>
+    </Inputs>
+    <Returns>
+      <Argument name="newOwner">
+        <Description>
+          An Identity that should own the work item.  Alternatively, this can
+          be a String that is the name or id of the Identity.
+        </Description>
+      </Argument>
+    </Returns>
+  </Signature>
+  <Source>
+        import sailpoint.object.Identity;
+
+		Identity workGroupIdentity = context.getObjectByName(Identity.class, "Admin");
+        Identity newOwner = workGroupIdentity;
+
+        String email = owner.getEmail();
+        if ( email == null || email.length() == 0 ) {
+            newOwner = workGroupIdentity;
+        }
+
+
+        return newOwner;
+  </Source>
+</Rule>
+/////////*
+()<Signature> SailPoint rule ka method definition hota hai.
+Isme bataya jata hai:-
+Rule ko kya input milega
+Rule kya return karega
+Aapke rule ki signature:
+<Signature>
+  <Inputs>
+    <Argument name="context" type="SailPointContext"/>
+    <Argument name="item"/>
+    <Argument name="owner"/>
+  </Inputs>
+
+  <Returns>
+    <Argument name="newOwner"/>
+  </Returns>
+</Signature>
+
+Haan.
+context SailPoint automatically provide karta hai jab rule execute hota hai.
+Aapko manually create nahi karna padta.
+Ye line:-
+<Argument name="context" type="SailPointContext"/>
+batati hai ki execution time par SailPoint ek SailPointContext object pass karega.
+Isi tarah:
+
+<Argument name="item"/>
+<Argument name="owner"/>
+ye bhi SailPoint runtime se automatically milte hain.
+Isliye rule ke andar directly use kar sakte ho:
+*/////////
+//////////*
+()<Argument-->:-Ek input parameter define ho raha hai
+--name="item"	Is parameter ka naam item hai.
+--“SailPoint rule ko item naam ka ek object dega.”
+
+Ye item kya hota hai?
+→ Current WorkItem
+Example:-
+Access approval
+Password reset approval
+Certification decision
+Manual provisioning task
+Agar kisi user ke paas approval pending hai, wahi object item hota hai.
+
+Haan, <Argument> basically input variable define karta hai.
+Example:-
+<Argument name="item">
+matlab:-
+ek variable ban raha hai
+variable ka naam = item
+value SailPoint dega
+
+()Manual Provisioning Task kya hota hai?
+Jab SailPoint automatically account/access provide nahi kar pata, tab manual task create hota hai.
+Example:-
+User ko SAP access dena hai
+Lekin SAP connector configured nahi hai
+To SailPoint kisi admin ke paas manual work bhejta hai
+
+Jaise:-
+“Please create SAP account manually for Ravi”
+Ye jo pending task hai wahi Manual Provisioning Task hai.
+Ye ek WorkItem hota hai.
+
+()owner kya hota hai?
+owner = current WorkItem ka owner
+Yani jis user/workgroup ke paas abhi task assigned hai.
+Example:-
+Approval task currently Ravi ke paas hai
+To:-
+owner
+= Ravi Identity object.
+
+()<Returns>
+   <Argument name="newOwner">
+iska matlab:-
+Rule ek value return karega
+aur us return value ka naam newOwner hai.
+
+Simple language:-
+SailPoint rule se poochta hai:-
+"WorkItem ab kiske paas jaana chahiye?"
+
+Rule answer deta hai:-
+return newOwner;
+
+()Aapke code me:-
+Identity newOwner = workGroupIdentity;
+matlab:-
+newOwner = Admin
+Fir last me:-
+return newOwner;
+matlab:-
+"SailPoint, is WorkItem ko Admin ko de do"
+*////////////

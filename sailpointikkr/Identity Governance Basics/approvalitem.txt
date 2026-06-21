@@ -1,0 +1,502 @@
+
+Jab koi ApprovalRequest create hota hai, usme ek ya multiple ApprovalItem ho sakte hain
+Matlab: ApprovalRequest = container, ApprovalItem = individual items.
+
+()RequestDefinition define karta hai ApprovalItems template
+Jab Request generate hota hai → ApprovalItems object automatically create hote hai
+Each ApprovalItem track karta hai approver aur state (Pending / Approved / Rejected)
+Request state update hota hai jab saare required ApprovalItems approve ho jate hai
+✅ Matlab: RequestDefinition me ApprovalItem rules define hote hai, Request me ApprovalItems actual runtime objects hote hai.
+------------------------------------------------------------------------------------------------------------------------------------------
+
+
+🔹 ApprovalItem kya hai?
+ApprovalItem = kisi specific object/action ke liye approval ka ek unit
+
+👉 Matlab:-
+Ye individual item hota hai jisko approve/reject karna hota hai
+Ye kisi specific cheez (object/task) se related hota hai
+
+🔥 Easy samajh:-
+Socho tumhare paas ek request aayi:-
+👉 User ko 3 cheez ka access chahiye:-
+Application A
+Application B
+Application C
+
+Toh system kya karega?
+1 ApprovalRequest banega (poora request):-
+Uske andar 3 ApprovalItem honge:-
+ApprovalItem	Kya represent karta hai
+Item 1	         Application A access
+Item 2	         Application B access
+Item 3	         Application C access
+---------------------------------------
+🔹 Tumhara question:-
+"approvalitem kisi specific object task perform approval hai?"
+✔️ Answer:-
+Haan bhai 💯
+
+ApprovalItem:-
+kisi specific object / access / task ke approval ko represent karta hai
+ek ek item individually approve/reject hota hai
+-------------
+🔥 Real Example (SailPoint type):-
+ApprovalRequest:
+    User: Rahul
+    Request: Access
+
+    ApprovalItems:-
+        1. Add Role = Admin  ✅
+        2. Add Role = User   ❌
+👉 Yaha:-
+"Admin role" ek ApprovalItem hai
+"User role" ek ApprovalItem hai
+
+Har item ka apna:-
+status (approved/rejected)
+approver
+comments
+-------------------------------------------------------------------------------------------------------
+🔹 ApprovalItem ke Components:-
+Target Object → kaunsa SailPoint object (Identity, Role, Account…) approve hona hai
+Action → assign, remove, update, delete
+Status → PENDING / APPROVED / REJECTED
+Comments → Approver comments
+Approver(s) → Kaun approve karega.
+------------------------------------------------------------------------------------------------------
+🔹 ApprovalItem kya karta hai?
+👉 ApprovalItem ek individual approval unit hai.
+👉 Ye decide karta hai:-
+“Kis object pe kya action hona hai aur uska approval kya status hai”
+
+🔥 ApprovalItem ke main kaam (Functions):-
+1️⃣ Target object ko represent karta hai:-
+👉 Kaun sa object approve hona hai
+Example:-
+Identity, Role, Account, Entitlement
+
+2️⃣ Action define karta hai:-
+👉 Object ke saath kya karna hai
+Example:-
+ADD, REMOVE, UPDATE, DELETE, ENABLE, DISABLE
+👉 Ye actual change nahi karta, sirf instruction deta hai
+
+3️⃣ Approval status track karta hai:-
+👉 Current state kya hai
+PENDING → APPROVED → REJECTED
+
+4️⃣ Approvers manage karta hai:-
+👉 Kaun log approve karenge
+Manager, Admin, Security Team
+
+5️⃣ Comments store karta hai:-
+👉 Approver ne kya reason diya
+"Looks good", "Not allowed"
+
+6️⃣ Approval decision handle karta hai:-
+👉 Approver action leta hai
+item.approve();
+item.reject();
+
+7️⃣ Audit aur tracking karta hai:-
+👉 Ye sab track karta hai:-
+Kab create hua
+Kisne create kiya
+Kisne modify kiya
+Kab approve hua
+
+8️⃣ ApprovalRequest ka part hota hai:-
+👉 Ye individual item hai jo ek request ke andar hota hai
+ApprovalRequest
+   ├── ApprovalItem 1
+   ├── ApprovalItem 2
+   
+9️⃣ Workflow trigger me role play karta hai:-
+👉 ApprovalItem ke basis pe:-
+Workflow aage badhta hai
+ProvisioningPlan generate hota hai
+Actual system update hota hai
+------------------------------------------------------------------------------------------------------
+🔹 ApprovalItem Action List:-
+Ye define karta hai ki item ke saath kaunsa operation perform hona hai.
+Action	                Description
+ADD	            Naya object assign / add karna
+REMOVE	        Object remove karna
+UPDATE	        Object me update karna
+MODIFY	        Same as update (sometimes used interchangeably)
+DELETE	        Object ko permanently delete karna
+ENABLE	        Object / identity ko enable karna
+DISABLE	        Object / identity ko disable karna
+ASSIGN_ROLE	    Role assign karna
+UNASSIGN_ROLE	Role remove karna
+GRANT_ACCESS	Access / entitlement grant karna
+REVOKE_ACCESS	Access / entitlement revoke karna
+CERTIFY	        Certification item action (review / certify)
+-----------------------------------------------------------------------------------------------------------
+🔹 ApprovalItem Status List:-
+Ye define karta hai approval item ka current state.
+Status	                Meaning
+PENDING	         Approver action ka wait ho raha hai
+APPROVED	     Item approve ho chuka hai
+REJECTED	     Item reject ho chuka hai
+CANCELED	     Item cancel kar diya gaya (system / admin)
+EXPIRED	         Approval time limit over ho gaya, auto expire
+IN_PROGRESS------Approval workflow me currently process ho raha hai
+-----------------------------------------------------------------------------------------------------------
+🔹 ApprovalItem ke Common Methods (without description):-
+getTargetObject()
+setTargetObject(SailPointObject obj)
+getAction()
+setAction(String action)
+
+getStatus()
+setStatus(String status)
+getApprovers()
+setApprovers(List<String> approvers)
+getComments()
+setComments(List<String> comments)
+
+approve()
+reject()
+
+getId()
+setId(String id)
+getCreated()
+setCreated(Date date)
+getModified()
+setModified(Date date)
+getCreatedBy()
+setCreatedBy(String user)
+getModifiedBy()
+setModifiedBy(String user)
+clone()
+equals(Object obj)
+hashCode()
+toString()
+-------------------------------------------------------------------------------------------------------
+1️⃣ getTargetObject() & setTargetObject(SailPointObject obj)
+Kaam:-
+ApprovalItem me kaunsa SailPoint object approve/reject karna hai, usko set aur get karta hai.
+
+Example:-
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointFactory;
+import sailpoint.object.Identity;
+import sailpoint.object.ApprovalItem;
+
+public class ApprovalItemExample {
+    public static void main(String[] args) throws Exception {
+        SailPointContext context = SailPointFactory.getCurrentContext();
+
+        // Identity fetch
+        Identity user = context.getObjectByName(Identity.class, "kishan");
+
+        // ApprovalItem create
+        ApprovalItem item = new ApprovalItem();
+        item.setTargetObject(user);  // target object set
+
+        // Get target object
+        Identity target = (Identity) item.getTargetObject();
+        System.out.println("ApprovalItem target object: " + target.getName());
+    }
+}
+Output:-
+ApprovalItem target object: kishan
+----------------------------------------------------------------------------------------------------------
+2️⃣ getAction() & setAction(String action):-
+Kaam:-
+ApprovalItem me kaunsa operation perform hoga (ADD, REMOVE, UPDATE, DELETE, etc.) set aur get karta hai.
+Example:-
+// Set action
+item.setAction("UPDATE");
+
+// Get action
+System.out.println("ApprovalItem action: " + item.getAction());
+
+Output:-
+ApprovalItem action: UPDATE
+✅ Matlab ye method define karta hai ki target object ke saath kya kaam hona hai.
+👉 setAction("UPDATE") update nahi karta
+👉 Ye sirf batata hai ki kya action perform hona chahiye.
+🔹 Real Flow (Bahut Important 🔥):-
+Tumne ApprovalItem banaya
+item.setTargetObject(user);
+item.setAction("UPDATE");
+Approval request gaya → PENDING
+Approver ne approve kiya
+Tab system:-
+Workflow / Provisioning engine call hota hai
+Actual update hota hai (Identity / Role / Account me)
+-----------------------------------------------------------------------------------------------------------
+🔹 1️⃣ getStatus() & setStatus(String status):-
+✔️ Kaam:-
+ApprovalItem ka current state set aur get karta hai.
+PENDING
+APPROVED
+REJECTED
+Example:-
+ApprovalItem item = new ApprovalItem();
+
+// set status
+item.setStatus("PENDING");
+
+// get status
+System.out.println(item.getStatus());
+Output:-
+PENDING
+---------------------------------------------------------------
+🔹 2️⃣ getApprovers() & setApprovers(List<String> approvers):-
+✔️ Kaam:-
+Kaun log approve/reject karenge, unka list set/get karta hai
+
+Example:-
+List<String> approvers = new ArrayList<>();
+approvers.add("manager1");
+approvers.add("admin1");
+
+item.setApprovers(approvers);
+
+// get approvers
+System.out.println(item.getApprovers());
+Output:-
+[manager1, admin1]
+---------------------------------------------------------------
+🔹 3️⃣ getComments() & setComments(List<String> comments):-
+✔️ Kaam:-
+Approver ke remarks / reason / notes store karta hai.
+
+Example:-
+List<String> comments = new ArrayList<>();
+comments.add("Looks good");
+comments.add("Approved by manager");
+
+item.setComments(comments);
+
+// get comments
+System.out.println(item.getComments());
+Output:-
+[Looks good, Approved by manager]
+----------------------------------------------------------
+🔹 1️⃣ approve():-
+✔️ Kaam:-
+👉 ApprovalItem ko APPROVED state me daal deta hai
+
+Status change hota hai → APPROVED
+Workflow aage badhta hai
+Final provisioning (actual change) trigger ho sakta hai
+Example:
+ApprovalItem item = new ApprovalItem();
+
+item.setStatus("PENDING");
+
+// approver approve karta hai
+item.approve();
+
+System.out.println(item.getStatus());
+Output:-
+APPROVED
+----------------------------------------------------------------------
+🔹 2️⃣ reject():-
+✔️ Kaam:-
+👉 ApprovalItem ko REJECTED state me daal deta hai
+
+Status change hota hai → REJECTED
+Workflow yahi ruk jata hai
+Koi change system me apply nahi hota
+Example:
+ApprovalItem item = new ApprovalItem();
+
+item.setStatus("PENDING");
+
+// approver reject karta hai
+item.reject();
+
+System.out.println(item.getStatus());
+Output:-
+REJECTED
+🔥 Real Flow:-
+PENDING → REJECTED → No change applied
+------------------------------------------------------------------
+🔹 ❓ ApprovalItem ko kaun approve karta hai?
+👉 Approver(s) approve karte hain,
+Ye ho sakte hain:-
+👨Manager (identity ka manager)
+🛡️Application Owner
+👨Admin / Security Team
+👥Custom approver (workflow me define hota hai)
+👉 Ye sab tu setApprovers() me define karta hai ya workflow decide karta hai.
+-------------------------------------------------------------------------------
+🔹 ❓ Ek baar me approve hota hai ya ek-ek karke?
+
+👉 ⚠️ Answer: Dono possible hai (workflow pe depend karta hai)
+
+🔸 Case 1: Single Approver
+PENDING → Manager approve → DONE
+
+👉 Sirf ek banda approve karega
+
+🔸 Case 2: Multiple Approvers (ANY / OR logic)
+Manager OR Admin me se koi ek approve kare → DONE
+
+👉 Ek ne approve kiya → kaam ho gaya
+
+🔸 Case 3: Multi-Level Approval (Sequential 🔥)
+Step 1: Manager approve
+Step 2: Admin approve
+Step 3: Security approve
+
+👉 Ek-ek karke approve hota hai
+
+🔸 Case 4: Parallel Approval (ALL required)
+Manager ✔️
+Admin ✔️
+Security ✔️
+
+👉 Sabko approve karna padega.
+-------------------------------------------------------------------------
+🔥 Real Flow Example:-
+ApprovalRequest
+   ├── ApprovalItem 1 → Role assign
+   ├── ApprovalItem 2 → Email update
+   ├── ApprovalItem 3 → Access grant
+👉 Ab:-
+Har item ka alag approval ho sakta hai
+Ya ek hi approver sabko approve kar sakta hai
+-----------------------------------------------------------------------------------
+🔥 Short Answer (yaad rakhna):-
+👉 Approve actually ApprovalItem hota hai
+👉 ApprovalRequest bas container / wrapper hota hai
+
+🔹 Detail me samajh:-
+🧱 Structure kya hai?
+ApprovalRequest
+   ├── ApprovalItem 1
+   ├── ApprovalItem 2
+   ├── ApprovalItem 3
+
+👉 Matlab:-
+ApprovalRequest = poora request
+ApprovalItem = individual kaam (real approval yahi hota hai)
+
+🔹 Approval kaun hota hai?
+👉 ✅ Approver ApprovalItem ko approve karta hai,
+item.approve();
+👉 Ye actual approval hai
+
+🔹 Fir ApprovalRequest ka kya role hai?
+👉 Ye bas:-
+multiple items ko hold karta hai
+overall status track karta hai
+
+🔥 Example Flow:-
+Step 1: Request create
+ApprovalRequest (PENDING)
+   ├── Item 1 (PENDING)
+   ├── Item 2 (PENDING)
+Step 2: Approver action
+item1.approve();
+item2.approve();
+Step 3: Final Result
+ApprovalRequest → APPROVED (jab sab items approve ho jaye)
+
+🔥 Important Logic:-
+Situation	            Result
+Sab items APPROVED----Request APPROVED
+Koi ek REJECTED-------Request REJECTED
+Kuch pending----------Request PENDING
+--------------------------------------------------------------------------------
+🔹 1️⃣ getId() & setId(String id)
+✔️ Kaam:
+
+👉 ApprovalItem ka unique ID set/get karta hai
+
+ApprovalItem item = new ApprovalItem();
+
+item.setId("ITEM123");
+System.out.println(item.getId());
+Output:
+ITEM123
+--------------------------------------------------------
+🔹 2️⃣ getCreated() & setCreated(Date date)
+✔️ Kaam:
+
+👉 Item kab create hua uska timestamp
+
+Date now = new Date();
+item.setCreated(now);
+
+System.out.println(item.getCreated());
+Output:
+Tue Mar 21 12:45:30 IST 2026
+--------------------------------------------------------
+🔹 3️⃣ getModified() & setModified(Date date)
+✔️ Kaam:
+
+👉 Last kab update hua
+
+item.setModified(new Date());
+
+System.out.println(item.getModified());
+Output:
+Tue Mar 21 12:50:00 IST 2026
+-----------------------------------------------------
+🔹 4️⃣ getCreatedBy() & setCreatedBy(String user)
+✔️ Kaam:
+
+👉 Kis user ne item create kiya
+
+item.setCreatedBy("kishan");
+
+System.out.println(item.getCreatedBy());
+Output:
+kishan
+-------------------------------------------------------
+🔹 5️⃣ getModifiedBy() & setModifiedBy(String user)
+✔️ Kaam:
+
+👉 Kisne last update kiya
+
+item.setModifiedBy("admin1");
+
+System.out.println(item.getModifiedBy());
+Output:
+admin1
+---------------------------------------------------------
+🔹 6️⃣ clone()
+✔️ Kaam:
+
+👉 Object ka duplicate copy banata hai
+
+ApprovalItem copy = item.clone();
+
+System.out.println(copy.getId());
+Output:
+ITEM123
+-------------------------------------------------------
+🔹 7️⃣ equals(Object obj)
+✔️ Kaam:-
+👉 Do objects same hai ya nahi check karta hai
+
+ApprovalItem item2 = item.clone();
+System.out.println(item.equals(item2));
+Output:-
+true
+----------------------------------------------------------
+🔹 8️⃣ hashCode():-
+✔️ Kaam:
+
+👉 Object ka unique hash number deta hai
+
+System.out.println(item.hashCode());
+Output (example):
+12345678
+-----------------------------------------------------------
+🔹 9️⃣ toString():-
+✔️ Kaam:-
+👉 Object ko readable string format me convert karta hai
+
+System.out.println(item.toString());
+Output (example):
+ApprovalItem[id=ITEM123, status=PENDING, action=UPDATE]
+------------------------------------------------------------

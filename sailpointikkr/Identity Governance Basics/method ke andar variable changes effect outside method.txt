@@ -1,0 +1,53 @@
+3️⃣ final keyword ka effect
+Agar variable final hai, usko new assign nahi kar sakte.
+Object ke andar ke fields change kar sakte ho, sirf reference ko change nahi kar sakte
+public class Demo {
+    public static void main(String[] args) {
+        final Task t = new Task("Original");
+        t.setName("Updated"); // ✅ allowed
+        // t = new Task("Another"); // ❌ error
+    }
+}
+
+1️⃣ Primitive variable example:-
+public class Demo1 {
+    public static void main(String[] args) {
+        int x = 10;
+        changeValue(x);
+        System.out.println(x); // Output?
+    }
+
+    public static void changeValue(int num) {
+        num = 50;
+    }
+}
+Output:-
+10
+
+2️⃣ Object reference example:-
+public class Task {
+    private String name;
+    public Task(String name) { this.name = name; }
+    public void setName(String name) { this.name = name; }
+    public String getName() { return name; }
+}
+
+public class Demo2 {
+    public static void main(String[] args) {
+        Task t = new Task("MyTask");
+        updateTaskName(t);
+        System.out.println(t.getName()); // Output?
+    }
+
+    public static void updateTaskName(Task task) {
+        task.setName("Updated Task"); // Object ke field me change
+    }
+}
+
+Analysis:-
+t pass hua method me → object reference pass by value
+task.setName("Updated Task") → object ke internal data ko modify karta hai
+t.getName() → ab "Updated Task" return karega
+
+Output:-
+Updated Task

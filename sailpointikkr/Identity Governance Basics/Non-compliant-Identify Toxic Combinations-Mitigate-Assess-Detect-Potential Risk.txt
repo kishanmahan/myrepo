@@ -1,0 +1,37 @@
+potential risk detect, assess aur mitigate,Identify toxic combinations,Non-compliant
+
+()1️⃣ Potential Risk:-
+Meaning: संभावित खतरा / कोई problem jo future me ho sakti hai.
+Example:-
+Agar company ka backup system weak hai → potential risk hai ki data loss ho sakta hai.
+
+()2️⃣ Detect:-
+Meaning: पता लगाना / पहचानना
+Example:-
+Security logs check karke pata lagana ki koi unauthorized access hua ya nahi.
+Malware ya virus detect karna.
+
+()3️⃣ Assess:-
+Meaning: मूल्यांकन करना / Evaluate karna
+Example:-
+Risk ka impact aur probability check karna.
+Example: Data loss hone ka potential loss kitna hoga, high ya low?
+
+()4️⃣ Mitigate:-
+Meaning: कम करना / Reduce karna
+Example:-
+Risk ko minimize karne ke liye action lena.
+Example: Strong backup policy aur encryption implement karna → data loss ka risk mitigate ho jata hai.
+
+()5️⃣ Identify Toxic Combinations:-
+Meaning: ऐसे combination ko identify karna jo problem ya risk create kar sakte ho.
+Example in IT / Compliance:-
+Ek user ko financial approval + vendor payment dono access de diya → fraud ka risk → toxic combination hai.
+SOX aur internal control me ye identify karna mandatory hai.
+
+()6️⃣ Non-compliant:-
+Meaning: नियमों का पालन न करने वाला / Rule ya law follow na karna
+Example:-
+GDPR me user consent ke bina personal data collect karna → non-compliant hai.
+HIPAA me PHI encrypt na karna → non-compliant hai.
+

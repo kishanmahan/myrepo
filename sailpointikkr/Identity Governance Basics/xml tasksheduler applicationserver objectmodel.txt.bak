@@ -1,0 +1,264 @@
+1️⃣5️⃣ Technical Architecture:-
+Application server:-
+1️⃣ Application Server kya hota hai
+Application Server ek software platform hota hai jo:-
+application code run karta hai
+business logic process karta hai
+database aur users ke beech connection manage karta hai
+Simple definition:-
+Application Server = jahan application ka backend code run hota hai
+
+2️⃣ Technical Architecture me role:-
+Technical Architecture me flow kuch aisa hota hai:-
+User / Browser
+      ↓
+Web Server
+      ↓
+Application Server
+      ↓
+Database Server
+Explanation
+
+1️⃣ User:-
+User browser se request bhejta hai.
+
+2️⃣ Web Server:-
+Request receive karta hai.
+
+3️⃣ Application Server:-
+Java code run karta hai
+business logic execute karta hai
+authentication / authorization check karta hai
+
+4️⃣ Database Server:-
+Data store karta hai.
+
+5️⃣ Popular Application Servers:-
+Kuch famous application servers:-
+Apache Tomcat
+JBoss EAP
+Oracle WebLogic Server
+IBM WebSphere Application Server
+IAM tools jaise SailPoint usually Tomcat / WebLogic / JBoss par run karte hain.
+
+4️⃣ IAM / SailPoint me Application Server:-
+IAM system me application server ye kaam karta hai:-
+Identity processing
+Access request workflow
+Policy evaluation
+Provisioning
+Certification
+---------------------------------------------------------------------------------
+Task scheduler kya hai?
+--1️⃣ Task Scheduler
+Kya hai?
+Task Scheduler ek system component hai jo background tasks ko automatically run karta hai.
+Simple definition:-
+Task Scheduler = scheduled time par system tasks run karne wala engine
+
+Kya karta hai?
+Ye tasks automatically run karta hai:-
+Account Aggregation
+Identity Refresh
+Access Certification
+Report Generation
+Provisioning tasks
+
+Example:-
+Company me HR system se daily user data sync karna hai.
+Night 2:00 AM
+      ↓
+Task Scheduler
+      ↓
+Run Aggregation Task
+      ↓
+Users update in IAM
+
+
+-----------------------------------------------------
+2️⃣ Object Model
+Kya hai?
+Object Model system ke data objects aur unke relationships ko define karta hai.
+Simple definition:-
+Object Model = system ke andar ka data structure
+
+()IAM / SailPoint Object Examples:-
+System me ye objects hote hain:-
+Identity
+Application
+Account
+Role
+Policy
+Entitlement
+AccessRequest
+-----------------------------------------------------------------
+()Simple definition:-
+XML Configuration = system ko batane wali configuration file ki system ka behaviour kya hoga.
+
+2️⃣ XML Configuration ka kaam:-
+XML file system ko batati hai:-
+Workflow kaise chalega
+Policy kab check hogi
+Email template kya hoga
+Application connection kaise hoga
+Matlab system ka behaviour XML se control hota hai.
+
+()XML Configuration ka exact matlab?
+XML Configuration ka matlab hai:-
+System ke objects, settings aur workflow ka structure XML me define karna 
+taaki system ko pata chale kaise run karna hai aur Java logic kab use karna hai.
+IAM tools jaise SailPoint IdentityIQ me XML files system ko batati hain:
+kaunsa object hai
+uska structure kya hai
+kaunsi rule / workflow use hogi
+kab Java code run hoga
+----------------------------------------------------------------
+()XML configuration Kaha use hota hai
+IAM me XML use hota hai:-
+Workflows
+Rules
+Application configuration
+Email templates
+Forms
+Policies
+Tasks
+()xml objects:-
+Application XML
+Workflow XML
+Rule XML
+Task XML
+Identity XML
+Policy XML
+EmailTemplate XML
+Form XML
+Role XML
+Report XML
+
+---------------------------------------------------
+1️⃣ Naam ke aage XML kyu nahi lagate?
+IAM tools jaise SailPoint IdentityIQ me objects ka naam aise hota hai:-
+Application
+Identity
+Role
+Workflow
+Policy
+TaskDefinition
+Lekin jab ye system me export / import hote hain to ye sab XML file me hi likhe hote hain.
+
+Example:-
+<Application name="ActiveDirectory">
+    <Connector>LDAPConnector</Connector>
+</Application>
+
+Yaha object Application hai
+aur format XML hai.
+
+Isliye naam hota hai:-
+Application Object na ki ApplicationXML.
+------------------------------------------------
+()lekin java code ke sath in xml objects ka bhi use hota hai?
+--Haan bhai 👍 Java code ke saath XML objects ka use hota hai.
+IAM tools jaise SailPoint IdentityIQ me system XML + Java dono ka combination use karta hai.
+Mai simple flow me samjhata hoon.
+
+1️⃣ XML + Java ka relation.
+XML → configuration define karta hai
+Java → logic run karta hai
+Matlab:-
+XML me object define hota hai
+Java code us object ko read karke execute karta hai
+
+2️⃣ Example 1 – Workflow:-
+XML me Workflow
+<Workflow name="AccessApproval">
+    <Step name="ManagerApproval"/>
+</Workflow>
+Java code
+Workflow wf = context.getObjectByName(Workflow.class, "AccessApproval");
+wf.start();
+Flow:-
+XML → workflow define
+Java → workflow run
+
+3️⃣ Example 2 – Application
+XML Configuration
+<Application name="ActiveDirectory">
+    <Connector>LDAPConnector</Connector>
+</Application>
+Java Code
+Application app = context.getObjectByName(Application.class, "ActiveDirectory");
+System.out.println(app.getName());
+
+Output:-
+ActiveDirectory
+
+4️⃣ Example 3 – Rule:-
+Rule bhi XML me hota hai aur uske andar Java code hota hai.
+
+<Rule name="CheckRisk">
+    <Source>
+        if(identity.getDepartment().equals("Finance")){
+            return true;
+        }
+    </Source>
+</Rule>
+Flow:-
+XML → rule object
+Java → rule logic
+-----------------------------------------------------------------------------------
+()Haan bhai 👍 Object Model aur XML Object alag cheezein hain,
+lekin dono ek hi system ke part hote hain aur ek-dusre se connected bhi hote hain.
+Mai simple tareeke se samjhata hoon.
+
+1️⃣ Object Model kya hota hai?
+Object Model system ka Java classes ka structure hota hai.
+Matlab system me kaun-kaun se objects hain aur unke attributes kya hain.
+Example objects:-
+Identity
+Application
+Role
+Policy
+Workflow
+TaskDefinition
+Ye normally Java classes me defined hote hain.
+
+2️⃣ XML Object kya hota hai?
+XML Object us object ka XML configuration representation hota hai.
+
+3️⃣ Dono ka relation:-
+Flow kuch aisa hota hai:-
+XML Object
+     ↓
+Application Server
+     ↓
+Object Model (Java class)
+     ↓
+System logic run
+Matlab:-
+XML file me object define hota hai
+system usko Java object me convert karta hai.
+
+Example flow:-
+<Application name="ActiveDirectory">
+        ↓
+Database me save
+        ↓
+Application Java Object create
+        ↓
+context.getObjectByName()
+        ↓
+Java code me use
+
+4️⃣ Real Example:-
+XML Object:-
+<Application name="ActiveDirectory">
+    <Connector>LDAP</Connector>
+</Application>
+Java Code
+Application app = context.getObjectByName(Application.class, "ActiveDirectory");
+System.out.println(app.getName());
+Output
+ActiveDirectory
+
+Yani:-
+XML me jo object define hua tha,Java code usko fetch karke object bana deta hai.

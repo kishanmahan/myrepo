@@ -1,0 +1,306 @@
+5️⃣ Notifications kya hai?
+Notification = Email send karne ka mechanism
+
+Notification decide karta hai:-
+kisko email bhejna hai
+kaunsa template use hoga
+kab email bhejna hai
+
+Example:-
+Access approval
+Password reset
+Policy violation
+
+()Notification ke important methods:-
+1️⃣ setTo(String email):-
+Email kis ko bhejna hai.
+notification.setTo("rahul@gmail.com");
+
+3️⃣ setSubject(String subject):-
+Email subject set karta hai.
+notification.setSubject("Access Approved");
+
+4️⃣ setBody(String body):-
+Email ka message set karta hai.
+notification.setBody("Your access request approved");
+
+5️⃣ setTemplate(EmailTemplate template):-
+Email template attach karta hai.
+notification.setTemplate(template);
+
+6️⃣ send():-
+Email send karta hai.
+notification.send();
+Output:-
+Email Sent Successfully
+---------------------------------------------------------------
+5️⃣ Notifications kya hai?
+Notification = Email send karne ka mechanism
+Notification decide karta hai:-
+kisko email bhejna hai
+kaunsa template use hoga
+kab email bhejna hai
+Example:-
+Access approval
+Password reset
+Policy violation
+
+1️⃣ Notification EmailTemplate (XML)
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE EmailTemplate PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+
+<EmailTemplate name="Manager Approval Notification"
+               subject="Manager Approval Required"
+               from="iam@company.com"
+               description="Notification for manager approval"
+               type="TEXT">
+
+<Body>
+
+Hello $identity.manager.displayName,
+
+Approval is required for a new employee.
+
+Employee Name : $identity.displayName
+Employee ID   : $identity.name
+Employee Email: $identity.email
+
+Please login to SailPoint and approve the request.
+
+Regards
+IAM Team
+
+</Body>
+
+</EmailTemplate>
+
+2️⃣ Java Notification Rule
+
+Ye rule manager ko notification bhejta hai.
+
+import sailpoint.api.SailPointContext;
+import sailpoint.object.EmailTemplate;
+import sailpoint.object.EmailOptions;
+import sailpoint.object.Identity;
+
+public class ManagerNotificationRule {
+
+    public static void notifyManager(
+            SailPointContext context,
+            Identity identity) throws Exception {
+
+        EmailTemplate template =
+                context.getObject(
+                        EmailTemplate.class,
+                        "Manager Approval Notification");
+
+        String managerEmail =
+                identity.getManager().getEmail();
+
+        EmailOptions options =
+                new EmailOptions(
+                        managerEmail,
+                        null);
+
+        context.sendEmailNotification(
+                template,
+                options);
+
+        System.out.println(
+        "Notification sent to Manager: " + managerEmail);
+
+    }
+}
+3️⃣ Workflow FULL XML with Notification Step
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Workflow name="JoinerNotificationWorkflow"
+          type="Identity"
+          explicitTransitions="true">
+
+    <Variable name="empId"/>
+    <Variable name="name"/>
+    <Variable name="email"/>
+
+    <!-- START -->
+
+    <Step name="Start">
+        <Transition to="Create Identity"/>
+    </Step>
+
+    <!-- CREATE IDENTITY -->
+
+    <Step name="Create Identity">
+
+        <Script>
+            <Source>
+
+            sailpoint.object.Identity identity =
+            new sailpoint.object.Identity();
+
+            identity.setName("E1001");
+            identity.setDisplayName("Rahul Sharma");
+            identity.setEmail("rahul@company.com");
+
+            workflow.put("identity", identity);
+
+            </Source>
+        </Script>
+
+        <Transition to="Send Manager Notification"/>
+    </Step>
+
+    <!-- MANAGER NOTIFICATION -->
+
+    <Step name="Send Manager Notification">
+
+        <Script>
+            <Source>
+
+            sailpoint.object.Identity identity =
+            (sailpoint.object.Identity)
+            workflow.get("identity");
+
+            ManagerNotificationRule.notifyManager(
+            context,
+            identity);
+
+            </Source>
+        </Script>
+
+        <Transition to="End"/>
+
+    </Step>
+
+    <!-- END -->
+
+    <Step name="End">
+        <End/>
+    </Step>
+
+</Workflow>
+Workflow Flow
+Start
+  ↓
+Create Identity
+  ↓
+Send Manager Notification
+  ↓
+End
+//////////*
+()Template Load:-
+context.getObject(EmailTemplate.class,"Manager Approval Notification")
+SailPoint DB se template fetch karega.
+
+()Manager Email:-
+identity.getManager().getEmail()
+Manager ka email fetch karta hai.
+Example:-
+amit@company.com
+
+()Send Notification:-
+context.sendEmailNotification(template, options);
+Email server ke through notification send hota hai.
+
+()1️⃣ from="iam@company.com"
+
+Example:
+
+<EmailTemplate name="Manager Approval Notification"
+               subject="Manager Approval Required"
+               from="iam@company.com">
+()from:-
+Ye sender email address hota hai.
+Matlab email kis address se bheja jayega.
+
+Example email:-
+From: iam@company.com
+To: amit@company.com
+Subject: Manager Approval Required
+Important:-
+Ye recipient set nahi karta.
+Ye sirf sender set karta hai.
+Recipient Java code me set hota hai.
+
+Example:-
+EmailOptions options =
+new EmailOptions(managerEmail, null);
+
+Yaha:-
+To = managerEmail
+
+2️⃣ <Script> tag:-
+Example:-
+<Script>
+Ye workflow ko batata hai ki yaha code execute hoga.
+Matlab workflow ke andar Java / BeanShell code run hoga.
+
+3️⃣ <Source>:-
+Example:-
+<Script>
+    <Source>
+
+    // Java code
+
+    </Source>
+</Script>
+
+<Source> ke andar actual code likha jata hai.
+
+Example:-
+<Source>
+
+Identity identity =
+(Identity)workflow.get("identity");
+
+</Source>
+
+()4️⃣ workflow.get("identity"):-
+Example:-
+workflow.get("identity")
+
+workflow ek Map object hota hai jo workflow data store karta hai.
+Example memory:-
+workflow = {
+ identity = Rahul Identity Object
+}
+
+()get():-
+get() Map method hai.
+Ye stored value return karta hai.
+Example:-
+workflow.get("identity")
+Return karega:-
+Identity object
+
+5️⃣ ManagerNotificationRule.notifyManager(context, identity);:-
+Example:-
+ManagerNotificationRule.notifyManager(
+context,
+identity);
+ManagerNotificationRule
+Ye Java class hai.
+
+()notifyManager():-
+Ye method hai jo manager ko notification bhejta hai.
+
+Example:-
+notifyManager(context, identity)
+
+()context:-
+Ye SailPoint API context hai.
+Isse operations karte hain:-
+getObject()
+saveObject()
+sendEmailNotification()
+
+()identity:-
+Ye employee identity object hai.
+Example:-
+Name  : Rahul Sharma
+Email : rahul@company.com
+Manager : Amit Singh
+
+()notifyManager:-Method manager ka email nikalta hai aur notification bhejta hai.
+*//////////

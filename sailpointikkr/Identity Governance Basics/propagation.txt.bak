@@ -1,0 +1,17 @@
+1️⃣ Propagation kya hai?
+Propagation basically action ko target system tak “push” karna hota hai.Jab koi request approve ho jaata hai,
+system decide karta hai ki kaunse account/entitlement/role changes ko real system (like AD, Salesforce, SAP, etc.) me apply karna hai.
+Ye propagation engine ke through hota hai.
+
+2️⃣ Propagation ke types:-
+()Provisioning Propagation:-
+Naya account create karna ya existing account ko update karna.
+Example: User ko Salesforce me add karna.
+
+()Deprovisioning Propagation:-
+Access remove karna ya account disable karna.
+Example: Employee leave ho gaya → AD account disable.
+
+()Update Propagation:-
+Attribute ya role change propagate karna.
+Example: User ka job title update → HR system me bhi update.

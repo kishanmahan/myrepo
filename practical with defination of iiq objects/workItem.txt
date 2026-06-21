@@ -1,0 +1,19 @@
+//////////////*
+()workItem kya hai?
+--1. workItem kya hai?
+Definition: workItem aur kuch nahi, balki SailPoint ke andar ka ek "In-box Task" ya "Ticket" hota hai jise kisi insaan (User, Manager, ya Admin) ko poora karna hota hai.
+Jab bhi workflow ko chalne ke liye kisi insaan ke action ki zaroorat hoti hai, toh SailPoint background mein ek WorkItem object (ticket) generate karta hai aur us insaan ke SailPoint Dashboard par bhej deta hai.
+SailPoint mein main roop se do tarah ke Work Items hote hain:-
+Approval Work Item: Jo Manager ya Application Owner ke paas jata hai access request ko Approve ya Reject karne ke liye.
+Manual Work Item: Jo IT Helpdesk ke paas jata hai kisi user ka account haath se (manually) banane ke liye.
+--workItem ke internal fields ko value kahan se milti hai?
+Aapne pichle codes mein jo arguments dekhe, wahi is workItem ke andar values bante hain:
+Priority (workItemPriority): Ise value milti hai "Normal", "High", ya "Low" ke roop mein.
+Target User (identityName): Kis employee ke liye yeh ticket bana hai, uski details isme aati hain.
+Assignee (approvingIdentities): Yeh ticket kiske inbox mein dikhega (jaise Manager ki ID),
+yeh SailPoint ka engine calculate karke isme daalta hai.
+Reminders & Escalations (workItemMaxReminders, workItemHoursTillEscalation): Yeh saari timings aur rules is work item ke upar apply kar diye jaate hain.
+
+2. Isko Value kaun deta hai?
+workItem ko koi ek akela variable value nahi deta, balki SailPoint ka Workflow Engine ise dynamic tarike se runtime par create karta aur bharta hai.
+*////////////

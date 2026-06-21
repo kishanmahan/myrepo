@@ -1,0 +1,107 @@
+--------------------------------------------------------------------------------------------------------------------------------
+How to delete any object from identityiq?
+
+-> 2 Ways:-
+
+(1). Debug page:-
+-> http://localhost:8080/identityiq/debug/debug.jsf -> <-
+-> फिर Application -> फिर <- -> जो तुमने बनाया है जैसे Test Application select और select action में लो right side में है Delete.
+
+(2). iiq console:-C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\identityiq\WEB-INF\bin-> ke cmd khole->
+->iiq console->
+->abb ye import F:\DeleteAccounts.xml->
+->rule "Delete Application Accounts"->delete ho gaya linked account by rule.
+
+
+()Application ke linked account aur scorecard delete:-
+//iiq console for delete of link accounts to iiq.
+
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Delete Application Accounts">
+  <Source>
+    import sailpoint.object.Link;
+    import sailpoint.object.Application;
+    import sailpoint.object.QueryOptions;
+    import sailpoint.object.Filter;
+    import java.util.Iterator;
+
+    // यहाँ अपनी एप्लीकेशन का सही नाम डालें
+    String appName = "HEMANTH FEED FILE"; 
+    
+    Application app = context.getObjectByName(Application.class, appName);
+    if (app == null) {
+        return "Application not found: " + appName;
+    }
+
+    QueryOptions qo = new QueryOptions();
+    qo.addFilter(Filter.eq("application.id", app.getId()));
+    
+    Iterator it = context.search(Link.class, qo, "id");
+    int count = 0;
+
+    while (it.hasNext()) {
+        Object[] row = (Object[]) it.next();
+        String linkId = (String) row[0];
+        Link link = context.getObjectById(Link.class, linkId);
+        
+        if (link != null) {
+            context.removeObject(link);
+            count++;
+            
+            if (count % 50 == 0) {
+                context.commitTransaction();
+                context.decache();
+            }
+        }
+    }
+    
+    context.commitTransaction();
+    context.decache();
+
+    return count + " accounts (Links) deleted for application " + appName;
+  </Source>
+</Rule>
+-------------------------------------------------------------------------------------------------------------------
+(b).scorecard delete of application:-
+--cmd delete Scorecard of identity
+->C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\identityiq\WEB-INF\bin-> ke cmd khole->
+->iiq console->
+import F:\DeleteScorecard.xml
+rule "Delete Application Scorecard"
+
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Delete Application Scorecard">
+  <Source>
+    import sailpoint.object.ApplicationScorecard;
+    import sailpoint.object.Application;
+
+    // तुम्हारी एप्लीकेशन का नाम 
+    String appName = "HEMANTH FEED FILE"; 
+    
+    Application app = context.getObjectByName(Application.class, appName);
+    if (app == null) {
+        return "Application not found: " + appName;
+    }
+
+    // Hibernate Cascade Issue Fix: पहले Application से Scorecard का लिंक हटाओ
+    ApplicationScorecard scorecard = app.getScorecard();
+
+    if (scorecard != null) {
+        // 1. लिंक तोड़ो और एप्लीकेशन को सेव करो
+        app.setScorecard(null);
+        context.saveObject(app);
+        context.commitTransaction();
+
+        // 2. अब स्कोरकार्ड को सुरक्षित रूप से डिलीट कर दो
+        context.removeObject(scorecard);
+        context.commitTransaction();
+
+        return "Success: Scorecard unlinked and deleted safely for " + appName;
+    } else {
+        return "No scorecard found attached to application: " + appName;
+    }
+  </Source>
+</Rule>
+----------------------------------------------------------------------------------------------------------------------------------

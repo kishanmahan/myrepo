@@ -1,0 +1,498 @@
+()2. <Attributes> Kya Hai?
+Attributes basically ek Metadata Repository (Settings Box) hai. IdentityIQ me kai objects (jaise Form, Field, Section, Workflow) 
+ke paas apni kuch extra properties hoti hain jinhe control karne ke liye hum <Attributes> tag ka use karte hain. 
+Iske andar data hamesha <Map> aur <entry> ke form me hota hai.
+Kaam: Yeh user ko screen par koi input box nahi dikhata, balki us element ke behavior ya settings ko backend me store karta hai.
+Kiske andar hota hai: Yeh <Form> ke direct niche ho sakta hai, ya kisi <Field> ke andar bhi ho sakta hai.
+
+one line:-matlab jitne bhi object hai jo spt_table me save hai un sabka setting configure karne ka tag hai ye <Attributes>.
+
+Example 1: Form Level Par Attributes:-
+Agar aapko poore Form ka title badalna hai ya buttons ke naam badalone hain:
+XML
+<Form name="KKR_Form_Example">
+  <Attributes>
+    <Map>
+      <entry key="pageTitle" value="Special Onboarding Form"/>
+      <entry key="submitLabel" value="Proceed Next"/>
+      <entry key="cancelLabel" value="Abort"/>
+    </Map>
+  </Attributes>
+</Form>
+Yahan koi naya input field nahi bana, bas Form ke pure behavior aur look ko configure kiya gaya hai.
+
+Example 2: Field Level Par Attributes:-
+Kabhi-kabhi kisi <Field> ko special behavior dene ke liye uske andar bhi <Attributes> lagaya jata hai:
+XML
+<Field name="status" type="string" displayName="Account Status">
+  <Attributes>
+    <Map>
+      <entry key="readOnly" value="true"/> <!-- Field ko read-only banane ke liye --
+    </Map>
+  </Attributes>
+</Field>
+
+()SailPoint IdentityIQ me jin main objects ke behavior ko <Attributes> tag handle karta hai, unki direct list ye rahi:-
+()Application Object:-
+Connection URL / Host / Port settings
+Authentication credentials (Username / Encrypted Password)
+Search DN / Search Scope / Timeout / Page Size
+Delta Aggregation tracking parameters
+
+()Task Definition Object (Aggregation, Refresh, Run Rule):-
+Target Filters (OU, Group, ya Sub-scoped identities)
+Execution checkboxes (e.g., refreshIdentityEntitlements, correlateEntitlements)
+Threshold alert limits aur error handling rules
+
+()Workflow Object (Global & Step Level);-
+Workflow operational variables aur status flags
+Approver assignments (actor, approverDescription)
+Email notification templates (notificationEmail)
+Escalation routing aur timeout durations
+
+()Form / Field Object:-
+UI text overrides (pageTitle, submitLabel, cancelLabel)
+Field state properties (readOnly, hidden)
+Input formatting masks aur validation overrides
+
+()Identity Object (Identity Cube):-
+Extended/Custom attributes mapping (e.g., costCenter, contractorEndDate)
+System administration capabilities aur execution rights
+Workgroup memberships data
+
+()Bundle Object (Roles):-
+Inherent Risk Scoring values
+Permitted / Required sub-role relationships
+Role assignment profiles aur overlap inheritance rules
+
+()Policy / IdentityPolicy Object:-
+Violation Severity classifications (e.g., Low, Medium, High)
+Remediation workflow action routing
+Exclusion list exceptions for specific users
+
+()Rule Object:-
+Argument definitions (Inputs jo rule ko runtime me chahiye)
+Rule execution context aur logging behavior
+
+()Link Object (Account Object):-
+Account state flags (e.g., locked, disabled target system par)
+Custom attributes jo resource schema se aggregate huye hain par global identity me mapped nahi hain
+
+()Certification Definition / Configuration Object:-
+Access Review ke frequency parameters aur schedules
+Remediation durations (Kitne din me access hat jana chahiye)
+Challenging aur delegation behavior settings
+
+()Correlation Config Object:-
+Account-to-Identity mapping expressions (Attribute priority lists)
+Fallback correlation rule references
+
+()Audit Config Object:-
+System events jinhe track/audit karna hai (e.g., Login, Password Change)
+Log retention aur maintenance settings
+
+()Identity Trigger Object:-
+Lifecycle event types (e.g., Mover event ki attribute change criteria)
+Trigger dependencies aur execution delay tracking
+
+()Object Config Object:-
+Global Extended Schema configurations (Naye custom fields register karna)
+UI display priorities aur searchability toggles
+
+()UI Config Object:-
+Dashboard layouts, widget settings, aur standard color scheme preferences
+QuickLink category visibility mappings for specific user groups.
+
+()Managed Attribute Object (Entitlements Data):-
+Entitlement ki governance properties (e.g., Kya ye entitlement Requestable hai ya nahi)
+Owner assignment aur approval scheme overrides specific group/value ke liye
+
+()Configuration Object (SystemConfiguration):-
+Global level system parameters (e.g., Password policy limits, email server settings, session timeout configurations)
+Feature toggles (Kaunse modules UI par active rahenge)
+
+()Integration Config Object:-
+Third-party ticketing systems (jaise ServiceNow, Remedy) ke integration parameters
+API endpoints, tracking ticket status mappings, aur payload structures
+
+()Target / Target Source Object:-
+Identity Authorization aur Access Governance Directives ke connection rules
+Target systems se permissions aur explicit access scopes ko read karne ki rules.
+
+()Capability Object;-
+Kisi specific Rights ya Permissions ke administrative scope ko limit karne ki settings.
+Naye UI modules ko capabilities ke sath tightly bind karne ke flags.
+
+()Message Template Object:-
+Localization aur Language settings (e.g., Kis locale/bhasha me kaun sa text template load hoga).
+SMS gateways ya external communication channels ke formatting constraints.
+
+()Dictionary Object:-
+Data Masking rules (e.g., SSN ya Credit Card data ko logs me hide karne ke regular expressions).
+Prohibited word lists aur custom password syntax validation check variables.
+
+()Group Definition / Factory Object:-
+Dynamic Grouping rules (e.g., Department aur Location ke combinations par automatic groups create karne ka logic).
+Group aggregation refresh frequencies aur processing indexes.
+
+()Dashboard Widget Object:-
+Individual charts aur analytics graphs ki default data-source mappings.
+Refresh intervals (Kitni der me widget data auto-reload hoga) aur user personalization limits.
+
+()Provisioning Project Object (Runtime Object):-
+Compilation state flags (Workflow jab provisioning plan execute karta hai, toh runtime par conflicts, 
+evaluation steps aur targeting rules isme temporary save hoti hain).
+-------------------------------------------------------------------------------------------------------------------------------------
+()Application Object:-
+Connection URL / Host / Port settings
+Authentication credentials (Username / Encrypted Password)
+Search DN / Search Scope / Timeout / Page Size
+Delta Aggregation tracking parameters.
+
+()IdentityIQ me Application Object ke andar jab hum kisi target system (jaise Active Directory ya koi LDAP/Direct system) 
+se connect karte hain, toh <Attributes> tag ke andar ye saari settings ek <Map> ke roop me save hoti hain.
+ex:-
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Application PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Application name="KKR_Active_Directory" type="Active Directory">
+  
+  <Description>Financial Planning users ke liye Active Directory Application Object</Description>
+  
+  <!-- Actual Schema aur baaki mappings database columns me hoti hain -->
+  <!-- Lekin saari behavioral settings is <Attributes> tag ke andar hoti hain -->
+  <Attributes>
+    <Map>
+      
+      <!-- 1. Connection URL / Host / Port settings -->
+      <entry key="host" value="192.168.1.50"/>
+      <entry key="port" value="389"/> <!-- Standard LDAP Port, Secure ke liye 636 hoga -->
+      <entry key="useSSL" value="false"/>
+      <entry key="connectionTimeout" value="30000"/> <!-- Milliseconds me (30 seconds) -->
+
+      <!-- 2. Authentication credentials (Username / Encrypted Password) -->
+      <entry key="user" value="CN=iiq_service_acc,OU=ServiceAccounts,DC=kkr,DC=com"/>
+      <!-- Password hamesha IIQ ke backend se encrypt hokar save hota hai -->
+      <entry key="encryptedPassword" value="1:v84Nksj+Hj3lPqAsDwXqw==:A9jKm7xQ1LzP"/> 
+
+      <!-- 3. Search DN / Search Scope / Timeout / Page Size -->
+      <!-- Search DN: Kahan se users ko read karna shuru karna hai -->
+      <entry key="searchDn" value="OU=FinancialPlanning,OU=CorporateUsers,DC=kkr,DC=com"/>
+      <!-- Search Scope: SUBTREE (Yaani is OU ke andar ke saare child OUs bhi search honge) -->
+      <entry key="searchScope" value="SUBTREE"/>
+      <entry key="pageSize" value="100"/> <!-- Ek baar me 100 records ka batch fetch karega -->
+      <entry key="searchTimeout" value="60"/> <!-- Seconds me timeout -->
+
+      <!-- 4. Delta Aggregation tracking parameters -->
+      <!-- Delta Aggregation ka matlab hai sirf wahi accounts uthao jo kal se aaj tak badle hain -->
+      <entry key="deltaAggregation" value="true"/>
+      <!-- Underlying system (AD) ka tracking attribute (jaise uSNChanged ya modifyTimestamp) -->
+      <entry key="deltaAttribute" value="uSNChanged"/>
+      <!-- Last successful aggregation ka sequence/timestamp jo IIQ automatic track karta hai -->
+      <entry key="lastHighestUSN" value="1548293"/>
+
+    </Map>
+  </Attributes>
+
+</Application>
+//////////////*
+()Host aur Port (host, port): SailPoint jab background me Connector chalayega, toh wo 192.168.1.50 IP par 389 port ke zariye hit karega.
+()User aur Encrypted Password (user, encryptedPassword): Target AD me login karne ke liye system manual admin login nahi use karega, 
+balki is Service Account (iiq_service_acc) aur uske encrypted password ko use karke secure handshake karega.
+()Search DN aur Page Size (searchDn, pageSize): Poore AD me hazaron users ho sakte hain, par hume sirf Financial Planning ke bande chahiye.
+Toh searchDn ne scope freeze kar diya. Aur pageSize="100" ka matlab hai ki agar 1000 users hain, 
+toh system background me 100-100 ke 10 chakkar (batches) lagakar data layega taaki server par load na pade (Out of Memory Error na aaye).
+
+()Delta Aggregation:-
+1. Initial State (Pehli Baar Ka Aggregation):-
+Active Directory me har account ke paas ek Number hota hai jise USN (Update Sequence Number) kehte hain. 
+Jab bhi kisi user ka password, department, ya status badalta hai, AD uske USN ko badha deta hai.
+Jab SailPoint pehli baar Full Aggregation chalata hai, 
+toh wo sabhi users ko le aata hai aur dekhta hai ki AD me sabse bada (highest) USN kya chal raha hai. Maan lo wo number hai 1548293.
+SailPoint is number ko apne Application Object ke andar save kar leta hai: <entry key="lastHighestUSN" value="1548293"/>.
+
+2. Live Changes (Runtime par kya hua):-
+Agle din, pooray department me sirf 2 employees ka data badla (ek ka Manager change hua, ek ka Last Name change hua).
+AD ne un do users ka uSNChanged value badhakar 1548310 aur 1548325 kar diya. Baaki sabhi 99,998 users ka number purana hi raha.
+
+3. Delta Aggregation (Agli subah jab task chala):-
+Jab agle din Delta Task chalta hai, toh SailPoint AD se kehta hai:-
+"Mujhe saare users mat do. Mujhe sirf wo users do jinka uSNChanged number 1548293 (pichla saved number) se bada hai."
+AD query chala kar turant sirf un 2 users ka data SailPoint ko de deta hai.
+Task khatam hote hi SailPoint naya highest number (1548325) phir se apne pass save kar leta hai agle din ke liye.
+*/////////////
+---------------------------------------------------------------------------------------------------------------------------
+()Task Definition Object (Aggregation, Refresh, Run Rule):-
+Target Filters (OU, Group, ya Sub-scoped identities)
+Execution checkboxes (e.g., refreshIdentityEntitlements, correlateEntitlements)
+Threshold alert limits aur error handling rules.
+
+1. Account Aggregation Task Definition (Example Code):-
+Yeh ek standard Aggregation Task ka XML hai jo Active Directory se naye accounts uthane aur purano ko refresh karne ke liye use hota hai:-
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskDefinition name="KKR_AD_Account_Aggregation" type="AccountAggregation">
+  <Description>Active Directory accounts ko sync karne aur entitlements refresh karne ka task</Description>
+  
+  <Attributes>
+    <Map>
+      <!-- Target Application specify karna mandatory hai -->
+      <entry key="applications" value="KKR_Active_Directory"/>
+
+      <!-- 1. Target Filters (OU, Group, ya Sub-scoped identities) -->
+      <!-- Sirf isi specific HR aur Finance OU ke accounts aggregate honge -->
+      <entry key="accountFilterScope" value="OU=HR,OU=Users,DC=kkr,DC=com;OU=Finance,OU=Users,DC=kkr,DC=com"/>
+      <!-- Group Filter: Sirf wahi accounts uthao jo 'VIP-Users' group ke member hain -->
+      <entry key="groupFilter" value="CN=VIP-Users,OU=Groups,DC=kkr,DC=com"/>
+
+      <!-- 2. Execution Checkboxes (Backend Processing Toggles) -->
+      <!-- Correlate Entitlements: Aggregation ke waqt hi groups/roles ko map kar do -->
+      <entry key="correlateEntitlements" value="true"/>
+      <!-- Refresh Identity Entitlements: Aggregation ke baad identity ki profile immediately refresh karo -->
+      <entry key="refreshIdentityEntitlements" value="true"/>
+      <!-- Check Sibling Accounts: Agar user ke multiple accounts hain toh correlation verify karo -->
+      <entry key="checkSiblingAccounts" value="false"/>
+
+      <!-- 3. Threshold alert limits aur error handling rules -->
+      <!-- Task Tabhi stop hoga jab errors limit se bahar jayengi -->
+      <entry key="haltOnError" value="true"/>
+      <!-- Max Error Threshold: Agar 50 se zyada accounts fail huye, toh poora task terminate kar do -->
+      <entry key="maxErrors" value="50"/>
+      <!-- Threshold Percentage Alert: Agar pichli baar se 10% zyada accounts delete ho rahe hain, toh process rok do -->
+      <entry key="terminationThreshold" value="10"/>
+
+    </Map>
+  </Attributes>
+</TaskDefinition>
+/////////////////*
+()applications:-
+Kya karta hai: Yeh engine ko batata hai ki kis target application se data khinchkar laana hai.
+Backend Asar: SailPoint direct us application (e.g., KKR_Active_Directory) ke configuration settings(Host, IP, Credentials) 
+par jaata hai taaki connection bana sake.
+
+()accountFilterScope:-
+Kya karta hai: Yeh target system par ek boundary (scope) set karta hai.
+Backend Asar: Agar aap poore AD forest ka data nahi chahte, toh yahan defined OUs(jaise OU=HR aur OU=Finance) 
+ke andar maujood accounts ko hi SailPoint dhoondta hai, baaki OUs ko chhod deta hai.
+
+()groupFilter:-
+Kya karta hai: Yeh accounts ko filter karne ke liye ek extra condition lagata hai base on AD Groups.
+Backend Asar: Target system se sirf wahi accounts aggregate honge jo is specific group(e.g., VIP-Users) 
+ke andar mapped hain. Baaki users ignore ho jayenge.
+
+()correlateEntitlements:-
+Kya karta hai: Yeh check karta hai ki user ke paas target system par kaun-kaun se groups ya permissions hain 
+aur unhe SailPoint me map karta hai.Backend Asar: Agar ye true hai, 
+toh account ke sath-sath uske saare groups bhi fetch hote hain aur unhe SailPoint ke identity profile ke sath link kar diya jata hai.
+
+()refreshIdentityEntitlements:-
+Kya karta hai: Naye accounts aur permissions aane ke baad, 
+pooray Identity Cube ki state ko background me immediate refresh karne ka signal deta hai.
+Backend Asar: Jaise hi account aggregate hota hai, 
+ye backend engine ko bolta hai ki is user par saare Joiner/Mover rules aur dynamic roles dobara calculate karo 
+taaki data immediately accurate dikhe.
+
+()checkSiblingAccounts:-
+Kya karta hai:Yeh check karta hai ki kya ek hi insaan ke paas us application par ek se zyada accounts(Secondary/Admin accounts) toh nahi hain.
+Backend Asar: Agar yeh false hai, toh system ek identity ke liye sirf ek main account link karke aage badh jata hai, 
+sibling checking par time waste nahi karta.
+
+()haltOnError:-
+Kya karta hai: Yeh ek safety switch hai jo bataata hai ki agar task me koi error aaye toh kya karna hai.
+Backend Asar: Agar ye true hai aur task me koi badi dikkat aati hai (jaise network disconnect hona), 
+toh task turant ruk (halt) jata hai,जबरदस्ती aage nahi chalta.
+
+()maxErrors:-
+Kya karta hai: Yeh ek error counting limit (threshold) set karta hai.
+Backend Asar: Agar aggregate karte waqt single accounts fail ho rahe hain(jaise data corruption ki wajah se), 
+toh jaise hi failure count 50 tak pahuchega, SailPoint poore task ko terminate (band) kar dega taaki system par faaltu load na pade.
+
+()terminationThreshold:-
+Kya karta hai: Yeh Data Loss Prevention (DLP) ka kaam karta hai, jo percentage base par kaam karta hai.
+Backend Asar: Maan lo target system se pichli baar ke muqable is baar 10% se zyada accounts gayab (delete) milte hain. 
+SailPoint ko lagega ki kahin AD me bulk deletion toh nahi ho gayi? 
+Toh safety ke liye ye task ko wahin freeze kar deta hai taaki galati se SailPoint me bulk accounts delete na ho jayein.
+*/////////////////
+2. Identity Refresh Task Definition (Example Code):-
+Yeh dusra sabse important task hai jo identity ka risk score compute karne, manager hierarchy check karne,
+aur policy violations (jaise SOD) dhoondne me kaam aata hai. Isme checkboxes ka khel alag hota hai:-
+ex:-
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskDefinition name="KKR_Identity_Refresh_Task" type="IdentityRefresh">
+  <Description>Identities ka Risk Score, Manager Mapping aur Policy checking refresh karne ka task</Description>
+  
+  <Attributes>
+    <Map>
+      <!-- 1. Target Filters (Sub-scoped identities) -->
+      <!-- Pure organisation ko refresh karne ke bajaye sirf 'Mumbai' location ke users filter honge -->
+      <entry key="filter" value="location == &quot;Mumbai&quot;"/>
+
+      <!-- 2. Execution Checkboxes (Kya-Kya action perform karna hai) -->
+      <entry key="refreshManagerStatus" value="true"/> <!-- Manager changes update karo -->
+      <entry key="correlateEntitlements" value="true"/> <!-- Roles aur permissions link karo -->
+      <entry key="checkPolicies" value="true"/> <!-- Segregation of Duties (SOD) violations scan karo -->
+      <entry key="provisionCorrelations" value="true"/> <!-- Agar koi naya automatic role banta hai toh provision karo -->
+
+      <!-- 3. Error Handling and Optimization -->
+      <!-- Multithreading support taaki task fast chale (8 parallel threads ek sath kaam karenge) -->
+      <entry key="threads" value="8"/>
+      <entry key="haltOnBadPartition" value="true"/> <!-- Agar kisi ek partition me error aayi toh pure task ko hold par daal do -->
+    </Map>
+  </Attributes>
+</TaskDefinition> 
+///////////////////*
+()2. Identity Refresh Task ke Attributes
+Yeh task SailPoint ke andar pehle se maujood Identity Cubes par calculation chalata hai. 
+Iske attributes ye hain:-
+--filter:-Kya karta hai: Yeh is baat ka filter hai ki pooray system me se kis-kis employee ki profile ko refresh karna hai.
+Backend Asar: spt_identity table par query chalti hai. Jaise location == "Mumbai", toh engine baaki saare desh ke users ko chhod dega, 
+sirf Mumbai wale identities ko pick karke unka data process karega.
+
+--refreshManagerStatus:-
+Kya karta hai: Yeh employees ke manager ki hierarchy ko calculate aur update karta hai.
+Backend Asar: Agar backend HR data me kisi ka manager badla hai, 
+toh ye attribute true hone par SailPoint us user ki identity par naye manager ki ID mapping aur approvals routes ko automatic thik kar deta hai.
+
+--checkPolicies:-
+Kya karta hai: Yeh system ke andar security rules aur compliance check karne ka engine trigger karta hai.
+Backend Asar: true hone par, yeh har identity par jaakar check karta hai ki kahin is bande par koi Segregation of Duties (SOD) 
+policy violation toh hit nahi ho raha (jaise ek hi bande ke paas Requester aur Approver dono rights hona).
+
+--provisionCorrelations:-
+Kya karta hai: Agar refresh hone ke baad user par koi naya automatic ya business role assign hota hai, 
+toh usko target system par bhejne (provision karne) ka trigger hai.
+Backend Asar: Agar refresh task ne dekha ki user ka department badal gaya hai aur ab use naya access milna chahiye, 
+toh ye true hone par backend engine turant provisioning plan banakar target system par account update karne ka process start kar deta hai.
+
+--threads:-
+Kya karta hai: Performance badhane ke liye multithreading (parallel processing) configure karta hai.
+Backend Asar: Agar value 8 hai, toh SailPoint ka engine server ke CPU se 8 parallel threads allocate karega. 
+Isse 1-1 karke user refresh nahi hote, balki 8 users ka data ek sath parallel refresh hota hai, 
+jisse task 8 guna fast khatam ho jata hai.
+
+--haltOnBadPartition:-
+Kya karta hai: Multithreading ke waqt agar kisi ek hisse (partition) me error aaye, toh pure task ka behavior set karta hai.
+Backend Asar: Jab bade data ko alag-alag chunks me divide kiya jata hai, aur kisi ek chunk me koi severe database error aati hai, 
+toh ye true hone par poore task ki execution ko block kar diya jata hai taaki data corrupt na ho.
+
+()&quot;:-SailPoint me &quot; ka matlab double comma(") hota hai.
+*//////////////////
+--------------------------------------------------------------------------------------------------------------------------------------
+()Workflow Object (Global & Step Level);-
+Workflow operational variables aur status flags
+Approver assignments (actor, approverDescription)
+Email notification templates (notificationEmail)
+Escalation routing aur timeout durations.
+
+()Workflow me do levels hote hain: ek Global level aur step level kya hai?
+-->
+()1. Global Level (Workflow Level):-
+Ye poore workflow ke level par hota hai.
+Matlab:-
+Jo variable/attribute yaha define hoga workflow ke kisi bhi step me access ho sakta hai.
+<Workflow name="MyWorkflow">
+
+    <Variable name="department" input="true"/> //global level variable hai.
+
+    <Step name="Start">
+        <Script>
+            <Source>
+                System.out.println(department);
+            </Source>
+        </Script>
+    </Step>
+
+    <Step name="Approval">
+        <Script>
+            <Source>
+                System.out.println(department);
+            </Source>
+        </Script>
+    </Step>
+
+</Workflow>
+
+2. Step Level:-
+Ye sirf particular step ke andar hota hai.
+Matlab variable/value ek hi step tak limited hota hai.
+Example:-
+<Step name="CreatePlan">
+
+    <Arg name="dept" value="IT"/>    // ye Step level argument hai.
+
+    <Script>
+        <Source>
+            System.out.println(dept);
+        </Source>
+    </Script>
+
+</Step>
+
+------------------------------------
+///////////*
+()<Arg> step ke liye input parameter/variable hota hai.
+Ye value pass karta hai ek step ko.
+Value hardcode, workflow variable, SailPoint context, ya previous step output se aa sakti hai.
+*//////////
+
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow name="KKR_Access_Request_Workflow" type="LCMProvisioning">
+  
+  <!-- ========================================== -->
+  <!-- 1. GLOBAL LEVEL ATTRIBUTES & VARIABLES      -->
+  <!-- ========================================== -->
+  <Attributes>
+    <Map>
+      <!-- Workflow Operational Variables & Status Flags -->
+      <entry key="trace" value="true"/> <!-- Pure workflow ke logs generate karne ke liye -->
+      <entry key="identityName" value="script:identity.getName()"/>
+      <entry key="provisioningStatus" value="pending"/> <!-- Global execution status flag -->
+      
+      <!-- Global Email Configuration -->
+      <entry key="notificationEmail" value="KKR_Global_Workflow_Notification_Template"/>
+    </Map>
+  </Attributes>
+
+  <!-- Workflow Ke Steps -->
+  <Step name="Start" icon="Start" x="50" y="50">
+    <Transition to="Manager Approval Step"/>
+  </Step>
+
+  <!-- ========================================== -->
+  <!-- 2. STEP LEVEL ATTRIBUTES (The Core Logic)  -->
+  <!-- ========================================== -->
+  <Step name="Manager Approval Step" icon="Approval" x="200" y="50">
+    
+    <!-- Approval structure jo runtime par rokega process ko -->
+    <Approval name="Manager Approval Action" owner="script:identity.getManager().getName()">
+      
+      <Attributes>
+        <Map>
+          <!-- 2. Approver Assignments -->
+          <!-- actor: Kis dynamic variable/insaan se kaam karwana hai -->
+          <entry key="actor" value="script:identity.getManager().getName()"/>
+          <!-- approverDescription: Workitem (Inbox) me dikhne wala custom message -->
+          <entry key="approverDescription" value="Please review and approve access request for $(identityDisplayName)"/>
+
+          <!-- 3. Email Notification Templates -->
+          <!-- Approver ko notification bhejni hai -->
+          <entry key="notificationEmail" value="KKR_Manager_Approval_Required_Template"/>
+
+          <!-- 4. Escalation Routing aur Timeout Durations -->
+          <!-- Timeout: Agar 2 din (2d) tak manager action na le -->
+          <entry key="timeoutDuration" value="2d"/>
+          <!-- Escalation Rule: Timeout hone par request kisko forward karni hai -->
+          <entry key="escalationRule" value="KKR_Escalate_To_Workgroup_Rule"/>
+          <!-- Escalation Notice Email: Escalation hone par purane manager aur naye owner ko email -->
+          <entry key="escalationEmail" value="KKR_Approval_Escalated_Notice_Template"/>
+        </Map>
+      </Attributes>
+      
+    </Approval>
+
+    <Transition to="End"/>
+  </Step>
+
+  <Step name="End" icon="Stop" x="400" y="50"/>
+</Workflow>

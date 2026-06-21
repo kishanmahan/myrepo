@@ -1,0 +1,119 @@
+🔐 IAM Kya Hota Hai?
+IAM = Identity and Access Management
+Ye ek security framework hai jo manage karta hai:-
+👤 User authentication (login kaise karega)
+🔑 Authorization (kya access milega)
+🛡️ Access control
+🔄 Account lifecycle
+📊 Security monitoring
+
+🆚 IAM vs IGA (Short Difference):-
+IAM	                                 IGA
+Access dena-------------------Access review karna
+Authentication-------------------Governance
+Real-time login control-------Compliance & Audit
+Operational focus-------------Regulatory focus
+Example:-
+IAM → Login allow karega
+IGA → Check karega access sahi hai ya nahi
+
+🧠 IAM Ke Complete Chapters (Full List 🔥):-
+Main tujhe enterprise level IAM ka complete roadmap de raha hu 👇
+
+1️⃣ Identity Management Basics
+Digital identity
+Identity lifecycle
+User repository
+Directory services
+
+2️⃣ Authentication
+Password based login
+Multi-Factor Authentication (MFA)
+OTP
+Biometric
+Adaptive authentication
+Risk-based authentication
+
+3️⃣ Authorization
+RBAC (Role Based Access Control)
+ABAC
+Policy based access
+Least privilege
+Privilege escalation control
+
+4️⃣ Single Sign-On (SSO)
+Central login system
+Session management
+Token-based login
+Protocols:-
+SAML
+OAuth 2.0
+OpenID Connect
+
+5️⃣ Federation
+Cross-domain authentication
+Trust relationships
+Identity provider (IdP)
+Service provider (SP)
+
+6️⃣ Directory Services
+LDAP
+Active Directory
+User store
+Group management
+Example:-
+Microsoft Active Directory
+
+7️⃣ Access Management
+Session control
+Access policies
+IP restrictions
+Device trust
+
+8️⃣ Privileged Access Management (PAM)
+Admin account control
+Password vault
+Session recording
+Just-in-time access
+
+9️⃣ Provisioning
+Account creation
+Password reset
+Self-service portal
+Access request
+
+🔟 Identity Federation & Cloud IAM
+SaaS authentication
+API security
+JWT tokens
+Cloud identity
+Example:-
+Okta
+Microsoft Entra ID
+
+1️⃣1️⃣ Monitoring & Logging
+Login audit logs
+Suspicious activity detection
+SIEM integration
+
+1️⃣2️⃣ Zero Trust Security
+Continuous verification
+Context-based access
+Device posture check
+
+1️⃣3️⃣ API Security
+OAuth tokens
+Access tokens
+Refresh tokens
+Rate limiting
+
+1️⃣4️⃣ Password Management
+Password policy
+Rotation
+Vaulting
+
+1️⃣5️⃣ Compliance & Regulations
+SOX
+GDPR
+HIPAA
+PCI-DSS

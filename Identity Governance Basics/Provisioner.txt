@@ -1,0 +1,727 @@
+🔥Provisioner kya hai?
+👉 Provisioner = jo external system me actual action karta hai
+🧠 Simple line:-
+👉 User ko create / update / delete karne wala engine
+🔥 Real Meaning:-
+Jab tu bolta hai:-
+User banao
+Role assign karo
+Access hatao
+👉 Ye sab kaam Provisioner karta hai.
+
+()Provisioner ek execution engine hai jo provisioning plan ko run karke external systems me user access create/update/delete karta hai.
+------------------------------------------------------------------------------------
+🔥 🔹 Provisioner kya karta hai?
+✅ 1. Account Create:-
+👉 External system me user banata hai
+Create user in SAP / AD
+
+✅ 2. Account Update:-
+👉 User ka data change karta hai
+email update
+role change
+
+✅ 3. Account Delete / Disable:-
+👉 User ko remove ya disable karta hai
+
+✅ 4. Entitlement Assign/Remove:-
+👉 Roles/groups deta ya hataata hai
+
+✅ 5. Provisioning Plan execute karta hai:-
+👉 Ye sab directly nahi hota
+👉 Pehle ProvisioningPlan banta hai
+
+🔥🔹Provisioning Flow:-
+Request → ProvisioningPlan → Provisioner → Connector → External System
+----------------------------------------------------------------------------------------------------------------------
+🔥 🔹 Provisioner ke andar kya hota hai?
+🔹 1. ProvisioningPlan
+👉 Kya action lena hai
+create
+update
+delete
+
+🔹 2. AccountRequest
+👉 Kis user pe action
+
+🔹 3. AttributeRequest
+👉 Kya change karna hai
+email change
+role add
+
+🔹 4. Connector
+👉 External system se connect
+
+🔹 5. Rules (Optional)
+👉 Custom logic
+
+🔹 6. Result / Status
+👉 Success / Failure
+---------------------------------------------------------------------------------------------------
+🔥 🔹 Example (Real Code Style):-
+ProvisioningPlan plan = new ProvisioningPlan();
+
+AccountRequest accReq = new AccountRequest();
+accReq.setApplication("SAP");
+accReq.setOperation(AccountRequest.Operation.Create);
+
+AttributeRequest attr = new AttributeRequest();
+attr.setName("email");
+attr.setValue("rahul@gmail.com");
+
+accReq.add(attr);
+plan.add(accReq);
+
+Provisioner provisioner = new Provisioner(context);
+provisioner.execute(plan);
+-----------------------------------------------------------------------------------------------------
+🔥 🔹 Kya DB me store hota hai?
+👉 Direct Provisioner object store nahi hota ❌
+--------------------------------------------------------
+🔥 1️⃣ Constructor:-
+
+✅ Provisioner(SailPointContext context):-
+👉 Provisioner object banata hai
+Provisioner provisioner = new Provisioner(context);
+-----------------------------------------------------------------------------------------------------------------------------------------
+🔥 2️⃣ Main Execution Method:-
+
+✅ execute(ProvisioningPlan plan):-
+👉 Sabse important method,
+👉 Plan ko run karta hai.
+provisioner.execute(plan);
+👉 Kya karta hai:-
+Account create/update/delete
+Entitlements assign/remove
+
+✅ executeWithResult(ProvisioningPlan plan):-
+👉 Execute + result return karta hai
+ProvisioningResult result = provisioner.executeWithResult(plan);
+👉 Output:-
+Success / Failure
+Error details
+
+✅ compile(ProvisioningPlan plan):-
+👉 Plan ko ProvisioningProject me convert karta hai
+ProvisioningProject project = provisioner.compile(plan);
+
+✅ retry(ProvisioningProject project):-
+provisioner.retry(project);
+👉 Failed provisioning ko dobara try karta hai.
+
+✅ getResult():-
+ProvisioningResult result = provisioner.getResult();
+👉 Last execution ka result deta hai.
+-----------------------------------------------------------------
+1️⃣ compile(plan, boolean expand):-
+👉 ProvisioningPlan ko execution-ready structure (ProvisioningProject) me convert karta hai.
+
+🔹 1️⃣ Plan ko Application-wise todta hai
+Ek plan me multiple applications ho sakte hain (SAP, AD, DB etc.)
+compile() unhe separate karta hai
+
+👉 Example:-
+User ko:
+- AD me account banana hai
+- SAP me role assign karna hai
+
+➡️ compile karega:-
+AD Task
+SAP Task
+
+🔹 2️⃣ Requests ko group karta hai:-
+Same application ke operations ko ek group me daal deta hai
+👉 Example:-
+AD me:-
+- Create account
+- Add to group
+- Set password
+➡️ Ek hi execution unit banega:-
+AD Provisioning Task
+
+🔹 3️⃣ Execution order set karta hai:-
+Sabse critical part 👇
+Pehle account create
+Fir entitlement/role assign
+👉 Galat order nahi hone deta ❌
+Example:-
+❌ Role assign before account creation (ERROR)
+✅ Account create → then role assign
+
+🔹 4️⃣ Dependencies handle karta hai:-
+Agar ek kaam dusre pe depend hai → order fix karega
+👉 Example:-
+Account create → then email enable
+
+🔹 5️⃣ expand = true ka role (🔥 hidden magic):-
+Agar expand = true:-
+👉 System:-
+Roles ko tod deta hai individual entitlements me
+Policy expansion karta hai
+👉 Example:-
+Role: "Manager"
+➡️ Expand hone ke baad:-
+- Read access
+- Write access
+- Approve access
+
+🔹 6️⃣ ProvisioningProject banata hai:-
+Final output 👇
+ProvisioningProject project
+
+Iske andar hota hai:-
+Application wise tasks
+Execution steps
+Dependencies
+Order
+
+🧠 Example:-
+👉 Output (Realistic Structure Example)
+ProvisioningProject {
+  
+  plans = [
+    
+    AccountRequest {
+      application = "Active Directory"
+      operation = CREATE
+      
+      attributeRequests = [
+        AttributeRequest {
+          name = "sAMAccountName"
+          value = "rahul"
+          operation = SET
+        },
+        AttributeRequest {
+          name = "password"
+          value = "Pass@123"
+          operation = SET
+        }
+      ]
+      
+      entitlementRequests = [
+        EntitlementRequest {
+          name = "memberOf"
+          value = "CN=Employees,OU=Groups,DC=company,DC=com"
+          operation = ADD
+        }
+      ]
+    },
+
+    AccountRequest {
+      application = "SAP"
+      operation = MODIFY
+      
+      entitlementRequests = [
+        EntitlementRequest {
+          name = "role"
+          value = "Z_MANAGER"
+          operation = ADD
+        }
+      ]
+    }
+
+  ]
+}
+----------------------------------------------------------------------------------------------------------------------------------------
+🔥(2)expandPlan(ProvisioningPlan plan):-
+ProvisioningPlan expandedPlan = provisioner.expandPlan(plan);
+👉 Simple ek line me:-
+👉 High-level access(Role,Policy,Bundle) → actual entitlements (permissions/groups) me convert karta hai.
+
+🧠 Real me problem kya hoti hai?
+👉 User ko directly permission nahi dete, hum dete hain:-
+Role = "Manager"
+❌ Problem:-
+System ko nahi pata "Manager" ka matlab kya hai execution ke time
+
+🔥 expandPlan kya karta hai?
+👉 "Manager" ko tod deta hai actual cheezon me:-
+- AD Group: Managers
+- SAP Role: Z_MANAGER
+- Email Access: Enabled
+👉 ab system ko clear ho gaya kya karna hai.
+
+👉 “Manager” ko 3 items me kyu toda?
+👉 Kyunki “Manager” ek single role nahi hota,
+ye actually ek bundle/collection of permissions hota hai.
+aur jar permission/access aek item/certificationitem/accessrequestitem hota hai.
+
+()1 role = multiple systems ka access:-
+🔹 1️⃣ AD Group: Managers:-
+👉 Identity system (Active Directory) me access
+Login / authentication
+Group-based permissions
+
+🔹 2️⃣ SAP Role: Z_MANAGER:-
+👉 Business system (SAP) me access
+Reports
+Transactions
+Business operations
+
+🔹 3️⃣ Email Access: Enabled:-
+👉 Communication system me access
+Email send/receive
+Outlook access
+
+
+----------------------
+🧠 Internally kya karta hai expand?
+🔹 1️⃣ Role → Entitlements convert
+Role ko todta hai multiple permissions me:-
+👉 Input Plan:-
+Role = "Manager"
+➡️ expandPlan karega:-
+Entitlements:-
+- Read Access
+- Write Access
+- Approve Access
+
+🔹 2️⃣ Policy / Rule Expansion:-
+Agar koi policy ya rule laga hai
+toh usko bhi expand karta hai
+👉 Example:-
+Policy: "Finance Role"
+➡️ Expand:-
+- SAP_FIN_READ
+- SAP_FIN_WRITE
+
+
+(3)Application Mapping kya hota hai?
+👉 expandPlan() ke time par system decide karta hai:-
+“kaunsa entitlement kis application (AD, SAP, Email, etc.) me apply hoga”
+
+👉 Input (User ka Role):-
+Role: "Manager"
+👉 System me mapping defined hai (IMPORTANT):-
+Role	   Application	   Entitlement
+Manager	      AD	       CN=Managers
+Manager	      SAP	       Z_MANAGER
+Manager 	Exchange	   Mailbox Enabled
+Manager	   File Server	   Shared Folder Access
+
+🔥 expandPlan ka OUTPUT (Actual Mapping):-
+ProvisioningPlan {
+  🔹 Active Directory (AD)
+  AccountRequest:
+    Entitlement:
+      - memberOf = CN=Managers,OU=Groups,DC=company,DC=com
+
+  🔹 SAP System
+  AccountRequest:
+    Entitlement:
+      - role = Z_MANAGER
+
+  🔹 Email System (Exchange)
+  AccountRequest:
+    Attribute:
+      - mailboxEnabled = true
+
+  🔹 File Server
+  AccountRequest:
+    Entitlement:
+      - access = SharedFolder_Manager
+
+}
+
+🔹 4️⃣ Hidden dependencies add karta hai
+Jaise:-
+Mailbox create
+Default groups
+
+🔥 Hidden Dependencies kya hoti hain?
+👉 Ye aise required actions / permissions hain jo directly plan me nahi likhe hote,
+lekin system unhe automatically add ya trigger karta hai taaki provisioning sahi se ho sake.
+--------------------------------------------------------------------------------------------------------------------------------------
+🔥 3️⃣ provision(ProvisioningProject project):-
+provisioner.provision(project);
+👉 Kya karta hai?
+👉 Actual execution karta hai (no result return)
+
+🔍 Internally:-
+Connector call karta hai
+External system me changes karta hai
+
+👉 Output:-
+❌ Return nahi karta
+👉 Bas execute karta hai
+------------------------------------------------------------
+🔥 4️⃣ provisionWithResult(ProvisioningProject project):-
+ProvisioningResult result = provisioner.provisionWithResult(project);
+👉 Kya karta hai?
+
+👉 Execute + result deta hai
+
+🔍 Output:-
+Success / Failure
+Error message
+Status per account
+---------------------------------
+✅ provisionIdentity(Identity identity):-
+provisioner.provisionIdentity(identity);
+👉 Kya karta hai?
+👉 Identity ke pending changes ko apply karta hai
+
+🔍 Internally:-
+Identity ke roles check karta hai
+Required access calculate karta hai
+Plan generate karta hai
+Execute karta hai
+
+🧠 Example:-
+👉 Identity me role add kiya →
+👉 Ye method automatically:-
+group assign karega
+account update karega
+---------------------------------------
+✅ provisionIdentityWithResult(Identity identity):-
+ProvisioningResult result = provisioner.provisionIdentityWithResult(identity);
+👉 Same upar ka kaam + result return
+---------------------------------------------------------------------------------
+✅ setTrace(true):-
+provisioner.setTrace(true);
+👉 Kya karta hai?
+👉 Detailed logs ON karta hai
+🧠 Output:-
+Connecting to SAP...
+Executing create account...
+Success
+------------------------------------------------
+🔥 1️⃣ simulate(ProvisioningPlan plan):-
+ProvisioningResult result = provisioner.simulate(plan);
+👉 Simple Meaning:-
+👉 Plan ko execute kiye bina sirf test karta hai
+
+🧠 Kya karta hai internally?
+Check karta hai:-
+Kya plan valid hai?
+Kya permissions mil sakti hain?
+Koi error to nahi aayega?
+Real system me kuch change nahi karta ❌
+
+💥 Real Output (Example):-
+ProvisioningResult:-
+- Status: SUCCESS
+- Warnings: None
+- Errors: None
+Simulated Actions:-
+- AD: Group "Managers" add (OK)
+- SAP: Role "Z_MANAGER" assign (OK)
+- Email: Mailbox enable (OK)
+-------------------------------------------------------------------
+🔥 2️⃣ setNoLocking(true):-
+provisioner.setNoLocking(true);
+👉 Simple Meaning:-
+👉 Locking mechanism ko disable kar deta hai
+
+🧠 Locking kya hota hai?
+👉 Normally:-
+Same user pe ek time me ek hi provisioning process chale
+
+👉 Locking ka kaam:-
+Race condition avoid karna
+Data corruption rokna
+
+💥 No Locking = kya hoga?
+👉 Agar tu true karta hai:-
+Multiple provisioning processes ek sath chal sakte hain
+Lock nahi lagega
+⚠️ Risk:-
+- Data conflict
+- Duplicate provisioning
+- Inconsistent state
+
+⚡ Use case:-
+👉 Jab:-
+High performance chahiye
+Parallel processing karna hai
+External system already handle kar raha ho.
+-------------------------------------------------------------------------------
+🔥 3️⃣ setOptimisticProvisioning(true):-
+provisioner.setOptimisticProvisioning(true);
+👉 Simple Meaning:-
+👉 System bina wait kiye assume karta hai ki provisioning SUCCESS hogi
+
+🧠 Normal(Optimistic OFF) vs Optimistic ON:-
+✅ Normal Mode (default):-
+User → request send
+   ↓
+System → provisioning complete hone ka wait karega
+   ↓
+Success/Failure response
+👉 yaha system confirm karke hi response deta hai
+
+✅ Optimistic Mode (true):-
+User → request send
+   ↓
+System → "OK SUCCESS" bol deta hai
+   ↓
+Actual provisioning background me hoti hai
+👉 yaha system jaldi response de deta hai (fast UX).
+---------------------------------------------------------------------------
+💥 Real Example:-
+👉 Scenario:-
+User ko role assign karna hai:-
+Role = Manager
+🔹 Optimistic = TRUE
+
+👉 System response:-
+Status: SUCCESS
+
+👉 But actual:-
+- AD Group add (pending)
+- SAP role assign (pending)
+- Email enable (pending)
+👉 sab background me chal raha hai
+
+⚠️ Agar failure ho gaya?
+👉 Response already SUCCESS de chuka hai 😬
+👉 Later:-
+- Provisioning failed
+- Retry required
+---------------------------------------------------------------------------------------------
+()🔥 1️⃣ getContext():-
+Context context = provisioner.getContext();
+👉 Kya karta hai?
+👉 Provisioner ka SailPoint context return karta hai.
+-----------------------------------------------------------
+🔥 2️⃣ setContext(Context context):-
+provisioner.setContext(context);
+👉 Kya karta hai?
+👉 Provisioner ko working context assign karta hai.
+-------------------------------------------------------------
+🔥 3️⃣ setApplication(Application app):-
+provisioner.setApplication(app);
+👉 Kya karta hai?
+👉 Kaunsi application pe provisioning karni hai wo set karta hai.
+-----------------------------------------------------------------------------
+🔥 4️⃣ getApplication():-
+Application app = provisioner.getApplication();
+👉 Kya karta hai?
+👉 Current application return karta hai.
+-----------------------------------------------------------------------------------
+🔥 5️⃣ setConnector(Connector connector):-
+provisioner.setConnector(connector);
+👉 Kya karta hai?
+👉 Actual system (SAP / AD / DB) se connect karne wala connector set karta hai.
+---------------------------------------------------------------------------------
+🔥 6️⃣ getConnector():-
+Connector conn = provisioner.getConnector();
+👉 Kya karta hai?
+👉 Current connector return karta hai.
+--------------------------------------------------------------------
+🔥 7️⃣ setProvisioningPlan(ProvisioningPlan plan):-
+provisioner.setProvisioningPlan(plan);
+👉 Kya karta hai?
+👉 Plan manually set karta hai (agar already create hai).
+-----------------------------------------------------------------------
+🔥 8️⃣ getProvisioningPlan():-
+ProvisioningPlan plan = provisioner.getProvisioningPlan();
+👉 Kya karta hai?
+👉 Current provisioning plan return karta hai.
+----------------------------------------------------------------------
+🔥 🔟 getPlanExecutor():-
+PlanExecutor executor = provisioner.getPlanExecutor();
+----------------------------------------------------------------
+🔥 1️⃣1️⃣ setOperation(Operation op):-
+provisioner.setOperation(Operation.CREATE);
+👉 Kya karta hai?
+👉 Operation define karta hai:-
+CREATE
+UPDATE
+DELETE
+-----------------------------------------------------------
+🔥 1️⃣2️⃣ getOperation():-
+Operation op = provisioner.getOperation();
+👉 Kya karta hai?
+👉 Current operation batata hai
+---------------------------------------------
+🔥 1️⃣3️⃣ setTrace(boolean trace):-
+👉 Already pata hai
+👉 Logging ON/OFF karta hai
+----------------------------------------------------
+🔥 1️⃣5️⃣ setRetryAttempts(int count):-
+provisioner.setRetryAttempts(3);
+👉 Kya karta hai?
+👉 Fail hone par kitni baar retry kare
+-------------------------------------------------------------
+🔥 1️⃣6️⃣ setTimeout(long millis):-
+provisioner.setTimeout(30000);
+👉 Kya karta hai?
+👉 Execution timeout set karta hai.
+---------------------------------------------------------------------------
+💥 PlanExecutor kya karta hai?
+👉 Ye actual work karta hai:-
+- Account create
+- Role assign
+- Attribute update
+
+🔥 1️⃣ setPlanExecutor(PlanExecutor executor):-
+provisioner.setPlanExecutor(executor);
+👉 Simple Meaning:-
+👉 Kaunsa engine / logic plan ko execute karega — ye set karta hai
+
+🧠 Kya hota hai internally?
+👉 Provisioning system me:-
+Compile → Plan banta hai
+Execute → PlanExecutor karta hai
+👉 Tu yaha execution ka control de raha hai.
+
+🔥 Custom behavior:-
+👉 Tu apna custom executor bana sakta hai:-
+public class MyPlanExecutor implements PlanExecutor {
+    public void execute(ProvisioningPlan plan) {
+        // custom logic
+    }
+}
+👉 fir set:-
+provisioner.setPlanExecutor(new MyPlanExecutor());
+------------------------------------------------------------------------------
+🔥 2️⃣ addExceptionListener(...):-
+provisioner.addExceptionListener(listener);
+👉 Simple Meaning:-
+👉 Jab provisioning me error aaye, usko handle karne ke liye listener add karta hai
+
+🧠 Exception Listener kya karta hai?
+👉 Ye error ko catch karke handle karta hai
+
+💥 Example:-
+provisioner.addExceptionListener(new ExceptionListener() {
+    public void handleException(Exception e) {
+        System.out.println("Error occurred: " + e.getMessage());
+    }
+});
+🔥 Kya hota hai jab error aata hai?
+Provisioning → Error aaya
+        ↓
+ExceptionListener trigger
+        ↓
+Custom handling (log / alert / retry)
+--------------------------------------------------------------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointContextFactory;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.provisioning.Provisioner;
+import sailpoint.tools.ExceptionListener;
+
+public class StandaloneDemo {
+
+    public static void main(String[] args) {
+
+        try {
+            // ⚠️ Ye tabhi chalega jab IdentityIQ environment ho
+            SailPointContextFactory factory = new SailPointContextFactory();
+            SailPointContext context = factory.getContext();
+
+            Provisioner provisioner = new Provisioner(context);
+
+            provisioner.addExceptionListener(new ExceptionListener() {
+                public void handleException(Exception e) {
+                    System.out.println("Error: " + e.getMessage());
+                }
+            });
+
+            ProvisioningPlan plan = new ProvisioningPlan();
+
+            provisioner.compile(plan, true);
+
+        } catch (Exception e) {
+            System.out.println("❌ Standalone me error aayega:");
+            e.printStackTrace();
+        }
+    }
+}
+---------------------------------------------
+❌ Case 3: ExceptionListener ka error
+🔹 Error:
+Error: Provisioning failed: Missing account
+📍 Ye error kis line se aata hai?
+
+👉 Is block se:-
+provisioner.addExceptionListener(new ExceptionListener() {
+    public void handleException(Exception e) {
+        System.out.println("Error: " + e.getMessage());
+    }
+});
+🧠 Important:-
+👉 Ye error throw nahi karta
+👉 Ye sirf print karta hai
+
+👉 Actual flow:-
+Provisioner ke andar koi error aata hai
+ExceptionListener call hota hai
+Ye line execute hoti hai:-
+System.out.println("Error: " + e.getMessage());
+🧠 Example:-
+Agar provisioning fail hua:-
+👉 Output:-
+Error: Missing account
+-----------------------------------------------------------------
+❌ Case 1: NoClassDefFoundError / ClassNotFoundException
+🔹 Error:-
+java.lang.NoClassDefFoundError: sailpoint/api/SailPointContextFactory
+Caused by: java.lang.ClassNotFoundException
+
+🔹 Ye kahan se aata hai?
+👉 Is line par:-
+SailPointContextFactory factory = new SailPointContextFactory();
+
+🔹 Matlab kya hai?
+👉 Java ko SailPointContextFactory class mil hi nahi rahi ❌
+
+🔹 Simple meaning:-
+“Tumne jis class ko use karne ki koshish ki hai, wo class tumhare classpath me exist hi nahi karti.”
+
+🔹 Reason (kyu hota hai?)
+❌ 1. SailPoint JAR add nahi kiya
+👉 IdentityIQ ke required .jar files project me include nahi hai
+
+❌ 2. Classpath me missing hai
+👉 JVM ko pata hi nahi hai ki class kaha hai
+/////*👉 Classpath = Java ko batane wala path jahan se wo classes (.class files) aur JAR files dhoondta hai.
+🔹IDE me (Eclipse / IntelliJ):-
+🔸Eclipse me:-
+Right click project → Build Path
+→ Configure Build Path
+→ Libraries tab
+
+👉 Wahan tumhe:-
+JAR files
+external libraries
+project dependencies
+dikh jaati hain (ye hi classpath hota hai)*/////////
+
+❌ 3. IdentityIQ libraries load nahi hui
+👉 Required dependencies (libs) load nahi hui
+
+❌ 4. Wrong environment
+👉 Tum code standalone Java program me run kar rahe ho
+👉 Par ye class sirf IdentityIQ environment me available hoti hai
+--------------------------------------------------------------------
+--------------------------------------------------------------------------
+❌ Case 2: Context not available (GeneralException):-
+🔹 Error:-
+sailpoint.tools.GeneralException: Context not available
+🔹 Ye error kahan se aata hai?
+👉 Is line par:-
+SailPointContext context = factory.getContext();
+
+🔹 Matlab kya hai?
+👉 Class (code) mil gayi ✅
+👉 Lekin IdentityIQ ka proper environment nahi mil raha ❌
+
+🔹 Simple meaning:-
+“Context tabhi milega jab IdentityIQ system properly running aur accessible ho”
+🔹 Context kab milta hai? (Conditions)
+✔️ 1. IdentityIQ server running ho
+Application properly start hona chahiye
+War deployed hona chahiye
+✔️ 2. Valid session ho
+User login ho
+Session active ho
+✔️ 3. Proper authentication ho
+User authorized ho
+System usko access allow kare
+✔️ 4. Correct environment ho
+Code IdentityIQ ke andar run ho
+(jaise: rule, task, workflow)
+-----------------------------------------------------------------------------------

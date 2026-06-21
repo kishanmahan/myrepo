@@ -1,0 +1,11 @@
+()Salesforce ek cloud-based software platform hai jiska main use customers aur sales data ko manage karna hota hai.
+Isko CRM (Customer Relationship Management) system kehte hain.
+Simple words me:-
+👉 Company apne customers, sales deals, aur support tickets ko Salesforce me manage karti hai.
+Simple Definition:-
+Salesforce ek online CRM platform hai jahan company:
+customer data store karti hai
+sales process track karti hai
+marketing campaigns manage karti hai
+customer support handle karti hai
+

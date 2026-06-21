@@ -1,0 +1,93 @@
+🏗️ Database Configuration Overview
+IIQ ko run karne ke liye:-
+1️⃣ Database create karna hota hai
+2️⃣ DB user create karna hota hai
+3️⃣ SailPoint schema scripts run karne hote hain
+4️⃣ iiq.properties me DB connection configure karna hota hai
+5️⃣ JDBC driver add karna hota hai
+
+🟠 1️⃣ Oracle Database Configuration
+Step 1: Oracle me DB User Create karo
+Login as SYS:-
+CREATE USER iiquser IDENTIFIED BY password;
+GRANT CONNECT, RESOURCE TO iiquser;
+GRANT UNLIMITED TABLESPACE TO iiquser;
+
+Step 2: Tablespace (Optional but Recommended)
+CREATE TABLESPACE IIQDATA
+DATAFILE 'iiqdata.dbf'
+SIZE 500M AUTOEXTEND ON;
+
+Step 3: SailPoint Schema Scripts Run karo
+Installation package me milta hai:-
+database/oracle/create_identityiq_tables.sql
+Isko run karo as iiquser
+Ye:-
+Tables
+Indexes
+Constraints
+Default objects
+create karega.
+
+Step 4: JDBC Driver Add karo
+Download:-
+ojdbc8.jar
+
+Copy to:-
+tomcat/lib/
+
+Step 5: iiq.properties Configuration
+File location:-
+identityiq/WEB-INF/classes/iiq.properties
+
+Edit:-
+dataSource.driverClassName=oracle.jdbc.OracleDriver
+dataSource.url=jdbc:oracle:thin:@localhost:1521:ORCL
+dataSource.username=iiquser
+dataSource.password=password
+---------------------------------------------------------------------------------------------
+🟢 2️⃣ MySQL Database Configuration:-
+Step 1: Database Create karo
+CREATE DATABASE iiq;
+
+Step 2: User Create karo
+CREATE USER 'iiquser'@'localhost' IDENTIFIED BY 'password';
+GRANT ALL PRIVILEGES ON iiq.* TO 'iiquser'@'localhost';
+FLUSH PRIVILEGES;
+
+Step 3: SailPoint Schema Script Run karo
+Package me milega:-
+database/mysql/create_identityiq_tables.sql
+Run as iiquser
+
+Step 4: MySQL JDBC Driver Add karo
+Download:
+mysql-connector-java.jar
+Copy to:
+tomcat/lib/
+
+Step 5: iiq.properties Configuration
+dataSource.driverClassName=com.mysql.cj.jdbc.Driver
+dataSource.url=jdbc:mysql://localhost:3306/iiq
+dataSource.username=iiquser
+dataSource.password=password
+
+🚀 After Configuration:-
+1️⃣ Tomcat restart karo
+2️⃣ Logs check karo:-
+tomcat/logs/catalina.out
+Agar DB connection successful hai → IIQ start ho jayega 🎉
+
+🛑 Common Errors & Fix:-
+❌ ORA-12514
+→ Service name galat hai
+
+❌ Access denied for user
+→ Username/password wrong
+
+❌ Driver not found
+→ JDBC jar missing
+
+❌ Schema not found
+→ DB scripts run nahi hue
+

@@ -1,0 +1,251 @@
+()global-setting->Rapid Setup Configuration->
+
+()Joiner process (naye employee ka onboarding) ke liye hain.
+
+()Joiner Processing: Is toggle ko on karne se poora Joiner automation active ho jata hai. 
+Agar ye off hai, toh naye users aane par koi automatic access nahi milega.
+
+()Generate Approvals: Agar ise on rakhte hain, toh naye user ko role milne se pehle manager ya owner ki approval zaroori hogi.
+Off hone par access turant (birthright) mil jayega.
+
+()Automatically Join New Empty Identities: Kai baar HR system se sirf naam aata hai aur koi account nahi juda hota. 
+Ise on karne se SailPoint un khali profiles par bhi Joiner process chala deta hai.
+
+()Exclude Uncorrelated Identities: Agar koi aisa account aggregate hua hai jo kisi Identity (insaan) se nahi juda, 
+toh ye toggle use Joiner process se bahar rakhta hai taaki kachra data process na ho.
+
+()Joiner Completed Notification Email Template: Onboarding khatam hone par manager ya user ko jo email jayega, 
+uska design (template) yahan se chuna jata hai.
+
+()Alternative Workgroup for Notification: Agar aap chahte hain ki email manager ke bajaye kisi specific team (jaise IT Helpdesk) ko jaye,
+toh unka group yahan select karein.
+
+()Send Temporary Password Email: Naye user ke liye agar system koi naya password banata hai, 
+toh use email ke zariye bhejne ke liye is toggle ka use hota hai.
+
+()Post Joiner Rule:-ye SailPoint IdentityIQ ke Rapid Setup ka ek bahut powerful feature hai.
+Ye rule Joiner workflow ke bilkul aakhri stage par execute hota hai.Jab user ka account ban jata hai, 
+birthright roles assign ho jate hain, aur sari provisioning khatam ho jati hai, tab ye rule chalta hai.
+-toh iska use hota hai:-
+--Third-Party Notifications: Agar aapko onboarding khatam hone par kisi external system (jaise Slack ya Microsoft Teams) par message bhejna ho.
+--Custom Attribute Updates: Onboarding ke baad agar user ki identity par koi aisa attribute set karna ho jo workflow ke logic par depend karta hai.
+--Downstream API Calls: Kisi aise system mein account trigger karna jiska connector SailPoint mein direct available nahi hai.
+--Complex Logging: Audit purpose ke liye onboarding ki summary kisi alag file ya database table mein save karna.
+
+()Fixed: Aapne likha 50.Agar ek din mein 51 log join karte hain,toh SailPoint ruk jayega kyunki use lagega ki shayad HR system mein koi galti hai.
+
+()Percentage: Agar total employees ka 5% se zyada ek sath join ho rahe hain,toh process ruk jayega. Ye system ko mass-error se bachata hai.
+
+()Joiner Business Process: Ye wo main engine (Workflow) hai jo peeche kaam kar raha hai. Default taur par ye RapidSetup - Joiner hota hai.
+
+2. Logic & Triggers:-
+()Trigger Filter: Sabse zaroori hissa! Ye taye karta hai ki kaun "Joiner" mana jayega.
+()Attribute: Aap rule laga sakte hain: hireDate is Today.
+()Population: Aap kisi khaas group (jaise "Permanent Employees") ke liye hi ye process chala sakte hain.
+()AND/OR Logic: Aap complex filters bana sakte hain, jaise: (Dept == 'IT' AND Status == 'Active').
+
+-------------------------------------------------------mover-----------------------------------------------------------------------------
+()Mover Processing: Is toggle ko ON karne se "Mover" ka automation shuru hota hai.
+
+()Generate Approvals: Agar user ka department badalne par unhe naye roles mil rahe hain, 
+toh kya unke naye manager ki permission chahiye? Ise ON karne se approvals generate honge.
+
+()Exclude Uncorrelated Identities: Sirf un logo ka transfer process hoga jo Identity Warehouse mein proper "Identity" se jude hain.
+Kachra data (uncorrelated accounts) ko ignore kiya jayega.
+
+()Launch a Targeted Certification: Yeh bahut important hai. Jab koi "Mover" hota hai, toh aksar purana access cheen liya jata hai. 
+Ise ON karne se manager ke paas ek task jayega (Certification) jahan wo decide karega ki user ko purana access rakhna hai ya delete karna hai.
+
+()Joiner Processing: Yeh option yahan isliye hai kyunki kabhi-kabhi Mover process ke sath-sath humein naye department ke 
+hisab se naye birthright roles bhi dene hote hain (jo Joiner logic se aate hain).
+
+()Post Mover Rule: Jab Mover ka poora workflow khatam ho jaye, 
+tab agar aapko koi custom Beanshell code chalana hai(jaise kisi dusre system ko update karna ya custom log banana),
+toh wo yahan select hota hai.
+
+()Fixed: Agar aapne 100 set kiya aur ek sath 101 logo ka transfer dikh raha hai, 
+toh SailPoint ruk jayega taaki koi mass-error na ho jaye.
+
+()Percentage: Total users ka ek fixed percentage (e.g., 2%) se zyada log agar Mover bante hain, toh system ruk jayega.
+
+()Mover Business Process: Yeh wo engine (Workflow) hai jo backend par chalta hai. Default value RapidSetup - Mover hoti hai.
+
+()Trigger Filter: Yeh sabse zaroori jagah hai. SailPoint ko kaise pata chalega ki koi user "Mover" ban gaya hai?
+Yahan aap conditions set karte hain. Jaise ki Department Changes ya Manager Changes.
+
+--yaha-Administrator Equals Aadhya Rao dikhaya hai—iska matlab hai ki agar kisi user ka Administrator badal kar Aadhya Rao ho jata hai, 
+tabhi ye process trigger hoga.
+
+----Add Row (Attribute/Population):-
+--Attribute: Aap kisi specific attribute par filter laga sakte hain (e.g., Job Title change).
+--Population: Aap kisi poori population (e.g., "All Finance Users") ke liye rules laga sakte hain.
+
+--Correlated Equals True AND Employee Id Equals 12345:-
+Kya karega?: Yeh sirf us user ko dhundhega jiska account kisi insaan (Identity) se link ho chuka hai AUR jiska ID barabar 12345 hai.
+Kyun?: Taki naye hire ke waqt system galat account par process na chala de.
+
+--Created Date Equals 2026-05-01 AND Email Equals jatin@comp.com:-
+Kya karega?: Yeh un logo ko filter karega jo exactly 1st May ko join hue hain AUR jinka email jatin@comp.com hai.
+
+--Display Name Equals 'Jatin Sharma' AND Correlated Equals True:-
+Kya karega?: Yeh specific naam wale user ko check karega,lekin tabhi jab wo system mein as a valid identity register ho chuka ho.
+
+--Inactive Equals False AND Manager Equals 'Aadhya Rao':-
+Kya karega?: Yeh sirf un users ko target karega jo abhi Active hain (Inactive nahi hain) AUR jo Aadhya Rao ko report karte hain.
+Example: Mover process mein agar Aadhya ki team mein koi naya banda active ho raha hai.
+
+--First Name Equals 'Rahul' AND Last Name Equals 'Kumar':-
+Kya karega?: Yeh filter tabhi kaam karega jab kisi user ka pehla naam Rahul AUR aakhri naam Kumar, dono match honge.
+
+--Last Refresh Date Equals 2026-05-06 AND Manager Equals 'Amit':-
+Kya karega?: Sirf un logo ko pakdega jinka data aaj refresh hua hai AUR jinka manager Amit hai.
+
+--Type Equals 'Contractor' AND Manager Status Equals 'Active':-
+Kya karega?: Yeh rule sirf Contractors ke liye chalega, lekin shart yeh hai ki unka Manager bhi company mein Active hona chahiye.
+Importance: Agar manager khud company chhod gaya hai, toh contractor ka access ruk sakta hai.
+
+--User Name Equals 'jatin_s' AND Modified Date Equals 2026-05-06:-
+Kya karega?: Yeh check karega ki kya jatin_s ki profile mein aaj koi badlav (modification) hua hai.
+
+--Software Version Equals 8.3 AND Type Equals 'Employee':-
+Kya karega?: Yeh un Employees ko filter karega jo SailPoint ke version 8.3 par process ho rahe hain.
+
+---1. Population (User Groups):-
+Population ka matlab hai users ka ek aisa group jo kisi khaas query ya logic ke aadhar par pehle se bana hua hai (jaise "All Remote Employees" ya "Finance Dept Users").
+Attribute: Population | Operator: Equals | Value: [Population Name]
+Logic: Jab aap Population Equals 'Contractors' AND Type Equals 'Internal' use karte hain, toh yeh rule sirf un logo ko pakdega jo 'Contractors' wali list mein hain AUR jinka status internally 'Internal' mark kiya gaya hai.
+Kyun?: Isse aapko har baar lamba filter nahi likhna padta. Aapne ek baar "Population" banayi aur har jagah use use kiya.
+
+--2. Group (Identity Groups/Workgroups):-
+Group ka upyog aksar user ke roles ya unki team membership ko check karne ke liye hota hai.
+Attribute: Group | Operator: Equals | Value: [Workgroup Name]
+Logic: Group Equals 'IT Helpdesk' AND Inactive Equals False.
+Kaise kaam karta hai: Yeh filter un sabhi users ko check karega jo 'IT Helpdesk' workgroup ke member hain AUR jo abhi company mein active hain.
+Kyun?: Agar aapko sirf kisi specific team ke liye Mover ya Joiner process chalana ho, toh Group sabse best option hai.
+
+--------------------------------------leaver-----------------------------------------------------------
+()Leaver Processing: Is toggle ko ON karne se offboarding ka automatic process shuru hota hai.
+
+()Generate Approvals: Kya kisi ka access band karne se pehle approval chahiye? 
+Offboarding mein ise aksar OFF rakha jata hai taki access bina deri ke turant band ho jaye.
+
+()Exclude Uncorrelated Identities: Sirf un accounts par action liya jayega jo Identity Warehouse mein kisi valid insaan (Identity) se jude hain.
+
+2. Reassignment Control:-
+Jab koi senior person ya manager company chhodta hai, toh unke pass maujood digital "zimmedariyan" (Artifacts) kisi aur ko deni padti hain.
+
+()Remove Assigned Roles: User ko manually diye gaye roles ko automatically delete karne ke liye ise ON karein.
+()Reassign Artifacts: Agar leaver kisi cheez ka owner hai (jaise koi Application ya Policy), toh unhein kisi aur ko transfer karne ke liye ise ON karein.
+()Reassign Artifact Types: Yahan aap chunte hain ki kya-kya transfer karna hai (e.g., Application ownership, Certification schedules, Entitlements, Policies).
+()Reassign Artifacts To Manager: ON karne par sari zimmedariyan leaver ke manager ko chali jayengi.
+()Reassign Artifacts Rule: Agar aapko manager ke bajaye kisi custom logic se naya owner chunna hai, toh Beanshell rule yahan lagega.
+()Reassign Artifacts Alternate: Agar manager available nahi hai, toh default taur par kis Workgroup ya Identity ko ye cheezein milni chahiye.
+
+3. Identity Ownership:-
+Agar leaver khud ek manager tha, toh uske niche kaam karne wale logo (subordinates) ka kya hoga?
+
+()Reassign Identities: Leaver ke reports (employees) ko naya manager assign karne ke liye ise ON karein.
+()Reassign Identities To Manager: Reports ko automatically leaver ke manager (Grand-manager) ko transfer karne ke liye.
+()Reassign Identities Rule / Alternate: Manager na hone par custom rule ya alternate identity chunnne ke liye.
+
+()Send Leaver Notification to this Workgroup: Offboarding ki khabar kis team (e.g., Security ya HR) ko deni hai.
+
+()Email Templates: Ownership transfer aur process khatam hone par bheje jaane wale emails ka design.
+
+()Post Leaver Rule: Sari provisioning khatam hone ke baad agar koi aakhri custom kaam karna ho (jaise final payroll API call).
+
+()Fixed/Percentage: Agar galti se HR system mein bulk delete ho jaye (jaise 500 log ek sath inactive ho jayein),
+toh system ruk jayega. Ye "Mass Deletion" se bachne ka safety switch hai.
+
+()Leaver Business Process: Iska default workflow RapidSetup - Leaver hota hai.
+
+()Trigger Filter: Sabse important! Wo condition jo batati hai ki user company chhod gaya hai 
+(e.g., Inactive Equals True AND Terminated Equals Yes).
+
+------------------------------------------------------------terminated-------------------------------------------------------------------
+()Terminate Processing: Is toggle ko ON karne se Identity Operations ka automatic logic active ho jata hai.
+
+()Generate Approvals: Agar ise ON rakhte hain, toh kisi identity ko terminate karne se pehle manager ya admin ki approval chahiye hogi. 
+Emergency cases ke liye ise aksar OFF rakha jata hai.
+
+()Remove Assigned Roles: Ise ON karne se user ko manually diye gaye saare business aur IT roles turant delete ho jayenge.
+
+2. Reassignment of Ownership:-
+Jab koi user company se jata hai, toh unke paas maujood "Assets" (Artifacts) ka la-waaris hona security risk hai. 
+Yeh section unhein kisi naye owner ko saunpne ke liye hai.
+
+()Reassign Artifacts: Is toggle ko ON karne se niche diye gaye types ki ownership transfer shuru hogi.
+()Reassign Artifact Types: Aap chun sakte hain ki kya-kya transfer karna hai:
+--Application: Application ownership.
+--Certification Schedule: Ongoing ya upcoming access reviews.
+--Entitlement / Role: Un roles ya permissions ki ownership jo user manage karta tha.
+--Policy: SOD ya advanced policies ka ownership.
+--Workgroup: Agar wo kisi group ka admin ya member tha.
+
+()Reassign Artifacts To Manager: ON karne par ye saari cheezein user ke manager ko chali jayengi.
+()Reassign Artifacts Rule: Manager ke bajaye kisi custom logic se naya owner chunne ke liye.
+()Reassign Artifacts Alternate: Agar manager nahi hai, toh default taur par kisi specific Workgroup ya Admin ko ye zimmedari dene ke liye.
+
+3. SailPoint IdentityIQ ke Rapid Setup mein jab koi Manager company chhodta hai (Leaver) ya terminate hota hai, 
+toh uske niche kaam karne wali team (Subordinates) la-waaris ho jati hai. 
+In options ka maqsad un employees ko naya reporting manager dena hai taaki unka management ruk na jaye.
+
+--Reassign Identities:-
+Kya karta hai?: Yeh main switch hai jo subordinates (reports(employees)) ke transfer process ko chalu ya band karta hai.
+Kyun?: Agar yeh OFF hai, toh manager ke jane ke baad uske reports(employees(team)) ka manager attribute khali (null) ho jayega, 
+jo workflow aur approvals mein error paida kar sakta hai.
+
+--Reassign Identities To Manager:-
+Kya karta hai?: Yeh "Grand-manager" logic par kaam karta hai.
+Example: Maan lijiye Rahul (Leaver) ka manager Amit hai. Rahul ke niche Suresh kaam karta hai. 
+Agar yeh option ON hai, toh Rahul ke jate hi Suresh ka naya manager automatically Amit ban jayega.
+
+--Reassign Identities Rule:-
+Kya karta hai?: Agar aapko manager-to-manager transfer pasand nahi hai aur aap koi custom logic chahte hain, 
+toh yahan Beanshell Rule ka use hota hai.
+Example: Aap ek rule likh sakte hain ki "Agar IT department ka manager ja raha hai, 
+toh sari reports 'IT Director' ko transfer kar do," bhale hi wo unka direct boss na ho.
+
+--Reassign Identities Alternate:- ye ek backup mechanism ki tarah kaam karta hai. 
+Jab koi manager company chhodta hai, toh yeh option unke subordinates (reports) ko ek default owner ya workgroup saunpne ke liye use hota hai.
+Maqsad (The "Why"): Iska main kaam yeh ensure karna hai ki koi bhi identity (user) bina manager ke na rahe, 
+kyunki bina manager ke workflows aur approvals beech mein hi atak sakte hain.
+--Kaise Kaam Karta Hai (The Logic): System naye manager ka chayan ek priority sequence mein karta hai:-
+Reassign Identities To Manager aur Reassign Identities Rule.
+Agar upar ke dono options fail ho jate hain, toh yeh Alternate field mein chune gaye vyakti ya workgroup ko naya manager bana deta hai.
+
+4. Notifications & Workflow:-
+--Send Terminate Complete Notification to this Workgroup:Jab process khatam ho jaye,toh kis team (jaise Security Operations) ko email bhejna hai.
+--Email Templates:Ownership reassignment aur process completion ke liye use hone wale designs.
+--Post Terminate Rule:Poora workflow khatam hone ke baad agar koi aakhri action lena ho (jaise kisi physical badge system ko disable karna).
+
+()Terminate Business Process:-Iska default workflow engine RapidSetup - Leaver hai. 
+Iska matlab hai ki "Identity Operations" wahi logic use karta hai jo standard Leaver process mein hota hai, taaki consistency bani rahe.
+
+-------------------------------------------------------------miscellaneous-----------------------------------------------------------------
+1. Workflow & Error Handling:-
+
+()Business Process Requestor:-
+Kya hai?: Jab Joiner ya Mover ka workflow background mein chalta hai, toh system ko ek "Requestor" chahiye hota hai.
+Example: Yahan The Administrator select hai, iska matlab hai ki saare automatic tasks Administrator ke naam par audit honge.
+
+()Alternative Workgroup for Rapid Setup Notification:-
+Kya hai?: Agar kisi naye employee ka manager system mein nahi milta, toh onboarding ki notification manager ke bajaye kis group ko jani chahiye?
+Example: RapidSetup No Manager group ko email jayega taki HR ya IT team manually manager assign kar sake.
+
+()Workgroup to Receive Error Notification Email:-
+Kya hai?: Agar provisioning ke waqt koi error aata hai (jaise AD account nahi ban paya), toh uska email kis team ko jayega.
+Example: RapidSetup Error Notification (IT Support) team ko turant alert milega.
+
+2. Global Email Branding:-
+()Notification Style Sheet Email Template: Emails ka font, color aur layout control karne ke liye CSS/Style Sheet.
+()Notification Header Email Template: Email ke upar ka hissa (jaise Company Logo).
+()Notification Footer Email Template: Email ke niche ka hissa (jaise "Privacy Policy" ya "Helpdesk Contact").
+
+3. Birthright Roles:-
+()Role Types to Treat as Rapid Setup Birthright Roles:-
+Kya hai?: Yeh sabse mahatvapurn (important) setting hai.Yeh SailPoint ko batata hai ki kaunse 
+"Role Types" (jaise Business Role ya IT Role) ko Birthright maana jaye.
+Example: Aapne rapidSetupBirthright type chuna hai. Iska matlab hai ki agar kisi Role ka type "rapidSetupBirthright" hai,
+toh Joiner process ke waqt woh user ko automatically mil jayega bina kisi approval ke.
+

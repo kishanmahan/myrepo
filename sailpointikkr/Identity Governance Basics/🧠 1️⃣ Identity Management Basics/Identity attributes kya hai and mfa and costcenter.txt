@@ -1,0 +1,57 @@
+()Identity attributes kya hai?
+--1️⃣ Common Identity Attributes
+Attribute Type	              Example	                               Description
+Basic Info--------------Name, Email, Employee ID, Phone----------User ke personal details
+Organizational Info-----Department, Location, Manager----------Company structure ke according info
+Credentials-------------Username, Password, MFA info-----------Login aur authentication ke liye
+Role & Group------------Finance Manager, IT Admin--------------Roles ya groups jisme user hai
+Application Access------SAP, Salesforce, Jira------------------User ke systems aur apps access
+Status------------------Active, Inactive, Suspended------------Identity ka current state
+Custom Attributes-------Cost Center, Project Code--------------Organization ke custom fields
+---------------------------------
+2️⃣ Example in Code (Java / SailPoint):-
+Identity rahul = new Identity();
+
+// Basic Info
+rahul.setName("Rahul Kumar");
+rahul.setEmail("rahul@company.com");
+rahul.setEmployeeId("EMP12345");
+
+// Organizational Info
+rahul.setDepartment("Finance");
+rahul.setLocation("Mumbai");
+rahul.setManager("Anil Sharma");
+
+// Role & Access
+rahul.setRole("Finance Manager");
+rahul.addApplicationAccess("SAP");
+rahul.addApplicationAccess("Salesforce");
+
+// Status
+rahul.setStatus("Active");
+
+// Custom Attribute
+rahul.setAttribute("CostCenter", "CC1001");
+----------------------------------------------
+1️⃣ MFA (Multi-Factor Authentication):-
+MFA ka matlab: User ke login process me ek se zyada authentication layer use karna.
+Purpose: Security increase karna, taaki agar password leak ho bhi jaaye, attacker ko account access na mile.
+Common MFA factors:-
+Something you know → Password, PIN
+Something you have → Mobile OTP, Hardware token
+Something you are → Fingerprint, Face ID
+Example in context:-
+Rahul login karta hai SAP me:-
+Password enter karta hai → First factor
+OTP send hota hai mobile pe → Second factor
+Sirf dono correct hone par hi login successful hota hai.
+----------------------------------------------------
+()2️⃣ Cost Center:-
+Cost Center ka matlab: Organization me ek financial bucket / department jahan se kharche track hote hain.
+Ye attribute identity ke sath link hota hai, taaki system samajh sake kis department ka employee kis project/department ke resources use kar raha hai.
+Example:-
+Rahul ka Cost Center = “CC1001” → Finance Department
+Use ye determine karne me help hoti hai:-
+Approval policies
+Access budgets
+Reporting

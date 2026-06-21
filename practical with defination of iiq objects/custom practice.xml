@@ -1,0 +1,4266 @@
+ye custom workflow hai:-
+-----------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
+()Existing account modify karo
+
+Operation = Modify
+Department change karo HR → IT
+-----------
+User ko AD group add karo
+
+Attribute = memberOf
+Operation = Add
+Group = VPN_GROUP
+------------------
+User se group remove karo
+
+Attribute = memberOf
+Operation = Remove
+Group = OLD_GROUP
+----------------------
+Account disable karo
+
+Application set karo
+NativeIdentity do
+Operation = Disable
+------------------------
+Account enable karo
+
+Existing disabled account enable karo
+---------
+Account unlock karo
+Locked user ko unlock karo
+-----------------------------------------
+Account delete karo
+Existing account delete karo
+-------------------------------------------
+Ek plan me 2 AccountRequest banao
+AD Create
+LDAP Modify
+------------------------------------------
+Ek AccountRequest me 5 AttributeRequest add karo
+firstname
+lastname
+email
+department
+title
+------------------------------------
+Multi-value group add karo
+3 groups add karo
+--------------------------
+Manager attribute set karo
+Operation = Set
+manager = emp200
+-----------------------
+Email update karo
+Old email → New email
+------------------------
+Contractor user scenario
+Create account
+Limited groups add karo
+--------------------------
+Termination scenario
+Disable account
+Remove VPN group
+Remove Email group
+---------------------
+Joiner scenario
+Create account
+Set all attributes
+Add default groups
+----------------------
+Mover scenario
+Department change
+Old groups remove
+New groups add
+--------------------
+Leaver scenario
+Disable
+Remove all access
+Delete after 30 days
+-----------------------------
+Single plan me multiple applications
+AD + SAP + LDAP
+----------------------------
+Comments / Arguments practice
+plan comment set karo
+custom argument add karo
+--------------------------
+Identity based scenario
+Identity set karo
+Uske basis pe provisioning build karo
+----------------------------------------
+Null check scenario
+Attribute null ho toh default value set karo
+-----------------------------------
+Conditional provisioning
+Dept = IT → add ADMIN_GROUP
+Else → USER_GROUP
+-----------------------------------
+Before Provisioning Rule scenario
+Plan modify karo before execution
+---------------------------------------
+After Provisioning Rule scenario
+Result check karo
+Failure logging karo
+---------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------
+question:-ki bracket thik se laga ya nahi in nested if:-
+if(identityName!=null){
+if(idn!=null &amp;&amp; idn.isActive()){
+if(links != null &amp;&amp; links.size() != 0){
+}else{
+for(Object apk:apps){}
+if(plan!=null){}else{
+log.error("plan is null");
+return null;
+}}}
+else{log.error("idn not found");
+return null;
+}
+}return null;
+------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------
+()Jab bhi koi employee company chhodta hai (Off-board/Leaver) ya delete hota hai, 
+toh SailPoint ka standard engine automatic uske owned objects (jaise Application, Role, ya Workgroup)
+ka owner hatata nahi hai. Agar hum sahi waqt par unhe re-assign na karein, toh woh saare objects "Orphan" (bina owner ke) ho 
+jaate hain, jo ki ek bada security audit issue hai.
+
+Isliye BeanShell script ka use karke hum database se un saare objects ko khinchte hain, 
+ek mast HTML table banate hain, aur direct email ke zariye notification bhej dete hain.
+
+Aaiye iska ekdam complete live-project jaisa code aur workflow structure samajhte hain, 
+jisme aapke bataye saare objects (Application, Bundle/Role, Workgroup, aur Rule) cover ho jayein:-
+
+Object 1: Email Template XML (OwnedObjectsEmailTemplate.xml):-
+Yeh aapka custom email template hai jo automatic HTML format mein bani-banayi table ko render karega.
+XML
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE EmailTemplate PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<EmailTemplate name="Identity Offboarding Owner Alert" subject="URGENT: Re-assignment Required for Objects Owned by $identityName">
+  <Body>
+    <![CDATA[
+    <html>
+    <body style="font-family: Arial, sans-serif; color: #333333;">
+      <h2 style="color: #d9534f;">URGENT: Re-assignment Required</h2>
+      <p>Dear IAM Governance Team,</p>
+      <p>An off-boarding or status change has been detected for user: <strong>$identityName</strong>.</p>
+      <p>This user is currently configured as the <strong>OWNER</strong> for critical infrastructure objects in IdentityIQ. To prevent orphan components, please re-assign these items immediately.</p>
+      <br/>
+      
+      <!-- Yahan workflow se direct HTML Table aakar chipak jayegi -->
+      $ownedObjectsTable
+      
+      <br/>
+      <p>Regards,<br/>IdentityIQ Governance Automation Team</p>
+    </body>
+    </html>
+    ]]>
+  </Body>
+</EmailTemplate>
+
+----------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------
+import sailpoint.object.*;
+
+import sailpoint.api.*;
+
+import java.util.*;
+
+import sailpoint.object.Workflow.Step;
+
+import sailpoint.object.Form.Section;
+
+import sailpoint.object.Form.Button;
+
+
+Workflow.Approval wa= new Workflow.Approval();
+
+Workflow.Step ws= new Workflow.Step();
+
+Button btn= new Button();
+
+Form forms = new Form();
+
+forms.setName("Hello Form");
+
+forms.setLabelAlign("Form Label");
+
+System.out.println("-------------------------");
+
+Section sects = new Section();
+
+sects.setName("Section name");
+
+sects.setType("text");
+
+sects.setLabel("Sec Label");
+
+Field fv = new Field();
+
+fv.setName("fieldname");
+
+fv.setType("String");
+
+fv.setValue(workflow.get("launcher"));
+
+
+
+sects.add(fv);
+
+forms.add(sects);
+
+forms.setPageTitle("Form Page Title");
+
+forms.add(fv);
+
+btn.setAction("next");
+
+btn.setLabel("Ok");
+
+List bList = new ArrayList();
+
+bList.add(btn);
+
+forms.setButtons(bList);
+
+// context.saveObject(forms);
+
+// context.commitTransaction();
+
+Identity idn = context.getObjectByName(Identity.class,"spadmin");
+
+System.out.println("idn : "+idn);
+
+System.out.println("forms : "+forms.toXml());
+
+wa.setName("workflow approval");
+
+wa.setForm(forms);
+
+wa.setOwner(workflow.get("launcher").toString());
+
+wa.setReturn("");
+
+wa.setSend("");
+
+wa.setAssimilated(true);
+
+
+
+
+
+//
+
+System.out.println("wa : "+wa.toXml());
+
+System.out.println("ws : "+ws.toXml());
+
+return wa;
+------------------------------------------------------------------------------------
+<?xml version='1.8' encoding='UTF-8' ?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<sailpoint>
+<Workflow type="IdentityLifecycle" name="customworkflow">
+<Variable name="identityName" input="true" initializer="Script:wfcontext.getIdentityName"></Variable>
+<Variable name="identityModel" input="true"></Variable>
+<Variable name="launcher" input="true"></Variable>
+<Variable name="custom-approval-form" input="true"></Variable>
+<Variable name="workItemNotificationTemplate" input="true"></Variable>
+<Variable name="WorkItemType" input="true"></Variable>
+<Variable name="event" input="true"></Variable>
+<Variable name="plan" input="true"></Variable>
+<Variable name="source" input="true" initializer="Script:event.getName()"></Variable>
+<Variable name="trace" initializer="false"></Variable>
+<Variable name="quickLinkIdentityId" input="true"></Variable>
+<Variable name="driveAction" input="true"></Variable>
+<Variable name="WorkItemForm" initializer="Custom_Identity_Review_Form"></Variable>
+<Variable name="transient" initializer="false"></Variable>
+<Variable name="policyViolations" input="true"></Variable>
+<Variable name="confirmationForm" input="true"></Variable>
+<Variable name="flow" initializer="Registration"></Variable>
+
+<Step name="start">
+<Transition to="next1"/>
+</Step>
+<Step name="next1" action="call:getIdentityModel" resultVariable="identityName">
+<Transition to="next2">
+</Step>
+<Step name="next2" resultVariable="identityName">
+<Script>
+<Source>
+import sailpoint.api.SailpointContext;
+import sailoint.object.Identity;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+Logger log = Logger.getLogger("customworkflow");
+if(identityModel!=null)
+{
+identityModel.put("qucikLinkIdentityId",quickLinkIdentityId);
+Identity identity=context.getObjectById(Identity.class,quickLinkIdentityId);
+String identityName=identity.getName();
+return identityName;
+}else{
+log.error("identityModel null hai");
+return null;
+}
+</Source>
+</Script>
+<Transition to="next3"/>
+</Step>
+<Step name="next3">
+<Approval name="formapproval" mode="serial" resultVariable="driveAction" owner="ref:launcher" send="identityModel">
+<Arg name="WorkItemType" value="Form">
+<Arg name="WorkItemForm" value="Custom_Identity_Review_Form"/>
+<Arg name="workItemDescription" value="HERE_DEFINE_YOUR_FORM_DESCRIPTION"/>
+</Approval>
+<Transition to="end"/>
+</Step>
+<Step name="end"/>
+<Workflow>
+</sailpoint>
+/////////////*
+Quick Comparison Table:-
+Feature                         return Attribute                                    resultVariable Attribute
+Kahan use hota hai?---------<Approval> aur <SubWorkflow> tags ke andar.------------<Step> aur <Script> tags ke andar.
+Kaam kya hai?----Kisi doosre object (jaise WorkItem ya SubWorkflow) se data ko Parent Workflow mein map karna.---Kisi step ke Script/Rule ka output ek workflow variable mein store karna.
+*///////////
+-------------------------------------->>>>>>>>>>>>
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Form PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Form name="Custom_Identity_Review_Form" title="user_details_Approve_Form">
+
+<Section name="next1" type="text">
+<Field name="firstName" displayName="firstName" readOnly="true" type="String">
+<Script>
+<Source>
+import sailpoint.object.Identity;
+import sailpoint.api.SailpointContext;
+if(identityModel!=null)
+{
+String identityName=null;
+Identity idn=context.getObjectById(Identity.class,identityModel);
+if(idn!=null)
+identityName = idn.getFirstName();
+else 
+return null;
+
+if(identityName!=null)
+return identityName;
+}
+else 
+return null;
+</Source>
+</Script>
+</Field>
+<Field name="department" displayName="department" readOnly="true" type="String" required="true">
+<Script>
+<Source>
+import sailpoint.object.Identity;
+import sailpoint.api.SailpointContext;
+if(identityModel!=null)
+{
+String department=null;
+Identity idn=context.getObjectById(Identity.class,identityModel);
+if(idn!=null)
+{
+department=idn.getDepartment();
+if(department!=null)
+return department;
+else
+return null;
+}
+else
+return null;
+}
+else
+return null;
+</Script>
+</Source>
+</Field>
+
+<Field name="lastname" readOnly="true" displayName="lastname" type="String"  required="true">
+import sailpoint.object.Identity;
+import sailpoint.api.SailpointContext;
+if(identityModel!=null)
+{
+String lastname = null;
+Identity idn=context.getObjectById(Identity.class,identityModel); 
+return (idn!=null)?idn.getLastName():null;
+}
+else
+return null;
+</Field>
+<Field name="reason for request" displayName="reason for request" type="String"  required="true"/>
+</Section>
+<Button label="submit" action="next" editable="false"/>
+<Button label="cancel" action="cancel" editable="false"/>
+</Form>
+---------------------------------------------------------------------------------------------------------
+()Custom Policy Alert Rule XML Example:-
+Yeh rule tab chalta hai jab koi policy violation trigger hoti hai. Yeh check karta hai ki violation kitni severe hai, 
+aur uske hisab se account se offending entitlement ko hatane ka plan banata hai.
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="CustomSODAlertPlanRule" type="PolicyAlert">
+  <Description>
+    Yeh custom rule policy violation hone par automatic buildAlertPlan ka kaam karta hai
+    aur critical violations ke liye remediation plan generate karta hai.
+  </Description>
+  
+  <Source>
+    <![CDATA[//]]>
+    import sailpoint.object.Identity;
+    import sailpoint.object.PolicyViolation;
+    import sailpoint.object.ProvisioningPlan;
+    import sailpoint.object.ProvisioningPlan.AccountRequest;
+    import sailpoint.object.ProvisioningPlan.AttributeRequest;
+    import sailpoint.api.SailpointContext;
+    import org.apache.log4j.Logger;
+
+    Logger log = Logger.getLogger("custom.rule.alertPlan");
+    log.info("--- Custom buildAlertPlan Rule Started ---");
+
+    // SailPoint is rule me 'policyViolation' aur 'identity' object by default deta hai
+    if (policyViolation == null || identity == null) {
+        log.warn("Policy Violation ya Identity null hai. Plan nahi ban sakta.");
+        return null;
+    }
+
+    // 1. Ek naya Provisioning Plan banayein
+    ProvisioningPlan plan = new ProvisioningPlan();
+    plan.setIdentity(identity);
+
+    // 2. Violation ki details nikaalein (Jaise kaun si entitlement violate hui hai)
+    String applicationName = policyViolation.getApplication();
+    String entitlementName = policyViolation.getArgument(); // Ya fir description se nikal sakte hain
+    String nativeIdentity = identity.getName(); // User ki unique ID target system par
+
+    // 3. Agar violation ki severity "High" ya "Critical" hai, tabhi auto-remediate karenge
+    String severity = policyViolation.getSeverity();
+    
+    if (severity != null && (severity.equalsIgnoreCase("High") || severity.equalsIgnoreCase("Critical"))) {
+        log.info("Critical Violation mili! Automatically entitlement hatane ka plan ban raha hai for: " + identity.getDisplayName());
+
+        // Target application ke liye Account Request banayein
+        AccountRequest accReq = new AccountRequest(AccountRequest.Operation.Modify, applicationName, null, nativeIdentity);
+        
+        // Offending entitlement ko REMOVE karne ka request dalein
+        AttributeRequest attrReq = new AttributeRequest();
+        attrReq.setName("groups"); // Aapka entitlement attribute name (e.g., groups, memberOf)
+        attrReq.setOperation(ProvisioningPlan.Operation.Remove);
+        attrReq.setValue(entitlementName);
+        
+        // Requests को plan mein add karein
+        accReq.add(attrReq);
+        plan.add(accReq);
+        
+        log.info("Custom Alert Plan successfully taiyar ho gaya.");
+        return plan;
+    }
+
+    // Agar severity low hai, toh koi auto-action nahi chahiye, sirf alert generate hoga
+    log.info("Violation severity low hai, auto-remediation plan ki zaroorat nahi hai.");
+    return null;
+    ]]>
+  </Source>
+</Rule>
+------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="usercheck" type="custom">
+<Source><![CDATA[//]]>
+import sailpoint.object.Identity;
+import sailpoint.api.SailpointContext;
+import sailpoint.api.SailpointContextFactory;
+SailpointContext context=SailpointContextFactory.getContext();
+Identity idn= context.getObjectByName(Identity.class,identityName);
+if(idn!=null){
+String Status;
+
+Status=idn.getStatus();
+if(Status!=null &amp;&amp; "Active".equals(Status))
+{
+idn.setStatus("Active");
+return Status;
+}
+else if("InActive".equals(Status))
+{
+idn.setStatus("InActive");
+return Status;
+}
+else
+return null;
+}
+else
+return null;
+]]>
+</Source>
+</Rule>
+////////*
+()String Comparison (==): Java/Beanshell mein strings compare karne ke liye == nahi, balki .equals() use hota hai.
+
+()1. Risk kya hai? (status.equals("InActive"))
+Agar status ki value null hai, aur aap likhte hain status.equals(...),toh aap aakhirkar null.equals(...) call karne ki koshish kar rahe hain.
+Java mein kisi bhi null object par koi method call karne se turant NullPointerException (NPE) aata hai aur aapka rule/workflow wahin crash ho jata hai.
+
+2. Safe tareeka kyun hai? ("InActive".equals(status))
+Yahan par "InActive" ek String Literal hai (yaani ek pakka object jo kabhi null nahi ho sakta).
+Jab aap "InActive".equals(status) likhte hain, toh .equals() method check karta hai ki andar bheja gaya variable (status) null hai ya nahi.
+Agar status null hota hai, toh ye bina crash kiye chupchaap false return kar deta hai.
+*/////////
+-------------------------------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="user_access" type="Custom">
+<Source><![CDATA[          //]]>
+import sailpoint.api.SailpointContext;
+import sailpoint.object.Identity;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.object.Provisioner;
+
+Logger log=getLogger("sailpoint.rules.user_access.rule");
+if(identityName!=null)
+{
+String Active=null;
+Identity idn=context.getObjectByName(Identity.class,identityName);
+if(idn!=null)
+{
+Active=(idn.getStatus()!=null)?"Active".equals(idn.getStatus())?"Active" :"InActive";
+if(Active!=null)
+{
+
+ProvisioningPlan plan =new ProvisioningPlan(context);
+plan.setIdentity(idn);
+AccountRequest aqqr= new AccountRequest(AccountRequest.Operation.Delete,"SAP",null,idn.getName());
+
+AttributeRequest attr= new AttributeRequest(ProvisioningPlan.Operation.Remove,"department","Finance");
+aqqr.add(attr);
+
+AttributeRequest attre= new AttributeRequest(ProvisioningPlan.Operation.Add,"department","IT");
+aqqr.add(attre);
+
+plan.add(aqqr);
+ProvisioningProject project=null;
+Provisioner pro =new Provisioner(context);
+project=pro.compile(plan);
+pro.execute(project);
+return plan;
+}
+else{
+log.error("not found active");
+return null;
+}
+}
+else{
+log.error("not found idn");
+return null;
+}
+}
+else{
+log.error("not found identityName");
+return null;
+}
+]]>
+</Source>
+</Rule>
+/////////*
+()Aapne constructor mein department likha hai bina quotes ke.
+Beanshell ise ek variable samjhega aur "Variable not found" ka error dega.
+Kyunki ye attribute ka naam hai, isliye ye String hona chahiye: "department".
+Attribute hamesha string hoga kyuki ye variable nahi hota hai.
+kyuki attribute key string aur attributevalue object toh ye attribute map object hai.
+
+()Agar SAP Application mein "department" ya "roles" ek multi-valued attribute hai 
+(yaani ek user ek se zyada departments ya roles ka hissa ho sakta hai), 
+toh aap AttributeRequest ke andar value ki jagah poori Java List pass kar sakte hain,lekin same attributename ki.
+
+()new ProvisioningProject() Syntax Error: Java mein ProvisioningProject ek complex object hai jo pro.compile(plan) se automatic
+generate hota hai. Aapne line ProvisioningProject project = new ProvisioningProject(); nahi likhna 
+sirf ye likhe:-ProvisioningProject pro=provisioner.compile(plan);
+*////////
+-------------------------------------------------------------------------------------------------------------------
+()Application = Active Directory
+Operation = Create
+firstname, lastname, email set karo:-
+
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="ad_access" type="Custom">
+<Source>
+<![CDATA[//]]>
+import sailpoint.object.Identity;
+import sailpoint.api.SailpointContext;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.Provisioner;
+Logger log=Logger.getLogger("sailpoint.rules.ad_access.rule");
+ProvisioningPlan plan= new ProvisioningPlan(context);
+ProvisioningProject project=null;
+Provisioner provisioner = new Provisioner(context);
+if(identityName!=null)
+{
+boolean baba=false;
+Identity idn=context.getObjectByName(Identity.class,identityName);
+if(idn!=null){
+baba=("Active".equals(idn.getStatus()) &amp;&amp; idn.getStatus()!=null)?true:false;
+
+if(baba)
+{
+AccountRequest aqq=new AccountRequest(AccountRequest.Operation.Create,"AD",null,idn.getName());
+AttributeRequest attr1=new AttributeRequest(ProvisioningPlan.Operation.Add,"firstName",idn.getAttribute("firstName"));
+
+AttributeRequest attr2=new AttributeRequest(ProvisioningPlan.Operation.Add,"lastName",idn.getAttribute("lastName"));
+
+AttributeRequest attr3=new AttributeRequest(ProvisioningPlan.Operation.Add,"email",idn.getAttribute("email"));
+aqq.add(attr1);
+aqq.add(attr2);
+aqq.add(attr3);
+
+plan.add(aqq);
+project=provisioner.compile(plan);
+provisioner.execute(project);
+}
+else{
+log.error("baba is null");
+return null;
+}
+}
+else{
+log.error("not found idn");
+return null;
+}
+}
+else{
+log.error("not found identityName");
+return null;
+}
+]]>
+</Source>
+</Rule>
+---------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="HR_IT" type="Custom">
+<Source>
+<![CDATA[//]]>
+import sailpoint.object.Identity;
+import sailpoint.api.SailpointContext;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.Provisioner;
+Logger log=Logger.getLogger("sailpoint.Rules.HR_IT.rule");
+
+if(identityName!=null)
+{
+String casse=null;
+Identity idn=context.getObjectByName(Identity.class,identityName);
+if(idn!=null)
+{
+casse=("Active".equals(idn.getStatus()) &amp;&amp; null!=idn.getStatus())?"Active":"InActive";
+if("Active".equals(casse))
+{
+ProvisioningPlan plan=new ProvisioningPlan();
+ProvisioningProject project=null;
+Provisioner provisioner=new Provisioner(context);
+
+AccountRequest aqq=new AccountRequest(AccountRequest.Operation.Modify,"SAP",null,idn.getName());
+
+AttributeRequest attr1=new AttributeRequest(ProvisioningPlan.Operation.Remove,"department","HR");
+
+AttributeRequest attr2=new AttributeRequest(ProvisioningPlan.Operation.Add,"department","IT");
+
+aqq.add(attr1);
+aqq.add(attr2);
+
+plan.add(aqq);
+project=provisioner.compile(plan);
+provisioner.execute(project);
+
+}else{
+log.error("user is inactive");
+return null;
+}
+}else{
+log.error("not found idn");
+return null;
+}
+}
+else{
+log.error("not found identityName");
+return null;
+}
+]]>
+</Source>
+</Rule>
+//////////*
+()"Kya sach mein variables ko if-conditions ke andar hi daalna chahiye, aur isse memory management par kya asar padta hai?"
+1. Jab Variables bahar hote hain (Aapka purana tareeka):-
+Agar aap code ke shuru mein hi bina check kiye ye lines likh dete hain:-
+Java
+ProvisioningPlan plan = new ProvisioningPlan();
+Provisioner provisioner = new Provisioner(context);
+Toh jaise hi rule run hoga, SailPoint memory (JVM Heap) mein ye dono bade objects turant ban jayenge.
+Maan lijiye, iske agla hi step if(identityName == null) par fail ho jata hai aur code wahin se return null; ho jata hai, 
+toh kya hua?
+Aapka code toh 1 hi millisecond mein band ho gaya...
+Lekin memory mein ProvisioningPlan aur Provisioner ke objects faltu mein ban kar baith gaye.
+Ab jab tak Java ka Garbage Collector (GC) aakar unhe saaf nahi karega, wo memory block blocked rahegi.
+
+sirf Provisioner ke constructor mein context dena padta hai.jaise=Provisioner project=new Provisioner(context);
+*/////////
+---------------------------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="AD_Group" type="Custom">
+<Source>
+import sailpoint.object.Identity;
+import sailpoint.object.Link;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.api.Provisioner; // Sahi API package
+import org.apache.log4j.Logger;
+import java.util.List;
+
+Logger log = Logger.getLogger("sailpoint.Rules.AD_Group.rule");
+
+if (identityName != null) {
+    Identity idn = context.getObjectByName(Identity.class, identityName);
+    
+    if (idn != null) {
+        // SailPoint ka standard boolean check user status ke liye
+        boolean isInactive = idn.isInactive();
+
+        if (!isInactive) {
+            Link adLink = null;
+            
+            // Identity se unke saare links ki list nikaali
+            List links = idn.getLinks();
+            if (links != null) {
+                for (Link lnk : links) {
+                    // Sirf wahi link utha rahe hain jo AD application ka hai
+                    if ("AD".equals(lnk.getApplicationName())) {
+                        adLink = lnk;
+                        break;
+                    }
+                }
+            }
+
+            // Check kar rahe hain ki kya user ke paas actual mein AD link mila ya nahi
+            if (adLink != null) {
+                ProvisioningPlan plan = new ProvisioningPlan();
+                plan.setIdentity(idn);
+
+                // Sahi variable 'adLink' se native identity (DN) fetch ki
+                AccountRequest aqq = new AccountRequest(AccountRequest.Operation.Modify, "AD", null, adLink.getNativeIdentity());
+                AttributeRequest att = new AttributeRequest("memberOf", ProvisioningPlan.Operation.Add, "Vpn_Group");
+                
+                aqq.add(att);
+                plan.add(aqq);
+                
+                // Provisioner ka sahi package path use ho raha hai upar import ke throug
+                Provisioner pro = new Provisioner(context);
+                ProvisioningProject project = pro.compile(plan);
+                pro.execute(project);
+                
+                log.info("Successfully group add ho gaya user ke liye: " + identityName);
+            } else {
+                log.error("User " + identityName + " ke paas AD Application ka account/link nahi mila.");
+            }
+        } else {
+            log.error("User is InActive: " + identityName);
+        }
+    } else {
+        log.error("Identity nahi mili database mein: " + identityName);
+    }
+}
+
+return null;
+</Source>
+</Rule>
+////////////*
+identityName vs Link Name: context.getObjectByName() kisi object ko uske Unique Name se dhoondta hai.
+Identity ka name uska username/employee ID hota hai (jaise john.doe), isliye Identity.class ke saath identityName pass karna ekdum sahi hai.
+Lekin SailPoint ke database mein Link (Account) ka name identityName nahi hota! 
+Link ka name aamtaur par target system ka unique identifier hota hai (jaise AD ka Distinguished Name: CN=John Doe,OU=Users,DC=domain,DC=com) ya fir ek random hex ID. 
+Isliye identityName se search karne par SailPoint ko koi Link nahi milega, aur link variable hamesha null rahega.
+Multiple Links ka Confusion: Ek user ke paas kai saare links ho sakte hain (AD, HR, SAP, GitHub, etc.). 
+Agar aap seedha Link.class dhoondoge, toh SailPoint ko kaise pata chalega ki aapko sirf AD ka hi link chahiye?
+---------------------------------------------------------------------------------------------------------------------
+()mujhe getObjectbyName se sare object ko fetch karna hai toh example code sabka:-
+import sailpoint.object.Identity;
+
+String identityName = "john.doe"; // Username
+Identity idn = context.getObjectByName(Identity.class, identityName);
+
+if (idn != null) {
+    log.info("User ka email: " + idn.getEmail());
+}
+----------------
+import sailpoint.object.Application;
+
+String appName = "Active Directory"; 
+Application app = context.getObjectByName(Application.class, appName);
+
+if (app != null) {
+    log.info("Application ka Type: " + app.getType()); // e.g., Active Directory
+}
+-----------------
+import sailpoint.object.Bundle;
+
+String roleName = "Finance Analyst Role";
+Bundle role = context.getObjectByName(Bundle.class, roleName);
+
+if (role != null) {
+    log.info("Role ka Display Name: " + role.getDisplayName());
+}
+----------------
+import sailpoint.object.ManagedAttribute;
+
+// Entitlement ka name generally unique format me hota hai
+String entitlementName = "CN=Vpn_Group,OU=Groups,DC=domain,DC=com"; 
+ManagedAttribute group = context.getObjectByName(ManagedAttribute.class, entitlementName);
+
+if (group != null) {
+    log.info("Group ka Owner: " + group.getOwner().getName());
+}
+----------------------------------
+import sailpoint.object.Custom;
+
+String customConfigName = "MyCompany_Global_Properties";
+Custom customObject = context.getObjectByName(Custom.class, customConfigName);
+
+if (customObject != null) {
+    String apiURL = customObject.getString("targetApiUrl");
+    log.info("Custom API URL: " + apiURL);
+}
+------------------------
+import sailpoint.object.Rule;
+
+String ruleName = "Custom_Utility_Rule";
+Rule targetRule = context.getObjectByName(Rule.class, ruleName);
+
+if (targetRule != null) {
+    log.info("Rule ka Type: " + targetRule.getType());
+}
+----------------------
+import sailpoint.object.Workflow;
+
+String wfName = "LCM Provisioning";
+Workflow wf = context.getObjectByName(Workflow.class, wfName);
+
+if (wf != null) {
+    log.info("Workflow Description: " + wf.getDescription());
+}
+-----------------------
+// LINK KE LIYE YEH TARIKA SAHI HAI:
+List links = idn.getLinks();
+---------------------------------------------
+*//////////
+------------------------------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE Rule PUBLIC "sailpoin.dtd" "sailpoint.dtd">
+<Rule name="AD_Group" type="Custom">
+<Source>
+import sailpoint.object.Identity;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.api.Provisioner;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.api.SailpointContextFactory;
+import sailpoint.object.Link;
+Logger log=Logger.getLogger("sailpoint.Rules.AD_Group.rule");
+if(identityName!=null)
+{
+Link linkk=null;
+Identity idn=context.getObjectByName(Identity.class,identityName);
+if(idn!=null){
+String status=(idn.getStatus()=="InActive")?"InActive":"Active";
+List links=idn.getLinks();
+for(Object link:links){
+linkk=(Link)link;
+if("AD".equals(linkk.getApplicationName()))
+break;
+}
+if("Active".equals(status)&amp;&amp;linkk!=null)
+{
+ProvisioningPlan plan=new ProvisioningPlan();
+AccountRequest aqq=new AccountRequest(AccountRequest.Operation.Modify,"AD",null,linkk.getNativeIdentity());
+AttributeRequest att=new AttributeRequest(ProvisioningPlan.Operation.Add,"memberOf","Vpn_Group");
+Provisioner pro=new Provisioner(context);
+ProvisioningProject project=null;
+
+aqq.add(att);
+plan.add(aqq);
+project=pro.compile(plan);
+pro.execute(project);
+log.info("completed executed");
+}else{
+log.error("user is InActive");
+return null;
+}
+
+}else{
+log.error("Identity not found");
+return null;
+}
+
+}
+
+return null;
+
+</Source>
+</Rule>
+///////////////*
+1. Loop Type Conflict (for(Link link:links))
+Aapne loop likha hai: for(Link link:links) aur uske andar kiya hai linkk=(Link)link;.
+Galti: Java/Beanshell mein idn.getLinks() hamesha ek raw List return karta hai jisme elements generic Object type ke hote hain. 
+Agar aap direct Link link likhoge toh casting conflict ki wajah se error aa sakta hai.
+Fix: Loop ko for(Object link : links) likhna sabse safe aur best practice hai, 
+kyunki aap loop ke andar use waise bhi (Link) mein cast kar hi rahe ho.
+*//////////////
+-------------------------------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE Rule PUBLIC "sailpoin.dtd" "sailpoint.dtd">
+<Rule name="AD_Group" type="Custom">
+<Source>
+import sailpoint.object.Identity;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.api.Provisioner;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.api.SailpointContextFactory;
+import sailpoint.object.Link;
+Logger log=Logger.getLogger("sailpoint.Rules.AD_Group.rule");
+
+if(identityName!=null)
+{
+Link linkk=null;
+Identity idn=context.getObjectByName(Identity.class,identityName);
+if(idn!=null)
+{
+List links = idn.getLinks();
+for(Object link :links){
+linkk=(Link)link;
+if("AD".equals(linkk.getApplicationName()))
+break;
+}
+if(linkk!=null&amp;&amp;!idn.isInactive())
+{
+ProvisioningPlan plan = new ProvisioningPlan();
+AccountRequest aqq=new AccountRequest(AccountRequest.Operation.Modify,"AD",null,linkk.getNativeIdentity());
+AttributeRequest att=new AttributeRequest(ProvisioningPlan.Operation.Remove,"memberOf","OLD_GROUP");
+aqq.add(att);
+plan.add(aqq);
+Provisioner pro=new Provisioner(context);
+ProvisioningProject project=null;
+project=pro.compile(plan);
+pro.execute(project);
+}else{
+log.error("user is InActive");
+}
+}else{
+log.error("idn not found");
+return null;
+}
+}
+return null;
+</Source>
+</Rule>
+///////*
+()idn.getStatus().equals("Active") (Khatra ⚠️): Agar status null hua, 
+toh aap ek null object par .equals() method call karne ki koshish kar rahe ho. 
+Isse aapka poora SailPoint code crash ho jayega aur NullPointerException (NPE) ka error aayega.
+solution="Active".equals(idn.getStatus());
+matlab Identity/map object attributes pe bhi apply hoga ye.
+*////////
+------------------------------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="Disable_Acc" type="Custom">
+<Source>
+import sailpoint.api.Provisioner;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import sailpoint.api.SailpointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import java.util.List;
+import sailpoint.object.Link;
+Logger log=Logger.getLogger("sailpoin.Rules.Disable_Acc.rule");
+if(identityName!=null){
+Link linnk=null;
+List links=null;
+boolean active;
+Identity idn=context.getObjectByName(Identity.class,identityName);
+if(idn!=null){
+active=idn.isActive();
+if(active){
+links=idn.getLinks();
+for(Object link:links){
+linnk=(Link)link;
+if("AD".equals(linnk.getApplicationName()))
+break;
+linnk=null;
+}
+if(linnk!=null)
+{
+ProvisioningPlan plan=new ProvisioningPlan();
+ProvisioningProject project=null;
+Provisioner pro=new Provisioner(context);
+AccountRequest aqq=new AccountRequest(AccountRequest.Operation.Disable,"AD",null,linnk.getNativeIdentity());
+plan.add(aqq);
+project=pro.compile(plan);
+pro.execute(project);
+}else{
+log.error("link is null");
+return null;
+}
+}else{
+log.error("user is not active in iiq");
+return null;
+}
+
+}else{
+log.error("not found identity");
+return null;
+}
+}
+return null;
+</Source>
+</Rule>
+/////////////////*
+()foreach ke ()small bracket ke andar jo bhi variable define hai wo for loop ke bracket ke bahar access nahi ho sakta hai.
+
+()foreach ke andar ka variable bahar define nahi ho sakta jo  forloop ke ()small bracket me define hota hai.
+isshe do baar Variable define ka error dega duplication.
+
+()foreach loop me ()small bracket ke andar jo bhi variable value assign hogi wo loop ke termination ke baad bhi rahegi,
+aur value match hogi tabhi rahe warna value remove kar dijiye termination ke pehle(unmatch me).
+*////////////////
+--------------------------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="Enable_Acc" type="Custom">
+<Source>
+import sailpoint.api.Provisioner;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import sailpoint.api.SailpointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import java.util.List;
+import sailpoint.object.Link;
+Logger log=Logger.getLogger("sailpoint.Rules.Enable_Acc.rule");
+if(identityName!=null){
+Link linkk=null;
+Identity idn=context.getObjectByName(Identity.class,identityName);
+
+if(idn!=null &amp;&amp; idn.isActive()){
+List links=idn.getLinks();
+if(links!=null){
+for(Object link:links){
+linkk=(Link)link;
+if("AD".equals(linkk.getApplicationName()))
+break;
+linkk=null;
+}
+if(linkk!=null){
+ProvisioningPlan plan=new ProvisioningPlan();
+Provisioner pro=new Provisioner(context);
+ProvisioningProject project=null;
+AccountRequest aqq=new AccountRequest(AccountRequest.Operation.Enable,"AD",null,linkk.getNativeIdentity());
+plan.add(aqq);
+project=pro.compile(plan);
+pro.execute(project);
+}else{
+log.error("link is null");
+return null;
+}
+}else{
+log.error("link is null");
+return null;
+}
+}else{
+log.error("user is not active or null idn");
+return null;
+}
+}
+return null;
+</Source>
+</Rule>
+-----------------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="unlock_acc" type="Custom">
+<Source>
+import sailpoint.api.Provisioner;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import sailpoint.api.SailpointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import java.util.List;
+import sailpoint.object.Link;
+Logger log=Logger.getLogger("sailpoint.Rules.unlock_acc.rule");
+if(identityName!=null)
+{
+List links=null;
+Link linkk=null;
+Identity idn=context.getObjectByName(Identity.class,identityName);
+if(idn!=null &amp;&amp; idn.isActive()){
+links=idn.getLinks();
+if(links!=null){
+for(Object link:links)
+{
+linkk=(Link)link;
+if("AD".equals(linkk.getApplicationName()))
+break;
+linkk=null;
+}
+if(linkk!=null){
+ProvisioningPlan plan=new ProvisioningPlan();
+Provisioner pro=new Provisioner(context);
+ProvisioningProject project=null;
+AccountRequest aqq=new AccountRequest(AccountRequest.Operation.UnLock,"AD",null,linkk.getNativeIdentity());
+plan.add(aqq);
+project=pro.compile(plan);
+pro.execute(project);
+}else{
+log.error("AD link not found");
+}
+}else{
+log.error("links are null");
+return null;
+}
+}else{
+log.error("user is inactive");
+return null;
+}
+}
+return null;
+</Source>
+</Rule>
+/////////////*
+🚨 if(idn.isActive() && idn!=null):-
+Isme Kya Gadbad Hai? (Short-Circuit Evaluation Bug)
+Java hamesha conditions ko left to right (baayein se daayein) check karta hai.
+Agar idn ki value null hui, toh Java pehle idn.isActive() ko chalayega.
+Kyunki idn khud null hai, null.isActive() hote hi code NPE throw karke crash ho jayega, 
+aur wo agli condition (idn != null) tak pahunch hi nahi payega.
+*////////////
+---------------------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="Delete_acc" type="Custom">
+<Source>
+import sailpoint.api.Provisioner;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import sailpoint.api.SailpointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import java.util.List;
+import sailpoint.object.Link;
+Logger log=Logger.getLogger("sailpoint.Rules.Delete_acc.rule");
+if(identityName!=null)
+{
+Link linkk=null;
+List links=null;
+Identity idn=context.getObjectByName(Identity.class,identityName);
+if(idn!=null &amp;&amp; idn.isActive())
+{
+links=idn.getLinks();
+if(links!=null){
+for(Object link:links){
+linkk=(Link)link;
+if("AD".equals(linkk.getApplicationName()))
+break;
+linkk=null;
+}
+if(linkk!=null){
+ProvisioningPlan plan=new ProvisioningPlan();
+Provisioner pro=new Provisioner(context);
+ProvisioningProject project=null;
+AccountRequest aqq=new AccountRequest(AccountRequest.Operation.Delete,"AD",null,linkk.getNativeIdentity());
+plan.add(aqq);
+project=pro.compile(plan);
+pro.execute(project);
+}else{
+log.error("AD account not found");
+return null;
+}
+}else{
+log.error("links not found");
+return null;
+}
+}else{
+log.error("idn not found it's inactive");
+return null;
+}
+}
+return null;
+</Source>
+</Rule>
+--------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="createmodify_acc" type="Custom">
+<Source>
+import sailpoint.api.Provisioner;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import sailpoint.api.SailpointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import java.util.List;
+import java.util.ArrayList;
+import sailpoint.object.Link;
+Logger log=Logger.getLogger("sailpoint.Rules.createmodify_acc.rules");
+if(identityName!=null){
+Link linkk=null;
+List links=null;
+List&lt;Object&gt; linkks=new ArrayList&lt;Object&gt;();
+Link lin=null;
+Identity idn=context.getObjectByName(Identity.class,identityName);
+if(idn!=null &amp;&amp; idn.isActive()){
+links=idn.getLinks();
+if(links!=null){
+for(Object link:links){
+linkk=(Link)link;
+if("AD".equals(linkk.getApplicationName()) || "LDAP".equals(linkk.getApplicationName()))
+linkks.add(linkk);
+linkk=null;
+}
+for(int i=0;i&lt;linkks.size();i++){
+lin=(Link)linkks.get(i);
+if(lin!=null &amp;&amp; "AD".equals(lin.getApplicationName()))
+{
+ProvisioningPlan plan=new ProvisioningPlan();
+Provisioner pro=new Provisioner(context);
+ProvisioningProject project=null;
+AccountRequest aqq=new AccountRequest(AccountRequest.Operation.Create,"AD",null,lin.getNativeIdentity());
+AttributeRequest att=new AttributeRequest(ProvisioningPlan.Operation.Set,"memberOf","VPN_GROUP");
+aqq.add(att);
+plan.add(aqq);
+project=pro.compile(plan);
+pro.execute(project);
+
+}else if(lin!=null &amp;&amp; "LDAP".equals(lin.getApplicationName())){
+ProvisioningPlan plan=new ProvisioningPlan();
+Provisioner pro=new Provisioner(context);
+ProvisioningProject project=null;
+AccountRequest aqq=new AccountRequest(AccountRequest.Operation.Modify,"LDAP",null,lin.getNativeIdentity());
+AttributeRequest att=new AttributeRequest(ProvisioningPlan.Operation.Add,"Department","IT");
+aqq.add(att);
+plan.add(aqq);
+project=pro.compile(plan);
+pro.execute(project);
+}
+else{
+log.error("AD and LDAP account not found");
+return null;
+}
+}
+}else{
+log.error("links not found");
+return null;
+}
+}else{
+log.error("idn not found");
+return null;
+}
+}
+return null;
+</Source>
+</Rule>
+///////////*
+()2. linkks List Initialized Nahi Hai (NullPointerException)
+Aapne likha List linkks=null; aur loop ke andar direct linkks.add(linkk); kar diya.
+Agar koi List null hai, toh usme data add nahi ho sakta, Beanshell wahi crash ho jayega. 
+Isey initialize karna padega: List linkks = new ArrayList();
+ 
+()lin=(Link)linkks;
+linkks ek poori List hai, aap poori list ko ek single Link mein cast nahi kar sakte. 
+List se ek-ek karke item nikalne ke liye linkks.get(i) karna padega.
+
+note:kyu nahi likhe generic List<Object>,List<Map<"String","Object">>:-
+Wajah B: Beanshell Engine Ka Confusion (Strict Typing Bug)
+Beanshell ek loosely-typed scripting language hai. Kabhi-kabhi jab aap complex rules mein complex generic types (jaise List<Map<String, Object>>) likhte ho, toh Beanshell ka compiler confuse ho jata hai aur Parse Error ya Signature Not Found Error de deta hai.
+
+💡 SailPoint Mein Best Practice Kya Hai?
+
+🚫 Yeh Chalega (Par mat likho):-
+Java
+List<Object> linkks = new ArrayList<Object>();
+
+🚫 Agar strict type likhna hi hai (Toh sahi class likho):
+Agar aapko batana hi hai ki list mein kya jayega, toh Object ke bajay actual class (Link) likho:
+Java
+List<Link> linkks = new ArrayList<Link>();
+*//////////
+-------------------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="createAtt_acc" type="Custom">
+<Source>
+import sailpoint.api.Provisioner;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import sailpoint.api.SailpointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import java.util.List;
+import java.util.ArrayList;
+import sailpoint.object.Link;
+Logger log=Logger.getLogger("sailpoint.Rules.createAtt_acc.rule");
+if(identityName!=null){
+List links=new ArrayList();
+Link linkk=null;
+Identity idn=context.getObjectByName(Identity.class,identityName);
+if(idn!=null &amp;&amp; idn.isActive()){
+links=idn.getLinks();
+if(links!=null){
+for(Object link:links){
+linkk=(Link)link;
+if(linkk!=null &amp;&amp; "AD".equals(linkk.getApplicationName()))
+break;
+linkk=null;
+}
+if(linkk!=null){
+ProvisioningPlan plan=new ProvisioningPlan();
+Provisioner pro=new Provisioner(context);
+ProvisioningProject project=null;
+AccountRequest aqq=new AccountRequest(AccountRequest.Operation.Modify,"AD",null,linkk.getNativeIdentity());
+AttributeRequest att1=new AttributeRequest(ProvisioningPlan.Operation.Set,"Department","IT");
+AttributeRequest att2=new AttributeRequest(ProvisioningPlan.Operation.Set,"memberOf","Vpn_Group");
+AttributeRequest att3=new AttributeRequest(ProvisioningPlan.Operation.Set,"firstName",idn.getAttribute("firstName"));
+AttributeRequest att4=new AttributeRequest(ProvisioningPlan.Operation.Set,"lastName",idn.getAttribute("lastName"));
+AttributeRequest att5=new AttributeRequest(ProvisioningPlan.Operation.Set,"email",idn.getEmail());
+aqq.add(att1);
+aqq.add(att2);
+aqq.add(att3);
+aqq.add(att4);
+aqq.add(att5);
+plan.add(aqq);
+project=pro.compile(plan);
+pro.execute(project);
+}else{
+log.error("AD account not found");
+return null;
+}
+}else{
+log.error("links not found");
+return null;
+}
+
+}else{
+log.error("idn not found");
+}
+}
+return null;
+</Source>
+</Rule>
+--------------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="createAtt_acc" type="Custom">
+<Source>
+import sailpoint.api.Provisioner;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import sailpoint.api.SailpointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import java.util.List;
+import java.util.ArrayList;
+import sailpoint.object.Link;
+Logger log=Logger.getLogger("sailpoint.Rules.createAtt_acc.rule");
+if(identityName!=null){
+List links=new ArrayList();
+Link linkk=null;
+Identity idn=context.getObjectByName(Identity.class,identityName);
+if(idn!=null &amp;&amp; idn.isActive()){
+links=idn.getLinks();
+if(links!=null){
+for(Object link:links){
+linkk=(Link)link;
+if(linkk!=null &amp;&amp;"AD".equals(linkk.getApplicationName()))
+break;
+linkk=null;
+}
+if(linkk!=null)
+{
+ProvisioningPlan plan=new ProvisioningPlan();
+Provisioner pro=new Provisioner(context);
+ProvisioningProject project;
+AccountRequest aqq=new AccountRequest(AccountRequest.Operation.Create,"AD",null,linkk.getNativeIdentity());
+AttributeRequest att1=new AttributeRequest(ProvisioningPlan.Operation.Add,"memberOf","VPN_GROUP");
+AttributeRequest att2=new AttributeRequest(ProvisioningPlan.Operation.Add,"memberOf","KKR_GROUP");
+AttributeRequest att3=new AttributeRequest(ProvisioningPlan.Operation.Add,"memberOf","AKS_GROUP");
+aqq.add(att1);
+aqq.add(att2);
+aqq.add(att3);
+plan.add(aqq);
+project=pro.compile(plan);
+pro.execute(project);
+}else{
+log.error("AD account not found");
+}
+}else{
+log.error("links not found");
+return null;
+}
+}else{
+log.error("user not found inactive");
+return null;
+}
+}
+return null;
+</Source>
+</Rule>
+--------------------------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="createAtt_acc" type="Custom">
+<Source>
+import sailpoint.api.Provisioner;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import sailpoint.api.SailpointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import java.util.List;
+import java.util.ArrayList;
+import sailpoint.object.Link;
+Logger log=Logger.getLogger("sailpoint.Rules.createAtt_acc.rule");
+if(identityName!=null){
+
+Link managerLink=null;
+List managerLinks=new ArrayList();
+
+List links=new ArrayList();
+Link linkk=null;
+Identity idn=context.getObjectByName(Identity.class,identityName);
+
+if(idn!=null &amp;&amp; idn.isActive()){
+Identity idmanager=idn.getManager();
+
+if(idmanager!=null &amp;&amp; idmanager.isActive()){
+managerLinks=idmanager.getLinks();
+if(managerLinks!=null){
+for(Object Managerlink:managerLinks){
+managerLink=(Link)Managerlink;
+if("AD".equals(managerLink.getApplicationName()))
+break;
+managerLink=null;
+}
+}else{
+log.error("managerlinks not found");
+return null;
+}
+}else{
+log.error("manager not active");
+return null;
+}
+
+links=idn.getLinks();
+if(links!=null){
+for(Object link:links){
+linkk=(Link)link;
+if(linkk!=null &amp;&amp;"AD".equals(linkk.getApplicationName()))
+break;
+linkk=null;
+}
+
+
+if(linkk!=null &amp;&amp; managerLink!=null)
+{
+
+ProvisioningPlan plan=new ProvisioningPlan();
+Provisioner pro=new Provisioner(context);
+ProvisioningProject project;
+AccountRequest aqq=new AccountRequest(AccountRequest.Operation.Modify,"AD",null,linkk.getNativeIdentity());
+AttributeRequest att1=new AttributeRequest(ProvisioningPlan.Operation.Set,"manager",managerLink.getNativeIdentity());
+aqq.add(att1);
+plan.add(aqq);
+project=pro.compile(plan);
+pro.execute(project);
+}else{
+log.error("AD account not found");
+}
+}else{
+log.error("links not found");
+return null;
+}
+}else{
+log.error("user not found inactive");
+return null;
+}
+}
+return null;
+</Source>
+</Rule>
+----------------------------------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="createAtt_acc" type="Custom">
+<Source>
+import sailpoint.api.Provisioner;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import sailpoint.api.SailpointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import java.util.List;
+import java.util.ArrayList;
+import sailpoint.object.Link;
+Logger log=Logger.getLogger("sailpoint.Rules.createAtt_acc.rule");
+if(identityName!=null){
+List links=new ArrayList();
+Link linkk=null;
+Identity idn=context.getObjectByName(Identity.class,identityName);
+if(idn!=null &amp;&amp; idn.isActive()){
+links=idn.getLinks();
+if(links!=null){
+for(Object link:links){
+linkk=(Link)link;
+if(linkk!=null &amp;&amp;"AD".equals(linkk.getApplicationName()))
+break;
+linkk=null;
+}
+if(linkk!=null)
+{
+ProvisioningPlan plan=new ProvisioningPlan();
+Provisioner pro=new Provisioner(context);
+ProvisioningProject project;
+AccountRequest aqq=new AccountRequest(AccountRequest.Operation.Modify,"AD",null,linkk.getNativeIdentity());
+AttributeRequest att1=new AttributeRequest(ProvisioningPlan.Operation.Set,"email",idn.getEmail());
+aqq.add(att1);
+plan.add(aqq);
+project=pro.compile(plan);
+pro.execute(project);
+}else{
+log.error("AD account not found");
+}
+}else{
+log.error("links not found");
+return null;
+}
+}else{
+log.error("user not found inactive");
+return null;
+}
+}
+return null;
+</Source>
+</Rule>
+--------------------------------------------------------------------------------------------------------------
+2. "Limited groups add karo" (Logic):-
+Matlab: Ek regular full-time employee ko join karte hi bahut saare default groups mil jaate hain 
+(jaise saare internal portals ka access, common distribution lists, etc.).
+Lekin contractor ke case me restriction lagani hai. Jab unka account create hoga, 
+toh Provisioning Plan me sirf wahi limited groups add karne hain jo unke kaam ke liye zaroori hain 
+(jaise basic VPN access ya building access group), baki koi sensitive group automatically nahi milna chahiye.
+
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="contractor_add" type="Custom" >
+<Source>
+import sailpoint.api.SailpointContext;
+import sailpoint.api.Provisioner;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import java.util.List;
+import java.util.ArrayList;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.object.Link;
+if(identityName!=null){
+Logger log = Logger.getLogger("sailpoint.rules.contractor.add");
+Identity idn=context.getObjectByName(Identity.class,identityName);
+if(idn!=null &amp;&amp; idn.isActive()&amp;&amp; "contractor".equalsIgnoreCase(idn.getStringAttribute("employeeType")))
+{
+// Naye account ke liye DN generate karein (Apne AD OU structure ke hisab se ise change karein)
+        String nativeIdentity = "CN=" + idn.getDisplayName() + ",OU=Contractors,DC=kkr,DC=com";
+
+if(nativeIdentity!=null){
+ProvisioningPlan plan=new ProvisioningPlan();
+Provisioner pro=new Provisioner(context);
+ProvisioningProject project=null;
+AccountRequest aqq=new AccountRequest(AccountRequest.Operation.Create,"AD",null,nativeIdentity);
+
+// AD Creation ke liye mandatory attributes jo zaroori hain:
+            aqq.add(new AttributeRequest("sAMAccountName", ProvisioningPlan.Operation.Set, idn.getName()));
+            aqq.add(new AttributeRequest("password", ProvisioningPlan.Operation.Set, "Welcome@123")); // Apni password policy lagayein
+			
+AttributeRequest att1=new AttributeRequest("memberOf",ProvisioningPlan.Operation.Add,"VPN_GROUP");
+AttributeRequest att2=new AttributeRequest("role",ProvisioningPlan.Operation.Add,idn.getAttribute("BirthRightRole"));
+aqq.add(att1);
+aqq.add(att2);
+plan.add(aqq);
+project=pro.compile(plan);
+pro.execute(project);
+}else{
+log.error("account not found");
+return null;
+}
+}else{
+log.error("user is inactive or not found");
+return null;
+}}
+return null;
+</Source>
+</Rule>
+/////////////*
+()AttributeRequest Constructor Parameters ka order:-
+SailPoint me AttributeRequest ka standard constructor order hota hai: (String name, Operation op, Object value).
+Aapne likha hai: new AttributeRequest(ProvisioningPlan.Operation.Add, "memberOf", "VPN_GROUP"). 
+Ye galat order hai, SailPoint format ke mutabiq name pehle aayega.
+
+()sAMAccountName (Sam Account Name) Active Directory (AD) ka ek bahut hi important unique attribute hota hai. 
+Aasan bhasha me samjhein toh ye user ka Login ID / Username hota hai.
+Iska full form Security Account Manager Account Name hai.
+Chalo isko simple points me samajhte hain ki ye kya hai aur iski zaroorat kyu padti hai:-
+1. sAMAccountName Kya Hai?
+Jab bhi aap kisi company ke laptop me login karte ho, 
+ya kisi portal par apna username daalte ho (jaise: rahul.sharma ya rkumar), 
+toh piche Active Directory me wo username actually sAMAccountName hi hota hai.
+*//////////////
+----------------------------------------------------------------------------------------------------------------------
+()1. "Disable account" and "Remove VPN group" and "Remove Email group",(jaise VPN_GROUP aur EMAIL_GROUP)remove==deprovision?
+
+-->
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="resigner_add" type="Custom" >
+<Source>
+import sailpoint.api.SailpointContext;
+import sailpoint.api.Provisioner;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import java.util.List;
+import java.util.ArrayList;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.object.Link;
+Logger log=Logger.getLogger("sailpoint.Rules.resigner.add");
+if(identityName!=null){
+Link linkk=null;
+List links=new ArrayList();
+Identity idn=context.getObjectByName(Identity.class,identityName);
+if(idn!=null &amp;&amp;idn.getLinks()!=null){
+links=idn.getLinks();
+for(Object link:links){
+linkk=(Link)link;
+if("AD".equals(linkk.getApplicationName()))
+break;
+linkk=null;
+}
+if(linkk!=null){
+ProvisioningPlan plan=new ProvisioningPlan();
+Provisioner pro=new Provisioner(context);
+ProvisioningProject project=null;
+AccountRequest aqq=new AccountRequest(AccountRequest.Operation.Disable,"AD",null,linkk.getNativeIdentity());
+AttributeRequest att1=new AttributeRequest("memberOf",ProvisioningPlan.Operation.Remove,"VPN_GROUP");
+AttributeRequest att2=new AttributeRequest("memberOf",ProvisioningPlan.Operation.Remove,"EMAIL_GROUP");
+aqq.add(att1);
+aqq.add(att2);
+plan.add(aqq);
+project=pro.compile(plan);
+pro.execute(project);
+}else{
+log.error("AD account not found");
+return null;
+}
+}else{
+log.error("idn not found or links not found and inactive");
+}
+}
+return null;
+</Source>
+</Rule>
+-----------------------------------------------------------------------------------------------------------
+()Joiner scenario of Create account and Set all attributes and Add default groups?
+-->
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="resigner_add" type="Custom" >
+<Source>
+import sailpoint.api.SailpointContext;
+import sailpoint.api.Provisioner;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import java.util.List;
+import java.util.ArrayList;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.object.Link;
+Logger log=Logger.getLogger("sailpoint.Rules.resigner.add");
+
+if(identityName!=null){
+Identity idn=context.getObjectByName(Identity.class,identityName);
+String nativeidentity=null;
+if(idn!=null){
+nativeidentity="CN="+idn.getDisplayName()+",OU=user,DC=kkr,DC=com"; 
+if(nativeidentity.contains(idn.getDisplayName())){
+ProvisioningPlan plan=new ProvisioningPlan();
+Provisioner pro=new Provisioner(context);
+ProvisioningProject project=null;
+AccountRequest aqq=new AccountRequest(AccountRequest.Operation.Create,"AD",null,nativeidentity);
+AttributeRequest att1=new AttributeRequest("memberOf",ProvisioningPlan.Operation.Add,"VPN_GROUP");
+AttributeRequest att2=new AttributeRequest("memberOf",ProvisioningPlan.Operation.Add,"EMAIL_GROUP");
+AttributeRequest att3=new AttributeRequest("firstName",ProvisioningPlan.Operation.Set,idn.getAttribute("firstName"));
+AttributeRequest att4=new AttributeRequest("lastName",ProvisioningPlan.Operation.Set,idn.getAttribute("lastName"));
+AttributeRequest att5=new AttributeRequest("email",ProvisioningPlan.Operation.Set,idn.getEmail());
+
+if(idn.getLinks()==null){
+// AD Creation ke liye mandatory attributes jo zaroori hain:
+aqq.add(new AttributeRequest("sAMAccountName", ProvisioningPlan.Operation.Set, idn.getName()));
+aqq.add(new AttributeRequest("password", ProvisioningPlan.Operation.Set, "Welcome@123")); // Apni password policy lagayein
+
+aqq.add(att1);
+aqq.add(att2);
+aqq.add(att3);
+aqq.add(att4);
+aqq.add(att5);
+plan.add(aqq);
+project=pro.compile(plan);
+pro.execute(project);
+}else{
+log.error("user is not new");
+return null;
+}
+
+}else{
+log.error("not found nativeIdentity via identity.getDisplayName()");
+return null;
+}
+}else{
+log.error("idn is null");
+return null;
+}
+}
+return null;
+</Source>
+</Rule>
+----------------------------------------------------------------------------------------------------------------------
+
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="resigner_remove_all_access_and_entitlements" type="Custom">
+<Source>
+import sailpoint.api.SailpointContext;
+import sailpoint.api.Provisioner;
+import org.apache.log4j.Logger;
+import sailpoint.object.Identity;
+import sailpoint.object.Filter;
+import sailpoint.object.QueryOptions;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.object.Link;
+import sailpoint.object.Entitlement;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+
+Logger log = Logger.getLogger("sailpoint.Rules.resigner.removeAllAccess");
+
+if (identityName != null) {
+    Identity idn = context.getObjectByName(Identity.class, identityName);
+    
+    // 1. Check karo identity valid aur inactive hai ya nahi
+    if (idn != null &amp;&amp; !idn.isActive()) {
+        
+        // 30 days pehle ki date nikaalo
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_MONTH, -30);
+        Date thirtyDaysAgo = cal.getTime();
+
+        QueryOptions qo = new QueryOptions();
+        qo.add(Filter.le("modified", thirtyDaysAgo));
+        qo.add(Filter.eq("inactive", true)); 
+
+        List idn2 = context.getObjects(Identity.class, qo);
+        Identity idn2nd = null;
+
+        if (idn2 != null) {
+            for (Object idna : idn2) {
+                Identity tempIdn = (Identity) idna;
+                if (tempIdn.getName().equals(idn.getName())) {
+                    idn2nd = tempIdn;
+                    break;
+                }
+            }
+        }
+
+        // 2. Agar criteria match hua, toh access removal process start karo
+        if (idn2nd != null) {
+            ProvisioningPlan plan = new ProvisioningPlan();
+            plan.setIdentity(idn2nd);
+            
+            boolean planHasOperations = false;
+
+            // --- PART A: ROLES HATANE KE LIYE ---
+            // User ke assigned ya detected roles ko remove karna
+            List assignedRoles = idn2nd.getBundle(); // Assigned Roles
+            if (assignedRoles != null &amp;&amp; !assignedRoles.isEmpty()) {
+                for (Object roleObj : assignedRoles) {
+                    sailpoint.object.Bundle role = (sailpoint.object.Bundle) roleObj;
+                    if (role != null) {
+                        log.info("Removing Role: " + role.getName() + " from user: " + identityName);
+                        // IdentityRequest ke roop me role remove karne ka request
+                        plan.add(AccountRequest.Operation.Modify, "IIQ", null, idn2nd.getName());
+                        // IIQ application ke under role ko remove operation me daalna
+                        AccountRequest iiqAccReq = plan.getAccountRequest("IIQ");
+                        if(iiqAccReq != null) {
+                            iiqAccReq.add(new AttributeRequest("assignedRoles", ProvisioningPlan.Operation.Remove, role.getName()));
+                            planHasOperations = true;
+                        }
+                    }
+                }
+            }
+
+            // --- PART B: APPLICATIONS AUR GROUPS HATANE KE LIYE ---
+            List links = idn2nd.getLinks();
+            if (links != null &amp;&amp; !links.isEmpty()) {
+                
+                // LOOP: Har ek application link par iterate karo
+                for (Object l : links) {
+                    Link linkk = (Link) l;
+                    if (linkk != null) {
+                        String appName = linkk.getApplicationName();
+                        log.info("Processing Application for entitlement removal: " + appName);
+                        
+                        // Ek Modify Account Request banao taaki groups remove ho sakein
+                        AccountRequest accReq = new AccountRequest(
+                            AccountRequest.Operation.Modify, 
+                            appName, 
+                            null, 
+                            linkk.getNativeIdentity()
+                        );
+                        
+                        // Link ke andar jitne bhi Entitlements (Groups/Permissions) hain unhe dhoondo
+                        List entitlements = linkk.getEntitlements();
+                        if (entitlements != null &amp;&amp; !entitlements.isEmpty()) {
+                            for (Object entObj : entitlements) {
+                                Entitlement ent = (Entitlement) entObj;
+                                if (ent != null) {
+                                    String attrName = ent.getAttributeName(); // Jaise 'memberOf' ya 'groups'
+                                    Object attrValue = ent.getValue();        // Group ka naam ya DN
+                                    
+                                    log.info("Removing Group/Entitlement: " + attrValue + " from attribute: " + attrName + " on App: " + appName);
+                                    
+                                    // AttributeRequest.Operation.Remove ka use karke group hatao
+                                    accReq.add(new AttributeRequest(attrName, ProvisioningPlan.Operation.Remove, attrValue));
+                                    planHasOperations = true;
+                                }
+                            }
+                        }
+                        
+                        // OPTIONAL: Agar aap chahte hain ki groups hatne ke sath ACCOUNT BHI DISABLE ho jaye,
+                        // toh aap ye niche wali line ka comment hata (uncomment) sakte hain:
+                        // accReq.setOperation(AccountRequest.Operation.Disable);
+
+                        plan.add(accReq);
+                    }
+                }
+            }
+
+            // 3. Compile aur Execute karo (Agar plan me kuch hatane ke liye mila)
+            if (planHasOperations) {
+                Provisioner pro = new Provisioner(context);
+                ProvisioningProject project = pro.compile(plan);
+                pro.execute(project);
+                log.info("Saare Applications, Groups aur Roles successfully remove kar diye gaye hain for: " + identityName);
+            } else {
+                log.info("User ke paas pehle se hi koi active access/roles nahi the: " + identityName);
+            }
+
+        } else {
+            log.warn("Identity " + identityName + " ne 30-day inactive criteria match nahi kiya.");
+        }
+    } else {
+        log.error("Identity nahi mili ya active hai: " + identityName);
+    }
+}
+return null;
+</Source>
+</Rule>
+
+-----------------------------------------------------------------------------------------------------------------------------
+()user leaving and remove access and delete account 30 ago user account?
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="resigner_add" type="Custom" >
+<Source>
+import sailpoint.api.SailpointContext;
+import sailpoint.api.Provisioner;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import java.util.List;
+import java.util.ArrayList;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.object.Link;
+import sailpoint.object.Entitlement;
+
+Logger log=Logger.getLogger("sailpoint.Rules.resigner.add");
+if(identityName!=null){
+List links=new ArrayList();
+Link linkk=null;
+Identity idn2nd=null;
+List entitlements=null;
+Entitlement entitle=null;
+boolean dobabaprovision=false;
+
+Identity idn=context.getObjectByName(Identity.class,identityName);
+
+Calendar cal=Calendar.getInstance();
+cal.add(Calendar.DAY_OF_MONTH,-30);
+Date thirtyDaysAgo=cal.getTime();
+
+QueryOptions qo=new QueryOptions();
+qo.add(Filter.le("modified",thirtyDaysAgo));
+qo.add(Filter.eq("InActive",true));
+
+List idn2=context.getObjects(Identity.class,qo);
+for(Object idna:idn2){
+idn2nd=(Identity)idna;
+if(idn2nd==idn)
+break;
+idn2nd=null;
+}
+
+if(idn!=null &amp;&amp; !idn.isActive() &amp;&amp; idn2nd!=null){
+
+ProvisioningPlan plan=new ProvisioningPlan();
+plan.setIdentity(idn2nd);
+Provisioner pro=new Provisioner(context);
+ProvisioningProject project=null;
+
+links=idn2nd.getLinks();
+if(links!=null){
+for(Object link:links){
+linkk=(Link)link;
+if(linkk!=null){
+AccountRequest aqqq=new AccountRequest(AccountRequest.Operation.Disable,linkk.getApplicationName(),null,linkk.getNativeIdentity());
+
+entitlements=linkk.getEntitlements();
+
+if(entitlements!=null){
+for(Object entit:entitlements){
+entitle=(Entitlement)entit;
+if(entitle!=null){
+aqqq.add(new AttributeRequest(entitle.getAttributeName(),ProvisioningPlan.Operation.Remove,entitle.getValue()));
+
+// FIXED: Groups milne par bhi flag true kar diya
+                                dobabaprovision = true;
+
+if("AD".equals(linkk.getApplicationName())){
+aqqq.add(new AttributeRequest("sAMAccountName",ProvisioningPlan.Operation.Set,idn2nd.getName()));
+aqqq.add(new AttributeRequest("password",ProvisioningPlan.Operation.Set,"Welcome@123"));
+}
+
+}else{
+log.error("entitle is null");
+return null;
+}
+}
+
+}else{
+log.error("entitlements are not found");
+log.info("No entitlements found for " + linkk.getApplicationName() + ". Direct account disable action hoga.");
+                        dobabaprovision = true; // Flag true kiya kyunki disable toh karna hi hai
+}
+
+plan.add(aqqq);
+
+}else{
+log.error("linkk not found");
+return null;
+}
+}
+
+if(dobabaprovision){
+project=pro.compile(plan);
+pro.execute(project);
+}else{
+log.error("doprovisioning false");
+return null;
+}
+
+}else{
+log.error("idn2nd not found links");
+return null;
+}
+}else{
+log.error("idn not found");
+return null;
+}
+}
+return null;
+</Source>
+</Rule>
+//////////////*
+Maan lijiye user ke paas 2 Applications hain:-
+App A (Active Directory) — Isme user ke paas 2 Groups hain (VPN_Group, HR_Group).
+
+App B (Salesforce) — Isme user ke paas Koi Group Nahi Hai (Null/Empty).
+
+Aapke pichle code ka logic yeh tha:-
+Aapne entitlements variable ko loop ke bilkul BAAHAR top par hi declare kar diya tha, kuch aise:-
+
+List entitlements = null; // Memory mein ek hi dabba (variable) bana
+
+for (Object link : links) { // Loop shuru hua
+    linkk = (Link) link;
+    
+    if (linkk != null)
+        entitlements = linkk.getEntitlements(); // Single-line IF check
+        
+    if (entitlements != null) {
+        // Groups remove karne ka loop...
+    }
+}
+
+Niche table mein dekhiye ki har ek pheray (iteration) mein Beanshell ke andar backend mein kya ho raha tha:-
+Loop Iteration	       Processing App	     linkk.getEntitlements() ne kya return kiya?	entitlements variable ki current state	       Result / Action
+Pehla Phera (Loop 1)-----App A(AD------------[VPN_Group, HR_Group]-------------------------------[VPN_Group, HR_Group]-----------------Sahi chalega. AD ke dono groups remove karne ka plan ban jayega.
+Dusra Phera (Loop 2)-----App B(Salesforce)-----null (Kyunki koi group nahi hai)------------------[VPN_Group, HR_Group]-----------------(Purana data bacha reh gaya)Yahan bug aaya! Salesforce ke liye bhi AD ke groups dobara chal gaye!
+
+Aakhir yeh kyun hua?
+Aapne loop ke andar bina curly brackets {} ke single-line if statement likha tha:
+Java
+if (linkk != null)
+    entitlements = linkk.getEntitlements(); 
+Java aur Beanshell mein agar aap curly brackets {} nahi lagate hain, 
+toh compiler sirf uske turant baad wali ek line ko hi if ka hissa maanta hai. 
+Uske niche aapne jo bhi likha, vo us conditional block se baahar chala jata hai.
+Kyunki pure logic ka scope upar-niche block ho raha tha, 
+toh jab code dusre application (Salesforce) par pahuncha aur use wahan null mila, 
+toh Beanshell ke interpreter ne pichle application ki list ko memory se completely wipe/flush nahi kiya.
+Natija ye hua ki niche wala if (entitlements != null) abhi bhi true ho gaya 
+(kyunki memory wale dabbe mein abhi bhi AD ke groups pade hue the). 
+Code ko laga ki ye Salesforce ke hi groups hain, 
+aur usne Salesforce ke account request ke andar Active Directory ke groups ko remove karne ka galat request add kar diya! 
+Isse aapka SailPoint plan fail ho jata.
+-----------------------------------------()mera pehla buggy code:-
+for (Object link : links) { // Loop shuru hua
+    linkk = (Link) link;
+    
+    if (linkk != null)
+        entitlements = linkk.getEntitlements(); // Single-line IF check
+        
+    if (entitlements != null) {
+        // Groups remove karne ka loop...
+    }
+}
+----------------------------------------()Solution ne isko kaise theek kiya?
+Maine aapko jo upar functional code diya hai, usme maine entitlements variable ko loop ke ANDAR rakha hai:
+
+Java
+for (Object link : links) {
+    Link linkk = (Link) link;
+    if (linkk != null) {
+        List entitlements = linkk.getEntitlements(); 
+        
+        if (entitlements != null && !entitlements.isEmpty()) {
+            // Processing...
+        }
+    }
+} // Yahan pahunchte hi 'entitlements' variable automatically hamesha ke liye khatam (Flush)
+---------------------------------------------------------------------------------------------------------------------
+*/////////////
+////////////////*
+❌ Galti 1: Cross-Contamination (Data ka Kichdi Banna)
+Tumhare Galat Code Ka Tarika:
+Tumne kya kiya, saare links ke loop mein ghuste hi atts.add(...) karke saare groups ek hi list mein bhar diye:-
+Java
+// Tumhara Loop 1 (Saare Apps ke liye)
+for(Object link:links){
+    entitlements = linkk.getEntitlements();
+    for(Object entit:entitlements){
+        // YAHAN GAlTI HUI: AD ka group ho ya SAP ka, sab 'atts' ki balti mein gir raha hai
+        atts.add(new AttributeRequest(entitle.getAttributeName(), ..., entitle.getValue()));
+    }
+}
+
+()Iske baad tumne neeche unhe merge karne ke liye yeh loop chalaya:-
+Java
+for(Object aqqi:aqqs){
+    aqq=(AccountRequest)aqqi;
+    for(Object atti:atts){ // 💥 BOOM! Yeh balti poori mix hai
+        aqq.add(att); 
+    }
+}
+Code Ke Sath Dekho Kya Hua:-
+Maan lo user ke paas AD aur SAP do apps the. atts balti mein do items aaye: [memberOf: AD_Group, roles: SAP_Role].
+Neeche jab tumhara loop chala, toh usne AD ke AccountRequest ke andar .add() kar diya:-
+memberOf: AD_Group (Yeh sahi tha)
+roles: SAP_Role (❌ Blunder! AD application ke andar roles aur SAP_Role naam ka koi attribute nahi hota).
+Nuksaan: Jab SailPoint AD par yeh request bhejega, toh Active Directory crash ho jayegi aur error aayega:-"Attribute 'roles' is undefined for Active Directory".
+
+❌ Galti 2: Cross-Multiplication (Loops ka Dhamaka):-
+Tumhare Galat Code Ka Tarika:
+Tumne entitlements ke loop ke andar new AccountRequest likha tha:-
+Java
+for(Object entit:entitlements){ // Maan lo total 6 groups mile saare apps milakar
+    // HAR CHAKKAR MEIN NAYA REQUEST!
+    aqqs.add(new AccountRequest(AccountRequest.Operation.Disable, ...)); 
+    atts.add(new AttributeRequest(...));
+}
+Is wajah se aqqs list ka size ho gaya 6 aur atts list ka size bhi ho gaya 6.
+
+Phir tumne neeche unka multiplication loop chala diya:-
+Java
+for(Object aqqi:aqqs){       // 6 baar chalega
+    aqq=(AccountRequest)aqqi;
+    for(Object atti:atts){   // 6 baar chalega
+        aqq.add(att);        // 💥 Total 6 x 6 = 36 baar chal gaya!
+    }
+}
+----------->solution :-----------
+// 1. Ek Master Plan dabba banaya loop ke baahar
+ProvisioningPlan plan = new ProvisioningPlan();
+
+for (Object link : links) { // LOOP 1: Ek Application (Maan lo pehle sirf AD aaya)
+    Link linkk = (Link) link;
+    String appName = linkk.getApplicationName();
+
+    // 2. AD ke liye EKlHI AccountRequest ka khali dabba banaya
+    AccountRequest aqq = new AccountRequest(AccountRequest.Operation.Disable, appName, null, linkk.getNativeIdentity());
+
+    List entitlements = linkk.getEntitlements(); 
+    if (entitlements != null) {
+        for (Object entit : entitlements) { // LOOP 2: Sirf aur sirf AD ke groups niklenge
+            Entitlement entitle = (Entitlement) entit;
+            
+            // 3. Bina kisi balti ke, seedha AD ke dabba (aqq) mein group ko daal diya
+            aqq.add(new AttributeRequest(entitle.getAttributeName(), ProvisioningPlan.Operation.Remove, entitle.getValue()));
+        }
+    }
+
+    // 4. AD ka poora kaam khatam! Ab is packed dabbe ko Master Plan mein add kar do
+    plan.add(aqq); 
+} 
+// Ab jab doosra phera chalega (SAP ke liye), toh pichla 'aqq' flush ho chuka hoga aur SAP ka fresh dabba banega!
+--------------------------------------------------------------------------------------------------------------------------
+*////////////////
+////////////
+Nuksan: Java/Beanshell mein ek hi block ya method ke andar ek hi naam ka variable do baar alag-alag type ya re-declare nahi kiya ja sakta. Ye "Duplicate local variable" ka error dega.
+*//////////
+
+////////*
+3. return null On Empty Apps (Code Execution Break)
+Aapne lagaya hai:
+
+Java
+}else{
+    log.error("entitlements are not found");
+    return null; // ❌ HARD STOP!
+}
+Nuksan: Agar kisi user ke paas kisi application (jaise Linux) ka account toh hai, 
+lekin usme koi group assigned nahi hai, toh linkk.getEntitlements() humein null dega. 
+Aapka code wahin se return null karke poore program ko adha-adhura chhod kar exit kar jayega. 
+Uske aage ke applications process hi nahi ho payenge. Hamen use skip karke direct disable queue mein dalna chahiye.
+
+*/////////
+//////////////*
+❌ Galti Kahan Ho Rahi Thi? (The Duplicate Request Entry Bug)
+Aapke pichle code ka logic kuch is tarah chal raha tha:
+
+Java
+for (Object link : links) { // Loop 1: Application (Maan lo AD chal raha hai)
+    AccountRequest aqqq = new AccountRequest(...); // AD ka dabba bana
+
+    for (Object entit : entitlements) { // Loop 2: Groups (Maan lo user ke paas 3 groups hain: G1, G2, G3)
+        aqqq.add(new AttributeRequest(...)); // Request mein group add hua
+        
+        // ❌ BLUNDER: Yeh line abhi bhi isi inner loop ke andar band hai!
+        plan.add(aqqq); 
+    }
+}
+
+Maan lo user ke paas Active Directory (AD) mein 3 Groups hain: VPN, Email, aur SAP_Access.
+Chakkar 1 (Group 1 - VPN): Code ne aqqq request mein VPN group remove karne ka command daala. Aur turant plan.add(aqqq) chal gaya. Master plan ke andar AD ki Pehli Request chali gayi (Isme VPN hai).
+Chakkar 2 (Group 2 - Email): Usi aqqq request mein niche Email group remove karne ka command juda. Aur phir se plan.add(aqqq) chal gaya! Ab master plan ke andar AD ki Doosri Request chali gayi (Isme VPN aur Email dono hain).
+Chakkar 3 (Group 3 - SAP_Access): Usi request mein SAP_Access juda. Aur phir se plan.add(aqqq) chal gaya! Master plan ke andar AD ki Teesri Request chali gayi (Isme VPN, Email, aur SAP_Access teeno hain).
+
+Sahi Approach Kya Hai? (The Single Entry Rule)
+SailPoint ka rule ekdum simple hai: Har application ke liye sirf ek AccountRequest dabba banna chahiye, 
+usme chupchaap saare groups bharne chahiye, aur jab saare groups bhar jayein (loop khatam ho jaye), 
+tab use poore package ko ek hi baar plan.add(aqqq) karna chahiye.
+
+()buggy mera code bug error ka;->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+for(Object link:links){
+linkk=(Link)link;
+if(linkk!=null){
+AccountRequest aqqq=new AccountRequest(AccountRequest.Operation.Disable,linkk.getApplicationName(),null,linkk.getNativeIdentity());
+
+entitlements=linkk.getEntitlements();
+
+if(entitlements!=null){
+for(Object entit:entitlements){
+entitle=(Entitlement)entit;
+if(entitle!=null){
+
+aqqq.add(new AttributeRequest(entitle.getAttributeName(),ProvisioningPlan.Operation.Remove,entitle.getValue()));
+
+if("AD".equals(linkk.getApplicationName())){
+aqqq.add(new AttributeRequest("sAMAccountName",ProvisioningPlan.Operation.Set,idn2nd.getName()));
+aqqq.add(new AttributeRequest("password",ProvisioningPlan.Operation.Set,"Welcome@123"));
+}
+
+}else{
+log.error("entitle is null");
+return null;
+}
+plan.add(aqq);
+}
+
+}else{
+log.error("entitlements are not found");
+}
+}else{
+log.error("linkk not found");
+return null;
+}
+}
+
+------------>>>>>>>>>>>>>>>>>>>solution code:-
+for (Object link : links) {
+AccountRequest aqqq = new AccountRequest(AccountRequest.Operation.Disable, linkk.getApplicationName(), null, linkk.getNativeIdentity());
+for (Object entit : entitlements) { 
+        aqqq.add(new AttributeRequest(entitle.getAttributeName(), ProvisioningPlan.Operation.Remove, entitle.getValue()));
+    } // 🛑 Groups ka loop khatam!
+// 3. FIX: Jab saare groups pack ho gaye, tab pure package ko ek hi baar plan mein daala!
+    plan.add(aqqq);
+}
+-----------------------------------------------
+*////////////////
+//////////////////*
+if((plan != null) ? true : false){
+    project = pro.compile(plan);
+    pro.execute(project);
+}
+Dikkaat kya hai: Aapne top par ek boolean variable banaya tha: boolean dobabaprovision = false;. 
+Lekin is naye code mein aapne us variable ko kahin bhi true nahi kiya.
+Nuksaan: Aapne condition lagayi plan != null. Kyunki plan = new ProvisioningPlan(); 
+loop se pehle hi ban chuka hai, toh yeh condition hamesha true rahegi. 
+Agar kisi user ke paas koi application account (Link) na bhi ho, 
+tab bhi SailPoint ek khali blank plan ko zabardasti compile aur execute karne ki koshish karega, 
+jisse system logs mein faltu ke warnings aayenge.
+
+solution:-
+log.info("No entitlements found for " + appName + ". Direct account disable action hoga.");
+                        dobabaprovision = true; // Flag true kiya kyunki disable toh karna hi hai
+
+->>>>>>>>>>>>>>>>>>>>>>>>>>>>>sirf aek jagah nahi aur bhi jaga flag true hota hai:-	
+()aur aek jagah aur karenge:-
+if (entitlements != null &amp;&amp; !entitlements.isEmpty()) {
+                        for (Object entit : entitlements) {
+                            entitle = (Entitlement) entit;
+                            if (entitle != null) {
+                                aqqq.add(new AttributeRequest(entitle.getAttributeName(), ProvisioningPlan.Operation.Remove, entitle.getValue()));
+                                // FIXED: Groups milne par bhi flag true kar diya
+                                dobabaprovision = true; 
+                            } else {
+                                log.error("entitle is null");
+                                return null;
+                            }
+                        }
+                    } else {
+                        // FIXED: Glitchy white-spaces aur undefined variable logs ko clean kiya
+                        log.info("No entitlements found for " + linkk.getApplicationName() + ". Direct account disable action hoga.");
+                        dobabaprovision = true; 
+                    }
+*///////////
+----------------------------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="HR-Joiner-Automated-Provisioning-Rule" type="Validation">
+  <Description>
+    Yeh rule incoming identifier se HR user ko target karega aur bina approval ke direct Joiner provisioning execute karega.
+  </Description>
+  <Source>
+    import sailpoint.object.Identity;
+    import sailpoint.object.Link;
+    import sailpoint.object.ProvisioningPlan;
+    import sailpoint.object.ProvisioningPlan.AccountRequest;
+    import sailpoint.object.ProvisioningPlan.AttributeRequest;
+    import sailpoint.api.Provisioner;
+    import sailpoint.tools.Util;
+    import java.util.List;
+
+    // --- CONFIGURATION ---
+    // 1. Apna incoming identifier yahan pass karein (Yeh variable aapke process se aayega)
+    String incomingUserIdentifier = "EMP10052"; 
+    
+    // 2. Apne HR Application ka exact naam yahan likhein
+    String hrApplicationName = "HR-WORKDAY"; 
+    
+    // 3. Jo Role aap Joiner ko bina request ke dena chahte hain
+    String joinerRoleName = "Joiner Base Access Role"; 
+    // ---------------------
+
+    if (Util.isNullOrEmpty(incomingUserIdentifier)) {
+        return "Error: incomingUserIdentifier khaali (null) hai.";
+    }
+
+    // Identity find karna (Pehle exact Name se, fir unique object ID se)
+    Identity identity = context.getObjectByName(Identity.class, incomingUserIdentifier);
+    if (identity == null) {
+        identity = context.getUniqueObject(Identity.class, incomingUserIdentifier);
+    }
+
+    if (identity == null) {
+        return "Error: Identity '" + incomingUserIdentifier + "' SailPoint me nahi mili.";
+    }
+
+    // Check karna ki kya yeh user sach me HR source se aaya hai (Link check)
+    boolean isHRUser = false;
+    List links = identity.getLinks();
+    if (links != null) {
+        for (Link link : links) {
+            if (link.getApplication() != null &amp;&amp; hrApplicationName.equals(link.getApplication().getName())) {
+                isHRUser = true;
+                break;
+            }
+        }
+    }
+
+    // Agar user HR source ka nahi hai toh process stop kar dena
+    if (!isHRUser) {
+        return "Skipped: Identity '" + identity.getName() + "' ke paas " + hrApplicationName + " ka link nahi hai. Yeh HR user nahi hai.";
+    }
+
+    // --- PROVISIONING PLAN BACKGROUND EXECUTION ---
+    // Bina request portal (Access Request) ke direct assignment ke liye Plan banana
+    ProvisioningPlan plan = new ProvisioningPlan();
+    plan.setIdentity(identity);
+
+    // IIQ application par Account Request banayein (Roles update karne ke liye)
+    AccountRequest accReq = new AccountRequest(AccountRequest.Operation.Modify, "IIQ", null, identity.getName());
+    
+    // Identity par direct role assign karne ka attribute request
+    AttributeRequest attReq = new AttributeRequest("assignedRoles", ProvisioningPlan.Operation.Add, joinerRoleName);
+    accReq.add(attReq);
+    plan.add(accReq);
+
+    try {
+        // Provisioner compile aur execute karega bina kisi workflow/manager approval ke
+        Provisioner provisioner = new Provisioner(context);
+        provisioner.compile(plan);
+        provisioner.execute();
+        
+        return "Success: HR User '" + identity.getName() + "' ke liye Joiner access (" + joinerRoleName + ") successfully provision ho gaya.";
+    } catch (Exception e) {
+        return "Exception: Provisioning fail ho gayi: " + e.getMessage();
+    }
+  </Source>
+</Rule>
+----------------------------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="joiner_td" type="Custom">
+<Source>
+import sailpoint.object.Identity;
+import sailpoint.object.Application;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.api.Provisioner;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.Link;
+import org.apache.log4j.Logger;
+import java.util.List;
+import java.util.ArrayList;
+
+Logger log = Logger.getLogger("sailpoint.Rules.joiner.td");
+
+if(identityName!=null){          // 1
+
+    Application app=null;
+    List apps=new ArrayList();
+    List links=new ArrayList();
+    Identity idn=context.getObjectByName(Identity.class,identityName);
+
+    if(idn!=null &amp;&amp; idn.isActive()){    // 2
+
+        links=idn.getLinks();
+        if(links != null &amp;&amp; links.size() != 0){   // 3
+            log.error("links are found and he has already links");
+            return null;
+        }else{                                  // 3 else
+            apps=context.getObjects(Application.class);
+
+            ProvisioningPlan plan=new ProvisioningPlan();
+            plan.setIdentity(idn);
+            ProvisioningProject project=null;
+            Provisioner pro=new Provisioner(context);
+
+            for(Object apk:apps){               // 4
+                app=(Application)apk;
+                if("IIQ".equals(app.getName())){
+                    continue;
+                }
+                AccountRequest aqq=new AccountRequest(AccountRequest.Operation.Create,app.getName(),null,idn.getName());
+                plan.add(aqq);
+            }                                   // 4 close
+
+            if(plan!=null){                     // 5
+                project=pro.compile(plan);
+                pro.execute(project);
+            }else{                              // 5 else
+                log.error("plan is null");
+                return null;
+            }                                   // 5 close
+        }                                       // 3 close
+    }                                           // 2 close
+    else{
+        log.error("idn not found");
+        return null;
+    }                                           // else close
+}                                               // 1 close
+
+return null;
+</Source>
+</Rule>
+////////////*
+()Performance Issue (Sabse Bada Buk):-
+Aapne for loop ke andar Provisioner pro = new Provisioner(context); pro.compile(plan); pro.execute(project); likha tha.
+Iska matlab agar aapke IIQ mein 50 apps hain, toh aap 50 baar plan compile aur execute kar rahe the, 
+jisse server hang ho sakta hai. Sahi tarika yeh hai ki loop ke andar saare AccountRequest ko plan mein add karte jao, 
+aur loop ke baahar sirf ek baar compile aur execute karo.
+
+()SailPoint IdentityIQ mein jab kisi Identity ke paas koi account/link nahi hota, 
+toh idn.getLinks() aksar ek empty list (size = 0) return karta hai, na ki null.
+
+()1. NullPointerException ka khatra (links.size()):-
+Code me aapne likha hai:
+
+Java
+links = idn.getLinks();
+if (links.size() != 0) {
+Gadbadi: Agar kisi user ke paas ek bhi link nahi hai, toh SailPoint idn.getLinks() par null return kar sakta hai. Agar links null hua, toh links.size() bolte hi code mein NullPointerException (NPE) aa jayegi aur rule vahin ruk jayega.
+Fix: Pehle null check karein, fir size check karein: if (links != null && links.size() != 0)
+*////////////
+-------------------------------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="joiner_td" type="Custom">
+<Source>
+import sailpoint.object.Identity;
+import sailpoint.object.Application;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.api.Provisioner;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.Link;
+import org.apache.log4j.Logger;
+import java.util.List;
+import java.util.ArrayList;
+import sailpoint.object.Entitlement;
+
+Logger log = Logger.getLogger("sailpoint.Rules.joiner.td");
+if(identityName!=null){
+boolean dobabaprovision=false;
+List<Entitlement> entitlements=new ArrayList<Entitlement>();
+Entitlement entitle=null;
+List links=new ArrayList();
+Link linkk=null;
+Identity idn=context.getObjectByName(Identity.class,identityName);
+if(idn!=null &amp;&amp; idn.isActive()){
+links=idn.getLinks();
+if(links!=null &amp;&amp; links.size()!=0)
+{
+ProvisioningPlan plan=new ProvisioningPlan();
+Provisioner pro=new Provisioner(context);
+ProvisioningProject project=null;
+
+for(Object link:links){
+linkk=(Link)link;
+AccountRequest aqq=new AccountRequest(AccountRequest.Operation.Modify,linkk.getApplication().getName(),null,linkk.getNativeIdentity());
+
+if("AD".equals(linkk.getApplication().getName())){
+aqq.add(new AttributeRequest("sAMAccountName",ProvisioningPlan.Operation.Set,idn.getName()));
+aqq.add(new AttributeRequest("password",ProvisioningPlan.Operation.Set,"Welcome@123"));
+}
+
+if(linkk.getEntitlements(context)!=null &amp;&amp; linkk.getEntitlements(context).size()!=0){
+entitlements=linkk.getEntitlements(context);
+
+for(Object entit:entitlements){
+entitle=(Entitlement)entit;
+aqq.add(new AttributeRequest(entitle.getAttributeName(),ProvisioningPlan.Operation.Set,entitle.getAttributeValue()));
+
+dobabaprovision=true;
+
+}
+
+}else{
+log.error("not found Entitlements");
+dobabaprovision=true;
+}
+plan.add(aqq);
+}
+
+if(dobabaprovision){
+project=pro.compile(plan);
+pro.execute(project);
+}else{
+log.error("plan is null");
+return null;
+}
+
+}else{
+log.error("link not found,and he is new user");
+}
+}else{
+log.error("idn not found");
+}
+}
+return null;
+</Source>
+</Rule>
+//////////*
+()💡 Correction: Link class ke paas ek method hota hai jisme context pass karna padta hai:-
+List<Entitlement> entitlements = linkk.getEntitlements(context); 
+Agar tum bina context diye sirf linkk.getEntitlements() likhoge, toh code crash ho jayega.aur ye list return karta hai.
+
+()Entitlement namak class me koi getEntitlements na hone ke karan hum following 2 use karenge nikalne ke liye Entitlements:-
+
+-->Link ke andar jo groups hote hain, unhe SailPoint standard terminology me ManagedAttribute kehta hai, 
+ya fir simple Attributes (Map) ke andar key-value pairs me rakhta hai.
+
+// 1. Link ke saare attributes ka map nikalna
+java.util.Map attrMap = linkk.getAttributes();
+
+if (attrMap != null) {
+    // 2. Apne entitlement attribute (e.g., memberOf, groups, roles) ka naam pass karein
+    Object entObj = attrMap.get("memberOf"); 
+
+    if (entObj != null) {
+        List assignedEntitlements = new java.util.ArrayList();
+
+        // SailPoint me agar single entitlement hai toh String aayega, zyada hain toh List
+        if (entObj instanceof List) {
+            assignedEntitlements.addAll((List) entObj);
+        } else if (entObj instanceof String) {
+            assignedEntitlements.add((String) entObj);
+        }
+
+        // Ab aap is list par loop chala sakte hain
+        for (Object entName : assignedEntitlements) {
+            log.info("Found Entitlement Name: " + entName.toString());
+        }
+    }
+}
+--------------------------------------------------------------------------------
+import sailpoint.object.Identity;
+import sailpoint.object.Application;
+import sailpoint.object.ManagedAttribute;
+import sailpoint.object.QueryOptions;
+import sailpoint.object.Filter;
+import java.util.List;
+
+// Link se application aur nativeIdentity nikalna
+Application app = linkk.getApplication();
+String nativeIdentity = linkk.getNativeIdentity();
+
+QueryOptions qo = new QueryOptions();
+// Query lagana ki is App aur Account se jude saare ManagedAttributes nikal aayein
+qo.addFilter(Filter.eq("application.name", app.getName()));
+
+List managedAttributes = context.getObjects(ManagedAttribute.class, qo);
+
+if (managedAttributes != null) {
+    for (Object maObj : managedAttributes) {
+        ManagedAttribute ma = (ManagedAttribute) maObj;
+        
+        // Yeh aapko entitlement ki technical value aur display name dono de dega
+        String entValue = ma.getValue(); 
+        String entDisplay = ma.getDisplayName();
+        
+        log.info("Entitlement Value: " + entValue + " (Display: " + entDisplay + ")");
+    }
+}
+*//////////
+/////////////*
+()4. return dobabaprovision=true; (Syntax/Logical Error)
+Aapne else block mein likha hai: return dobabaprovision=true;
+Gadbadi: Pehli baat, ek custom rule se boolean assignment return karna thoda ajeeb hai. 
+Doosri baat, agar kisi link par entitlement nahi milti, toh aap wahi se return kar de rahe ho. 
+Iska matlab niche jo pro.compile(plan) aur pro.execute(project) ka execution block hai, 
+wahan tak code kabhi pahunchega hi nahi, aur baaki links process nahi ho payenge.
+
+solution return hatado.
+*///////////
+///////////*
+()for(Object entit:entitlements){:-
+entitle=(Entitlement)entit;
+entitlements=null;
+}:-
+Gadbadi:for loop abhi chal hi raha hai aur aapne pehle hi iteration(pehle group) ke khatam hote hi poori list variable(entitlements) 
+ko null kar diya. Jab Java agle group par jane ke liye list ko read karega, 
+toh use null milega aur system NullPointerException dekar poore code execution ko vahin block kar dega.
+
+()plan.add(aqq);aur AccountRequest ko for(Object link:links){ ke andar aur for(Objects entit:entitlements){ }} ke bar rakhe.
+*//////////
+---------------------------------------------------------------------------------------------------------------------------
+()1. Active Directory (AD) ka AttributeRequest:-
+AD mein jab hum groups assign karte hain toh attribute name memberOf use hota hai aur operation Add ya Remove hota hai.
+Baki details (jaise DN, UPN) ke liye Set use hota hai.
+Java
+// Active Directory ke liye AccountRequest (Modify Operation)
+AccountRequest adReq = new AccountRequest(AccountRequest.Operation.Modify, "Active Directory", null, linkk.getNativeIdentity());
+
+// 1. Group/Entitlement Add karne ke liye
+adReq.add(new AttributeRequest("memberOf", ProvisioningPlan.Operation.Add, "CN=VPN_Users,OU=Groups,DC=company,DC=com"));
+
+// 2. Base String Attribute update karne ke liye (Set Operation)
+adReq.add(new AttributeRequest("description", ProvisioningPlan.Operation.Set, "Updated via Joiner Rule"));
+
+plan.add(adReq);
+
+
+2. SAP (Direct / ERP) ka AttributeRequest:-
+SAP systems mein general groups ki jagah SAP Roles (ACTIVITYGROUPS) ya SAP Profiles (PROFILES) use hote hain.
+Java
+// SAP Application ke liye AccountRequest
+AccountRequest sapReq = new AccountRequest(AccountRequest.Operation.Modify, "SAP-ERP", null, linkk.getNativeIdentity());
+
+// 1. SAP Role assign karne ke liye (ACTIVITYGROUPS use hota hai)
+sapReq.add(new AttributeRequest("ACTIVITYGROUPS", ProvisioningPlan.Operation.Add, "Z_FI_LEDGER_READ"));
+
+// 2. SAP Profile assign karne ke liye
+sapReq.add(new AttributeRequest("PROFILES", ProvisioningPlan.Operation.Add, "S_A.SYSTEM"));
+
+// 3. User Type badalne ke liye (Dialog, System, Service, etc.)
+sapReq.add(new AttributeRequest("USTYPE", ProvisioningPlan.Operation.Set, "Dialog"));
+
+
+3. LDAP Directory ka AttributeRequest:-
+// LDAP Application ke liye AccountRequest
+AccountRequest ldapReq = new AccountRequest(AccountRequest.Operation.Modify, "LDAP-Directory", null, linkk.getNativeIdentity());
+
+// 1. LDAP Group assign karne ke liye (Aksar 'groupMembership' use hota hai)
+ldapReq.add(new AttributeRequest("groupMembership", ProvisioningPlan.Operation.Add, "cn=Developers,ou=Groups,o=Company"));
+
+// 2. Shell ya Home Directory set karne ke liye
+ldapReq.add(new AttributeRequest("loginShell", ProvisioningPlan.Operation.Set, "/bin/bash"));
+ldapReq.add(new AttributeRequest("homeDirectory", ProvisioningPlan.Operation.Set, "/home/" + idn.getName()));
+
+plan.add(ldapReq);
+
+----------------------------------------------------------->>>>>>>>>>>
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="joiner_td" type="Custom">
+<Source>
+import sailpoint.object.Identity;
+import sailpoint.object.Application;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.api.Provisioner;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.Link;
+import org.apache.log4j.Logger;
+import java.util.List;
+import java.util.ArrayList;
+import sailpoint.object.Entitlement;
+import sailpoint.object.QueryOptions;
+import sailpoint.object.Filter;
+
+Logger log = Logger.getLogger("sailpoint.Rules.joiner.td");
+if(identityName!=null){
+
+boolean dobabaprovision=false;
+Entitlement entitle=null;
+List<Entitlement> entitles=new ArrayList<Entitlement>(); 
+List links=new ArrayList();
+Application app=null;
+List<Application> apps=new ArrayList<Application>();
+Link linkk=null;
+List<Link> linki=new ArrayList<>();
+Identity idn=context.getObjectByName(Identity.class,identityName);
+if(idn!=null &amp;&amp; idn.isActive()){
+
+//links=context.getObjects(Link.class); ishko likhne se kaam banega lekin. dusra tarika.
+apps=context.getObjects(Application.class);
+for(Application app:apps){
+QueryOptions qo=new QueryOptions();
+qo.addFilter(Filter.eq("application.name",app.getName()));
+linki=context.getObjects(Link.class,qo);
+
+for(Link linku:linki){
+
+links.add(linku);
+}
+}
+
+
+if(idn.getLinks()!=null &amp;&amp; idn.getLinks().size()!=0){
+log.error("links found and user have already links");
+return null;
+}else{
+ProvisioningPlan plan=new ProvisioningPlan();
+ProvisioningProject project=null;
+Provisioner pro=new Provisioner(context);
+AccountRequest aqq1=null;
+AccountRequest aqq2=null;
+AccountRequest aqq3=null;
+AccountRequest aqq4=null;
+
+
+for(Object link:links){
+linkk=(Link)link;
+
+if("AD".equals(linkk.getApplication().getName())){
+aqq1=new AccountRequest(AccountRequest.Operation.Create,"AD",null,linkk.getNativeIdentity());
+
+entitles=linkk.getEntitlements(context);
+if(entitles!=null &amp;&amp; entitles.size()!=0){
+for(Entitlement entit:entitles){
+entitle=entit;
+if(entitle!=null){
+aqq1.add(new AttributeRequest(entitle.getAttributeName(),ProvisioningPlan.Operation.Add,entitle.getAttributeValue()));
+
+}else{
+log.error("entitle is null");
+dobabaprovision=true;
+}
+}
+
+}else{
+log.error("not found linkk.getEntitlements are null");
+return null;
+}
+
+}else if("SAP".equals(linkk.getApplication().getName())){
+aqq2=new AccountRequest(AccountRequest.Operation.Create,"SAP",null,linkk.getNativeIdentity());
+
+entitles=linkk.getEntitlements(context);
+if(entitles!=null &amp;&amp; entitles.size()!=0){
+for(Entitlement entit:entitles){
+entitle=entit;
+if(entitle!=null){
+aqq2.add(new AttributeRequest(entitle.getAttributeName(),ProvisioningPlan.Operation.Add,entitle.getAttributeValue()));
+
+}else{
+log.error("entitle is null");
+dobabaprovision=true;
+}
+}
+
+}else{
+log.error("not found linkk.getEntitlements are null");
+return null;
+}
+
+}else if("LDAP".equals(linkk.getApplication().getName())){
+aqq3=new AccountRequest(AccountRequest.Operation.Create,"LDAP",null,linkk.getNativeIdentity());
+
+entitles=linkk.getEntitlements(context);
+if(entitles!=null &amp;&amp; entitles.size()!=0){
+for(Entitlement entit:entitles){
+entitle=entit;
+if(entitle!=null){
+aqq3.add(new AttributeRequest(entitle.getAttributeName(),ProvisioningPlan.Operation.Add,entitle.getAttributeValue()));
+
+}else{
+log.error("entitle is null");
+dobabaprovision=true;
+}
+}
+
+}else{
+log.error("not found linkk.getEntitlements are null");
+return null;
+}
+
+}else{
+aqq4=new AccountRequest(AccountRequest.Operation.Create,linkk.getApplicationName(),null,linkk.getNativeIdentity());
+
+entitles=linkk.getEntitlements(context);
+if(entitles!=null &amp;&amp; entitles.size()!=0){
+for(Entitlement entit:entitles){
+entitle=entit;
+if(entitle!=null){
+aqq4.add(new AttributeRequest(entitle.getAttributeName(),ProvisioningPlan.Operation.Add,entitle.getAttributeValue()));
+
+}else{
+log.error("entitle is null");
+dobabaprovision=true;
+}
+}
+
+}else{
+log.error("not found linkk.getEntitlements are null");
+return null;
+}
+
+}
+
+if(aqq1!=null){
+plan.add(aqq1);
+aqq1=null;
+}
+
+if(aqq2!=null){
+plan.add(aqq2);
+aqq2=null;
+}
+
+if(aqq3!=null){
+plan.add(aqq3);
+aqq3=null;
+}
+
+if(aqq4!=null){
+plan.add(aqq4);
+aqq4=null;
+}
+
+}//for link ka bracket close
+
+if (plan.getAccountRequests() != null &amp;&amp; !plan.getAccountRequests().isEmpty()) {
+                log.info("Compiling and executing final provisioning plan for identity: " + identityName);
+                project = pro.compile(plan);
+                pro.execute(project);
+                log.info("Provisioning execution successfully done!");
+            } else {
+                log.warn("Plan is empty. No accounts found to provision.");
+            }
+
+}//else ka bracket close
+
+}else{
+log.error("idn not found");
+return null;
+}
+
+}
+return null;
+</Source>
+</Rule>
+/////////////*note:-
+()apps=context.getObjects(Application.class);
+for(Application app:apps){
+QueryOptions qo=new QueryOptions();
+qo.addFilter(filter.eq("application.name",app.getName()));
+links=context.getObjects(Link.class,qo);
+}:-
+Aapne upar loop chalaya for(Application app:apps), lekin har loop par aap links = context.getObjects(Link.class,qo) 
+kar rahe ho. Isse pichli application ke links overwrite ho jayenge aur sirf aakhiri app ke links variable mein bachenge.
+
+solution:-
+//links=context.getObjects(Link.class); ishko likhne se kaam banega lekin. dusra tarika.
+apps=context.getObjects(Application.class);
+for(Application app:apps){
+QueryOptions qo=new QueryOptions();
+qo.addFilter(Filter.eq("application.name",app.getName()));
+linki=context.getObjects(Link.class,qo);
+
+for(Link linku:linki){
+
+links.add(linku);
+}
+}
+--------->>>>>>
+Dikkat: Is query ke andar kisi specific user (identity.name) ka koi filter nahi hai. Iska matlab jab loop "AD" application par pahunchega, toh database pure organization ke saare 10,000 ya 50,000 employees ke AD links memory mein load kar lega. Phir SAP par saare users ke SAP links load karega.
+Natija: Lakhon links ka data ek sath JVM Heap Memory (RAM) mein load hote hi aapka SailPoint Application Server java.lang.OutOfMemoryError: Java heap space dekar turant crash ho jayega.
+--------->>>>>solved:-
+questionnahi sirf aek tarah ka app link dalna hai mujhe in links me tab kya kare????
+->>>>>
+-------------------------------------------------------------------------------------------------------------------------
+()1. SailPointException (Too Many Results Found):-
+context.getObject(Link.class, qo) tabhi kaam karta hai jab database query se sirf aur sirf 1 single record match ho.
+Aapne filter lagaya hai: Filter.eq("application.name", app.getName()).
+Iska matlab jab loop AD application par chalega, toh database pooray organization ke saare employees ke hazaron AD links utha layega.
+Jaise hi database se ek se zyada (multiple) records milenge, context.getObject() turant haath khade kar dega aur sailpoint.tools.GeneralException: Too many rows found ka error dekar code ko crash kar dega.
+
+-->
+List links = new ArrayList();
+List apps = context.getObjects(Application.class);
+
+if (identityName != null && apps != null) {
+    for (Object appObj : apps) {
+        Application app = (Application) appObj;
+        
+        QueryOptions qo = new QueryOptions();
+        
+        // 🌟 FIX 1: Identity filter joda taaki sirf isi user ka link mile
+        Filter userFilter = Filter.eq("identity.name", identityName);
+        // 🌟 FIX 2: Capital 'Filter.eq' use kiya app name ke liye
+        Filter appFilter = Filter.eq("application.name", app.getName());
+        
+        // Dono filters ko AND se combine kiya (This User AND This App)
+        qo.addFilter(Filter.and(userFilter, appFilter));
+        
+        // Ab database se strictly sirf 1 shot me is user ka single account link milega
+        Link linki = (Link) context.getObject(Link.class, qo);
+        
+        if (linki != null) {
+            links.add(linki); // Sahi Link list me add ho gaya bina crash ke
+        }
+    }
+}
+*//////////
+
+///////////*
+🚨 Gadbad Wala Code (Dry Run Example):-
+Maan lijiye hamare paas 2 AD links hain. Dekhiye jab loop chalega toh kya hoga:
+
+Java
+AccountRequest aqq1 = null; // Memory mein ek single "Box" bana jiska naam aqq1 hai
+
+// LOOP START (Maan lijiye do AD links mile: Link_A aur Link_B)
+for (int i = 1; i <= 2; i++) {                         //-------->
+    
+    if (i == 1) { // Iteration 1: Link_A ke liye
+        aqq1 = new AccountRequest("AD_Link_A"); // Box mein "AD_Link_A" chala gaya
+    }
+    if (i == 2) { // Iteration 2: Link_B ke liye
+        aqq1 = new AccountRequest("AD_Link_B"); // Box ka purana data mit gaya, ab "AD_Link_B" aa gaya
+    }
+
+    // --- LOOP KA END JAHAN AAPNE ADD KIYA THA ---
+    if (aqq1 != null) {
+        plan.add(aqq1); // 👈 GADBAD YAHAN HAI!
+    }
+}
+
+🚨 Normal Shabdon Mein: Gadbad Kya Hai?
+Aapne aqq1, aqq2, aqq3, aqq4 variables ko loop ke baahar banaya hai (AccountRequest aqq1=null;). 
+Iska matlab ye chaaro variables poore loop ke dauran memory mein zinda rehte hain.
+
+Ab maan lijiye aapke loop mein 3 alag-alag accounts (links) check hone ke liye aaye:-
+
+Baari 1: Pehla Link aaya (Maan lo AD ka hai)
+Code ne dekha AD ka link hai, toh usne aqq1 ke andar AD ki request daal di.
+Baaki aqq2, aqq3, aqq4 abhi kya hain? null (khali) hain.
+Loop ke end mein aapka block chala:-
+if(aqq1!=null) plan.add(aqq1); ➔ AD Plan mein chala gaya. (Pehli baari bilkul sahi chali).
+
+Baari 2: Dusra Link aaya (Maan lo SAP ka hai)
+Code ne dekha SAP ka link hai, toh usne aqq2 ke andar SAP ki request daal di.
+⚠️ ASLI GADBAD YAHAN HUI: Is baari AD ka code nahi chala, lekin aqq1 variable ke andar pichli baari ka AD data abhi bhi bacha hua hai! Use kisi ne saaf (clear) nahi kiya.
+Loop ke end mein jab aapka check dobara chala:-
+if(aqq1!=null) plan.add(aqq1); ➔ Kyunki aqq1 khali nahi tha, isne pichle round wale AD ko DOBARA plan mein daal diya (Duplicate)!
+if(aqq2!=null) plan.add(aqq2); ➔ Fir SAP ko bhi daal diya.
+
+Baari 3: Tisra Link aaya (Maan lo LDAP ka hai)
+Is baari aqq3 mein LDAP ka data aaya.
+Lekin pichle rounds ki wajah se aqq1 (AD) aur aqq2 (SAP) dono ke andar purana data abhi bhi bhara hua hai!
+Loop ke end mein check chala:-
+if(aqq1!=null) plan.add(aqq1); ➔ AD T तीसरी (3rd) baar plan mein chala gaya!
+if(aqq2!=null) plan.add(aqq2); ➔ SAP DOOSRI (2nd) baar plan mein chala gaya!
+if(aqq3!=null) plan.add(aqq3); ➔ LDAP pehli baar gaya.
+
+solution:-
+AccountRequest aqq1 = null; 
+
+for (int i = 1; i <= 2; i++) {                                                    //->>
+    
+    if (i == 1) { 
+        aqq1 = new AccountRequest("AD_Link_A"); 
+    }
+    // ⚠️ i == 2 ke waqt ye IF block skip ho jayega kyunki condition match nahi karegi!
+    if (i == 2) { 
+        // Maan lijiye ye SAP ka link tha, toh AD wala block chalega hi nahi
+    }
+
+    // --- LOOP KA END ---
+    if (aqq1 != null) {
+        plan.add(aqq1); 
+        aqq1 = null; // ✅ FIXED: Kaam khatam hote hi box ko khali (null) kar diya!
+    }
+	if(aqq2!=null) {
+    plan.add(aqq2);
+    aqq2 = null; // ◄--- Pichla data saaf!
+}
+
+if(aqq3!=null) {
+    plan.add(aqq3);
+    aqq3 = null; // ◄--- Pichla data saaf!
+}
+
+if(aqq4!=null) {
+    plan.add(aqq4);
+    aqq4 = null; // ◄--- Pichla data saaf!
+}
+	
+}
+*/////////////
+
+//////////*>-----------------------------------------------------------------------------------------------------------------
+()Aaiye pure code ke flow se step-by-step samajhte hain ki kaise aapke purane code mein 500 links hone ke baad bhi baaki ke 
+499 links hawa mein gayab ho rahe the aur sirf 1 hi link kyun bach raha tha.
+
+()Aapke Purane Code Ka Flow (Jahan Data Loss Ho Raha Tha):-
+AccountRequest aqq1 = null; // 1. Loop ke baahar single box banaya
+
+for(Object link : links) { // 2. Maan lijiye is loop mein 3 AD links aaye (Link-1, Link-2, Link-3)
+    linkk = (Link) link;
+    
+    if("AD".equals(linkk.getApplication().getName())) {
+        // 3.🚨 HAR BAAR NAYA OBJECT BANEGA AUR AQQ1 MEIN OVERWRITE HO JAYEGA
+        aqq1 = new AccountRequest(AccountRequest.Operation.Create, "AD", null, linkk.getNativeIdentity());
+        
+        // Entitlements add karne ka logic...
+    }
+} //---> Loop Yahan Khatam Ho Gaya
+
+// 4. 🚨 LOOP KE BAAHAR PLAN MEIN ADD KIYA
+if(aqq1 != null) {
+    plan.add(aqq1); 
+}
+
+🔄 Parde Ke Peeche Kya Ho Raha Tha? (Dry Run)
+Iteration 1 (Link-1): aqq1 ke andar Link-1 ka data (Account Request) gaya.
+
+Iteration 2 (Link-2): Loop dobara chala. Jaise hi line chali aqq1 = new AccountRequest(...), aqq1 ka purana connection Link-1 se toot gaya, aur ab wo Link-2 ko point karne laga. Link-1 memory se gayab!
+
+Iteration 3 (Link-3): Loop fir chala. Ab Link-2 ka connection bhi toot gaya, aur aqq1 mein Link-3 ka data aa gaya.
+
+Loop Khatam: Ab code loop ke baahar aaya aur chaldiya plan.add(aqq1);. Is waqt aqq1 ke paas sirf aur sirf sabse aakhri (Link-3) ka data bacha tha.
+
+Natija? Link-1 aur Link-2 ke liye provisioning plan kabhi bana hi nahi, unka data loss ho gaya!
+
+
+--------------------->>>>>>>>>>>>>>>>>>>>>>>>>()Aapke Purane Code buggy code :-
+
+if(idn.getLinks()!=null &amp;&amp; idn.getLinks().size()!=0){
+log.error("links found and user have already links");
+return null;
+}else{
+ProvisioningPlan plan=new ProvisioningPlan();
+ProvisioningProject project=null;
+Provisioner pro=new Provisioner(context);
+AccountRequest aqq1=null;
+AccountRequest aqq2=null;
+AccountRequest aqq3=null;
+AccountRequest aqq4=null;
+
+for(Object link:links){
+linkk=(Link)link;
+
+if("AD".equals(linkk.getApplication().getName())){
+aqq1=new AccountRequest(AccountRequest.Operation.Create,"AD",null,linkk.getNativeIdentity());
+
+entitles=linkk.getEntitlements(context);
+if(entitles!=null &amp;&amp; entitles.size()!=0){
+for(Entitlement entit:entitles){
+entitle=entit;
+if(entitle!=null){
+aqq1.add(new AttributeRequest(entitle.getAttributeName(),ProvisioningPlan.Operation.Add,entitle.getAttributeValue()));
+
+}else{
+log.error("entitle is null");
+dobabaprovision=true;
+}
+}
+
+}else{
+log.error("not found linkk.getEntitlements are null");
+return null;
+}
+
+}else if("SAP".equals(linkk.getApplication().getName())){
+aqq2=new AccountRequest(AccountRequest.Operation.Create,"SAP",null,linkk.getNativeIdentity());
+
+entitles=linkk.getEntitlements(context);
+if(entitles!=null &amp;&amp; entitles.size()!=0){
+for(Entitlement entit:entitles){
+entitle=entit;
+if(entitle!=null){
+aqq2.add(new AttributeRequest(entitle.getAttributeName(),ProvisioningPlan.Operation.Add,entitle.getAttributeValue()));
+
+}else{
+log.error("entitle is null");
+dobabaprovision=true;
+}
+}
+
+}else{
+log.error("not found linkk.getEntitlements are null");
+return null;
+}
+
+}else if("LDAP".equals(linkk.getApplication().getName())){
+aqq3=new AccountRequest(AccountRequest.Operation.Create,"LDAP",null,linkk.getNativeIdentity());
+
+entitles=linkk.getEntitlements(context);
+if(entitles!=null &amp;&amp; entitles.size()!=0){
+for(Entitlement entit:entitles){
+entitle=entit;
+if(entitle!=null){
+aqq3.add(new AttributeRequest(entitle.getAttributeName(),ProvisioningPlan.Operation.Add,entitle.getAttributeValue()));
+
+}else{
+log.error("entitle is null");
+dobabaprovision=true;
+}
+}
+
+}else{
+log.error("not found linkk.getEntitlements are null");
+return null;
+}
+
+}else{
+aqq4=new AccountRequest(AccountRequest.Operation.Create,linkk.getApplicationName(),null,linkk.getNativeIdentity());
+
+entitles=linkk.getEntitlements(context);
+if(entitles!=null &amp;&amp; entitles.size()!=0){
+for(Entitlement entit:entitles){
+entitle=entit;
+if(entitle!=null){
+aqq4.add(new AttributeRequest(entitle.getAttributeName(),ProvisioningPlan.Operation.Add,entitle.getAttributeValue()));
+
+}else{
+log.error("entitle is null");
+dobabaprovision=true;
+}
+}
+
+}else{
+log.error("not found linkk.getEntitlements are null");
+return null;
+}
+
+}
+}//for link ka bracket close
+
+if(aqq1!=null)                
+plan.add(aqq1);     // 4. 🚨 LOOP KE BAAHAR PLAN MEIN ADD KIYA
+
+if(aqq2!=null)
+plan.add(aqq2);     // 4. 🚨 LOOP KE BAAHAR PLAN MEIN ADD KIYA
+
+if(aqq3!=null)
+plan.add(aqq3);     // 4. 🚨 LOOP KE BAAHAR PLAN MEIN ADD KIYA
+
+if(aqq4!=null)
+plan.add(aqq4);     // 4. 🚨 LOOP KE BAAHAR PLAN MEIN ADD KIYA
+
+
+}//else ka bracket close
+
+->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>solution:-
+if(idn.getLinks()!=null && idn.getLinks().size()!=0){
+    log.error("links found and user have already links");
+    return null;
+}else{
+    ProvisioningPlan plan=new ProvisioningPlan();
+    ProvisioningProject project=null;
+    Provisioner pro=new Provisioner(context);
+    AccountRequest aqq1=null;
+    AccountRequest aqq2=null;
+    AccountRequest aqq3=null;
+    AccountRequest aqq4=null;
+
+    for(Object link:links){
+        linkk=(Link)link;
+
+        if("AD".equals(linkk.getApplication().getName())){
+            aqq1=new AccountRequest(AccountRequest.Operation.Create,"AD",null,linkk.getNativeIdentity());
+
+            entitles=linkk.getEntitlements(context);
+            if(entitles!=null && entitles.size()!=0){
+                for(Entitlement entit:entitles){
+                    entitle=entit;
+                    if(entitle!=null){
+                        aqq1.add(new AttributeRequest(entitle.getAttributeName(),ProvisioningPlan.Operation.Add,entitle.getAttributeValue()));
+                    }else{
+                        log.error("entitle is null");
+                        dobabaprovision=true;
+                    }
+                }
+            }else{
+                log.error("not found linkk.getEntitlements are null");
+                return null;
+            }
+
+            // ✅ FIX 1: AD ka object aur uske saare entitlements pack hote hi, 
+            // use LOOP KE ANDAR hi plan mein add kiya aur reference clear (null) kiya.
+            if(aqq1 != null) {
+                plan.add(aqq1);
+                aqq1 = null; 
+            }
+
+        }else if("SAP".equals(linkk.getApplication().getName())){
+            aqq2=new AccountRequest(AccountRequest.Operation.Create,"SAP",null,linkk.getNativeIdentity());
+
+            entitles=linkk.getEntitlements(context);
+            if(entitles!=null && entitles.size()!=0){
+                for(Entitlement entit:entitles){
+                    entitle=entit;
+                    if(entitle!=null){
+                        aqq2.add(new AttributeRequest(entitle.getAttributeName(),ProvisioningPlan.Operation.Add,entitle.getAttributeValue()));
+                    }else{
+                        log.error("entitle is null");
+                        dobabaprovision=true;
+                    }
+                }
+            }else{
+                log.error("not found linkk.getEntitlements are null");
+                return null;
+            }
+
+            // ✅ FIX 2: SAP ke liye bhi same loop ke andar hi add aur clear.
+            if(aqq2 != null) {
+                plan.add(aqq2);
+                aqq2 = null;
+            }
+
+        }else if("LDAP".equals(linkk.getApplication().getName())){
+            aqq3=new AccountRequest(AccountRequest.Operation.Create,"LDAP",null,linkk.getNativeIdentity());
+
+            entitles=linkk.getEntitlements(context);
+            if(entitles!=null && entitles.size()!=0){
+                for(Entitlement entit:entitles){
+                    entitle=entit;
+                    if(entitle!=null){
+                        aqq3.add(new AttributeRequest(entitle.getAttributeName(),ProvisioningPlan.Operation.Add,entitle.getAttributeValue()));
+                    }else{
+                        log.error("entitle is null");
+                        dobabaprovision=true;
+                    }
+                }
+            }else{
+                log.error("not found linkk.getEntitlements are null");
+                return null;
+            }
+
+            // ✅ FIX 3: LDAP ke liye bhi loop ke andar safe insertion aur clear.
+            if(aqq3 != null) {
+                plan.add(aqq3);
+                aqq3 = null;
+            }
+
+        }else{
+            aqq4=new AccountRequest(AccountRequest.Operation.Create,linkk.getApplicationName(),null,linkk.getNativeIdentity());
+
+            entitles=linkk.getEntitlements(context);
+            if(entitles!=null && entitles.size()!=0){
+                for(Entitlement entit:entitles){
+                    entitle=entit;
+                    if(entitle!=null){
+                        aqq4.add(new AttributeRequest(entitle.getAttributeName(),ProvisioningPlan.Operation.Add,entitle.getAttributeValue()));
+                    }else{
+                        log.error("entitle is null");
+                        dobabaprovision=true;
+                    }
+                }
+            }else{
+                log.error("not found linkk.getEntitlements are null");
+                return null;
+            }
+
+            // ✅ FIX 4: Baaki bachi generic apps ke liye bhi loop ke andar save aur clear.
+            if(aqq4 != null) {
+                plan.add(aqq4);
+                aqq4 = null;
+            }
+        }
+    }//for link ka bracket close
+
+    // ✅ FINAL FIX 5: Plan ready hone ke baad use actual compile aur execute karna taaki account create ho.
+    if (plan.getAccountRequests() != null && !plan.getAccountRequests().isEmpty()) {
+        log.info("Executing provisioning plan for: " + identityName);
+        project = pro.compile(plan);
+        pro.execute(project);
+    }
+
+}//else ka bracket close
+*//////////
+---------------------------------------------------------------------------------------------------------------------------
+<? xml version='1.0' encoding='UTF_8' ?>
+<!DOCTYPE Rule PUBLIC "sailponi.dtd" "sailpoint.dtd">
+<Rule name="IT_con" type="Custom">
+<Source>
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.api.Provisioner;
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Application;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import sailpoint.object.Link;
+import sailpoint.object.Entitlement;
+import java.util.List;
+import java.util.ArrayList;
+import sailpoint.object.ProvisioningProject;
+Logger log=Logger.getLogger("sailpoint.Rules.IT.con");
+List links=new ArrayList();
+Link link=null;
+List entitlements=new ArrayList();
+Entitlement entitle=null;
+boolean dobabaprovision=false;
+Application app=null;
+
+if(identityName!=null){
+Identity idn=context.getObjectByName(Identity.class,identityName);
+if(idn!=null &amp;&amp; !idn.isInactive()){
+links=idn.getLinks();
+if(links!=null &amp;&amp; links.size()!=0){
+
+for(Object linkk:links){
+link=(Link)linkk;
+if(link!=null){
+app=link.getApplication();
+if(app!=null &amp;&amp; "AD".equals(app.getName()))
+break;
+link=null;
+}
+}
+
+if(link!=null){
+ProvisioningPlan plan=new ProvisioningPlan();
+ProvisioningProject project=null;
+Provisioner pro=new Provisioner(context);
+AccountRequest aqq=new AccountRequest(AccountRequest.Operation.Modify,"AD",null,link.getNativeIdentity());
+AttributeRequest att1=new AttributeRequest("memberOf",ProvisioningPlan.Operation.Add,"ADMIN_GROUP");
+AttributeRequest att2=new AttributeRequest("memberOf",ProvisioningPlan.Operation.Add,"USER_GROUP");
+
+entitlements=link.getEntitlements(context);
+List<String> entitlevalue=new ArrayList<>();
+for(Object entit:entitlements){
+entitle=(Entitlement)entit;
+if(entitle!=null &amp;&amp; "IT".equalsIgnoreCase(entitle.getAttributeValue())){
+
+if(entitle.getAttributeValue()!=null){
+if(!entitlevalue.contains(entitle.getAttributeValue())){
+aqq.add(att1);
+entitlevalue.add(entitle.getAttributeValue());
+}}
+
+}else if(entitle!=null &amp;&amp; "Finance".equalsIgnoreCase(entitle.getAttributeValue())){
+
+if(entitle.getAttributeValue()!=null){
+if(!entitlevalue.contains(entitle.getAttributeValue())){
+aqq.add(att2);
+entitlevalue.add(entitle.getAttributeValue());
+}}
+
+}else{
+log.error("not found entitlement");
+dobabaprovision=true;
+}}
+
+
+if(aqq.getAttributeRequests()!=null &amp;&amp; !aqq.getAttributeRequests().isEmpty()){
+plan.add(aqq);
+}else{
+log.error("not found aqq");
+return null;
+}
+
+if(plan.getAccountRequests()!=null &amp;&amp; !plan.getAccountRequests().isEmpty()){
+project=pro.compile(plan);
+pro.execute(project);
+}else{
+log.error("not found plan");
+return null;
+}
+
+}else{log.error("AD link not found");return null;}
+
+}else{
+log.error("links not found he is new user");
+return null;
+}
+
+}else{
+log.error("idn not found");
+return null;
+}
+
+}return null;
+</Source>
+</Rule>
+//////////*note:-buggy code():-
+for(Object linkk:links){
+link=(Link)linkk;
+app=link.getApplication();
+if(link!=null &amp;&amp; app!=null &amp;&amp; "AD".equals(app.getName()))
+break;
+link=null;
+}
+()for(Object linkk:links){:-कंप्यूटर लिस्ट में से पहला अकाउंट (Link) उठाता है।
+
+()link=(Link)linkk;:-
+कंप्यूटर उस अकाउंट को link नाम के वेरिएबल में डाल देता है। मान लेते हैं कि किसी वजह से यह link खाली (null) है।
+
+()app=link.getApplication();:-
+यहाँ कंप्यूटर link के अंदर जाकर एप्लिकेशन ढूंढने की कोशिश करता है। चूंकि link पहले से ही खाली (null) था, कंप्यूटर जैसे ही उसके अंदर घुसने की कोशिश करेगा, उसे झटका लगेगा और वह तुरंत NullPointerException का एरर फेंक कर पूरे प्रोग्राम को क्रैश (बंद) कर देगा।
+
+if(link!=null && app!=null && ...):-
+आपकी यह सेफ चेक वाली लाइन नंबर 4 पर है। लेकिन कंप्यूटर तो लाइन नंबर 3 पर ही क्रैश हो चुका है! वह इस लाइन तक कभी पहुंच ही नहीं पाएगा।
+
+->>>>>>>>solution:-
+for(Object linkk:links){
+link=(Link)linkk;
+if(link!=null){
+app=link.getApplication();
+if(app!=null &amp;&amp; "AD".equals(app.getName()))
+break;
+link=null;
+}
+}
+*//////////
+///////////*
+entitlements=link.getEntitlements(context);
+for(Object entit:entitlements){
+entitle=(Entitlement)entit;
+if(entitle!=null &amp;&amp; "IT".equalsIgnoreCase(entitle.getAttributeValue())){
+aqq.add(att1);
+}else if(entitle!=null &amp;&amp; "Finance".equalsIgnoreCase(entitle.getAttributeValue())){
+aqq.add(att2);
+}else{
+log.error("not found entitlement");
+dobabaprovision=true;
+}}
+क्या असर होगा: मान लीजिए किसी यूजर के पास AD में "IT" से जुड़े 3 अलग-अलग Entitlements हैं। 
+यह लूप 3 बार चलेगा और aqq.add(att1) को तीन बार रिक्वेस्ट में जोड़ देगा। इससे आपकी ProvisioningPlan में एक ही ग्रुप जोड़ने की डुप्लिकेट रिक्वेस्ट चली जाएगी।
+
+सुधार: ग्रुप जोड़ने से पहले हमें चेक कर लेना चाहिए कि क्या वह रिक्वेस्ट पहले से तो नहीं जुड़ चुकी है, या फिर मैच होते ही एक फ्लैग सेट कर देना चाहिए।
+->>>>>>>>>>solution:-
+
+entitlements=link.getEntitlements(context);
+List<String> entitlevalue=new ArrayList<>();
+for(Object entit:entitlements){
+entitle=(Entitlement)entit;
+if(entitle!=null &amp;&amp; "IT".equalsIgnoreCase(entitle.getAttributeValue())){
+
+if(entitle.getAttributeValue()!=null){
+if(!entitlevalue.contains(entitle.getAttributeValue())){
+aqq.add(att1);
+entitlevalue.add(entitle.getAttributeValue());
+}}
+
+}else if(entitle!=null &amp;&amp; "Finance".equalsIgnoreCase(entitle.getAttributeValue())){
+
+if(entitle.getAttributeValue()!=null){
+if(!entitlevalue.contains(entitle.getAttributeValue())){
+aqq.add(att2);
+entitlevalue.add(entitle.getAttributeValue());
+}}
+
+}else{
+log.error("not found entitlement");
+dobabaprovision=true;
+}}
+*//////////
+/////////////*
+Gadbadi kya hai: Jab aap koi list loop ke andar banate hain,toh loop jitni baar ghumega (chahe 5 baar ya 10 baar), 
+list har baar mitti mein milkar bilkul nayi aur khali(empty) ban jayegi. Purana data usme kabhi save hi nahi hoga.
+List<String> entitlevalue=new ArrayList<>(); ko for(Object entit:entitlements){} ke bahar likho.
+*/////////
+--------------------------------------------------------------------------------------------------------------------------
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AccountRequest.Operation;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.api.Provisioner;
+import sailpoint.api.SailpointContext;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.ResultSet;
+import org.apache.log4j.Logger;
+import org.apache.loh4j.Level;
+import sailpoint.tools.GeneralException;
+import java.sql.DriverManager;
+
+Logger lg=Logger.getLogger(FinancialAndForecastingProvisioningRule);
+
+public class FinancialAndForecastingProvisioningRule{
+static String defaultRoleId = "ROL_FIN_AUDIT_VIEWER_010";
+PreparedStatement smtp=null;
+String SQL_query=null;
+ProvisioningResult result=null;
+String ApplicationName = "Financial Planning & Forecasting";
+
+public ProvisioningResult doprovisioning(ProvisioningPlan plan,Connection con,SailpointContext context)throws SQLException, GeneralException{
+FinancialAndForecastingProvisioningRule fr=new FinancialAndForecastingProvisioningRule();
+AccountRequest aqqreq=null;
+if(plan!=null){
+List<AccountRequest> aqqs=new List<>();
+aqqs=plan.getAccountRequests(ApplicationName);
+for(AccountRequest aqq:aqqs)
+{
+aqqreq=aqq;
+Break;
+}
+if(aqqreq!=null){
+
+Operation op=aqqreq.getOperation();
+
+if(AccountRequest.Operation.Create.equals(op))
+result=fr.create(plan,con,aqqreq);
+else if(AccountRequest.Operation.Disable.equals(op)){
+String id=aqqreq.getNativeIdentity();
+result=fr.disable(con,id);}
+else if(AccountRequest.Operation.Modify.equals(op))
+result=fr.modify(plan,con,aqqreq);
+else if(AccountRequest.Operation.Enable.equals(op)){
+String id=aqqreq.getNativeIdentity();
+result=fr.enable(con,id);}
+
+return result;
+
+}else 
+return result;
+
+else return;
+}}<!--doprovisioning close-->
+
+private ProvisioningResult create(ProvisioningPlan plan,Connection con,AccountRequest aqqreq){
+FinancialAndForecastingProvisioningRule fr=new FinancialAndForecastingProvisioningRule();
+ProvisioningResult result=new ProvisioningResult();
+String id,name,email;
+List<AttributeRequest> attreqs=aqqreq.getAttributeRequests();
+
+AttributeRequest atr1=aqqreq.getAttributeRequest("id");
+if(atr!=null)
+id=(String)atr1.getValue();
+AttributeRequest atr2=aqqreq.getAttributeRequest("name");
+if(atr!=null)
+name=(String)atr2.getValue();
+AttributeRequest atr3=aqqreq.getAttributeRequest("email");
+if(atr!=null)
+email=(String)atr3.getValue();
+
+
+
+try{
+SQL_query ="INSERT INTO FinancialAndForecastingProvisioningRule.employee(id,name,email) VALUES(?,?,?)";
+smtp=con.prepareStatement(SQL_query);
+smtp.setString(1,id);
+smtp.setString(2,name);
+smtp.setString(3,email);
+rs=smtp.executeUpdate();
+smtp.close();
+
+
+
+
+for(AttributeRequest attreq:attreqs){
+if("roles".equals(attreq.getName()) &amp;&amp; ("Add".equals(attreq.getOperation().toString()) || 
+"Set".equals(attreq.getOperation().toString()))){
+List<String> groupList=new List<>();
+
+if("roles".equalsIgnoreCase(attreq.getValue().toString())){
+if(attreq.getValue() instanceof String)
+groupList.add(attreq.getValue().toString());
+else if(attreq.getValue() instanceof List)
+groupList=(List)attreq.getValue();
+
+for(String roleName:groupList){
+String roleId=fr.roleIdByName(con,roleName);
+if(roleId!=null){
+int updateStatus=fr.addRole(con,id,roleId);
+
+if(updateStatus>0)
+result.setStatus(ProvisioningResult.STATUS__COMMITTED);
+else{
+log.error("not add role");
+result.setStatus(ProvisioningResult.STATUS_FAILED);
+}
+
+}else{
+log.error("not found employe roleId");
+result.setStatus(ProvisioningResult.STATUS_FAILED);
+}
+}<!--small for loop close of create-->
+}
+}
+}<!--//big for loop close of create-->
+
+
+if(!checkExistingRole(con,id,defaultRoleId)){
+int res=add(con,id,defaultRoleId);
+
+if(res>0)
+result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+else
+result.setStatus(ProvisioningResult.STATUS_FAILED);
+
+
+}
+}catch(SQLException e){
+log.error("sql exception:-"+e.getMessage());
+result.setStatus(ProvisioningResult.STATUS_FAILED);
+result.addError(e);
+}
+
+return result;
+}<!--create method close-->
+private ProvisioningResult disable(Connection con,String id){
+int rs=0;
+String status="InActive";
+ProvisioningResult result=new ProvisioningResult();
+SQL_query="UPDATE financial_planning_and_forecasting.employee_roles SET empStatus=? WHERE id=?";
+try{
+smtp=con.prepareStatement(SQL_query);
+smtp.setString(1,id);
+smtp.setString(2,status);
+rs=smtp.executeUpdate();
+if(rs>0)
+result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+else
+result.setStatus(ProvisioningResult.STATUS_FAILED);
+}catch(SQLException sl){
+log.error("SQLException from DisableAccount"+sl.getMessage());
+}finally{
+try{
+if(smtp!=null) smtp.close();
+}catch(SQLException sl){
+log.error("SQLException from DisableAccount finaly block:-"+sl.getMessage());
+}
+}
+return result;
+}<!--disable method close-->
+
+private ProvisioningResult modify(ProvisioningPlan plan,Connection con,AccountRequest aqqreq){
+ProvisioningResult result=new ProvisioningResult();
+List<AttributeRequest> attreqs=new ArrayList<>();
+
+int res=0;
+String roleId=null;
+attreqs=aqqreq.getAttributeRequests();
+String id=aqqreq.getNativeIdentity();
+
+for(AttributeRequest attreq:attreqs){
+if("roles".equals(attreq.getName().toString()) &amp;&amp; ("Add".equals(attreq.getOperation().toString()) || 
+"Set".equals(attreq.getOperation().toString())))
+{
+// CORRECTION 4: groupList ko har attribute ke liye fresh initialize kiya
+                List<String> groupList = new ArrayList<String>();
+
+if(attreq.getValue() instanceof String)
+groupList.add(attreq.getValue().toString());
+else if(attreq.getValue() instanceof List)
+groupList=(List)attreq.getValue();
+
+for(String roleName:groupList){
+
+roleId=roleIdByName(con,roleName);
+if(roleId!=null){
+res=addrole(con,id,roleId);
+
+if(res>0)
+result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+else result.setStatus(ProvisioningResult.STATUS_FAILED);
+}else{
+result.setStatus(ProvisioningResult.STATUS_FAILED);
+}
+}<!--small for loop close-->
+}else if("roles".equals(attreq.getName().toString()) &amp;&amp; 
+"Remove".equals(attreq.getOperation().toString()) ){
+
+if(attreq.getValue() instanceof String)
+groupList.add(attreq.getValue().toString());
+else if(attreq.getValue() instanceof List)
+groupList=(List)attreq.getValue();
+
+for(String roleName:groupList){
+
+roleId=roleIdByName(con,roleName);
+if(roleId!=null){
+res=removeRole(con,id,roleId);
+
+if(res>0)
+result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+else result.setStatus(ProvisioningResult.STATUS_FAILED);
+}else{
+result.setStatus(ProvisioningResult.STATUS_FAILED);
+}
+}<!--small for loop close-->
+
+}
+}<!--big forloop close-->
+if(!isAnyRoleForEmployee(con,id)){
+int action=disable(con,id);
+if(action>0)
+log.error("ProvisioningResult.STATUS_COMMITTED");
+else
+log.error("ProvisioningResult.STATUS_FAILED");
+}
+return result;
+}<!--modify method close-->
+
+
+private ProvisioningResult enable(Connection con,String id){
+ProvisioningResult result=new ProvisioningResult();
+int rs=0;
+String status="Active";
+SQL_query="UPDATE financial_planning_and_forecasting.employee_roles SET empStatus=? WHERE id=?";
+try{
+smtp=con.prepareStatement(SQL_query);
+smtp.setString(1,status);
+smtp.setString(2,id);
+rs=smtp.executeUpdate();
+if(rs>0)
+result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+else
+result.setStatus(ProvisioningResult.STATUS_FAILED);
+}catch(SQLException ex){
+log.error("error from SQLException of enable:-"+ex.getMessage());
+}finally{
+try{
+if(smtp!=null) smtp.close();
+}catch(SQLException sl){
+log.error("SQLException from enable finaly block:-"+sl.getMessage());
+}
+}
+return result;
+}<!--enable method close-->
+
+
+private int isAnyRoleForEmployee(Connection con,String id){
+int rs;
+SQL_query="SELECT 1 FROM financial_planning_and_forecasting.employee_roles WHERE id=?";
+try{
+smtp=con.prepareStatement(SQL_query);
+smtp.setString(1,id);
+rs=smtp.executeQuery();
+}catch(SQLException sl){
+log.error("SQLException from isAnyRoleForEmployee:-"+sl.getMessage());
+}finally{
+try{
+if(smtp!=null) smtp.close();
+}catch(SQLException sl){
+log.error("SQLException from isAnyRoleForEmployee finaly block:-"+sl.getMessage());
+}
+}
+return rs;
+}<!--close of isAnyRoleForEmployee-->
+
+private int removeRole(Connection con,String id,String roleId){
+SQL_query="DELETE FROM financial_planning_and_forecasting.employee_roles WHERE id=? AND roleId=?";
+int rs=0;
+try{
+smtp=con.prepareStatement(SQL_query);
+smtp.setString(1,id);
+smtp.setString(2,roleId);
+rs=smtp.executeUpdate();
+}catch(SQLException e){
+log.error("SQLException from removerole"+e.getMessage());
+}finally{
+try{
+if(smtp!=null) smtp.close();
+}catch(SQLException sl){
+log.error("SQLException from removeRole finaly block:-"+sl.getMessage());
+}
+}
+return rs;
+}<!--removerole close-->
+
+private int addRole(Connection con,String id,String roleId){
+SQL_query="INSERT IGNORE INTO financial_planning_and_forecasting.employee_roles(id,roleId) VALUES(?,?)";
+int rs=0;
+try{
+smtp=con.prepareStatement(SQL_query);
+smtp.setString(1,id);
+smtp.setString(2,roleId);
+rs=smtp.executeUpdate();
+}catch(SQLException sl){
+log.error("SQLException from addrole"+sl.getMessage());
+}finally{
+try{
+if(smtp!=null) smtp.close();
+}catch(SQLException sl){
+log.error("SQLException from addRole finaly block:-"+sl.getMessage());
+}
+}
+return rs;
+}<!--addrole method close-->
+
+private boolean checkExistingRole(Connection con,String id,String roleId)throws SQLException{
+SQL_query="SELECT 1 FROM financial_planning_and_forecasting.employee_roles WHERE id=? AND roleId=?";
+ResultSet rs=null;
+boolean exists=false;
+try{
+smtp=con.prepareStatement(SQL_query);
+smtp.setString(1,id);
+smtp.setString(2,roleId);
+rs=smtp.executeQuery();
+if(rs.next()){
+exists=true;
+log.debug("role exists:-"+id);
+}
+}catch(SQLException sl){
+log.error("SQLException from checkExistingRole:-"+sl.getMessage());
+}
+finally{
+try{
+if(smtp!=null) smtp.close();
+if(rs!=null) rs.close();
+}catch(SQLException sl){
+log.error("SQLException from checkExistingRole finaly block:-"+sl.getMessage());
+}
+}
+return exists;
+}<!--checkExistingRole close-->
+
+private String roleIdByName(Connection con,String roleName){
+ResultSet rs=null;
+String roleId=null;
+SQL_query="SELECT roleId FROM financial_planning_and_forecasting.employee_roles WHERE name=?";
+try{
+smtp=con.preparedStatement(SQL_query);
+smtp.setString(1,roleName);
+rs=smtp.executeQuery();
+if(rs.next())
+roleId=rs.getString("roleId");
+}catch(SQLException sl){
+log.error("SQLException from roleIdByName"+sl.getMessage());
+}finally{
+try{
+if(smtp!=null) smtp.close();
+if(rs!=null) rs.close();
+}catch(SQLException sl){
+log.error("SQLException from roleIdByName finaly block:-"+sl.getMessage());
+}
+}
+return roleId;
+}<!--roleIdByName close-->
+}<!--class close-->
+-------------------------------------------------------------------------------------------------------------------
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.ResultSet;
+import java.util.List;
+import java.util.ArrayList;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.api.Provisioner;
+import sailpoint.api.SailpointContext;
+import sailpoint.object.Operation;
+import sailpoint.object.ProvisioningResult;
+import java.sql.PreparedStatement;
+Logger log=Logger.getLogger(financial_planning_and_forecasting.class);
+
+public class financial_planning_and_forecasting{
+String ApplicationName="financial_planning_and_forecasting";
+String defaultRoleId = "ROL_FIN_AUDIT_VIEWER_010";
+List<AccountRequest> aqqs=new ArrayList<>();
+
+public ProvisioningResult doprovisioning(ProvisioningPlan plan,Connection con,SailpointContext context){
+
+AccountRequest aqq=null;
+ProvisioningResult result=new ProvisioningResult();
+financial_planning_and_forecasting fr=new financial_planning_and_forecasting();
+
+if(plan!=null &amp;&amp; con!=null &amp;&amp; context!=null){
+aqqs=plan.getAccountRequests(ApplicationName);
+for(AccountRequest aqqr:aqqs){
+if(aqqr!=null) 
+aqq=aqqr;
+break;
+}<!--for loop close-->
+
+// Safe Check: Agar valid AccountRequest nahi mili toh exit karein
+            if (aqq == null) {
+                result.setStatus(ProvisioningResult.STATUS_FAILED);
+                return result;
+            }
+
+Operation op=aqq.getOperation();
+
+if(AccountRequest.Operation.Create.equals(op))
+{
+result=fr.create(aqq,con,plan);
+}
+else if(AccountRequest.Operation.Disable.equals(op))
+{
+String id=aqq.getNativeIdentity();
+result=fr.disable(id,con);
+}
+else if(AccountRequest.Operation.Enable.equals(op))
+{
+String id=aqq.getNativeIdentity();
+result=fr.enable(id,con,aqq);
+}
+else if(AccountRequest.Operation.Modify.equals(op))
+{
+result=fr.modify(aqq,con,plan);
+}
+return result;
+}<!--big if close-->
+else return result;
+}<!--doprovisioning method close-->
+
+private ProvisioningResult create(AccountRequest aqq,Connection con,ProvisioningPlan plan)throws SQLException{
+ProvisioningResult result=new ProvisioningResult();
+financial_planning_and_forecasting fr=new financial_planning_and_forecasting();
+String name=null,department=null,employeeType=null;
+
+AttributeRequest attributeRequestname=aqq.getAttributeRequest("name");
+if(attributeRequestname!=null) name=(String)attributeRequestname.getValue();
+
+AttributeRequest attributeRequestdepartment=aqq.getAttributeRequest("department");
+if(attributeRequestdepartment!=null) department=(String)attributeRequestdepartment.getValue();
+
+AttributeRequest attributeRequestemployeeType=aqq.getAttributeRequest("employeeType");
+if(attributeRequestemployeeType!=null) employeeType=(String)attributeRequestemployeeType.getValue();
+
+String SQL_query="INSERT INTO financial_planning_and_forecasting.employee(name,department,employeeType) VALUES(?,?,?)";
+PreparedStatement smtp=null;
+int rs=0;
+if(name!=null &amp;&amp; department!=null &amp;&amp; employeeType!=null){
+try{
+smtp=con.prepareStatement(SQL_query);
+smtp.setString(1,name);
+smtp.setString(2,department);
+smtp.setString(3,employeeType);
+rs=smtp.executeUpdate();
+if(rs>0)
+result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+else
+result.setStatus(ProvisioningResult.STATUS_FAILED);
+}catch(SQLException sl){
+log.error("sql Exception from create:"+sl.getMessage());
+}finally{
+try{
+if(smtp!=null)
+smtp.close();
+}catch(SQLException sl){
+log.error("sql Exception from finaly block of create:"+sl.getMessage());
+}
+}
+}<!--try catch ka if close-->else result.setStatus(ProvisioningResult.STATUS_FAILED);
+
+if(aqq!=null){
+List<AttributeRequest> attrs=new ArrayList<>();
+attrs=aqq.getAttributeRequests();
+
+if(attrs!=null){
+for(AttributeRequest attr:attrs){
+if("roles".equalsIgnoreCase(attr.getName())
+&amp;&amp;(ProvisioningPlan.Operation.Add.equals(attr.getOperation()) || ProvisioningPlan.Operation.Set.equals(attr.getOperation()))){
+
+List<String> groupList=new ArrayList<>();
+
+if(attr.getValue() instanceof String)
+groupList.add((String)attr.getValue());
+else if(attr.getValue() instanceof List)
+groupList=(List<String>)attr.getValue();
+
+for(String attrvalue:groupList){
+if(attrvalue!=null){
+String roleId=fr.roleIdByName(attrvalue,con);
+if(roleId!=null){
+int res=fr.addRole(con,aqq.getNativeIdentity(),roleId);
+if(res>0)
+result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+}else{result.setStatus(ProvisioningResult.STATUS_FAILED);}
+}else{result.setStatus(ProvisioningResult.STATUS_FAILED);}
+}<!--smaller for loop close-->
+}<!--if close 2ndouter-->
+}<!--outer for loop close-->
+}<!--small if 1st close-->
+}<!--if close outer-->
+
+if(!checkExistingRole(con,aqq.getNativeIdentity(),defaultRoleId)){
+int ris=fr.addRole(con,aqq.getNativeIdentity(),defaultRoleId);
+if(ris>0) result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+else result.setStatus(ProvisioningResult.STATUS_FAILED);
+}
+return result;
+}<!--create method close-->
+
+private ProvisioningResult modify(AccountRequest aqq,Connection con,ProvisioningPlan plan){
+String roleId=null;
+financial_planning_and_forecasting fr=new financial_planning_and_forecasting();
+ProvisioningResult result=new ProvisioningResult();
+List<AttributeRequest> attrs=new ArrayList<>();
+attrs=aqq.getAttributeRequests();
+
+if(attrs!=null){
+for(AttributeRequest attr:attrs){
+
+if(attr!=null &amp;&amp; ("roles".equalsIgnoreCase(attr.getName())) &amp;&amp; (("Add".equalsIgnoreCase(attr.getOperation().name())) || ("Set".equalsIgnoreCase(attr.getOperation().name())))){
+
+String attrvalue=(attr.getValue()!=null)?attr.getValue():null;
+roleId=roleIdByName(attrvalue,con);
+if(roleId!=null){
+int re=addRole(con,aqq.getNativeIdentity(),roleId);
+if(re>0) result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+else result.setStatus(ProvisioningResult.STATUS_FAILED);
+}else result.setStatus(ProvisioningResult.STATUS_FAILED);
+
+}<!--inner if close of outer if-->
+else if(attr!=null &amp;&amp; ("roles".equalsIgnoreCase(attr.getName())) &amp;&amp; ("Remove".equalsIgnoreCase(attr.getOperation().name()))){
+String attrvalue=(attr.getValue()!=null)?attr.getValue():null;
+roleId=fr.roleIdByName(attrvalue,con);
+if(roleId!=null){
+int k=fr.removerole(con,aqq.getNativeIdentity(),roleId);
+if(k>0) result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+else result.setStatus(ProvisioningResult.STATUS_FAILED);
+}else result.setStatus(ProvisioningResult.STATUS_FAILED);
+}<!--else close-->
+}<!--outer loop close-->
+}<!--outer if close-->
+if(!isAnyRoleForEmployee(con,aqq.getNativeIdentity())){
+int v=disable(aqq.getNativeIdentity(),con);
+if(v>0) result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+else result.setStatus(ProvisioningResult.STATUS_FAILED);
+}
+return result;
+}<!--modify method close-->
+
+private ProvisioningResult disable(String id,Connection con){
+ProvisioningResult result=new ProvisioningResult();
+String status="InActive";
+String SQL_query="UPDATE financial_planning_and_forecasting.employee_roles SET status=? WHERE id=?";
+PreparedStatement smtp=null;
+try{
+smtp=con.prepareStatement(SQL_query);
+smtp.setString(1,status);
+smtp.setString(2,id);
+int m=smtp.executeUpdate();
+if(m>0) result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+else result.setStatus(ProvisioningResult.STATUS_FAILED);
+}catch(SQLException sl){
+log.error("SQLException from disable"+sl.getMessage());
+}finally{
+try{
+if(smtp!=null) smtp.close();
+}catch(SQLException sl){
+log.error("SQLException from disable of finally:"+sl.getMessage());
+}
+}
+return result;
+}<!--disable method close-->
+
+private ProvisioningResult enable(String id,Connection con,AccountRequest aqq){
+ProvisioningResult result=new ProvisioningResult();
+String status="Active";
+String SQL_query="UPDATE financial_planning_and_forecasting.employee_roles SET status=? WHERE id=?";
+PreparedStatement smtp=null;
+try{
+smtp=con.prepareStatement(SQL_query);
+smtp.setString(1,status);
+smtp.setString(2,id);
+int m=smtp.executeUpdate();
+if(m>0) 
+{
+if(aqq!=null){
+if(!checkExistingRole(con,aqq.getNativeIdentity(),defaultRoleId)){
+int lk=addRole(con,aqq.getNativeIdentity(),defaultRoleId);
+if(lk>0) result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+else result.setStatus(ProvisioningResult.STATUS_FAILED);
+}
+}else result.setStatus(ProvisioningResult.STATUS_FAILED);
+
+}else result.setStatus(ProvisioningResult.STATUS_FAILED);
+}catch(SQLException sl){
+log.error("SQLException from disable"+sl.getMessage());
+}finally{
+try{
+if(smtp!=null) smtp.close();
+}catch(SQLException sl){
+log.error("SQLException from disable of finally:"+sl.getMessage());
+}
+}
+return result;
+}<!--enable method close-->
+
+private boolean checkExistingRole(Connection con,String id,String roleId){
+String SQL_query="SELECT 1 FROM financial_planning_and_forecasting.employee_roles WHERE id=? AND roleId=?";
+boolean val=false;
+ResultSet r=null;
+PreparedStatement smtp=null;
+try{
+smtp=con.prepareStatement(SQL_query);
+smtp.setString(1,id);
+smtp.setString(2,roleId);
+r=smtp.executeQuery();
+if(r.next())
+val=true;
+}catch(SQLException sl){
+log.error("SQLException from checkExistingRole"+sl.getMessage());
+}finally{
+try{
+if(smtp!=null) smtp.close();
+if(r!=null) r.close();
+}catch(SQLException sl){
+log.error("SQLException from checkExistingRole of finally:"+sl.getMessage());
+}
+}
+return val;
+}<!--checkExistingRole close-->
+
+private int addRole(Connection con,String id,String roleId){
+String SQL_query="INSERT INTO financial_planning_and_forecasting.employee_roles(id,roleId) VALUES(?,?)";
+int val=0;
+PreparedStatement smtp=null;
+try{
+smtp=con.prepareStatement(SQL_query);
+smtp.setString(1,id);
+smtp.setString(2,roleId);
+val=smtp.executeUpdate();
+}catch(SQLException sl){
+log.error("SQLException from addrole:"+sl.getMessage());
+}finally{
+try{
+if(smtp!=null) smtp.close();
+}catch(SQLException sl){
+log.error("SQLException from addRole of finally:"+sl.getMessage());
+}
+}
+return val;
+}<!--addrole close-->
+
+private String roleIdByName(String attrvalueRoleName,Connection con){
+String SQL_query="SELECT roleId FROM financial_planning_and_forecasting.employee_roles WHERE rolename=?";
+ResultSet rs=null;
+String vvr=null;
+String roleId=null;
+PreparedStatement smtp=null;
+try{
+smtp=con.prepareStatement(SQL_query);
+smtp.setString(1,attrvalueRoleName);
+rs=smtp.executeQuery();
+if(rs.next())
+vvr=rs.getString("roleId");
+
+}catch(SQLException sl){
+log.error("SQLException from roleIdByName:"+sl.getMessage());
+}finally{
+try{
+if(smtp!=null) smtp.close();
+if(rs!=null) rs.close();
+}catch(SQLException sl){
+log.error("SQLException from roleIdByName of finally:"+sl.getMessage());
+}
+}
+return vvr;
+}<!--roleIdByName close-->
+
+private boolean isAnyRoleForEmployee(Connection con,String id){
+String SQL_query="SELECT 1 FROM financial_planning_and_forecasting.employee_roles WHERE id=?";
+boolean val=false;
+ResultSet rq=null;
+PreparedStatement smtp=null;
+try{
+smtp=con.prepareStatement(SQL_query);
+smtp.setString(1,id);
+rq=smtp.executeQuery();
+if(rq.next()) 
+val=true;
+}catch(SQLException sl){
+log.error("SQLException from isAnyRoleForEmployee:"+sl.getMessage());
+}finally{
+try{
+if(smtp!=null) smtp.close();
+if(rq!=null) rq.close();
+}catch(SQLException sl){
+log.error("SQLException from isAnyRoleForEmployee:"+sl.getMessage());
+}
+}
+return val;
+}<!--close of isAnyRoleForEmployee-->
+
+private int removerole(Connection con,String id,String roleId)
+{
+PreparedStatement smtp=null;
+int lol=0;
+String SQL_query="DELETE FROM financial_planning_and_forecasting.employee_roles WHERE id=? AND roleId=?";
+try{
+smtp=con.prepareStatement(SQL_query);
+smtp.setString(1,id);
+smtp.setString(2,roleId);
+lol=smtp.executeUpdate();
+}catch(SQLException sl){
+log.error("SQLException from removerole:"+sl.getMessage());
+}finally{
+try{
+if(smtp!=null) smtp.close();
+}catch(SQLException sl){
+log.error("SQLException from removerole:"+sl.getMessage());
+}
+}
+return lol;
+}<!--removerole-->
+}<!--main class close-->
+

@@ -1,0 +1,253 @@
+🔹 BeforeProvisioning me kya-kya hota hai?
+1️⃣ Data Modify kar sakte ho:-
+Tum provisioning request ko change kar sakte ho:
+accountRequest.setNativeIdentity("newUser123");
+accountRequest.addAttributeRequest(new AttrRequest("displayName", ProvisioningPlan.Operation.Set, "Kishan Singh"));
+👉 Matlab jo data ja raha hai, usko modify kar diya
+
+2️⃣ Validation (Check lagana):-
+Tum check kar sakte ho ki data sahi hai ya nahi:-
+if (accountRequest.getNativeIdentity() == null) {
+    throw new Exception("Native Identity missing!");
+}
+👉 Agar data galat hai → provisioning ko rok do
+
+3️⃣ Default value set karna:-
+Agar koi field empty hai toh default value set kar sakte ho:
+if (accountRequest.getAttributeRequest("department") == null) {
+    accountRequest.addAttributeRequest(
+        new AttrRequest("department", ProvisioningPlan.Operation.Set, "IT")
+    );
+}
+
+4️⃣ Condition based provisioning:-
+Kuch condition ke basis pe provisioning allow/block kar sakte ho:
+if (user.getAttribute("role").equals("Admin")) {
+    // allow
+} else {
+    throw new Exception("Only Admin can be provisioned");
+}
+
+5️⃣ Multiple system logic:-
+Agar ek se zyada systems me provisioning ho rahi hai:
+AD
+LDAP
+Database
+Toh BeforeProvisioning me decide kar sakte ho:
+👉 kis system me kya data jayega
+
+6️⃣ Logging / Debugging:-
+Debug karne ke liye logs:-
+log.debug("BeforeProvisioning started for: " + accountRequest.getNativeIdentity());
+
+----------------------------------------------------------------------
+<Rule name="BP_Enterprise_WithContext" type="BeforeProvisioning">
+    <Source>
+
+        // Explicit imports (NO *)
+        import sailpoint.api.SailPointContext;
+        import sailpoint.object.Identity;
+        import sailpoint.object.ProvisioningPlan;
+        import sailpoint.object.AccountRequest;
+        import sailpoint.object.AttributeRequest;
+        import sailpoint.tools.GeneralException;
+
+        import java.util.List;
+
+        // Context (NOTE: Proper way in many environments)
+        SailPointContext context = context;
+
+        // ProvisioningPlan (IMPORTANT: ye runtime me automatically available hota hai)
+        ProvisioningPlan plan = provisioningPlan;
+
+        if(plan == null) {
+            throw new GeneralException("ProvisioningPlan is null");
+        }
+
+        // Identity from plan
+        Identity identity = plan.getIdentity();
+
+        if(identity == null) {
+            throw new GeneralException("Identity is null in provisioning plan");
+        }
+
+        // Attributes
+        String empId = (String) identity.getAttribute("employeeId");
+        String dept  = (String) identity.getAttribute("department");
+
+        // Validation
+        if(empId == null || empId.trim().isEmpty()) {
+            throw new GeneralException("Provisioning blocked: employeeId missing");
+        }
+
+        if(dept == null || dept.trim().isEmpty()) {
+            throw new GeneralException("Provisioning blocked: department missing");
+        }
+
+        // Fetch latest identity from DB
+        Identity dbIdentity = context.getObjectByName(Identity.class, identity.getName());
+
+        if(dbIdentity == null) {
+            throw new GeneralException("Identity not found in DB");
+        }
+
+        String managerName = (String) dbIdentity.getAttribute("manager");
+
+        if(managerName == null || managerName.trim().isEmpty()) {
+            throw new GeneralException("Provisioning blocked: manager not assigned");
+        }
+
+        // Business rule
+        if(!"IT".equalsIgnoreCase(dept)) {
+            throw new GeneralException("Provisioning blocked: only IT allowed");
+        }
+
+        // Loop AccountRequests
+        List<AccountRequest> accountRequests = plan.getAccountRequests();
+
+        if(accountRequests != null) {
+
+            for(AccountRequest accReq : accountRequests) {
+
+                String op = accReq.getOperation().toString();
+
+                if(!"Create".equalsIgnoreCase(op) && !"Modify".equalsIgnoreCase(op)) {
+                    throw new GeneralException("Unsupported operation: " + op);
+                }
+
+                // Add custom attribute
+                AttributeRequest attr = new AttributeRequest();
+                attr.setName("source");
+                attr.setValue("BeforeProvisioningRule");
+                attr.setOperation(ProvisioningPlan.Operation.Add);
+
+                accReq.add(attr);
+            }
+        }
+
+        // Logging
+        System.out.println("BeforeProvisioning executed for: " + empId);
+
+    </Source>
+</Rule>
+/////////*
+🔥 1. context aur provisioningPlan kaha se aate hain?
+👉 Ye dono rule ke bahar Java code me tum nahi banate,
+👉 Ye SailPoint system khud inject (provide) karta hai runtime me.
+
+🔥 Important Corrections (Tera doubt clear 💯)
+❓ 1. provisioningPlan define nahi hai?
+👉 Ye SailPoint ka runtime variable hota hai
+👉 Rule execute hote time automatically available hota hai
+✔ Isko tu manually define nahi karta
+✔ Bas use karta hai
+
+❓ 2. context line galat lag rahi thi?
+👉 Ye:-
+SailPointContext context = context;
+⚠️ Note:-
+Kuch environments me context already available hota hai
+Kuch me context directly use hota hai without declaration
+👉 Best practice:-
+Agar available ho → direct use karo
+Agar nahi → context.getContext() ya framework provide karega.
+*//////////
+----------------------------------------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Global-BeforeProvisioning-Rule" type="BeforeProvisioning">
+  <Description>
+    Production Rule: 
+    1. Logs every request for auditing.
+    2. Enforces lowercase on sAMAccountName.
+    3. Handles dynamic OU placement for Active Directory.
+  </Description>
+  <Source>
+  <![CDATA[
+  import sailpoint.object.*;
+  import sailpoint.api.ProvisioningPlan;
+  import sailpoint.api.ProvisioningPlan.AccountRequest;
+  import sailpoint.api.ProvisioningPlan.AttributeRequest;
+  import org.apache.commons.logging.Log;
+  import org.apache.commons.logging.LogFactory;
+
+  // Live environment mein logs dekhne ke liye logger initialize karein
+  Log customLogger = LogFactory.getLog("com.company.identity.rule.BeforeProvisioning");
+
+  if (plan != null) {
+      customLogger.info("Starting BeforeProvisioning Rule for Plan: " + plan.getNativeId());
+
+      List accountRequests = plan.getAccountRequests();
+      if (accountRequests != null) {
+          for (AccountRequest accReq : accountRequests) {
+              String appName = accReq.getApplicationName();
+              AccountRequest.Operation op = accReq.getOperation();
+              
+              customLogger.info("Processing " + op + " request for Application: " + appName);
+
+              // Sirf Active Directory aur Create operation ke liye logic
+              if (appName.contains("Active Directory") && AccountRequest.Operation.Create.equals(op)) {
+                  
+                  // 1. Lowercase Enforcement (Security & Standards)
+                  AttributeRequest sam = accReq.getAttributeRequest("sAMAccountName");
+                  if (sam != null && sam.getValue() != null) {
+                      String originalValue = (String) sam.getValue();
+                      sam.setValue(originalValue.toLowerCase());
+                      customLogger.debug("Normalized sAMAccountName to lowercase: " + sam.getValue());
+                  }
+
+                  // 2. Department-based OU Placement
+                  // Identity object se attribute nikalna
+                  String dept = "Unknown";
+                  Identity iden = plan.getIdentity();
+                  if(iden != null) {
+                      dept = (String) iden.getAttribute("department");
+                  }
+
+                  String parentDN = "OU=Standard,DC=production,DC=com"; // Default OU
+                  if ("Finance".equalsIgnoreCase(dept)) {
+                      parentDN = "OU=Finance,OU=Accounts,DC=production,DC=com";
+                  } else if ("IT".equalsIgnoreCase(dept)) {
+                      parentDN = "OU=IT,OU=Users,DC=production,DC=com";
+                  }
+
+                  // Provisioning Plan mein dynamically OU add karna
+                  accReq.add(new AttributeRequest("AC_NewParent", ProvisioningPlan.Operation.Set, parentDN));
+                  customLogger.info("Assigned OU: " + parentDN + " for Department: " + dept);
+              }
+          }
+      }
+  }
+  customLogger.info("BeforeProvisioning Rule Execution Completed.");
+  ]]>
+  </Source>
+</Rule>
+//////////////*
+()✔️ Kaise kaam karta hai:-
+Ye Apache Commons Logging ka logger hai
+String me jo naam diya (com.company.identity.rule.BeforeProvisioning) → wahi logger ka category name ban jata hai
+Usually logging frameworks (Log4j / Logback) ke saath internally connect hota hai.
+
+()Log logger = LogFactory.getLog(this.getClass());:-
+🔹 this.getClass() kya karta hai?
+Log logger = LogFactory.getLog(this.getClass());
+✔️ Meaning:-
+this → current object (jis class me code likha hai)
+getClass() → us object ki runtime class return karta hai
+👉 Iska matlab:-
+"jis class me ye code chal raha hai, usi class ke naam se logger banega"
+
+🔥 Example samajh:-
+Class:-
+public class MyRule {
+    public void execute() {
+        Log logger = LogFactory.getLog(this.getClass());
+        logger.info("Hello");
+    }
+}
+Internally kya hoga?
+this.getClass() → MyRule.class
+Logger ka naam banega:-
+com.company.MyRule
+*//////////////
+---------------------------------------------------------------------------------------------------------------------------------------------------

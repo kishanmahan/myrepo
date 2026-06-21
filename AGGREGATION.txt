@@ -1,0 +1,193 @@
+📘 AGGREGATION – COMPLETE CHAPTERS
+🟢 CHAPTER 1: Aggregation Fundamentals
+Aggregation kya hota hai
+Account aggregation vs Entitlement aggregation
+Read-only process
+Governance ke liye data import
+
+🟢 CHAPTER 2: Aggregation Types
+1️⃣ Full Aggregation
+Sare accounts import karta hai
+First time onboarding me use hota hai
+
+2️⃣ Delta Aggregation
+Sirf changed accounts lata hai
+Performance friendly
+Large applications me use hota hai
+
+🟢 CHAPTER 3: Aggregation Flow (Internal Working 🔥)
+Application → Connector → Schema Mapping → IIQ → Correlation → Identity Cube update
+Steps:
+1️⃣ Connector connection establish karta hai
+2️⃣ Accounts fetch karta hai
+3️⃣ Schema apply hota hai
+4️⃣ Temporary aggregation object create hota hai
+5️⃣ Correlation rule run hoti hai
+6️⃣ Account link hota hai identity se
+7️⃣ Identity cube update hota hai
+
+🟢 CHAPTER 4: Account Aggregation Configuration
+Application config me:
+Enable Account Aggregation
+Schedule define
+Timeout set
+Batch size
+Filter (if needed)
+
+🟢 CHAPTER 5: Entitlement Aggregation
+Import karta hai:-
+Groups
+Roles
+Permissions
+
+Flags:-
+Managed attribute
+Requestable
+Certifiable
+
+🟢 CHAPTER 6: Correlation During Aggregation
+Match based on:-
+Employee ID
+Email
+Username
+Custom correlation rule
+Cases:-
+✔ Correlated account
+❌ Uncorrelated account
+⚠️ Multiple match conflict
+
+🟢 CHAPTER 7: Uncorrelated Accounts
+Reasons:-
+HR data missing
+Wrong mapping
+Different naming convention
+
+Solutions:-
+Manual correlation
+Update correlation rule
+Fix HR data
+
+🟢 CHAPTER 8: Orphan Accounts Detection
+Orphan = Account exists but identity inactive
+Detected during:-
+Aggregation
+Identity refresh
+Risky accounts ⚠️
+
+🟢 CHAPTER 9: Aggregation Rules
+Custom rules:-
+Before Aggregation Rule
+After Aggregation Rule
+Correlation Rule
+Transformation Rule
+
+Use cases:-
+Data cleanup
+Attribute transformation
+Complex matching
+
+🟢 CHAPTER 10: Aggregation Scheduling
+Configure:-
+Daily
+Weekly
+Hourly
+Cron expression
+
+Best practice:-
+Off-peak hours
+Avoid business time
+
+🟢 CHAPTER 11: Performance Tuning
+Important for large apps:-
+Increase batch size
+Use delta aggregation
+Optimize filters
+DB indexing (for JDBC apps)
+Increase JVM memory
+
+🟢 CHAPTER 12: Error Handling
+Common errors:-
+ConnectorException
+Authentication failed
+Timeout
+Schema mismatch
+Null pointer in rule
+Logs check:-
+catalina.out
+
+🟢 CHAPTER 13: Aggregation Reports
+Track:-
+Total accounts aggregated
+Correlated count
+Uncorrelated count
+Failed records
+Audit purpose me use hota hai.
+
+🟢 CHAPTER 14: Aggregation with Multi-Account Apps
+Some apps allow:-
+Multiple accounts per identity
+Handle:-
+Account ID uniqueness
+Link management
+Merge strategy
+
+🟢 CHAPTER 15: Reconciliation Concept
+Compare:-
+IIQ data vs Application data
+Detect:-
+Missing entitlements
+Extra access
+Manual changes outside IIQ
+
+🟢 CHAPTER 16: Identity Refresh After Aggregation
+Run:-
+Identity Refresh task
+Recalculate:-
+Roles
+Risk
+Policies
+Violations
+
+🟢 CHAPTER 17: Aggregation for Disconnected Apps
+File-based aggregation:-
+CSV file import
+Delimited file connector
+Manual review
+Used when:-
+No API available
+
+🟢 CHAPTER 18: Aggregation & Certification
+Aggregation ensures:-
+Latest access visible
+Certification accurate
+Without aggregation → wrong review data ⚠️
+
+🟢 CHAPTER 19: Security Considerations
+Service account protection
+Least privilege access
+Credential encryption
+SSL connection
+
+🟢 CHAPTER 20: Troubleshooting Scenarios
+Scenario 1:-
+Accounts not appearing
+→ Check schema mapping
+
+Scenario 2:-
+Too many uncorrelated
+→ Check correlation rule
+
+Scenario 3:-
+Performance slow
+→ Switch to delta
+
+Scenario 4:-
+Duplicate accounts
+→ Check native identity uniqueness
+
+🟢 CHAPTER 21: Advanced Aggregation
+Incremental attribute sync
+Aggregation partitioning
+Multi-instance connectors
+Cloud API pagination handling
+Parallel aggregation

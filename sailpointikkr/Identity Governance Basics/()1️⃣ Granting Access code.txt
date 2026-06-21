@@ -1,0 +1,130 @@
+()1️⃣ Granting Access:-
+Meaning: User ko koi system, app, ya resource ka permission officially dena.
+Types:-
+Automatic: SailPoint me workflow ya role ke basis pe auto assign
+Manual: Manager approval ke through
+
+Example:-
+Identity rahul = getIdentity("EMP12345");
+Role financeManager = getRole("Finance Manager");
+// Grant access
+rahul.assignRole(financeManager); // Access officially given.
+----------------------------------------------------------------
+Enterprise Grant Access Code (Clean Version):-
+import java.util.ArrayList;
+import java.util.List;
+
+class Permission {
+
+    String name;
+
+    Permission(String name) {
+        this.name = name;
+    }
+}
+
+class Role {
+
+    String roleName;
+    List<Permission> permissions = new ArrayList<Permission>();
+
+    Role(String roleName) {
+        this.roleName = roleName;
+    }
+
+    void addPermission(String permissionName) {
+        Permission p = new Permission(permissionName);
+        permissions.add(p);
+    }
+}
+
+class Identity {
+
+    String name;
+    List<Role> roles = new ArrayList<Role>();
+
+    Identity(String name) {
+        this.name = name;
+    }
+
+    void assignRole(Role role) {
+        roles.add(role);
+        System.out.println(role.roleName + " role granted to " + name);
+    }
+
+    void showAccess() {
+
+        System.out.println("\nAccess for " + name);
+
+        for (int i = 0; i < roles.size(); i++) {
+
+            Role r = roles.get(i);
+
+            System.out.println("Role: " + r.roleName);
+
+            for (int j = 0; j < r.permissions.size(); j++) {
+
+                Permission p = r.permissions.get(j);
+
+                System.out.println("Permission: " + p.name);
+            }
+        }
+    }
+}
+
+class AccessManager {
+
+    static void grantAccess(Identity user, Role role) {
+
+        user.assignRole(role);
+
+        System.out.println("Access granted successfully");
+    }
+}
+
+public class GrantAccessSystem {
+
+    public static void main(String[] args) {
+
+        // Create Roles
+        Role admin = new Role("Admin");
+        admin.addPermission("Read Data");
+        admin.addPermission("Write Data");
+        admin.addPermission("Delete Data");
+
+        Role manager = new Role("Manager");
+        manager.addPermission("Read Reports");
+        manager.addPermission("Approve Requests");
+
+        // Create Users
+        Identity rahul = new Identity("Rahul");
+        Identity ram = new Identity("Ram");
+        Identity raman = new Identity("Raman");
+
+        // Grant Access
+        AccessManager.grantAccess(rahul, admin);
+        AccessManager.grantAccess(ram, manager);
+        AccessManager.grantAccess(raman, manager);
+
+        // Show Access
+        rahul.showAccess();
+        ram.showAccess();
+        raman.showAccess();
+    }
+}
+Output Example:-
+Admin role granted to Rahul
+Access granted successfully
+
+Manager role granted to Ram
+Access granted successfully
+
+Access for Rahul
+Role: Admin
+Permission: Read Data
+Permission: Write Data
+Permission: Delete Data
+//////////*
+()Role r = roles.get(i); kya hai?
+--roles list se index i par jo role hai usko nikaalo.
+*/////////

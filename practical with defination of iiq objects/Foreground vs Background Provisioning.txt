@@ -1,0 +1,11 @@
+()Foreground vs Background Provisioning:-
+
+()Foreground Provisioning:-
+Workflow wait karega jab tak provisioning complete na ho
+User ko response tab milega jab kaam finish ho jaye.
+
+()Background Provisioning:-
+Workflow suspend ho jayega
+Provisioning alag thread/task me chalega
+Browser free ho jata hai.
+

@@ -1,0 +1,115 @@
+()Risk reports kya hai?
+--1️⃣ Risk Report kya hota hai?
+Risk Report = system me users ka risk score aur risk level ka report.
+Example:-
+User        Access                 Risk Score
+------------------------------------------------
+Rahul       Admin + Database       80
+Amit        Employee               10
+Neha        Finance + Audit        60
+
+Isse pata chalta hai:-
+✔ kaun high risk user hai
+✔ kaun sensitive access use kar raha hai
+✔ kaun policy violation ke close hai.
+
+3️⃣ Risk Report Project (Context Based):-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.QueryOptions;
+import sailpoint.object.AuditEvent;
+import sailpoint.tools.GeneralException;
+
+import java.util.Iterator;
+
+public class RiskReportService {
+
+    public void generateRiskReport(SailPointContext context) throws GeneralException {
+
+        QueryOptions qo = new QueryOptions();
+
+        Iterator<Identity> identities = context.search(Identity.class, qo);
+
+        System.out.println("===== RISK REPORT =====");
+
+        int highRiskCount = 0;
+
+        while (identities.hasNext()) {
+
+            Identity id = identities.next();
+
+            String user = id.getName();
+            String roles = String.valueOf(id.getAssignedRoles());
+
+            int riskScore = 0;
+
+            if (roles.contains("Admin")) {
+                riskScore += 30;
+            }
+
+            if (roles.contains("DatabaseAdmin")) {
+                riskScore += 40;
+            }
+
+            if (roles.contains("Finance") && roles.contains("Audit")) {
+                riskScore += 50;
+            }
+
+            System.out.println("User : " + user);
+            System.out.println("Roles : " + roles);
+            System.out.println("Risk Score : " + riskScore);
+
+            if (riskScore >= 60) {
+
+                highRiskCount++;
+
+                System.out.println("Risk Level : HIGH");
+
+                AuditEvent event = new AuditEvent();
+                event.setAction("HighRiskIdentity");
+                event.setTarget(user);
+
+                context.saveObject(event);
+
+            } else {
+
+                System.out.println("Risk Level : LOW");
+
+            }
+
+            System.out.println("----------------------------");
+        }
+
+        System.out.println("Total High Risk Users : " + highRiskCount);
+
+        context.commitTransaction();
+    }
+}
+4️⃣ Rule / Task jo run karega:-
+import sailpoint.api.SailPointContext;
+
+public Object execute(SailPointContext context) throws Exception {
+
+    RiskReportService service = new RiskReportService();
+
+    service.generateRiskReport(context);
+
+    return "Risk Report Generated";
+}
+
+6️⃣ Example Output:-
+===== RISK REPORT =====
+
+User : Rahul
+Roles : [Admin, DatabaseAdmin]
+Risk Score : 70
+Risk Level : HIGH
+
+User : Amit
+Roles : [Employee]
+Risk Score : 0
+Risk Level : LOW
+
+-----------------------
+
+Total High Risk Users : 1

@@ -1,0 +1,12 @@
+()Exception Handling:-
+Exception Handling is used to handle runtime errors and prevent application failure.
+()Collection:-
+Collection Framework is used to store and manage multiple objects dynamically.
+()HashMap:-
+HashMap stores data in key-value pair format and allows fast retrieval.
+()Static Keyword:-
+Static keyword belongs to class instead of object and can be accessed using class name.
+
+()IAM (Identity and Access Management) is a framework/process used to manage user identities and their access to applications, 
+systems, roles, and entitlements securely.
+

@@ -1,0 +1,54 @@
+()iiq me plugin kya hai?
+SailPoint IdentityIQ me Plugin ek custom extension/module hota hai jo IIQ ke andar extra feature add karta hai 
+bina core product ko directly modify kiye.
+Simple language me:-
+Jaise mobile me app install karte ho extra feature ke liye,
+waise hi IIQ me plugin install karke custom functionality add karte hain.
+
+()Plugin ka use kaha hota hai
+IIQ plugin ka use:-
+Custom UI banane me
+Extra pages/addons add karne me
+Reports banane me
+REST APIs expose karne me
+Custom dashboard banane me
+Identity management automation me
+External tool integration me
+Plugin me kya kya ho sakta hai
+
+()Plugin ke andar generally:-
+Java classes
+REST APIs
+HTML/CSS/JS files
+Angular UI
+Configuration files
+Workflow integration
+Task integration
+
+()Plugin aur Rule me difference:-
+Plugin                                         Rule
+Large feature/addon-----------------Small logic/customization
+UI bhi bana sakta hai---------------Mostly backend logic
+Java + UI + API---------------------Beanshell/Java logic
+Install/uninstall hota hai----------XML import hota hai
+Independent module------------------IIQ object ka part
+
+()Plugin Structure Example:-
+Copy code
+MyPlugin/
+ ├── manifest.xml
+ ├── lib/
+ ├── ui/
+ ├── rest/
+ ├── classes/
+ └── config/
+ 
+()Real Technologies Used
+IIQ plugins me commonly:
+Java
+REST
+AngularJS
+JavaScript
+HTML/CSS
+XML
+use hota hai.

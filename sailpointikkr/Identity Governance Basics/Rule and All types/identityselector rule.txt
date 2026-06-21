@@ -1,0 +1,190 @@
+()IdentitySelector kya hai kya karta hai?
+👉 IdentitySelector = identities (users) ko select/filter karne ka mechanism
+📌 Simple line:-
+Kaun-kaun se users pe rule/task/apply hoga → ye decide karta hai.
+
+🧠 Easy Samajh:-
+👉 System me 10,000 users hain
+👉 Tumhe sirf:-
+IT department wale users chahiye
+ya active users
+👉 Kaise select karoge?
+👉 IdentitySelector use karke
+
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Custom Department Selector Rule Explicit" type="IdentitySelector">
+  <Description>
+    Ye rule sirf un Identities ko select karta hai jo Finance department mein hain 
+    aur jinki Employment Status 'Active' hai. (No wildcard imports used).
+  </Description>
+  <Source>
+  // 1. Explicit Imports (Bina '*' ke)
+  import sailpoint.object.Identity;
+  import sailpoint.tools.Util;
+  import org.apache.commons.logging.Log;
+  import org.apache.commons.logging.LogFactory;
+
+  // 2. Logging Setup
+  Log logger = LogFactory.getLog("custom.rule.IdentitySelector");
+
+  try {
+      // Identity object rule mein context se implicitly aata hai
+      if (identity == null) {
+          return false;
+      }
+
+      // 3. Attributes fetch karna
+      String dept = (String) identity.getAttribute("department");
+      String status = (String) identity.getAttribute("employmentStatus");
+
+      logger.debug("Checking Identity: " + identity.getName() + " | Dept: " + dept);
+
+      // 4. Selection Logic
+      if ("Finance".equalsIgnoreCase(dept) &amp;&amp; "Active".equalsIgnoreCase(status)) {
+          
+          // Extra Check: Kahin user 'Service Account' ya 'Workgroup' toh nahi?
+          boolean isServiceAccount = identity.isWorkgroup();
+          
+          if (!isServiceAccount) {
+              logger.info("Identity Selected: " + identity.getName());
+              return true; // User policy/certification ke liye select ho gaya
+          }
+      }
+
+  } catch (Exception e) {
+      logger.error("Error in IdentitySelector Rule for user " + identity.getName() + ": " + e.getMessage());
+  }
+
+  // Default: Agar upar ki koi condition match nahi hui toh false return karo
+  return false;
+  </Source>
+</Rule>
+//////////*
+🔹 identity.isWorkgroup(); kya karta hai?
+👉 Ye check karta hai:-
+Ye Identity ek normal user hai ya Workgroup (group)?
+
+🔥 Workgroup kya hota hai?
+👉 Workgroup = group of users (team)
+*//////////
+------------------------------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="ENT_AD_BeforeProvisioning_Rule" type="BeforeProvisioning">
+  <Description>
+    Ye rule AD provisioning se pehle intercept karta hai. 
+    Agar user ki request mein specific Entitlement hai, toh ek Custom Object se 
+    approval matrix check karta hai aur Audit event generate karta hai.
+  </Description>
+  <Signature>
+    <Inputs>
+      <Argument name="plan" type="ProvisioningPlan" />
+      <Argument name="application" type="Application" />
+    </Inputs>
+  </Signature>
+  <Source>
+  import sailpoint.object.ProvisioningPlan;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import sailpoint.object.ProvisioningPlan.AttributeRequest;
+  import sailpoint.object.Application;
+  import sailpoint.object.Custom;
+  import sailpoint.object.AuditEvent;
+  import sailpoint.object.Identity;
+  import sailpoint.server.Auditor;
+  import sailpoint.tools.Util;
+  import java.util.List;
+  import java.util.ArrayList;
+  import org.apache.commons.logging.Log;
+  import org.apache.commons.logging.LogFactory;
+
+  // 1. Enterprise Logger Setup
+  Log logger = LogFactory.getLog("com.enterprise.iam.rule.BeforeProvisioning.AD");
+
+  logger.trace("Enter: ENT_AD_BeforeProvisioning_Rule");
+
+  // Safety Null Check (Production level pe sabse pehla step)
+  if (plan == null || application == null) {
+      logger.warn("Provisioning plan ya Application null pass hua hai. Exiting rule.");
+      return;
+  }
+
+  try {
+      Identity targetIdentity = plan.getIdentity();
+      String identityName = (targetIdentity != null) ? targetIdentity.getName() : "Unknown";
+      
+      logger.debug("Processing Plan for Identity: " + identityName);
+
+      // 2. Account Requests Iterate karna
+      List accountRequests = plan.getAccountRequests();
+      if (accountRequests == null || accountRequests.isEmpty()) {
+          logger.trace("No account requests found in the plan. Exiting.");
+          return;
+      }
+
+      for (AccountRequest accReq : accountRequests) {
+          
+          // Sirf Active Directory ko target karna
+          if (!"Active Directory".equalsIgnoreCase(accReq.getApplication())) {
+              continue;
+          }
+
+          // 3. Attribute Requests nikalna (Kaunse groups ya roles add/remove ho rahe hain)
+          List attrRequests = accReq.getAttributeRequests();
+          if (attrRequests != null) {
+              
+              for (AttributeRequest attrReq : attrRequests) {
+                  
+                  // Check if this is an Entitlement ADD request
+                  if (ProvisioningPlan.Operation.Add.equals(attrReq.getOperation()) &amp;&amp; "memberOf".equals(attrReq.getName())) {
+                      
+                      String requestedGroup = (String) attrReq.getValue();
+                      logger.debug("Identity " + identityName + " is requesting group: " + requestedGroup);
+
+                      // 4. Custom Object Lookup (Real world mapping tables)
+                      Custom mappingObj = context.getObjectByName(Custom.class, "Mapping_AD_Restricted_Groups");
+                      
+                      if (mappingObj != null) {
+                          List restrictedGroups = mappingObj.getList("RestrictedGroups");
+                          
+                          if (restrictedGroups != null &amp;&amp; restrictedGroups.contains(requestedGroup)) {
+                              
+                              logger.warn("CRITICAL: " + identityName + " restricted group mang raha hai -> " + requestedGroup);
+                              
+                              // 5. Manipulation: Agar unauthorized hai, toh Plan se hata do
+                              // (Real systems mein yaha approval check hota hai)
+                              String userDept = (String) targetIdentity.getAttribute("department");
+                              if (!"CyberSecurity".equalsIgnoreCase(userDept)) {
+                                  
+                                  accReq.remove(attrReq); // Plan se attribute uda diya
+                                  logger.error("Request Denied &amp; Removed from Plan: " + requestedGroup + " for " + identityName);
+                                  
+                                  // 6. Audit Trail Generate Karna (Compliance ke liye mandatory)
+                                  AuditEvent event = new AuditEvent();
+                                  event.setAction("Restricted_AD_Group_Blocked");
+                                  event.setSource("ENT_AD_BeforeProvisioning_Rule");
+                                  event.setTarget(identityName);
+                                  event.setApplication("Active Directory");
+                                  event.setString1("Attempted Group: " + requestedGroup);
+                                  event.setString2("User Dept: " + userDept);
+                                  
+                                  Auditor.log(event);
+                                  context.commitTransaction(); // Database mein save karna
+                              }
+                          }
+                      } else {
+                          logger.error("Mapping_AD_Restricted_Groups custom object system mein nahi mila!");
+                      }
+                  }
+              }
+          }
+      }
+
+  } catch (Exception e) {
+      // 7. Robust Error Handling
+      logger.error("ENT_AD_BeforeProvisioning_Rule mein Exception aayi: " + e.getMessage(), e);
+  } finally {
+      logger.trace("Exit: ENT_AD_BeforeProvisioning_Rule");
+  }
+  </Source>
+</Rule>

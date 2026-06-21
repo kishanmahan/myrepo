@@ -1,0 +1,114 @@
+()2️⃣ Calendar.getInstance(); kya hai:-
+Ye Java ka method hai jo current date aur time ka object return karta hai.
+
+()3️⃣ Calendar.HOUR_OF_DAY:-
+Ye 24 hour format me current hour return karta hai.
+
+()java.util.Calendar ek class hai jo date aur time ko manage karne ke liye use hoti hai. Isse hum:
+date get kar sakte hain
+date set kar sakte hain
+date add kar sakte hain
+week / month / year calculate kar sakte hain.
+
+()1️⃣ getInstance():-
+Current system date aur time ke saath Calendar object create karta hai.
+
+()2️⃣ get(int field):-
+Specific field ka value return karta hai.
+Fields example:-
+YEAR
+MONTH
+DATE
+HOUR
+MINUTE
+SECOND
+
+Code:-
+Calendar cal = Calendar.getInstance();
+int year = cal.get(Calendar.YEAR);
+int month = cal.get(Calendar.MONTH);
+int day = cal.get(Calendar.DATE);
+
+3️⃣ set(int field, int value)
+Description:-
+Date ya time ka koi specific field set karta hai.
+
+Code:-
+Calendar cal = Calendar.getInstance();
+cal.set(Calendar.YEAR, 2030);
+cal.set(Calendar.MONTH, 5);
+cal.set(Calendar.DATE, 20);
+System.out.println(cal.getTime());
+
+4️⃣ add(int field, int amount):-
+Description:-
+Date me time add ya subtract karta hai.
+Code:-
+Calendar cal = Calendar.getInstance();
+cal.add(Calendar.DATE, 5);
+System.out.println(cal.getTime());
+Output: current date + 5 days
+
+5️⃣ roll(int field, int amount):-
+Field ko change karta hai lekin higher field change nahi hota.
+Example:-
+Month change hoga lekin year change nahi hoga.
+Code:-
+Calendar cal = Calendar.getInstance();
+cal.roll(Calendar.MONTH, 1);
+System.out.println(cal.getTime());
+
+6️⃣ getTime():-
+Description
+Calendar ko Date object me convert karta hai.
+Code:-
+Calendar cal = Calendar.getInstance();
+Date d = cal.getTime();
+System.out.println(d);
+
+7️⃣ setTime(Date date):-
+Date object ko Calendar me set karta hai.
+Code:-
+Date d = new Date();
+Calendar cal = Calendar.getInstance();
+cal.setTime(d);
+System.out.println(cal.get(Calendar.YEAR));
+
+8️⃣ clear():-
+Calendar ke saare fields reset kar deta hai.
+Code:-
+Calendar cal = Calendar.getInstance();
+cal.clear();
+
+9️⃣ before(Object when):-
+Check karta hai ki ek date dusri date se pehle hai ya nahi.
+Code:-
+Calendar c1 = Calendar.getInstance();
+Calendar c2 = Calendar.getInstance();
+c2.add(Calendar.DATE, 5);
+System.out.println(c1.before(c2));
+
+🔟 after(Object when)
+Description:-
+Check karta hai ki date baad me hai ya nahi.
+Code:-
+Calendar c1 = Calendar.getInstance();
+Calendar c2 = Calendar.getInstance();
+c1.add(Calendar.DATE, 10);
+System.out.println(c1.after(c2));
+
+1️⃣1️⃣ getActualMaximum(int field):-
+Field ka maximum value return karta hai.
+Example: month me kitne din hain.
+
+Code:-
+Calendar cal = Calendar.getInstance();
+int maxDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+System.out.println(maxDay);
+
+1️⃣2️⃣ getActualMinimum(int field):-
+Field ka minimum value return karta hai.
+Code:-
+Calendar cal = Calendar.getInstance();
+int min = cal.getActualMinimum(Calendar.DAY_OF_MONTH);
+System.out.println(min);

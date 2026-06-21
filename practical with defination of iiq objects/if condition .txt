@@ -1,0 +1,91 @@
+import sailpoint.object.*;
+import java.util.*;
+
+// 1. Apni application ka sahi naam yahan likhein
+String targetAppName = "identity_data_90_lines"; 
+int count = 0;
+
+// 2. QueryOptions banayein jo sirf un identities ko uthaye jinke paas is application ka account hai
+QueryOptions qo = new QueryOptions();
+qo.addFilter(Filter.eq("links.application.name", targetAppName));
+// spadmin ko chhodne ke liye
+qo.addFilter(Filter.ne("name", "spadmin")); 
+
+Iterator it = context.search(Identity.class, qo);
+
+while (it.hasNext()) {
+    Identity identity = (Identity) it.next();
+    
+    // Password set karein
+    identity.setPassword("Welcome@123");
+    
+    // Employee capability add karein (optional, jaisa aapne pehle maanga tha)
+    Capability cap = context.getObjectByName(Capability.class, "Employee");
+    if(cap != null && !identity.hasCapability(cap.getName())) {
+        identity.addCapability(cap);
+    }
+
+    context.saveObject(identity);
+    count++;
+    
+    // Memory management ke liye (agar users zyada hain)
+    if (count % 50 == 0) {
+        context.commitTransaction();
+        context.decache();
+    }
+}
+
+context.commitTransaction();
+return "Total " + count + " identities from " + targetAppName + " updated successfully!";
+/////////*
+()if(cap != null && !identity.hasCapability(cap.getName())):-
+--!identity.hasCapability(cap.getName()):-
+Ye check karta hai ki identity ke paas already ye capability nahi hona chahiye.
+
+()if(count % 50 == 0):-
+Step 1
+
+Maan lo:
+
+count = 100
+Step 2
+100 % 50
+
+Yaha % remainder nikalta hai.
+
+100 ÷ 50 = 2
+remainder = 0
+
+Toh result:
+
+0
+Step 3
+
+Condition ban gayi:
+
+if(0 == 0)
+
+Ye true hai.
+
+Toh if ke andar ka code chalega.
+
+Dusra example
+count = 75
+
+Then:
+
+75 % 50
+75 ÷ 50 = 1
+remainder = 25
+
+Result:
+
+25
+
+Condition:
+
+if(25 == 0)
+
+False.
+
+Toh if nahi chalega.

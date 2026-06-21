@@ -1,0 +1,329 @@
+🔹 Util kya hai?
+👉 Util = Utility class (helper class)
+Ye aisi class hoti hai jo common reusable functions provide karti hai
+Jisse baar-baar same code likhna na pade
+🔹 Simple definition
+Util class = helper methods ka collection jo common kaam ko easy banata hai.
+------------------------------------
+🔹 Util Class Methods List:-
+-------------------------------
+isNull(Object obj)
+isNotNull(Object obj)
+isEmpty(String str)
+isNotEmpty(String str)
+isEmpty(Collection col)
+isNotEmpty(Collection col)
+isEmpty(Map map)
+isNotEmpty(Map map)
+isEmpty(Object[] arr)
+isNotEmpty(Object[] arr)
+
+atoi(String str)
+atol(String str)
+atod(String str)
+otob(Object obj)
+otoi(Object obj)
+otol(Object obj)
+otod(Object obj)
+
+safeTrim(String str)
+safeEquals(Object o1, Object o2)
+csvToList(String str)
+listToCsv(List list)
+stringToList(String str, String delimiter)
+listToString(List list, String delimiter)
+join(Collection col, String delimiter)
+split(String str, String delimiter)
+formatDate(Date date)
+parseDate(String str)
+uuid()
+getCurrentTimeMillis()
+compare(Object o1, Object o2)
+toBoolean(String str)
+toInteger(String str)
+toLong(String str)
+toDouble(String str)
+
+coalesce(Object... values)
+capitalize(String str)
+uncapitalize(String str)
+escapeXml(String str)
+unescapeXml(String str)
+escapeHtml(String str)
+unescapeHtml(String str)
+-------------------------------------
+🔹 1. isNull(Object obj):-
+Object null hai ya nahi check karta hai
+String name = null;
+System.out.println(Util.isNull(name));
+
+✅ Output:-
+true
+
+🔹 2. isNotNull(Object obj):-
+👉 Matlab:-
+Object null nahi hai
+String name = "Rahul";
+System.out.println(Util.isNotNull(name));
+✅ Output:-
+true
+
+🔹 3. isEmpty(String str):-
+👉 Matlab:-
+String null ya empty hai
+String str = "";
+System.out.println(Util.isEmpty(str));
+✅ Output:-
+true
+
+🔹 4. isNotEmpty(String str):-
+👉 Matlab:-
+String me value hai
+String str = "Hello";
+System.out.println(Util.isNotEmpty(str));
+✅ Output:-
+true
+
+🔹 5. isEmpty(Collection col):-
+👉 Matlab:-
+List/Set empty hai ya null
+List list = new ArrayList();
+System.out.println(Util.isEmpty(list));
+✅ Output:-
+true
+
+🔹 6. isNotEmpty(Collection col):-
+👉 Matlab:-
+Collection me data hai
+List list = new ArrayList();
+list.add("A");
+System.out.println(Util.isNotEmpty(list));
+
+✅ Output:-
+true
+
+🔹 7. isEmpty(Map map):-
+👉 Matlab:-
+Map empty ya null hai
+Map map = new HashMap();
+System.out.println(Util.isEmpty(map));
+
+✅ Output:-
+true
+
+🔹 8. isNotEmpty(Map map):-
+👉 Matlab:-
+Map me data hai
+Map map = new HashMap();
+map.put("key", "value");
+System.out.println(Util.isNotEmpty(map));
+
+✅ Output:-
+true
+
+🔹 9. isEmpty(Object[] arr):-
+👉 Matlab:-
+Array null ya empty hai
+Object[] arr = new Object[0];
+System.out.println(Util.isEmpty(arr));
+
+✅ Output:-
+true
+
+🔹 10. isNotEmpty(Object[] arr):-
+👉 Matlab:-
+Array me elements hain
+
+Object[] arr = {"A", "B"};
+System.out.println(Util.isNotEmpty(arr));
+
+✅ Output:-
+true
+
+🔹 1. atoi(String str) (String → int):-
+int num = Util.atoi("123");
+System.out.println(num);
+
+✅ Output:-
+123
+
+🔹 2. atol(String str) (String → long):-
+long num = Util.atol("123456789");
+System.out.println(num);
+
+✅ Output:-
+123456789
+
+🔹 3. atod(String str) (String → double):-
+double num = Util.atod("12.34");
+System.out.println(num);
+
+✅ Output:-
+12.34
+
+🔹 4. otob(Object obj) (Object → boolean):-
+boolean val = Util.otob("true");
+System.out.println(val);
+
+✅ Output:-
+true
+
+🔹 5. otoi(Object obj) (Object → int):-
+int num = Util.otoi("100");
+System.out.println(num);
+
+✅ Output:-
+100
+
+🔹 6. otol(Object obj) (Object → long):-
+long num = Util.otol("999999");
+System.out.println(num);
+
+✅ Output:-
+999999
+
+🔹 7. otod(Object obj) (Object → double):-
+double num = Util.otod("45.67");
+System.out.println(num);
+
+✅ Output:-
+45.67
+
+🔹 1. safeTrim(String str):-
+👉 null safe trim
+System.out.println(Util.safeTrim("  hello  "));
+System.out.println(Util.safeTrim(null));
+✅ Output:-
+hello
+null
+
+🔹 2. safeEquals(Object o1, Object o2):-
+👉 null-safe comparison
+System.out.println(Util.safeEquals("A", "A"));
+System.out.println(Util.safeEquals(null, "A"));
+✅ Output:-
+true
+false
+
+🔹 3. csvToList(String str):-
+👉 CSV → List
+System.out.println(Util.csvToList("A,B,C"));
+✅ Output:-
+[A, B, C]
+
+🔹 4. listToCsv(List list):-
+👉 List → CSV
+List list = Arrays.asList("A", "B", "C");
+System.out.println(Util.listToCsv(list));
+✅ Output:
+A,B,C
+
+🔹 5. stringToList(String str, String delimiter):-
+System.out.println(Util.stringToList("A|B|C", "|"));
+✅ Output:-
+[A, B, C]
+
+🔹 6. listToString(List list, String delimiter):-
+List list = Arrays.asList("A", "B");
+System.out.println(Util.listToString(list, "|"));
+✅ Output:-
+A|B
+
+🔹 7. join(Collection col, String delimiter):-
+List list = Arrays.asList("X", "Y", "Z");
+System.out.println(Util.join(list, "-"));
+✅ Output:-
+X-Y-Z
+
+🔹 8. split(String str, String delimiter):-
+System.out.println(Util.split("X-Y-Z", "-"));
+✅ Output:-
+[X, Y, Z]
+
+🔹 9. formatDate(Date date):-
+System.out.println(Util.formatDate(new Date()));
+✅ Output:-
+2026-03-23
+
+🔹 10. parseDate(String str):-
+System.out.println(Util.parseDate("2026-03-23"));
+✅ Output:-
+Mon Mar 23 00:00:00 IST 2026
+
+🔹 11. uuid():-
+System.out.println(Util.uuid());
+✅ Output:-
+550e8400-e29b-41d4-a716-446655440000
+
+🔹 12. getCurrentTimeMillis():-
+System.out.println(Util.getCurrentTimeMillis());
+✅ Output:
+1711180000000
+
+🔹 13. compare(Object o1, Object o2):-
+System.out.println(Util.compare(10, 20));
+✅ Output:-
+-1
+
+🔹 14. toBoolean(String str):-
+System.out.println(Util.toBoolean("true"));
+✅ Output:-
+true
+
+🔹 15. toInteger(String str):-
+System.out.println(Util.toInteger("123"));
+✅ Output:
+123
+
+🔹 16. toLong(String str);-
+System.out.println(Util.toLong("99999"));
+✅ Output:
+99999
+
+🔹 17. toDouble(String str):-
+System.out.println(Util.toDouble("12.5"));
+✅ Output:
+12.5
+--------------------------------------------------------------------
+🔹 1. coalesce(Object... values):-
+👉 First non-null value return karta hai
+System.out.println(Util.coalesce(null, null, "A", "B"));
+✅ Output:-
+A
+
+🔹 2. capitalize(String str):-
+👉 First letter uppercase karta hai
+System.out.println(Util.capitalize("hello"));
+✅ Output:-
+Hello
+
+🔹 3. uncapitalize(String str):-
+👉 First letter lowercase karta hai
+System.out.println(Util.uncapitalize("Hello"));
+✅ Output:-
+hello
+-----------------------------------------------------------------
+🔹 4. escapeXml(String str):-
+👉 XML special characters escape karta hai
+System.out.println(Util.escapeXml("<tag>"));
+✅ Output:-
+&lt;tag&gt;
+
+🔹 5. unescapeXml(String str):-
+👉 Escaped XML ko normal banata hai
+System.out.println(Util.unescapeXml("&lt;tag&gt;"));
+✅ Output:-
+<tag>
+
+🔹 6. escapeHtml(String str):-
+👉 HTML special characters escape karta hai
+System.out.println(Util.escapeHtml("<h1>Hello</h1>"));
+✅ Output:-
+&lt;h1&gt;Hello&lt;/h1&gt;
+
+🔹 7. unescapeHtml(String str):-
+👉 Escaped HTML ko normal banata hai
+System.out.println(Util.unescapeHtml("&lt;h1&gt;Hello&lt;/h1&gt;"));
+✅ Output:-
+<h1>Hello</h1>
+-----------------------------------------------------------------------------------

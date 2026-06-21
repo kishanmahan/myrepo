@@ -1,0 +1,836 @@
+1️⃣ Rule kya hota hai SailPoint me?
+SailPoint me Rule ek chhota program/logic hota hai jo system me kuch kaam automate karta hai.
+Ye logic Identity Lifecycle ke alag-alag points pe chal sakta hai:-
+Account create/update/delete
+Role assign karna
+Access request approvals
+Certification / review
+Workflows
+
+2️⃣ Types of Rules:-
+SailPoint has many predefined rule types; some of the main ones:-
+Rule Type	                                   
+Provisioning Rule	
+Assignment Rule	
+Validation Rule	
+Approval Rule	
+Correlation Rule	
+Entitlement Filter Rule	
+Certification Rule	
+Transform Rule	
+Escalation Rule	
+Identity Rule
+Violation Rule
+
+()Rule Configuration ka matlab hai SailPoint me rules ko set up karna aur unka behavior define karna.
+Configuration → us rule ko create karna, uska type choose karna, inputs/outputs set karna, aur attach karna 
+policies/workflows me.
+💡 Example:-
+Tumhara Finance app hai. Tum chahte ho ki Finance requests ko manager + security officer approve kare.
+Tum Approval Rule configure karoge:-
+Rule type: Approval Rule
+Logic: Requester ka manager + security officer ko approver add karo
+Attach karo: Access Request Policy me
+Toh ye pura process hi rule configuration hai.
+
+🔥 Rule Class – Complete Methods List:-
+-------------------------------------------------------------------------------------------
+getName()
+setName(String name)
+getDescription()
+setDescription(String description)
+getType()
+setType(String type)
+getLanguage()
+setLanguage(String language)
+
+getSource()
+setSource(String source)
+getReturnType()
+setReturnType(String returnType)
+getParameters()
+setParameters(Map<String,Object> parameters)
+
+getContext()
+setContext(SailPointContext context)
+getRuleContext()
+setRuleContext(RuleContext ruleContext)
+
+execute(SailPointContext context, Map<String,Object> arguments)
+executeVoid(SailPointContext context, Map<String,Object> arguments)
+executeBoolean(SailPointContext context, Map<String,Object> arguments)
+executeList(SailPointContext context, Map<String,Object> arguments)
+executeMap(SailPointContext context, Map<String,Object> arguments)
+executeString(SailPointContext context, Map<String,Object> arguments)
+
+validate()
+clone()
+equals(Object obj)
+hashCode()
+toString()
+
+getArguments()
+setArguments(Map<String,Object> arguments)
+getExecutionTime()
+getExecutionResult()
+getLastExecutionStatus()
+
+getBindings()
+setBindings(Map<String,Object> bindings)
+getCategory()
+setCategory(String category)
+
+getVersion()
+setVersion(String version)
+getOwner()
+setOwner(String owner)
+----------------------------------------------------------------------------------------------------------
+🔥 1️⃣ getName():-
+👉 Ye method Rule ka naam return karta hai
+Rule rule = new Rule();
+rule.setName("CheckEmailDomain");
+System.out.println(rule.getName());
+Output:-
+CheckEmailDomain
+
+🔥 2️⃣ setName(String name):-
+👉 Ye method Rule ka naam set karta hai
+rule.setName("ValidateRoles");
+👉 Ab Rule ka naam "ValidateRoles" ho gaya.
+
+🔥 3️⃣ getDescription():-
+👉 Ye method Rule ka description return karta hai.
+rule.setDescription("This rule checks if email domain is valid");
+System.out.println(rule.getDescription());
+Output:-
+This rule checks if email domain is valid.
+
+🔥 4️⃣ setDescription(String description):-
+👉 Ye method Rule ka description set karta hai,
+rule.setDescription("Check if user roles are valid");
+
+🔥 5️⃣ getType():-
+👉 Ye method Rule ka type return karta hai
+
+Common types:-
+"Provisioning" → custom provisioning logic
+"Validation" → attribute validation
+"Aggregation" → aggregation logic
+"Certification" → certification decision
+
+rule.setType("Validation");
+System.out.println(rule.getType());
+Output:-
+Validation
+
+🔥 6️⃣ setType(String type):-
+👉 Ye method Rule ka type set karta hai
+rule.setType("Provisioning");
+
+🔥 7️⃣ getLanguage():-
+👉 Ye method Rule kis language me likha gaya hai return karta hai
+
+rule.setLanguage("java");
+System.out.println(rule.getLanguage());
+Output:-
+java
+
+🔥 8️⃣ setLanguage(String language):-
+👉 Ye method Rule ka execution language set karta hai,
+"java" → Java rule
+"beanshell" → Beanshell rule
+"groovy" → Groovy rule
+rule.setLanguage("beanshell");
+---------------------------------------------------------------------------------------------------
+🔥 1️⃣ getSource():-
+👉 Ye method Rule ka actual code return karta hai.
+Rule rule = new Rule();
+rule.setSource("String email = (String) args.get(\"email\"); return email.endsWith(\"@company.com\");");
+
+System.out.println(rule.getSource());
+Output:-
+String email = (String) args.get("email"); return email.endsWith("@company.com");
+------------------------------------------------------------------------------------------
+🔥 2️⃣ setSource(String source):-
+👉 Ye method Rule ka code set karta hai.
+rule.setSource("String role = (String) args.get(\"role\"); return role.equals(\"Admin\");");
+
+👉 Matlab: Rule ab role check karne ke liye logic execute karega.
+-------------------------------------------------------------------------------------------------
+🔥 3️⃣ getReturnType():-
+👉 Ye method Rule ka output type return karta hai.
+Common return types:-
+"boolean" → validation rules
+"String" → transformation / display
+"List" → multiple values
+"Map" → complex return
+
+rule.setReturnType("boolean");
+System.out.println(rule.getReturnType());
+Output:-
+boolean
+--------------------------------------------------------
+🔥 4️⃣ setReturnType(String returnType):-
+👉 Ye method Rule ka output type define karta hai.
+
+rule.setReturnType("List");
+
+👉 Matlab: Rule multiple values return karega
+--------------------------------------------------------
+🔥 5️⃣ getParameters():-
+👉 Ye method Rule ke input parameters return karta hai.
+
+Map<String,Object> params = new HashMap<>();
+params.put("email", "john@company.com");
+rule.setParameters(params);
+
+System.out.println(rule.getParameters());
+Output:
+{email=john@company.com}
+-------------------------------------------------------
+🔥 6️⃣ setParameters(Map<String,Object> parameters):-
+👉 Ye method Rule ke input parameters set karta hai
+
+Map<String,Object> args = new HashMap<>();
+args.put("role", "Admin");
+rule.setParameters(args);
+-----------------------------------------------------------------------------------------------
+🔥 Real Flow (Execution ke liye ready):-
+// 1️⃣ Set source code
+rule.setSource("String role = (String) args.get(\"role\"); return role.equals(\"Admin\");");
+
+// 2️⃣ Set parameters
+Map<String,Object> args = new HashMap<>();
+args.put("role", "Admin");
+rule.setParameters(args);
+
+// 3️⃣ Set return type
+rule.setReturnType("boolean");
+
+// 4️⃣ Execution (runtime)
+System.out.println("Rule ready with source, parameters, return type: " + rule.getReturnType());
+Output:
+Rule ready with source, parameters, return type: boolean
+-------------------------------------------------------------------------------------------------
+()🔥 1️⃣ getContext():-
+👉 Ye method return karta hai:-
+➡️ SailPointContext object, jo current runtime environment ka handle hai.
+Rule ko context chahiye system ke resources, identities, applications access karne ke liye.
+
+Example (pseudo/demo):-
+SailPointContext context = rule.getContext();
+System.out.println(context);
+Output me context ka reference milega, real data runtime me use hota hai.
+
+🔥 2️⃣ setContext(SailPointContext context):-
+👉 Ye method Rule ko runtime context provide karta hai.
+rule.setContext(myContext);
+myContext = SailPoint runtime ka handle,
+Rule is context ke through Identity, Application, Schema objects access kar sakta hai.
+
+🔥 3️⃣ getRuleContext():-
+👉 Ye method return karta hai:-
+➡️ RuleContext object, jo Rule ke execution metadata ka handle hai,
+RuleContext me hota hai: arguments, runtime variables, execution id, etc.
+RuleContext rc = rule.getRuleContext();
+System.out.println(rc.getArguments());
+
+🔥 4️⃣ setRuleContext(RuleContext ruleContext):-
+👉 Ye method Rule ke liye execution context set karta hai
+rule.setRuleContext(myRuleContext);
+RuleContext me input arguments, output placeholders, execution environment hota hai.
+----------------------------------------------------------------------------------------------------
+---------------------------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+1️⃣ RuleContext kya hai?
+Ye SailPoint me rule execution ka context hai.
+Matlab, jab bhi koi rule run hota hai (jaise provisioning rule, workflow rule, validation rule),
+tab SailPoint system automatically RuleContext create karta hai.
+Ye temporary / local context hai sirf us rule ke execution ke liye.
+--------------------------------------------------------------------------------------------------------------
+2️⃣ RuleContext kya karta hai?
+RuleContext ka main kaam hai:-
+
+()Input arguments provide karna:-
+Rule ke andar agar kuch data chahiye (jaise user name, role name), to RuleContext ke through milega.
+Example:-
+Map<String, Object> args = ruleContext.getArguments();
+String userName = (String) args.get("userName");
+----------------------------------------------------------
+()Output/result set karna:-
+Rule ke end me agar result return karna ho, to ye RuleContext me set hota hai.
+ruleContext.setResult("Success");
+---------------------------------------------------
+()SailPointContext provide karna:-
+Agar rule ke andar system objects ko access ya modify karna hai, to RuleContext se SailPointContext milega:-
+
+SailPointContext context = ruleContext.getSailPointContext();
+Identity id = context.getObjectByName(Identity.class, "john.doe");
+----------------------------------------------
+()Rule execution ke state ka handle:-
+Ye rule ke local state ko manage karta hai, lekin transaction commit/rollback ka kaam nahi karta.
+Transaction ka control SailPointContext ke paas hota hai.
+--------------------------------------------------------------------------------------------------------------
+public void execute(RuleContext ruleContext) {
+    // 1️⃣ Input fetch
+    Map<String, Object> args = ruleContext.getArguments();
+    String userName = (String) args.get("userName");
+
+    // 2️⃣ System access
+    SailPointContext context = ruleContext.getSailPointContext();
+    Identity id = context.getObjectByName(Identity.class, userName);
+
+    // 3️⃣ Rule logic
+    id.setDisplayName(userName.toUpperCase());
+    context.saveObject(id);
+    context.commitTransaction();  // commit changes
+
+    // 4️⃣ Output set
+    ruleContext.setResult("User updated successfully");
+}
+----------------------------------------------------------------------------------------------------------------
+()RuleContext ke andar kya kya hota hai?
+Input Arguments (arguments)
+Ye map/dictionary hota hai jo rule ko input parameters deta hai.
+Example:-username, role, account info, approval decision, etc.
+
+Access karne ke liye:-
+Map<String, Object> args = ruleContext.getArguments();
+String userName = (String) args.get("userName");
+
+Effect: Rule me ye values read karke logic execute kar sakte ho.
+------------------------------------------------------------------------
+()2️⃣ Output / Result (result):-
+Rule ke execution ka output yahan store hota hai.
+Ye result workflow ya provisioning process me wapas use hota hai.
+
+ruleContext.setResult("Success");
+Object res = ruleContext.getResult();
+
+Effect: Rule ka output system ke workflow ya caller ko milega.
+-------------------------------------------------------------------------
+3️⃣ SailPointContext (sailPointContext):-
+Ye core system objects ka access deta hai.
+
+Identity, Account, Role, Policy objects ko fetch, update, save kar sakte ho.
+
+SailPointContext context = ruleContext.getSailPointContext();
+Identity id = context.getObjectByName(Identity.class, "john.doe");
+Effect: Rule ke andar actual system objects pe changes kar sakte ho.
+--------------------------------------------------------------------------------
+(4)Current Object / Target Object:-
+Kuch rules me ek current object hota hai jiske upar rule operate kar raha hai.
+Example: Identity, Role, Account, Entitlement
+
+Object target = ruleContext.getTarget();
+
+Kaam: Rule ko pata hota hai ki ye kaunse identity, role ya account ke liye execute ho raha hai.
+---------------------------------------------------------------------------------------------------
+5️⃣ Metadata / Execution Info:-
+Rule ka execution context store hota hai:-
+Rule name
+Rule type(ProvisioningRule, WorkflowRule)
+Timestamp
+
+Example:-
+String ruleName = ruleContext.getRuleName();
+Kaam: Logging aur debugging me help karta hai.
+-----------------------------------------------------------------------------------------------------
+(6)Arguments Manipulation:-
+RuleContext ke andar arguments ko modify bhi kar sakte ho, taaki workflow me changes propagate ho jaye.
+args.put("roleAssigned", true);
+---------------------------------------------------------------------------------------------------------
+()7️⃣ Exception / Error Handling:-
+Rule ke andar error aane par handle kar sakte ho:-
+try {
+    // rule logic
+} catch(Exception e) {
+    ruleContext.setResult("Failed: " + e.getMessage());
+}
+Kaam: Rule failure ko system me inform karta hai.
+----------------------------------------------------------------------------------------------------------
+----------------------------------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+🔥 1️⃣ execute(SailPointContext context, Map<String,Object> arguments):-
+👉 Ye main generic execution method hai.
+💡 Kya karta hai?
+Rule ko execute karta hai.
+Input arguments leta hai (Map ke form me)
+Koi bhi type ka result return kar sakta hai (Object)
+📌 Real use:-
+Jab developer ko pata nahi hota ki output kya type ka hoga
+Dynamic rules (kabhi String, kabhi List, kabhi Map)
+
+Object result = rule.execute(context, args);
+System.out.println(result);
+-------------------------------------------------
+🔥 2️⃣ executeVoid(SailPointContext context, Map<String,Object> arguments):-
+👉 Ye method sirf execution karta hai, kuch return nahi karta.
+💡 Kya karta hai?
+Rule run karta hai
+Lekin output return nahi karta
+📌 Real use:-
+Logging
+Database update
+Provisioning trigger
+Email send karna
+
+rule.executeVoid(context, args);
+System.out.println("Rule executed successfully");
+--------------------------------------------------------------------------------
+🔥 3️⃣ executeBoolean(SailPointContext context, Map<String,Object> arguments):-
+👉 Ye method boolean (true/false) return karta hai.
+💡 Kya karta hai?
+Rule execute karta hai.
+Output ko boolean me convert karke return karta hai.
+📌 Real use:-
+Validation rules
+Policy check
+Approval decision
+
+boolean isValid = rule.executeBoolean(context, args);
+if(isValid){
+    System.out.println("Access Allowed");
+}else{
+    System.out.println("Access Denied");
+}
+-----------------------------------------------------------------------------
+🔥 4️⃣ executeList(SailPointContext context, Map<String,Object> arguments):-
+👉 Ye method List return karta hai.
+💡 Kya karta hai?
+Rule execute karta hai,
+Multiple values ko ek list me return karta hai
+
+📌 Real use:-
+Roles list
+Entitlements list
+Users list
+
+🧠 Internal kaam:-
+Rule ke andar multiple values collect hoti hain,
+Unhe List me pack karke return karta hai.
+
+List roles = rule.executeList(context, args);
+System.out.println(roles);
+✅ Output:
+[Admin, Manager, User]
+-------------------------------------------------------------------------------
+🔥 5️⃣ executeMap(SailPointContext context, Map<String,Object> arguments):-
+👉 Ye method Map (key-value pair) return karta hai.
+💡 Kya karta hai?
+Rule execute karta hai
+Structured data return karta hai (multiple fields)
+
+📌 Real use:-
+User details (email, role, department)
+API response mapping
+Identity attributes
+
+🧠 Internal kaam:-
+Rule ke andar key-value pairs banaye jate hain
+Unhe Map me convert karke return karta hai
+
+Map data = rule.executeMap(context, args);
+System.out.println(data);
+✅ Output:-
+{email=john@gmail.com, role=Admin}
+-----------------------------------------------------------------------------------
+🔥 6️⃣ executeString(SailPointContext context, Map<String,Object> arguments):-
+👉 Ye method String return karta hai.
+💡 Kya karta hai?
+Rule execute karta hai.
+Output ko String me convert karke return karta hai.
+📌 Real use:-
+Email generation
+Username generation
+Data transformation
+
+🧠 Internal kaam:-
+Rule ka result String me convert hota hai,
+Final output ek text value hota hai.
+
+String email = rule.executeString(context, args);
+System.out.println(email);
+✅Output:
+john@company.com
+-------------------------------------------------------------------------------------------------
+✅execute....():-👉 Rule same hota hai, bas method decide karta hai output ka format kya milega.
+-------------------------------------------------------------------------------------------------
+🔥 1️⃣ validate():-
+👉 Ye method object ko validate (check) karta hai ki sab sahi hai ya nahi
+💡 Kya karta hai?
+Object ke andar required fields check karta hai,
+Missing / invalid data ho to error throw karta hai.
+
+📌 SailPoint me use:-
+Rule save karte time
+XML import karte time
+Configuration validate karne ke liye
+
+🧠 Internal kaam:-
+check karega:-
+name hai ya nahi
+type valid hai ya nahi
+required fields filled hain ya nahi
+
+rule.validate();
+❌ Agar galat hua:-GeneralException: Rule name is required,
+✅ Agar sahi:-(no output, validation passed)
+-----------------------------------------------------------------
+🔥 2️⃣ clone():-
+👉 Ye method object ka exact copy banata hai,
+💡 Kya karta hai?
+Same data ke saath ek naya object banata hai
+Original object ko affect nahi karta
+
+📌 Use:-
+Template object copy karna
+Changes karne ke liye duplicate banana
+Rule copyRule = (Rule) rule.clone();
+
+🧠 Internal:-
+Deep copy / shallow copy (implementation pe depend karta hai)
+
+✅ Output:-
+New Rule object with same values.
+------------------------------------------------------------------------
+🔥 3️⃣ equals(Object obj):-
+👉 Ye method compare karta hai do objects same hain ya nahi
+💡 Kya karta hai?
+Check karta hai ki:-
+name same hai ya nahi
+id same hai ya nahi
+content same hai ya nahi
+
+boolean result = rule1.equals(rule2);
+System.out.println(result);
+-----------------------------------------------------
+🔥 4️⃣ hashCode():-
+👉 Ye method object ka unique numeric code generate karta hai.
+💡 Kya karta hai?
+Object ko identify karne ke liye integer value deta hai.
+
+int code = rule.hashCode();
+System.out.println(code);
+
+📌 Use:-
+HashMap
+HashSet
+Fast lookup
+
+🧠 Important:-
+👉 Agar equals() same hai → hashCode() bhi same hona chahiye
+
+✅ Output:-
+12345678
+----------------------------------------------------------------------
+🔥 5️⃣ toString():-
+👉 Ye method object ko readable string me convert karta hai.
+💡 Kya karta hai?
+Object ke data ko text form me deta hai.
+
+System.out.println(rule.toString());
+✅ Output:-
+Rule[name=EmailRule, type=Transformation, language=Beanshell]
+📌 Use:-
+Debugging
+Logging
+Console print
+--------------------------------------------------------------------------
+🔥 Full Example Code (Rule class simulation)
+class Rule implements Cloneable {
+
+    private String name;
+    private String type;
+
+    // Constructor
+    public Rule(String name, String type) {
+        this.name = name;
+        this.type = type;
+    }
+
+    // 1️⃣ validate()
+    public void validate() throws Exception {
+        if (name == null || name.isEmpty()) {
+            throw new Exception("Rule name is required");
+        }
+        if (type == null || type.isEmpty()) {
+            throw new Exception("Rule type is required");
+        }
+        System.out.println("Validation Passed");
+    }
+
+    // 2️⃣ clone()
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return new Rule(this.name, this.type);
+    }
+
+    // 3️⃣ equals()
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+
+        if (obj == null || getClass() != obj.getClass()) return false;
+
+        Rule rule = (Rule) obj;
+
+        return name.equals(rule.name) && type.equals(rule.type);
+    }
+
+    // 4️⃣ hashCode()
+    @Override
+    public int hashCode() {
+        int result = name.hashCode();
+        result = 31 * result + type.hashCode();
+        return result;
+    }
+
+    // 5️⃣ toString()
+    @Override
+    public String toString() {
+        return "Rule{name='" + name + "', type='" + type + "'}";
+    }
+
+    // Getters
+    public String getName() {
+        return name;
+    }
+
+    public String getType() {
+        return type;
+    }
+}
+🔥 Main Class (Test)
+public class Main {
+    public static void main(String[] args) {
+
+        try {
+            Rule rule1 = new Rule("EmailRule", "Transformation");
+
+            // 1️⃣ validate
+            rule1.validate();
+
+            // 2️⃣ clone
+            Rule rule2 = (Rule) rule1.clone();
+
+            // 3️⃣ equals
+            System.out.println("Equals: " + rule1.equals(rule2));
+
+            // 4️⃣ hashCode
+            System.out.println("HashCode1: " + rule1.hashCode());
+            System.out.println("HashCode2: " + rule2.hashCode());
+
+            // 5️⃣ toString
+            System.out.println(rule1.toString());
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+}
+✅ Output
+Validation Passed
+Equals: true
+HashCode1: 12345678
+HashCode2: 12345678
+Rule{name='EmailRule', type='Transformation'}
+////////////*
+()yaha this==rule1 aur obj==rule2 hai.
+rule1.equals(rule2)); jab bhi ho toh this==rule1 aur obj==rule2 hota hai.
+()yaha getClass()==rule1.getClass aur obj.getClass()==rule2.getClass hai.
+kyuki getclass()==this hai.
+---------------------------------
+()🔥 3️⃣ name.hashCode():-
+👉 Ye String ka numeric hash value return karta hai
+
+String name = "EmailRule";
+System.out.println(name.hashCode());
+💡 Kya karta hai:-
+String ko ek number me convert karta hai
+
+🧠 Example:-
+"EmailRule" → 12345678 (example)
+-------------------------
+(4)type.hashCode();:-
+👉 Internally:-
+name = "EmailRule"
+type = "Transformation"
+*///////////////
+--------------------------------------------------------------------------------------------------------------
+()🔥 1️⃣ getArguments();-
+👉 Ye method Rule ko diye gaye input arguments return karta hai
+
+💡 Kya karta hai?
+Rule execute karte waqt jo data diya gaya tha,
+usko Map form me return karta hai.
+Map<String, Object> args = rule.getArguments();
+System.out.println(args);
+✅ Example Output:
+{username=john, role=Admin}
+📌 Use:-
+Rule ke andar input values check karne ke liye
+Debugging
+------------------------------------------------------------
+()🔥 2️⃣ setArguments(Map<String,Object> arguments):-
+👉 Ye method Rule ko input arguments deta hai.
+💡 Kya karta hai?
+Rule execute hone se pehle data set karta hai.
+
+Map<String, Object> args = new HashMap<>();
+args.put("username", "john");
+args.put("role", "Admin");
+
+rule.setArguments(args);
+📌 Use:-
+Dynamic input dena
+Rule ko parameterized banana
+---------------------------------------------------------------
+🔥 3️⃣ getExecutionTime():-
+👉 Ye method Rule execution ka time return karta hai.
+💡 Kya karta hai?
+Rule kitne time me run hua
+uska duration deta hai (milliseconds me)
+
+long time = rule.getExecutionTime();
+System.out.println(time);
+✅ Output:-
+120 ms
+📌 Use:-
+Performance monitoring
+Slow rules identify karna
+--------------------------------------------------------
+🔥 4️⃣ getExecutionResult():-
+👉 Ye method Rule ka last output return karta hai
+
+💡 Kya karta hai?
+Jo result Rule ne last time return kiya tha
+usko Object form me deta hai
+
+Object result = rule.getExecutionResult();
+System.out.println(result);
+✅ Output:-
+john@company.com
+📌 Use:-
+Result ko reuse karna
+Debugging
+----------------------------------------------------------
+🔥 5️⃣ getLastExecutionStatus():-
+👉 Ye method Rule execution ka status batata hai
+
+💡 Kya karta hai?
+Last execution successful tha ya fail.
+
+String status = rule.getLastExecutionStatus();
+System.out.println(status);
+✅ Output:-
+SUCCESS
+📌 Use:-
+Error handling
+Monitoring
+-----------------------------------------------------------
+🔥 1️⃣ getBindings():-
+👉 Ye method Rule ke runtime variables (bindings) return karta hai.
+💡 Kya hota hai “Bindings”?
+➡️ Bindings = Rule ke andar available variables ka Map
+jo directly Beanshell script me use hote hain.
+
+🧠 Example bindings:-
+identity
+application
+context
+log
+
+📌 Code:-
+Map<String, Object> bindings = rule.getBindings();
+System.out.println(bindings);
+✅ Output:-
+{identity=John, application=Salesforce, log=LoggerObject}
+
+🔥 2️⃣ setBindings(Map<String,Object> bindings):-
+👉 Ye method Rule ke andar variables inject karta hai
+💡 Kya karta hai?
+Custom variables Rule me pass karta hai.
+Jo Rule script me directly use ho sakte hain
+
+Map<String, Object> map = new HashMap<>();
+map.put("username", "john");
+map.put("role", "Admin");
+
+rule.setBindings(map);
+--------------------------------------------------------------------------
+🔥 3️⃣ getCategory():-
+👉 Ye method Rule ka category return karta hai
+
+💡 Category kya hota hai?
+➡️ Rule kis purpose ke liye hai.
+
+📌 Examples:-
+Transformation
+Validation
+Provisioning
+Approval
+
+String category = rule.getCategory();
+System.out.println(category);
+✅ Output:
+Transformation
+------------------------------------------------
+🔥 4️⃣ setCategory(String category):-
+👉 Ye method Rule ka category set karta hai
+
+rule.setCategory("Provisioning");
+
+🧠 Real use:-
+UI me grouping
+Filtering
+Rule type identify karna.
+--------------------------------------------------------
+🔥 1️⃣ getVersion():-
+👉 Ye method Rule ka version return karta hai
+💡 Kya hota hai version?
+➡️ Rule ka current version number / label
+jaise software version hota hai (v1, v2, v1.1)
+
+📌 Code:-
+String version = rule.getVersion();
+System.out.println(version);
+✅ Output:-
+v1.0
+
+🧠 Real use:-
+Rule update track karna
+Changes ka history maintain karna
+Deployment control
+
+👉 Example:-
+v1.0 → initial rule
+v1.1 → bug fix
+v2.0 → new logic added
+
+🔥 2️⃣ setVersion(String version):-
+👉 Ye method Rule ka version set karta hai.
+rule.setVersion("v2.0");
+--------------------------------------------------------------------------------------
+🔥 3️⃣ getOwner():-
+👉 Ye method Rule ka owner return karta hai
+
+💡 Owner ka matlab?
+➡️ Rule ka responsible person / team
+
+📌 Code:-
+String owner = rule.getOwner();
+System.out.println(owner);
+✅ Output:-
+admin
+🧠 Real use:-
+Kaun maintain karega rule
+Issue aaye to kisko contact kare
+Audit / compliance
+
+🔥 4️⃣ setOwner(String owner):-
+👉 Ye method Rule ka owner set karta hai
+
+rule.setOwner("developer1");
+📌 Real use:-
+Rule assign karna kisi developer ko
+Responsibility define karna.
+--------------------------------------------------------------------------------------------------

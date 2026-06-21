@@ -1,0 +1,434 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Application Connections Health Check Rule" type="IdentitySelector">
+  <Description>This rule is used to test the application Connections</Description>
+  <Signature returnType="boolean">
+    <Inputs>
+      <Argument name="log">
+        <Description>
+          The log object associated with the SailPointContext.
+        </Description>
+      </Argument>
+      <Argument name="context">
+        <Description>
+          A sailpoint.api.SailPointContext object that can be used to query the database if necessary.
+        </Description>
+      </Argument>
+    </Inputs>
+  </Signature>
+  <Source>
+    import sailpoint.api.SailPointContext;
+    import sailpoint.connector.Connector;
+    import sailpoint.connector.ConnectorFactory;
+    import sailpoint.object.*;
+    import sailpoint.object.Custom;
+    import java.lang.reflect.Constructor;
+    import java.util.Calendar;
+    import java.util.HashMap;
+    import java.io.File;
+    import java.io.FileWriter;
+    import java.io.IOException;
+    import org.apache.commons.logging.Log;
+    import org.apache.commons.logging.LogFactory;
+    import java.sql.Connection;
+    import java.sql.PreparedStatement;
+    import java.sql.SQLException;
+	import java.sql.ResultSet;
+    import java.util.Map.Entry;
+    import java.text.SimpleDateFormat;
+    import java.io.BufferedWriter;
+
+    public Log log = LogFactory.getLog("com.ApplicationConnectionsHealthCheckRule");
+
+    log.info("Enter Application Connections test Rule");
+
+    String message = null;
+
+    //List customApplicationList = new ArrayList();	
+
+    Map successMessage = new HashMap();
+    Map failureMessages = new HashMap();
+
+    String COMMA_DELIMITER = ","; 
+    String NEW_LINE_SEPARATOR = "\n";   
+
+
+    Calendar cal = Calendar.getInstance();
+    SimpleDateFormat format1 = new SimpleDateFormat("MM/dd/yyyy HH:mm");
+    String formatted = format1.format(cal.getTime());  
+
+    BufferedWriter bufferedWriter = null;
+    StringBuilder emailAttachment = new StringBuilder();
+
+    String sendMail = config.get("sendMail") != null ? (String)config.get("sendMail") : "true";
+    String workGroupName = (String)config.get("workGroup");
+
+    log.info("Work group Name------>"+workGroupName);
+
+    String emailTemplate = (String)config.get("emailTemplate");
+
+
+    String APPLICATION_NAMES = "select name from identityiq.spt_application where name not like 'Test_%' and name not like '%Demo%'"+
+    "and type not in ('DelimitedFile','IdentityIQ Workgroups')";
+
+	//to check the application connectivity
+	public void checkApplicationConnection(){
+		log.info("Enter check Application Connections method");
+		List customApplicationList = new ArrayList();	
+		customApplicationList = getApplicationList();	  
+		for(String applicationName : customApplicationList){
+			log.info("applicationName from ApplicationConnectionsHealthCheckRule---->"+applicationName);
+			Application app = context.getObjectByName(Application.class, applicationName);
+			Connector conn;
+			if (app != null) {
+
+				String appName = app.getName();
+				String appType =app.getType();
+				String  user = null;
+				String  databaseUrl = null;
+				String failedMessage = null;
+				String appDetails = null;
+
+				String connName = ((Application)app).getConnector();
+
+
+				try {
+					conn=ConnectorFactory.getConnector(app,connName);
+					conn.testConfiguration();
+					message= "Successful connection";
+					successMessage.put(applicationName,message);
+					log.info("message from ApplicationConnectionsHealthCheckRule---->"+message);
+
+				} catch (Exception e) {
+					if(appType.equals("JDBC")){
+						Attributes attribute = app.getAttributes();
+						user =  attribute.getString("user");
+						databaseUrl = attribute.getString("url");
+						log.info("databaseurl---->"+databaseUrl);
+						failedMessage = e.getMessage();
+						log.info("failedMessage--->"+failedMessage);
+						appDetails = appType+COMMA_DELIMITER+user+COMMA_DELIMITER+databaseUrl+COMMA_DELIMITER+failedMessage;
+						failureMessages.put(applicationName,appDetails);
+
+					}else{
+						user ="n/a";
+						databaseUrl = "n/a";
+						failedMessage = e.getMessage();
+						appDetails = appType+COMMA_DELIMITER+user+COMMA_DELIMITER+databaseUrl+COMMA_DELIMITER+failedMessage;
+						failureMessages.put(applicationName,appDetails);
+
+						// failureMessage.put(applicationName,e.getMessage());
+						log.error("ErrorMessage from ApplicationConnectionsHealthCheckRule---->"+applicationName+":"+e.getMessage());
+					}
+				} 
+			}  
+		}
+
+		if(failureMessages.size() >0){
+			sendEmailNotification();
+		}
+    }
+
+    //get application list
+	public List getApplicationList(){
+
+		List applicationList = new ArrayList();	
+
+		try {  
+			dbConnection = context.getJdbcConnection(); 
+			PreparedStatement prStmt = dbConnection.prepareStatement(APPLICATION_NAMES);  
+
+			ResultSet rs = prStmt.executeQuery();  
+			while(rs.next()){
+				String applicationName =  rs.getString("name");
+				log.info("applicationame----->"+applicationName);
+				applicationList.add(applicationName);
+			}
+		}catch (SQLException e) {
+			String errMsg = "Failed to get JDBC connetion from context.getJdbcConnection().";  
+			log.error(errMsg);  
+			log.error(e);
+		}finally {
+			if (dbConnection != null) {
+				try {
+					dbConnection .close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					log.error(e);
+				}
+			}
+		}
+		return applicationList;
+    }
+
+
+
+
+
+
+    //send email notification with an attachment  
+    public void sendEmailNotification(){
+
+
+
+    EmailTemplate template = (EmailTemplate) context.getContext().getObject(
+    EmailTemplate.class, emailTemplate);
+
+    Identity workgroup = context.getObjectByName(Identity.class, workGroupName);
+    String emailAddress = workgroup.getEmail();
+    log.error("EmailAddress----->"+emailAddress);
+    if (null == template) {
+
+    log.error("ApplicationConnectionsHealthCheckRule----->ERROR: could not find email template [ " + template + "]");
+    return;
+    }
+
+    template = (EmailTemplate) template.deepCopy(context);
+
+    if (null == template) {
+
+    log.error("ApplicationConnectionsHealthCheckRule---->ERROR: failed to deepCopy template [ " + template + "]");
+    return;
+    }
+
+    List appList = new ArrayList(failureMessages.keySet());
+    for (Object appIndex : appList)
+    {
+    HashMap tmpfailureMessages = new HashMap();
+    tmpfailureMessages.put(appIndex, failureMessages.get(appIndex));
+    log.error("tmpfailureMessages---->"+tmpfailureMessages);
+
+    EmailOptions ops = new EmailOptions();
+    ops.setVariable("appName",appIndex);
+    ops.setVariable("failureMessages",tmpfailureMessages);
+    ops.setTo(emailAddress);
+
+    try 
+    {
+    context.sendEmailNotification(template, ops);
+    log.error("ApplicationConnectionsHealthCheckRule---->Successfully send email notification");
+    }
+    catch (Exception e) 
+    {
+    log.error("ApplicationConnectionsHealthCheckRule------>Error Sending Email: " + e);
+    }
+    }
+
+    context.decache(template);
+    }
+
+    checkApplicationConnection();	  
+
+
+    return "";
+
+
+  </Source>
+</Rule>
+///////////////*
+1️⃣ Connector kya hota hai?
+Connector = IAM system aur external application ke beech connection banane wala component.
+
+()3️⃣ Connector kya kya karta hai:-
+Connector mainly 3 kaam karta hai.
+
+1️⃣ Aggregation:-
+Application se users aur access IAM me import karta hai.
+Example:-
+Application Users
+Rahul
+Amit
+Neha
+IAM me aa jayenge.
+
+2️⃣ Provisioning:-
+IAM se application me access create / remove karta hai.
+Example:-
+IAM → Rahul ko SAP Admin access do,
+Connector SAP me access create karega.
+
+3️⃣ Reconciliation:-
+Reconciliation ka matlab hai application ke users aur unke access ko SailPoint me laana aur compare karna.
+update karna.
+--Reconciliation kya kya import karta hai
+
+1️⃣ Accounts:-
+Application ke users
+Example:-
+Rahul
+Amit
+Priya
+
+2️⃣ Entitlements:-
+Application ke permissions ya groups
+Example:-
+FinanceGroup
+AdminGroup
+HRGroup
+Reconciliation ka purpose
+Application aur SailPoint ka data same rakhna
+Access track karna
+Security maintain karna.
+*///////////
+//////////////*
+1. ConnectorFactory:-
+Usually:-
+import sailpoint.connector.ConnectorFactory;
+Kaam:-
+Connector object banane ke liye.
+Connector = IIQ ka application/target system se connect hone wala object.
+Example:-
+import sailpoint.connector.ConnectorFactory;
+import sailpoint.connector.Connector;
+import sailpoint.object.Application;
+
+Application app =
+    context.getObjectByName(
+        Application.class,
+        "AD Application");
+
+Connector connector =
+    ConnectorFactory.getConnector(app,null);
+*/////////
+/////////*
+()import java.io.BufferedWriter; kya hai:-BufferedWriter → Character data ko fast write karta hai in file.
+
+()public Log log :-me public ka matlab?
+-->1. Poore Project me Kahin Se Bhi Access (Everywhere)
+Agar aapne apni kisi class (jaise User class) ke andar public Log log; banaya hai, 
+toh aapke project ki koi bhi doosri class is log variable ko bina kisi rok-tok ke direct touch/use kar sakti hai.
+Chahe wo class isi folder (package) me ho.
+Chahe wo class kisi doosre folder (package) me ho.
+Agar variable ke aage public likha hai, toh upar waali baat bilkul galat hai.
+Same folder ka class bhi use kar sakta hai.
+Dusre folder ka class bhi bina extends kiye (sirf object banakar) use kar sakta hai.
+
+1. default Log log; (Package-Private):-
+Jab aap variable ke aage kuch bhi nahi likhte (na public, na private, na protected), 
+toh use Java me default access modifier maana jata hai.
+Niyam: Ye sirf aur sirf same folder (package) ke andar dikhta hai.
+Same Folder ka class: Bina extend kiye use kar sakta hai.
+
+2. protected Log log;
+Ye default se ek kadam aage hai. Ye same folder me toh kaam karta hi hai, 
+sath me doosre folder me baithe bachhon (Subclasses) ko bhi access de deta hai.
+Niyam: Same folder (package) ke log toh use kar hi sakte hain + Agar koi class doosre folder me hai par wo aapki class ko 
+extends (Inherit) karti hai, toh wo bhi is log ko use kar sakti hai.
+Same Folder (Package) ka class: Ise extends karne ki koi zaroorat nahi hai. 
+Wo bina extend kiye bhi sirf object banakar ise aaram se use kar sakta hai.
+Dusre Folder का class: Ise bina extends kiye bilkul bhi use nahi kar sakta. 
+Agar dusre folder waale ko ise chalana hai, toh use extends karna hi padega (baap-bete ka rishta banana hi padega)
+*////////
+/////////*
+()Calendar.getInstance():-
+1. Ye object kaise banata hai?
+Java me Calendar ek abstract class hai. Abstract class ka matlab hota hai ki aap direct new Calendar() likhkar iska object nahi bana sakte.
+Isliye Java ne hume getInstance() method diya hai. Jab aap is line ko likhte hain, 
+toh Java piche se aapke computer ki current country (Locale) aur time zone check karta hai aur us hisab se ek concrete subclass (aamtaur par GregorianCalendar) ka object banakar aapko de deta hai.
+*/////////
+//////////*
+()2. ResultSet kya hai?
+ResultSet Java ke standard JDBC (java.sql.ResultSet) ka ek interface hai.
+Kaam: Jab aap Java/Beanshell code se database me koi SQL query (SELECT statement) chalate hain, 
+toh database se jo data nikal kar aata hai (rows aur columns ke roop me), 
+use hold karne ke liye ResultSet ka use hota hai. Aap ise ek temporary virtual table samajh sakte hain.
+
+()3. ((Application)app).getConnector(); kya return karega?
+Ye line thodi dhyan se samajhie, kyunki isme ek choti si technical gadbad (redundancy) bhi hai, par pehle samajhte hain ye karega kya:
+Kya return karega: Ye us application ke Connector ka type (String) return karega. Jaise agar wo Active Directory application hai toh "Active Directory - Direct", agar database hai toh "JDBC", ya SAP hai toh "SAP Direct".
+Type Casting: (Application)app likh kar code app variable ko explicit roop se Application class me convert (type-cast) kar raha hai.
+*//////////
+///////////*
+()1. config kya hai? (Definition):-
+SailPoint me config ek built-in Map ya Attributes object hota hai jo Beanshell Rule ko chalate waqt SailPoint background se automatically provide karta hai. 
+Iska kaam Rule ke bahar se bheje gaye parameters (inputs) ko code ke andar lana hota hai.
+
+2. Ye data aata kahan se hai?
+Jab aap is Rule ko kisi Task Definition (jaise Run Rule Task) ya Workflow se call karte hain, 
+toh wahan par aap arguments define karte hain.
+
+Jaise XML me ya UI par kuch aisa setup hota hai:-
+XML
+<Argument name="sendMail" value="false"/>
+<Argument name="workGroup" value="IdentityIQ Administrators"/>
+Jab ye Task chalega, toh SailPoint in dono arguments ko ek jole (Map) me dalega aur us jole ka naam rakh dega config.
+
+3. Aapke code me iska kya kaam hai?
+Aapke code ki ye line dekhiye:-
+Java
+String sendMail = config.get("sendMail") != null ? (String)config.get("sendMail") : "true";
+config.get("sendMail"): Ye check kar raha hai ki kya bahar Task/UI se sendMail naam ka koi argument bheja gaya hai?
+!= null ? ... : "true": Agar bahar se value bheji gayi hai (null nahi hai), toh wahi value utha lo (jaise "false"). 
+Agar bahar se kuch nahi bheja gaya, toh default value "true" maan lo.
+
+()Ek Choti si Baat (SailPoint Pro-Tip):-
+Aapne Rule ke <Signature> me sirf do inputs declare kiye hain: log aur context.
+XML
+<Inputs>
+  <Argument name="log">...</Argument>
+  <Argument name="context">...</Argument>
+</Inputs>
+Agar aap is Rule ko direct kisi Task se chalayenge aur wahan se sendMail ya workGroup pass karenge, 
+toh Beanshell unhe automatically config ke andar daal dega.Lekin standard practice yeh kehti hai ki jo bhi input aap config se
+nikal rahe hain, unhe upar <Inputs> ke andar bhi as an <Argument> declare kar dena chahiye taaki dekhne wale ko pata rahe ki 
+ish Rule ko kya-kya inputs chahiye.
+
+()case1:-matlab koi bhi xml1st me aur xml2nd me  <Inputs> <Argument> </Argument></Inputs> dennge toh sailpoint isshe config me dal dega
+aur xml2nd se xm1st ko call kare ya xml1st se xm2nd ko call kare config se hum dono me aek dusre ka <Argument> pass kar sakte hai.
+
+()Case 2: Agar aap ek Rule (XML 1) se doosre Rule (XML 2) ko call kar rahe hain
+Yahan par aakar twist badal jata hai. Agar aap ek Rule ke andar baith kar context.runRule() ya context.runExtensionRule() 
+use karke doosre Rule ka naam call kar rahe hain, toh SailPoint automatically config ko pass nahi karta. 
+Wahan aapko khud hath se (explicitly) data pass karna padta hai.
+ex:-
+Jab aap ek Rule se doosre Rule ko call karte hain, toh aap ek HashMap banate hain aur usme saare arguments daal kar bhejte hain:-
+🔴 Rule 1 (XML 1) ke andar ka code:
+Java
+// Ek naya jola (Map) banaya data bhejne ke liye
+Map ruleArgs = new HashMap();
+ruleArgs.put("sendMail", "false");
+ruleArgs.put("workGroup", "MyAwesomeWorkgroup");
+// Doosre rule (XML 2) ko call kiya aur ruleArgs pass kar diya
+Rule targetRule = context.getObjectByName(Rule.class, "MySecondRuleName");
+Object result = context.runRule(targetRule, ruleArgs); 
+
+🟢 Rule 2 (XML 2) ke andar aap use kaise nikalenge:-
+Jab Rule 1 ne ruleArgs bheja, toh Rule 2 ke paas wo saare variables direct variable name se ya fir config se mil jayenge:-
+Java
+// Rule 2 me aap isse direct nikal sakte hain:-
+String mailSetting = (String) config.get("sendMail"); 
+// ya fir Beanshell me direct variable ki tarah:
+// String mailSetting = sendMail;
+*////////
+////////////*
+()Simple Copy (Shallow Copy): Agar aap bina deepCopy kiye direct template me koi badlav (changes) karte hain, 
+toh wo badlav SailPoint ke database (cache) me jo asli template hai, usme permanent change ho jayega. 
+Iska matlab, agar is Rule ne template badla, toh poore SailPoint me sabhi ke liye wo template badal jayega, 
+jo ki ek bohot bada disaster (gadbad) ho sakta hai.
+
+()Deep Copy: deepCopy(context) kya karta hai? Ye database se aaye asli EmailTemplate ka ek ekdum naya,
+bilkul alag aur duplicate copy memory (RAM) me bana deta hai.
+*/////////////
+
+
+////////////*
+()Kya ise ek line me likh sakte hain? Haan, bilkul likh sakte hain! Java ko isse koi farq nahi padta. 
+Agar aap ise bina tode ek single line me likhenge, toh ye bilkul sahi chalega:-
+Java
+String APPLICATION_NAMES = "select name from identityiq.spt_application where name not like 'Test_%' and name not like '%Demo%' and type not in ('DelimitedFile','IdentityIQ Workgroups')";
+⚠️ Ek Badi Galti (Space Trap): Aapke code me pehli line %'_ par khatam ho rahi hai aur doosri line "and se shuru ho rahi hai. 
+Jab Java in dono ko jodega, toh wo ban jayega '%Demo%'and type. 
+Dekhiye '%Demo%' aur and ke beech ka space gayab ho gaya! Is wajah se SQL query database me fail ho sakti hai. 
+Hamesha doosri line ke shuru me ek space dena chahiye, jaise: " and type...".
+
+2. Kya SQL likhne ka koi fixed sequence (tarteeb) hota hai?
+Haan, SQL ka ek ekdum fixed sequence hota hai. Database aapke "words" ko tabhi samajhta hai jab wo ek proper standard sequence me likhe hon.
+Aap is sequence ko aage-piche nahi kar sakte.Standard SQL Query ka sequence yeh hota hai:-
+
+Sequence Order	         Keyword	    Aapke Code Me Kya Likha Hai	                       Kaam (Purpose)
+1 (Sabse Pehle)----------SELECT----------------select name-------------------Kaun sa column chahiye? (Hume sirf 'name' chahiye).
+2-------------------------FROM------------from identityiq.spt_application----------Kaun se table se data nikalna hai?
+3-------------------------WHERE-------------where name not like...-----------------Data filter karne ki pehli condition.
+4-------------------------AND / OR----------and type not in...------------Pehli condition ke saath doosri extra condition jodna.
+
+*////////////

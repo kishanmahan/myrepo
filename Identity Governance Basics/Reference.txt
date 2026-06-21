@@ -1,0 +1,37 @@
+()Reference kya hai?
+actual object ya value ko copy nahi karte, bas uska address ya location store karte hain.
+Example in Java:-
+String s1 = "Hello";
+String s2 = s1; // s2 ab s1 ka reference hold kar raha hai
+Yaha s2 me “Hello” object ka reference” store hai.
+Agar s1 ko change karoge (immutable Strings me nahi, mutable objects me), s2 me bhi effect dikh sakta hai.
+
+()Example:-
+String s1 = "Hello";
+String s2 = s1;  // s2 ab s1 ka reference hold kar raha hai
+s2 = "World";    // s2 ab ek naya object point kar raha hai
+System.out.println(s1); // Hello
+System.out.println(s2); // World
+
+()Agar Object Mutable Ho:-
+class Person {
+    String name;
+    Person(String name) { this.name = name; }
+}
+
+Person p1 = new Person("Alice");
+Person p2 = p1; // p2 bhi p1 object ko reference kar raha hai
+
+p2.name = "Bob"; // mutable object ke field ko change kar diya
+System.out.println(p1.name); // Bob
+Step 1: p1 aur p2 same object ko reference kar rahe hain
+Step 2: p2.name change kiya → p1.name bhi change dikh raha hai
+
+2️⃣ IAM / Certification Context:-
+SailPoint ya CertificationManager me:-
+Reference = link kisi object/entity/item ka
+Example:-
+CertificationEntity entity = manager.getCertificationEntity("user123");
+User owner = entity.getOwner(); // owner is a reference to User object
+Yaha owner actual User object ka reference hai, copy nahi.
+Reference se tu directly owner ka data access ya modify kar sakta hai.

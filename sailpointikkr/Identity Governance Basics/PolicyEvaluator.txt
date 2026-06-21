@@ -1,0 +1,371 @@
+()evaluate ya evaluation ka matlab in sailpoint ?
+--kisi rule, policy, ya condition ko check karna ki wo satisfy ho rahi hai ya nahi.
+
+🔹 1. Simple Example (Real Life):-
+Maan lo:-
+👉 Rule: “User ka role Admin nahi hona chahiye”
+Evaluation kya karega?
+User ka data lega
+Check karega: kya role = Admin hai?
+Result dega: ✅ Pass / ❌ Fail
+
+🔹 2. SailPoint me Evaluation kaha use hota hai?
+1️⃣ Policy Evaluation:-
+👉 Jab policies run hoti hain
+Example:-
+SoD Policy (Segregation of Duties)
+Password Policy
+Access Policy
+Process:-
+Identity ka data uthata hai
+Roles / Entitlements check karta hai
+Violation hai ya nahi → evaluate karta hai.
+
+2️⃣ Rule Evaluation:-
+👉 SailPoint me bahut saare rules hote hain (Java based)
+Example:-
+if (identity.getDepartment().equals("IT")) {
+    return true;
+}
+👉 Ye condition jab run hoti hai → isko evaluate bolte hain.
+
+3️⃣ Provisioning me Evaluation:-
+👉 Jab provisioning hoti hai (account create/update/delete)
+Plan validate hota hai
+Attributes check hote hain
+Dependencies check hoti hain
+👉 Ye sab internally evaluate hote hain.
+
+4️⃣ Workflow Evaluation:-
+👉 Workflow me conditions hoti hain:-
+<Step condition="identity.manager != null">
+👉 System evaluate karega:-
+Manager hai ya nahi?
+True → next step
+False → skip
+
+🔹 3. Technical Meaning (Important):-
+👉 Evaluation ka matlab hota hai:-
+✔ Expression execute karna
+✔ Condition check karna
+✔ Result return karna (true/false / value).
+
+🔹 4. SailPoint me kaun evaluate karta hai?
+Mostly ye components:-
+PolicyEvaluator (policy check karta hai)
+Rule Engine (rules run karta hai)
+Workflow Engine (conditions check karta hai)
+Provisioner (plan validate karta hai).
+-------------------------------------------------------------------------------------------------
+()PolicyEvaluator kya hai?
+👉 PolicyEvaluator ek engine hai jo policies ko evaluate karta hai.
+👉 Matlab:-
+Identity ka data uthata hai
+Policies apply karta hai
+Check karta hai violation hai ya nahi.
+
+🔹 Ye karta kya hai? (Step-by-step flow)
+🧠 Internal Working:-
+1️⃣ Identity uthata hai:-
+Identity identity = context.getObjectByName(Identity.class, "rahul");
+
+2️⃣ Policies load karta hai:-
+SoD Policies
+Activity Policies
+Password Policies
+
+3️⃣ Evaluate karta hai:-
+👉 Example:-
+User ke paas:-
+Role A
+Role B
+
+👉 Policy:-
+“Role A + Role B ek saath allowed nahi hai”
+👉 PolicyEvaluator kya karega?
+Roles compare karega
+Conflict check karega
+Violation detect karega
+
+4️⃣ Result banata hai
+👉 Agar violation mila:-
+PolicyViolation object create hota hai.
+------------------------------------------------------------------------------------------------------------
+🔹 DB me kya store hota hai? 💾
+👉 Jab evaluation hoti hai, tab result DB me save hota hai (agar violation hai)
+
+📌 1️⃣ PolicyViolation Table:-
+👉 Ye sabse important hai,
+Store hota hai:-
+Identity ID
+Policy Name
+Violation Type
+Status (Open / Closed)
+Date
+👉 Example:-
+Identity	Policy	       Status
+Rahul	    SoD Conflict	Open
+
+📌 2️⃣ spt_policy Table:-
+👉 Policies khud yahan store hoti hain,
+Store hota hai:-
+Policy name
+Type (SoD / Activity)
+Rule reference
+Description
+
+📌 3️⃣ spt_identity Table:-
+👉 User ka data.
+
+📌 4️⃣ spt_policy_violation (Main table):-
+👉 Actual violations yahan save hote hain.
+
+🔹 DB me kya store nahi hota?
+❌ Evaluation ka process (runtime logic).
+-----------------------------------------------------------------------------------------------------------------
+1️⃣ evaluate():-
+List<PolicyViolation> evaluate(Identity identity)
+👉 Kya karta hai?
+Ek identity ke against saari policies run karta hai
+Violations return karta hai
+👉 Example:-
+PolicyEvaluator evaluator = new PolicyEvaluator(context);
+List<PolicyViolation> violations = evaluator.evaluate(identity);
+
+for (PolicyViolation v : violations) {
+    System.out.println(v.getPolicyName());
+}
+---------------------------------------------------------------------------------
+2️⃣ evaluate(identity, policies):-
+List<PolicyViolation> evaluate(Identity identity, List<Policy> policies)
+👉 Kya karta hai?
+Sirf specific policies evaluate karta hai
+
+3️⃣ evaluateAll():-
+List<PolicyViolation> evaluateAll():-
+👉 Kya karta hai?
+System ke sab identities ko evaluate karta hai
+👉 Heavy operation (batch jobs me use hota hai).
+----------------------------------------------------------------------------------------
+4️⃣ evaluatePolicy():-
+List<PolicyViolation> evaluatePolicy(Identity identity, Policy policy)
+👉 Kya karta hai?
+Ek identity + ek policy check karta hai.
+
+🔹 evaluateWithOptions() kya hai?
+👉 Ye method use hota hai jab tu custom control ke saath policy evaluation karna chahta hai,
+List<PolicyViolation> evaluate(Identity identity, Map options)
+
+👉 Yahan:-
+identity → jis user ko evaluate karna hai
+options → extra control/config.
+
+🔹 Simple samajh:-
+👉(1)Normal evaluate(identity):-
+Default rules follow karta hai.
+
+👉(2)evaluate(identity, options):-
+Tu bolta hai system ko:
+“aise evaluate karo”
+“ye ignore karo”
+“ye include karo”
+
+3️⃣ Ignore mitigations:-
+options.put("ignoreMitigations", true);
+👉 Agar violation already approved/mitigated hai
+👉 To bhi dubara check karega
+
+4️⃣ Role / Entitlement filtering:-
+options.put("includeRoles", true);
+options.put("includeEntitlements", true);
+👉 Decide karta hai kya evaluate hoga.
+
+5️⃣ Specific Policy type:-
+options.put("policyType", "SoD");
+👉 Sirf SoD policies evaluate karega.
+------------------------------------------------------------------------------------------
+🔥 🔹 3. Helper / Internal Type Methods:-
+👉 Ye methods directly tum use nahi karte but internally kaam karte hain:-
+
+6️⃣ checkPolicyRules():-
+Policy ke andar jo rule hai usko run karta hai
+
+7️⃣ detectViolations():-
+Conflict find karta hai
+
+8️⃣ buildViolation():-
+PolicyViolation object create karta hai.
+--------------------------------------------------------------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointContextFactory;
+import sailpoint.api.PolicyEvaluator;
+import sailpoint.object.Identity;
+import sailpoint.object.Policy;
+import sailpoint.object.PolicyViolation;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class PolicyEvaluatorDemo {
+
+    public static void main(String[] args) throws Exception {
+
+        SailPointContextFactory factory = new SailPointContextFactory();
+        SailPointContext context = factory.getContext();
+
+        Identity identity = context.getObjectByName(Identity.class, "rahul");
+
+        PolicyEvaluator evaluator = new PolicyEvaluator(context);
+        List<Policy> policies = context.getObjects(Policy.class);
+
+        List<PolicyViolation> violations = evaluator.evaluate(identity, policies);
+
+        for (PolicyViolation v : violations) {
+            System.out.println("Policy: " + v.getPolicyName());
+            System.out.println("Status: " + v.getStatus());
+        }
+		context.close();
+    }
+}
+🔹 Output:-
+Policy: Finance-Audit Conflict
+Status: Open
+Policy: Password Policy
+Status: Open
+---------------------------------------------------------------------------------------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointContextFactory;
+import sailpoint.api.PolicyEvaluator;
+import sailpoint.object.Identity;
+import sailpoint.object.Policy;
+import sailpoint.object.PolicyViolation;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class PolicyEvaluatorDemo {
+
+    public static void main(String[] args) throws Exception {
+
+        SailPointContextFactory factory = new SailPointContextFactory();
+        SailPointContext context = factory.getContext();
+
+        Identity identity = context.getObjectByName(Identity.class, "rahul");
+
+        PolicyEvaluator evaluator = new PolicyEvaluator(context);
+        List<PolicyViolation> allViolations = evaluator.evaluateAll();
+
+        for (PolicyViolation v : allViolations) {
+            System.out.println("Identity: " + v.getIdentity().getName());
+            System.out.println("Policy: " + v.getPolicyName());
+        }
+		context.close();
+    }
+}
+🔹 Output:-
+Identity: rahul
+Policy: SoD Conflict
+
+Identity: amit
+Policy: Password Policy
+--------------------------------------------------------------------------------------------------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointContextFactory;
+import sailpoint.api.PolicyEvaluator;
+import sailpoint.object.Identity;
+import sailpoint.object.Policy;
+import sailpoint.object.PolicyViolation;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class PolicyEvaluatorDemo {
+
+    public static void main(String[] args) throws Exception {
+
+        SailPointContextFactory factory = new SailPointContextFactory();
+        SailPointContext context = factory.getContext();
+
+        Identity identity = context.getObjectByName(Identity.class, "rahul");
+
+        PolicyEvaluator evaluator = new PolicyEvaluator(context);
+        Policy policy = context.getObjectByName(Policy.class, "SoD Policy");
+
+        List<PolicyViolation> result = evaluator.evaluate(identity, policy);
+
+        for (PolicyViolation v : result) {
+            System.out.println("Single Policy: " + v.getPolicyName());
+            System.out.println("Status: " + v.getStatus());
+        }
+		context.close();
+    }
+}
+🔹 Output:-
+Single Policy: SoD Policy
+Status: Open
+----------------------------------------------------------------------------------------------------------------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointContextFactory;
+import sailpoint.api.PolicyEvaluator;
+import sailpoint.object.Identity;
+import sailpoint.object.Policy;
+import sailpoint.object.PolicyViolation;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class PolicyEvaluatorDemo {
+
+    public static void main(String[] args) throws Exception {
+
+        SailPointContextFactory factory = new SailPointContextFactory();
+        SailPointContext context = factory.getContext();
+
+        Identity identity = context.getObjectByName(Identity.class, "rahul");
+
+        PolicyEvaluator evaluator = new PolicyEvaluator(context);
+        Map<String, Object> options = new HashMap<String, Object>();
+
+        options.put("ignoreMitigations", true);
+        options.put("includeRoles", true);
+        options.put("includeEntitlements", true);
+        options.put("policyType", "SoD");
+
+        List<PolicyViolation> resultWithOptions = evaluator.evaluate(identity, options);
+
+        for (PolicyViolation v : resultWithOptions) {
+            System.out.println("Policy (Options): " + v.getPolicyName());
+            System.out.println("Status: " + v.getStatus());
+        }
+		context.close();
+    }
+}
+🔹 Output:-
+Policy (Options): Finance-Audit Conflict
+Status: Open
+Policy (Options): Admin Conflict
+Status: Open
+
+🔥 5️⃣ options.put():-
+()options.put("ignoreMitigations", true);:-
+👉 Already approved violations ko ignore nahi karega
+👉 Dubara evaluate karega.
+
+()options.put("includeRoles", true);:-
+👉 Roles ko evaluation me include karega
+
+()options.put("includeEntitlements", true);:-
+👉 Entitlements (access rights) bhi check karega
+
+()options.put("policyType", "SoD");:-
+👉 Sirf SoD policies evaluate karega
+
+🔚 Closing Code (End block)
+        context.close();
+    }
+}
+-------------------------------------------------------------------------------------------------------------------------------------

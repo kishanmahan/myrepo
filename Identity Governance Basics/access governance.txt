@@ -1,0 +1,75 @@
+()Access governance kya hai?
+👉 Access Governance ka matlab hai – organization me kis user ko kis system,
+application ya data ka access dena hai, usko control, monitor aur review karna.
+Iska main goal hota hai:-
+Right user ko right access
+Right time par
+Right reason ke liye
+Yani koi bhi user unnecessary ya unauthorized access na le sake. 🔐
+
+1️⃣ Access Governance kya control karta hai?
+Access Governance ensure karta hai ki:-
+Employee ko sirf uski job ke according access mile
+Sensitive systems (Finance, HR, Database) safe rahe
+Compliance rules follow ho (audit ke liye)
+Example:-
+User	Role	     Access
+Rahul	Developer	Git, Jira
+Anjali	HR	        HR System
+Amit	Finance     SAP Finance
+Agar developer ko HR system ka access mil gaya to Access Governance usko detect karega.
+
+2️⃣ Access Governance ke Main Components:-
+2️⃣ Access Governance ke Main Components
+1️⃣ Access Request:-
+User system ka access request karta hai.
+Example:-
+Employee bolta hai:-
+Mujhe Salesforce access chahiye.
+System workflow start karta hai.
+
+2️⃣ Approval Workflow:-
+Manager ya application owner approve karta hai.
+Example flow:-
+User Request
+     ↓
+Manager Approval
+     ↓
+Application Owner Approval
+     ↓
+Provisioning
+
+3️⃣ Access Provisioning:-
+Approval ke baad system automatically access create karta hai.
+Example:-
+Create Account
+Assign Role
+Assign Entitlement
+
+4️⃣ Access Review / Certification:-
+Time time par check hota hai ki access abhi bhi required hai ya nahi.
+Example:-
+Manager Review
+     ↓
+Keep Access
+Remove Access
+
+5️⃣ Access Revocation:-
+Agar employee:-
+company leave kare
+role change ho
+to access automatically remove ho jata hai.
+
+Example:-
+User Exit
+     ↓
+Disable Accounts
+     ↓
+Remove Access
+
+7️⃣ Access Governance ke Benefits:-
+✔ Security improve
+✔ Compliance follow (SOX, GDPR)
+✔ Unauthorized access control
+✔ Automatic access management
+✔ Audit easy

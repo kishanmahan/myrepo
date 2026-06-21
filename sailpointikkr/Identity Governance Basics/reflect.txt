@@ -1,0 +1,6 @@
+()Reflect ka matlab hai – “dikhana” ya “prakat karna”.
+Jab koi cheez reflect hoti hai, iska matlab hai ki uska effect ya result samne aa raha hai.
+Example everyday life:-
+“Mirror me apna chehra reflect hota hai” → mirror me dikh raha hai.
+“Policy violation reflect ho gayi dashboard me” → dashboard me violation ka effect dikh raha hai.
+

@@ -1,0 +1,79 @@
+1️⃣ SailPointFactory क्या है
+SailPointFactory एक utility / factory class है।
+इसका काम:-
+SailPoint environment के objects provide करना
+Context create करना
+Session manage करना
+Simple भाषा में:-
+👉 Factory class = objects बनाकर देने वाली class.
+
+2️⃣ getCurrentContext() क्या करता है
+SailPointContext context = SailPointFactory.getCurrentContext();
+इसका मतलब:
+👉 SailPoint system का current working context लेना।
+यह context हमें database और IAM objects access करने देता है।
+
+1️⃣ Simple Definition:-
+SailPoint Environment = SailPoint का running system
+
+जिसमें यह सब शामिल होते हैं:-
+SailPoint Server
+Database
+Applications (AD, SAP, etc.)
+Identity Data
+Policies
+Roles
+
+2️⃣ SailPoint Environment Components:-
+एक enterprise SailPoint environment में ये main parts होते हैं:
+
+1️⃣ SailPoint Server:-
+यह main application server होता है।
+काम:
+IAM logic run करना
+Rules execute करना
+Provisioning process करना
+Policies check करना
+
+Example server:-
+Tomcat / WebLogic
+
+2️⃣ Database:-
+यहाँ SailPoint का data store होता है।
+Example data:-
+Identities
+Roles
+Policies
+Certifications
+Access requests
+
+Example databases:-
+Oracle
+MySQL
+PostgreSQL
+
+3️⃣ Applications (Connected Systems):-
+SailPoint external systems से connect करता है।
+Example:-
+Active Directory
+SAP
+Salesforce
+Database
+इनसे accounts और entitlements collect होते हैं।
+
+4️⃣ Identity Data:-
+यह users की information होती है।
+Example:-
+Name
+Email
+Department
+Manager
+Role
+Access
+
+5️⃣ Rules & Workflows:-
+यह automation logic होते हैं।
+Example:-
+Access approval workflow
+Policy check rule
+Provisioning rule

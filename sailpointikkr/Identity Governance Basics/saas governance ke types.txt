@@ -1,0 +1,226 @@
+()SaaS governance kya hai?
+--1️⃣ SaaS Governance kya hai?
+SaaS = Software as a Service
+Example SaaS apps:-
+Salesforce
+Microsoft 365
+Slack
+ServiceNow
+SaaS Governance ka matlab:-
+Company ke SaaS applications me kaun user kya access use kar raha hai usko control aur monitor karna.
+
+Simple words:-
+SaaS Governance ensure karta hai:-
+Right user ko right access mile
+Unused access remove ho
+Security risk kam ho
+Compliance maintain rahe.
+Cloud me chalne wale SaaS applications ka access control, monitoring, security aur compliance manage karna.
+
+2️⃣ SaaS Governance kya karta hai?
+SaaS Governance ke main kaam:-
+1️⃣ Application Discovery:-
+Company me kaun kaun se SaaS apps use ho rahe hain detect karta hai.
+Example:-
+Salesforce
+Slack
+Google Workspace
+
+2️⃣ User Access Monitoring?
+Kaun user kis app me login kar raha hai.
+Example:-
+User : Rahul
+Application : Salesforce
+Access : Admin
+Last Login : 10 March
+
+3️⃣ Access Control:-
+Ye decide karta hai:-
+Kaun user
+Kaunsa application
+Kaunsa role
+Kaun user kis application me kya access use karega.
+Example:-
+Developer → GitHub access
+HR → Workday access
+Sales → Salesforce access
+
+3️⃣ Lifecycle Management:-
+User lifecycle manage karta hai.
+Joiner
+Mover
+Leaver
+Example:-
+Join → access create
+Department change → access change
+Leave → access remove
+
+4️⃣ Risk Management:-
+Risky access detect karta hai.
+Example:-
+User : Intern
+Access : Admin
+System alert generate karega.
+
+5️⃣ Compliance & Audit;-
+Regulations follow karwana.
+Example compliance:-
+SOX
+GDPR
+HIPAA
+
+3️⃣ SaaS Governance Architecture:-
+Typical architecture:-
+SaaS Applications
+       ↓
+API Integration
+       ↓
+IAM Platform
+       ↓
+Identity Governance
+       ↓
+Access Control
+       ↓
+Provisioning Engine
+       ↓
+Audit & Compliance
+
+Example:-
+Salesforce
+Slack
+Google Workspace
+teeno API se IAM tool me connect hote hain. 
+
+8️⃣ SaaS Governance Real Example:-
+Employee join karta hai.
+HR System
+     ↓
+Identity Create
+     ↓
+Role Assignment
+     ↓
+Access Profile
+     ↓
+Provisioning
+     ↓
+Salesforce + Slack Access
+
+Employee resign karta hai.
+Disable Identity
+     ↓
+Remove Roles
+     ↓
+Disable Accounts
+     ↓
+Remove Access
+
+()5️⃣ SaaS Governance ke Types:-
+1️⃣ Identity Governance:-
+Definition:-
+Identity Governance ka matlab hai company ke sabhi users ke identities ko manage aur control karna,
+including creation, modification, deactivation, aur role assignment.
+Purpose:-
+Ensure ki sirf authorized users hi system me hain.
+Employee lifecycle ke sahi management me help karta hai: Joiner, Mover, Leaver.
+Audit aur compliance ke liye complete record maintain karta hai.
+
+Example:-
+Operation	                      Example
+Create Identity------------HR system se naya employee create karna
+Update Identity------------Employee ka department change hona
+Disable Identity-----------Employee resign karne ke baad account disable karna
+Enable Identity------------Employee temporary leave ke baad re-enable karna
+Get Identity---------------Employee ka details fetch karna
+
+()Common Methods / Functions of Identity Governance (SailPoint / IAM context):-
+createIdentity()
+updateIdentity()
+disableIdentity()
+enableIdentity()
+getIdentity()
+deleteIdentity()
+
+2️⃣ Access Governance:-
+Definition:-
+Access Governance ka matlab hai user ke application aur system me permissions aur access ko manage karna,
+taaki users sirf required resources hi access karein.
+Purpose:-
+Least privilege principle enforce karna.
+Ensure ki koi unauthorized access na ho.
+Access certification aur audit easy banana.
+
+Example:-
+Operation	                     Example
+Grant Access:-----Developer ko GitHub repo write access dena
+Revoke Access:----Resigned employee ka Salesforce access remove karna
+Access Request:---Employee self-service portal se access request karna
+Access Approval:--Manager approve ya reject kare access request
+
+Common Methods of Access Governance:-
+grantAccess(user, resource, entitlement)
+revokeAccess(user, resource)
+requestAccess(user, resource)
+approveAccess(request)
+
+3️⃣ Privileged Access Governance:-
+Definition:-
+Privileged Access Governance ka matlab hai high-risk / admin level accounts aur permissions ka management,
+jo company ke critical systems ko control karte hain.
+Purpose:-
+Prevent insider threat ya security breach.
+Monitor aur audit admin-level access continuously.
+Ensure ki SOD (Segregation of Duties) violations na ho.
+
+Example:-
+Privileged Account	         Example
+Database Admin:-----Oracle / SQL DB ke admin users
+Cloud Admin:--------AWS / Azure admin users
+System Admin:-------Linux / Windows servers admin accounts
+
+Common Methods Privileged Access Governance:-
+assignPrivilegedRole(user, role)
+revokePrivilegedRole(user, role)
+auditPrivilegedAccess()
+monitorPrivilegedActivity()
+
+4️⃣ Data Governance:-
+Definition:-
+Data Governance ka matlab hai sensitive aur critical data ke access, classification, aur protection ka control.
+Purpose:-
+Ensure ki sensitive data sirf authorized users ke paas ho.
+Compliance (GDPR, HIPAA, SOX) meet karna.
+Data misuse aur leaks prevent karna.
+
+Example:-
+Data Type	                     Example
+Customer Data:---------CRM me stored customer personal info
+Financial Data:--------Payroll, Accounting systems data
+Confidential Docs:-----HR contracts, Strategic documents
+
+Common Methods of Data Governance:-
+classifyData(dataObject, sensitivityLevel)
+assignDataAccess(user, dataObject)
+auditDataAccess(user, dataObject)
+removeDataAccess(user, dataObject)
+
+5️⃣ Risk Governance:-
+Definition:-
+Risk Governance ka matlab hai SaaS applications aur access me potential risk detect, assess aur mitigate karna.
+Purpose:-
+Identify toxic combinations (like SOD violations).
+Detect inactive or orphaned accounts jo security risk ban sakte hain.
+Prevent compliance violations aur data breaches.
+
+Example Risk Scenarios:-
+Risk Type	                       Example
+SoD Violation:-----------Employee same time me Approver aur Requester
+Excessive Access:--------Intern ko Admin access mil gaya
+Orphaned Accounts:-------Resigned employee ka active account
+Policy Violation:--------Non-compliant access request approve hona
+
+Common Methods / Tools of Risk Governance:-
+analyzeRisk()
+detectSoDViolations()
+generateRiskReport()
+remediateRisk(user, access)
+-----------------------------------------------------------------

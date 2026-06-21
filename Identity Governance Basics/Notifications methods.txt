@@ -1,0 +1,147 @@
+()5️⃣ Notifications kya hai?
+Notification = Email send karne ka mechanism
+Notification decide karta hai:-
+kisko email bhejna hai
+kaunsa template use hoga
+kab email bhejna hai
+Example:-
+Access approval
+Password reset
+Policy violation
+
+Notification EmailTemplate XML (Project Example):-
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE EmailTemplate PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+
+<EmailTemplate name="AccessNotification"
+               subject="Access Notification for ${identityName}"
+               type="Access">
+
+<Description>
+Access request notification email
+</Description>
+
+<Body>
+
+<![CDATA[
+
+Hello ${identityName},
+
+Your access request has been processed successfully.
+
+Application : ${applicationName}
+Role : ${roleName}
+
+Thanks
+IAM Team
+
+]]>
+
+</Body>
+
+</EmailTemplate>
+
+1️⃣ sendEmailNotification():-
+Kya karta hai?
+Ye method EmailTemplate ko user ko bhejta hai.
+
+Code:-
+import sailpoint.object.EmailTemplate;
+import sailpoint.object.EmailOptions;
+import java.util.HashMap;
+import java.util.Map;
+
+EmailTemplate template = context.getObjectByName(
+EmailTemplate.class,"AccessNotification");
+
+Map vars = new HashMap();
+vars.put("identityName","Rahul");
+vars.put("applicationName","SAP");
+
+EmailOptions options = new EmailOptions("rahul@gmail.com", vars);
+
+context.sendEmailNotification(template, options);
+Output:-
+Email Sent Successfully
+To: rahul@gmail.com
+-------------------------------------
+2️⃣ setTo() (Notification Receiver):-
+Kya karta hai?
+
+Email kis ko bhejna hai set karta hai.
+Code
+EmailOptions options = new EmailOptions("rahul@gmail.com", null);
+options.setTo("rahul@gmail.com");
+System.out.println(options.getTo());
+Output:-
+rahul@gmail.com
+------------------
+3️⃣ setCc() (Carbon Copy)
+Kya karta hai
+
+Manager ya kisi aur ko CC me email bhejna.
+
+Code
+options.setCc("manager@gmail.com");
+
+System.out.println(options.getCc());
+Output
+manager@gmail.com
+--------------------------------
+4️⃣ setBcc() (Blind Carbon Copy):-
+Kya karta hai
+
+Hidden receiver ko email bhejna.
+
+Code
+options.setBcc("audit@gmail.com");
+
+System.out.println(options.getBcc());
+Output
+audit@gmail.com
+----------------------
+5️⃣ setReplyTo():-
+Kya karta hai
+
+User reply kare to reply kis email par jayega.
+
+Code
+options.setReplyTo("support@company.com");
+
+System.out.println(options.getReplyTo());
+Output
+support@company.com
+----------------------------
+6️⃣ setVariables():-
+Kya karta hai
+
+EmailTemplate ke dynamic variables set karta hai.
+
+Code
+Map vars = new HashMap();
+
+vars.put("identityName","Rahul");
+vars.put("applicationName","SAP");
+
+options.setVariables(vars);
+
+System.out.println(options.getVariables());
+Output
+{identityName=Rahul, applicationName=SAP}
+---------------------------
+7️⃣ setAttachments():-
+Kya karta hai
+
+Email ke saath files attach karta hai.
+
+Code
+List files = new ArrayList();
+
+files.add("report.pdf");
+
+options.setAttachments(files);
+
+System.out.println(options.getAttachments());
+Output
+[report.pdf]

@@ -1,0 +1,60 @@
+()global-setting:-application Attributes:-
+
+->application attributes->attribute-name-ruthi->searchable-tick->editable-tick->allowed values->Test-enter-demo-enter-Stage-enter-prod->
+->default value->Test->save->application definition->add application->extended attribute->ruthie->.
+
+ex-
+agar Attribute-name--GroupID-> 
+toh
+import sailpoint.object.Application;
+import sailpoint.object.ManagedAttribute;
+
+// 1. Application object fetch karna
+Application app = context.getObjectByName(Application.class, "LDAP");
+
+if (app != null) {
+    // 2. Application se attribute value nikalna
+    String groupIdValue = (String) app.getAttribute("GroupID");
+
+    // 3. ManagedAttribute ka naya instance banana
+    ManagedAttribute ma = new ManagedAttribute();
+    
+    // 4. Required properties set karna
+    ma.setApplication(app);
+    ma.setAttribute("GroupID"); // Woh attribute name jo LDAP schema mein hai
+    ma.setValue(groupIdValue);  // Actual value jo ID represent karti hai
+    
+    // Aapne jo likha tha, usse Display Name ki tarah use kar sakte hain
+    ma.setDisplayName("groupId : " + app.getName()); 
+
+    // 5. Object ko database mein save karna
+    context.saveObject(ma);
+    context.commitTransaction();
+}
+-------------
+()SailPoint IdentityIQ mein Application Configuration ke extra attributes (extended attributes) setup karne ke liye hai. 
+Jab aapko kisi Application ki settings mein standard fields ke alawa kuch apni custom jankari save karni ho, tab iska use hota hai.
+
+--Attribute Name: Yeh database ke liye technical naam hota hai. Ismein spaces nahi hone chahiye.
+
+--Display Name: Yeh woh naam hai jo aapko Application ke configuration page par dikhega.
+
+--Type: Data ka format (e.g., String, Secret, Boolean, Integer). Agar aap password jaisi cheez save kar rahe hain, toh "Secret" chunein.
+
+--Description: Is attribute ka maqsad batane ke liye thodi jankari.
+
+--Searchable: Agar ise check kiya, toh aap is attribute ki value ke aadhar par applications ko search kar payenge.
+
+--Editable: Kya admin is attribute ki value ko Application page par badal sakta hai? Agar nahi, toh yeh read-only ho jayega.
+
+--Required: Agar ise check karte hain, toh is attribute ko khali nahi chhoda ja sakta.
+
+--Category Name: Agar aapne bahut saare custom attributes banaye hain, toh unhein groups mein baantne ke liye category ka naam yahan likhte hain ya dropdown se chunte hain.
+
+--Allowed Values: Agar aap chahte hain ki user apni marzi se kuch bhi na likhe balki ek list mein se choose kare, toh wo options yahan ek-ek karke likhein.
+
+--Default Value: Agar koi value nahi bhari jati, toh system automatically kaunsi value uthayega, wo yahan set hoti hai.
+
+Example Scenario:-
+Maan lijiye aapko har application ke liye ek "Support Team Email" save karni hai jo standard SailPoint mein nahi milti. Aap Attribute Name mein supportEmail rakhenge, Type mein String aur Required ko check kar denge. Iske baad, har application ke config page par aapko ek naya box dikhega jahan aap email id daal sakenge.
+

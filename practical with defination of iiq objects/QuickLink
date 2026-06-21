@@ -1,0 +1,51 @@
+⚙️ QuickLink Rule kya hai?
+👉 QuickLink Rule = custom logic jo decide karta hai:-
+QuickLink ka behavior kya hoga
+Kaun use kar sakta hai
+Kaunsa workflow run hoga
+Kaunsa data pass hoga
+
+-----------------------------
+()sailpoint ko teen part me batenge aur un teeno me kya kya padhna hai:-
+(a)development:-configure custom workflows,configure lyfecycle events,custom rules,customization.
+(b)administration:-application onboarding,configuration certification,policy violations,installation,patching.
+(c)support:-troubleshoting,reporting,advance analytics,and handling incident who required whole product knowledge.
+------------------------------------
+()identity iq preview:-
+->identity iq business purpose 
+->identity iq common components
+->identity iq overview
+->overview of an identity iq project
+
+()product architecture installation:-
+->understanding the product architecture for identity iq
+->understanding the installation procedure for identity iq
+
+()identity cube:-
+->identity cube and identity refresh cube
+
+()application onboarding,correlation:-
+->onboarding application
+->account correlation
+->application configuration
+
+()risk and policies:-
+->identity iq policy overview
+->policy types:-sod,account policy,custom logic policy of companies.
+->discovery and handling policies
+->identity risk model->use cases->entitlements,policy violations and certification risk configuration
+->refreshing and interaction with riskscores->use cases->entitlements,policy violations and certification risk configuration
+
+()certifications:-
+->certification and access review->use case->pam application access review certification,manager application certification,
+group poowner certification.
+->types of certifications->use case->pam application access review certification,manager application certification,
+group poowner certification.
+->certification lifecycle:->use case->pam application access review certification,manager application certification,
+group poowner certification.
+->certification configuration->use case->pam application access review certification,manager application certification,
+group poowner certification.
+->certification making->use case->pam application access review certification,manager application certification,
+group poowner certification.
+certification decisions->use case->pam application access review certification,manager application certification,
+group poowner certification.

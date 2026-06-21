@@ -1,0 +1,2 @@
+()Workflow is a sequence of automated tasks used for provisioning, approvals, certifications, notifications, and lifecycle processes.
+

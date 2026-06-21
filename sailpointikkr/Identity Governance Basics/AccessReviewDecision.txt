@@ -1,0 +1,244 @@
+()🔹 AccessReviewDecision kya hai?
+👉 AccessReviewDecision = reviewer ka final decision object
+Simple words me:-
+Ye object store karta hai ki reviewer ne kya decision liya + uska reason + metadata.
+
+🔥 Ye kyun alag object hai?
+Tu soch raha hoga:-
+👉 "decision toh AccessReviewItem me hi hai, phir ye alag kyun?"
+
+✔️ Reason:-
+AccessReviewItem = current state
+AccessReviewDecision = history / record / audit log.
+
+🧠 Simple Example:-
+AccessReviewItem (Admin Role):-
+Reviewer 1 → APPROVE
+Reviewer 2 → REVOKE
+Manager → APPROVE
+👉 Ye sab decisions ek hi jagah store nahi hote.
+👉 Har ek decision ka record banega:-
+AccessReviewDecision 1 (Reviewer 1)
+AccessReviewDecision 2 (Reviewer 2)
+AccessReviewDecision 3 (Manager)
+
+🔥 AccessReviewDecision ke andar kya hota hai?
+Typical fields 👇
+
+1️⃣ decision:-
+👉 kya action liya
+APPROVE
+REVOKE
+ABSTAIN
+
+2️⃣ reviewer:-
+👉 kisne decision liya
+Reviewer: manager123
+
+3️⃣ comments:-
+👉 reason kya diya
+"Access required for project"
+
+4️⃣ date / timestamp:-
+👉 kab decision liya
+2026-03-26 10:30 AM
+
+5️⃣ completed / status:-
+👉 decision complete hai ya nahi.
+
+🔥 Ye kya karta hai?
+👉 Main kaam:-
+✔️ 1. Audit trail maintain karta hai
+Kisne kya decision liya → track hota hai
+✔️ 2. Multi-level approval support
+Manager → Owner → Security team
+✔️ 3. Compliance ke liye proof
+Audit me poocha jaata hai:-
+"kisne approve kiya?"
+
+🔥 Kya ye DB me store hota hai?
+👉 ✅ YES — 100% store hota hai database me
+🗄️ Database level pe
+AccessReviewItem table/object
+AccessReviewDecision alag entity/table.
+
+()AccessReviewDecision ke andar = reviewer ka full record:-
+decision
+comments
+reviewer
+time
+status
+--------------------------------------------
+🔹 1️⃣ getDecision():-
+👉 Description:-
+Reviewer ka final decision return karta hai.
+AccessReviewDecision d = new AccessReviewDecision();
+d.setDecision("APPROVE");
+System.out.println(d.getDecision());
+✔️ Output:-
+APPROVE
+
+🔹 2️⃣ getDecisionOk():-
+👉 Description:-
+Safe getter (null handle karta hai)
+AccessReviewDecision d = new AccessReviewDecision();
+System.out.println(d.getDecisionOk());
+✔️ Output:-
+null
+👉 Agar set kare:-
+d.setDecision("REVOKE");
+System.out.println(d.getDecisionOk());
+✔️ Output:-
+REVOKE
+
+🔹 3️⃣ setDecision(String decision):-
+👉 Description:-
+Decision set karta hai
+d.setDecision("APPROVE");
+✔️ Output:-
+(no direct output)
+
+🔹 4️⃣ hasDecision():-
+👉 Description:-
+Check karta hai decision diya gaya hai ya nahi
+AccessReviewDecision d = new AccessReviewDecision();
+System.out.println(d.hasDecision());
+✔️ Output:-
+false
+👉 After set:-
+d.setDecision("APPROVE");
+System.out.println(d.hasDecision());
+✔️ Output:-
+true
+
+🔹 5️⃣ getComments():-
+👉 Description:-
+Reviewer ka comment return karta hai
+d.setComments("Access needed");
+System.out.println(d.getComments());
+✔️ Output:-
+Access needed
+
+🔹 6️⃣ getCommentsOk():-
+👉 Description:
+Safe getter (null handle)
+AccessReviewDecision d = new AccessReviewDecision();
+System.out.println(d.getCommentsOk());
+✔️ Output:-
+null
+
+🔹 7️⃣ setComments(String comments):-
+👉 Description:-
+Comment set karta hai
+d.setComments("Approved for project");
+✔️ Output:-
+(no output)
+
+🔹 8️⃣ hasComments():-
+👉 Description:-
+Check karta hai comment hai ya nahi
+System.out.println(d.hasComments());
+✔️ Output:-
+true / false
+
+🔹 9️⃣ setCommentsNil();-
+👉 Description:-
+Intentionally null set karta hai
+d.setCommentsNil();
+System.out.println(d.getCommentsOk());
+✔️ Output:-
+null
+
+🔹 🔟 unsetComments():-
+👉 Description:-
+Field completely remove kar deta hai
+d.unsetComments();
+System.out.println(d.hasComments());
+
+✔️ Output:-
+false
+
+🔹 1️⃣1️⃣ getReviewer()/setReviewer():-
+👉 Description:-
+Kisne decision liya
+d.setReviewer("manager123");
+System.out.println(d.getReviewer());
+✔️ Output:-
+manager123
+
+🔹 1️⃣2️⃣ getReviewerOk():-
+👉 Description:-
+Safe getter
+AccessReviewDecision d = new AccessReviewDecision();
+System.out.println(d.getReviewerOk());
+✔️ Output:-
+null
+
+🔹 1️⃣4️⃣ hasReviewer():-
+👉 Description:-
+Check karta hai reviewer set hai ya nahi
+System.out.println(d.hasReviewer());
+✔️ Output:-
+true / false
+
+🔹 1️⃣5️⃣ getDecisionDate():-
+👉 Description:-
+Decision ka time return karta hai.
+d.setDecisionDate(new Date());
+System.out.println(d.getDecisionDate());
+✔️ Output:-
+Wed Mar 26 12:30:00 IST 2026
+
+🔹 1️⃣6️⃣ getDecisionDateOk():-
+👉 Description:-
+Safe getter
+✔️ Output:-
+null / date
+
+🔹 1️⃣7️⃣ setDecisionDate(Date date):-
+👉 Description:-
+Date set karta hai
+d.setDecisionDate(new Date());
+
+🔹 1️⃣8️⃣ hasDecisionDate():-
+👉 Description:-
+Check karta hai date set hai ya nahi
+✔️ Output:-
+true / false
+
+🔹 1️⃣9️⃣ getCompleted():-
+👉 Description:-
+Review complete hai ya nahi
+d.setCompleted(true);
+System.out.println(d.getCompleted());
+✔️ Output:-
+true
+
+🔹 2️⃣0️⃣ getCompletedOk():-
+👉 Description:-
+Safe getter
+✔️ Output:-
+null / true / false
+
+🔹 2️⃣1️⃣ setCompleted(boolean val):-
+👉 Description:-
+Completion status set karta hai
+d.setCompleted(true);
+
+🔹 2️⃣2️⃣ hasCompleted():-
+👉 Description:-
+Check karta hai value set hai ya nahi
+✔️ Output:-
+true / false
+
+🔹 2️⃣3️⃣ getId():-
+d.setId("123");
+System.out.println(d.getId());
+✔️ Output:-
+123
+
+🔹 2️⃣4️⃣ setId(String id):-
+🔹 2️⃣5️⃣ hasId():-
+✔️ Output:-
+true / false
+--------------------------------------------------------------------------------------------------------

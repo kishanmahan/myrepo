@@ -1,0 +1,214 @@
+()Role Lifecycle kya hai?
+--Role Lifecycle IAM (Identity and Access Management) me ek process hota hai jisme role ko create,
+manage, update aur retire kiya jata hai.
+Matlab ek role ka poora life cycle — jab role banaya jata hai tab se lekar jab tak usko 
+remove/retire nahi kar diya jata. 🔐
+
+Role Lifecycle ke main stages:-
+1️⃣ Role Creation:-
+Sabse pehle role create kiya jata hai.
+Example:-
+Company me Finance Analyst job hai.
+To role banega:-
+Role Name: Finance Analyst
+Permissions:
+- Read Finance Data
+- Write Finance Reports
+
+2️⃣ Role Assignment:-
+Role ko users ko assign kiya jata hai.
+Example:-
+Rahul → Finance Analyst Role
+Priya → Finance Analyst Role
+Ab Rahul aur Priya ko automatically same permissions mil jayenge.
+
+3️⃣ Role Certification / Review:-
+Time-to-time manager ya security team review karti hai ki role sahi hai ya nahi.
+Questions:-
+Kya role me extra permissions hain?
+Kya user ko abhi bhi role chahiye?
+Kya compliance rules follow ho rahe hain?
+Example:-
+Manager review karta hai:-
+Rahul ko Finance Analyst role abhi bhi chahiye? ✔
+
+4️⃣ Role Modification:-
+Agar job change ho ya policy change ho to role update kiya jata hai.
+Example:-
+Pehle permissions:-
+Read Finance
+Write Finance
+
+Update ke baad:-
+Read Finance
+Write Finance
+Approve Finance
+
+5️⃣ Role De-assignment:-
+Agar user job change kare ya company leave kare to role remove kar diya jata hai.
+Example:-
+Rahul HR department me shift ho gaya
+→ Finance Analyst role remove
+
+6️⃣ Role Retirement:-
+Agar role ab company me use nahi ho raha to role retire/delete kar diya jata hai.
+Example:-
+Old Role: Legacy Finance Role
+→ Retired
+
+example code:-
+import java.util.ArrayList;
+import java.util.List;
+
+class Permission {
+
+    String name;
+
+    Permission(String name) {
+        this.name = name;
+    }
+}
+
+class TechnicalRole {
+
+    String roleName;
+    String application;
+    List<Permission> permissions = new ArrayList<Permission>();
+
+    TechnicalRole(String roleName, String application) {
+        this.roleName = roleName;
+        this.application = application;
+    }
+
+    void addPermission(Permission p) {
+        permissions.add(p);
+    }
+}
+
+class BusinessRole {
+
+    String roleName;
+    String status = "ACTIVE";
+    List<TechnicalRole> technicalRoles = new ArrayList<TechnicalRole>();
+
+    BusinessRole(String roleName) {
+        this.roleName = roleName;
+    }
+
+    void addTechnicalRole(TechnicalRole role) {
+        technicalRoles.add(role);
+    }
+
+    void retireRole() {
+        status = "RETIRED";
+        System.out.println("Role retired: " + roleName);
+    }
+}
+
+class Identity {
+
+    String userId;
+    List<BusinessRole> roles = new ArrayList<BusinessRole>();
+
+    Identity(String userId) {
+        this.userId = userId;
+    }
+
+    void assignRole(BusinessRole role) {
+
+        if(role.status.equals("RETIRED")) {
+            System.out.println("Cannot assign retired role");
+            return;
+        }
+
+        roles.add(role);
+        System.out.println("Role " + role.roleName + " assigned to " + userId);
+
+        applyPermissions(role);
+    }
+
+    void applyPermissions(BusinessRole role) {
+
+        for(TechnicalRole t : role.technicalRoles) {
+
+            System.out.println("Application: " + t.application);
+
+            for(Permission p : t.permissions) {
+                System.out.println("Permission granted: " + p.name);
+            }
+        }
+    }
+}
+
+class PolicyEngine {
+
+    static void checkSoD(BusinessRole role) {
+
+        boolean createVendor = false;
+        boolean approvePayment = false;
+
+        for(TechnicalRole t : role.technicalRoles) {
+            for(Permission p : t.permissions) {
+
+                if(p.name.equals("Create Vendor")) {
+                    createVendor = true;
+                }
+
+                if(p.name.equals("Approve Payment")) {
+                    approvePayment = true;
+                }
+            }
+        }
+
+        if(createVendor && approvePayment) {
+            System.out.println("SoD Violation detected in role: " + role.roleName);
+        }
+    }
+}
+
+class AuditService {
+
+    static void log(String action) {
+        System.out.println("AUDIT LOG: " + action);
+    }
+}
+
+public class EnterpriseRoleLifecycle {
+
+    public static void main(String[] args) {
+
+        Permission p1 = new Permission("Create Vendor");
+        Permission p2 = new Permission("Approve Payment");
+
+        TechnicalRole sapRole = new TechnicalRole("SAP Finance Role", "SAP");
+        sapRole.addPermission(p1);
+        sapRole.addPermission(p2);
+
+        BusinessRole financeManager = new BusinessRole("Finance Manager");
+        financeManager.addTechnicalRole(sapRole);
+
+        PolicyEngine.checkSoD(financeManager);
+
+        Identity rahul = new Identity("EMP1001");
+        Identity ram = new Identity("EMP1002");
+
+        rahul.assignRole(financeManager);
+        ram.assignRole(financeManager);
+
+        AuditService.log("Finance Manager role assigned to users");
+
+        financeManager.retireRole();
+    }
+}
+output:-
+SoD Violation detected in role: Finance Manager
+Role Finance Manager assigned to EMP1001
+Application: SAP
+Permission granted: Create Vendor
+Permission granted: Approve Payment
+Role Finance Manager assigned to EMP1002
+Application: SAP
+Permission granted: Create Vendor
+Permission granted: Approve Payment
+AUDIT LOG: Finance Manager role assigned to users
+Role retired: Finance Manager 

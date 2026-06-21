@@ -1,0 +1,237 @@
+🔥 🔹 MapToResourceObject – Big Definition:-
+MapToResourceObject ek SailPoint rule / logic concept hai jo provisioning ke time 
+SailPoint ke internal data (Identity, attributes, roles) ko external system ke ResourceObject (account structure)
+me convert karta hai, taki target system (jaise AD, DB, application) ko samajh aaye ki kaunsa data create/update karna hai.
+
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="ENT_Custom_MapToResourceObject" type="MapToResourceObject">
+  <Description>
+    Ye rule raw Map data ko SailPoint ResourceObject mein convert karta hai.
+    Isme basic data transformation aur Native Identity setup ka logic included hai.
+  </Description>
+  <Signature returnType="ResourceObject">
+    <Inputs>
+      <Argument name="map" type="java.util.Map">
+        <Description>Raw data map coming from the target system.</Description>
+      </Argument>
+      <Argument name="application" type="sailpoint.object.Application" />
+      <Argument name="schema" type="sailpoint.object.Schema" />
+    </Inputs>
+  </Signature>
+  <Source>
+  // 1. Explicit Imports (No Wildcards)
+  import sailpoint.object.ResourceObject;
+  import sailpoint.object.Schema;
+  import sailpoint.object.Application;
+  import sailpoint.tools.Util;
+  import java.util.Map;
+  import java.util.HashMap;
+  import java.util.Iterator;
+  import org.apache.commons.logging.Log;
+  import org.apache.commons.logging.LogFactory;
+
+  // 2. Logger Setup
+  Log logger = LogFactory.getLog("custom.rule.MapToResourceObject");
+  
+  // Naya ResourceObject create karna
+  ResourceObject ro = new ResourceObject();
+
+  try {
+      // 3. Null Checks (Production safety)
+      if (map == null || map.isEmpty()) {
+          logger.warn("Incoming map is null or empty. Returning empty ResourceObject.");
+          return ro;
+      }
+      
+      if (schema == null) {
+          logger.error("Schema object is null! Cannot process ResourceObject properly.");
+          return null; // Aggregation fail ho jayegi yaha
+      }
+
+      logger.debug("Processing raw map for Account creation...");
+
+      // 4. Object Type set karna (Account ya Group)
+      ro.setObjectType(schema.getObjectType());
+
+      // 5. NATIVE IDENTITY SETUP (Sabse zaroori step)
+      // Aapko batana hoga ki target system ka primary key kaunsa attribute hai
+      String identityAttribute = schema.getIdentityAttribute(); 
+      String nativeIdentity = (String) map.get(identityAttribute);
+
+      if (Util.isNullOrEmpty(nativeIdentity)) {
+          // Agar account id hi nahi mili, toh SailPoint account create nahi kar payega
+          logger.error("CRITICAL: Native Identity (" + identityAttribute + ") missing in raw map! Map data: " + map.toString());
+          return null; 
+      }
+      
+      ro.setIdentity(nativeIdentity);
+      logger.debug("Building ResourceObject for NativeIdentity: " + nativeIdentity);
+
+      // 6. Data Mapping and Transformation (Real-world scenario)
+      for (Object key : map.keySet()) {
+          String attrName = (String) key;
+          Object attrValue = map.get(key);
+
+          // Example Transformation: Database mein status '1' aur '0' hai, 
+          // par SailPoint mein humein 'Active' / 'Inactive' chahiye.
+          if ("STATUS_FLAG".equalsIgnoreCase(attrName) &amp;&amp; attrValue != null) {
+              String statusStr = attrValue.toString().trim();
+              if ("1".equals(statusStr)) {
+                  attrValue = "Active";
+              } else if ("0".equals(statusStr)) {
+                  attrValue = "Inactive";
+              }
+          }
+          
+          // Example Transformation: Email ko lowercase mein force karna
+          if ("EMAIL_ADDR".equalsIgnoreCase(attrName) &amp;&amp; attrValue != null) {
+              attrValue = attrValue.toString().toLowerCase().trim();
+          }
+
+          // Value ko ResourceObject mein daalna
+          ro.setAttribute(attrName, attrValue);
+      }
+
+  } catch (Exception e) {
+      logger.error("Exception in MapToResourceObject for map: " + map.toString(), e);
+  }
+
+  // 7. Final Output (Ye object ab Aggregation engine ke paas jayega)
+  return ro;
+  </Source>
+</Rule>
+////////////*
+()1. schema.getObjectType() kya return karega?
+Ye ek String return karta hai.
+Matlab: Ye batata hai ki SailPoint abhi kis type ka data process kar raha hai.
+Zyadatar Values: Iski value generally "account" (agar users ka data aa raha hai) ya 
+"group" (agar entitlements/roles ka data aa raha hai) hoti hai.
+-----------------------------------------------------------
+()🔥 🔹 2️⃣ map.get(identityAttribute) kya return karta hai?
+👉 Ye account ka unique identifier hota hai.
+----------------------------------------------------------------
+()String identityAttribute = schema.getIdentityAttribute();
+Object value = map.get(identityAttribute);
+
+System.out.println("Identity Attribute: " + identityAttribute);
+System.out.println("Value from map: " + value);
+
+🔥 Example output (real scenario):-
+Agar:
+identityAttribute = "USER_ID"
+map = {USER_ID=1001, NAME=Ravi}
+Output hoga:
+Identity Attribute: USER_ID
+Value from map: 1001
+-------------------------------------------------------------
+🔥 🔹 3️⃣ Map me kya kya hota hai?
+Map = external system ka raw data
+
+🔹 Example (DB / AD se aaya data):-
+{
+  USER_ID = "1001",
+  NAME = "Ravi",
+  EMAIL_ADDR = "RAVI@GMAIL.COM",
+  STATUS_FLAG = "1",
+  DEPARTMENT = "IT"
+}
+👉 Ye sab:-
+➡ columns / attributes hote hain.
+--------------------------------------------------------
+()if ("STATUS_FLAG".equalsIgnoreCase(attrName)) {
+👉 Matlab:-
+➡ Agar attribute ka naam STATUS_FLAG hai (case ignore karke)
+
+🔥 Real use:-
+1 → Active
+0 → Inactive
+----------------------------------------------------------
+()EMAIL_ADDR==Email
+------------------------
+🔥 🔹 1️⃣ schema me kaunsa object aata hai?
+schema = Target System ka Schema (NOT Identity) ❗
+🔹 Matlab:-
+👉 Ye external system (Application) ka structure hota hai
+Examples:-
+Active Directory schema
+Database schema
+LDAP schema
+
+🔹 Isme kya hota hai?
+👉 Ye batata hai:-
+Object type:-
+Account / Group
+Identity attribute:-
+uid / cn / USER_ID
+Attributes:-
+NAME
+EMAIL_ADDR
+STATUS_FLAG:- 1 matlab active hai aur 0 matlab inactive hai.
+🔥 Clear line:-
+schema hamesha target system ka hota hai, SailPoint Identity ka nahi.
+------------------------------------------------------------------------
+🔥tumne bataya tha ki args me context plan aur kai objects sailpoint inject karta hai while running rule?
+🔹1️⃣ General concept (jo maine pehle bola tha):-
+Haan — SailPoint runtime pe kuch objects inject karta hai, jaise:
+context
+log
+args
+plan (kabhi-kabhi)
+identity
+etc.
+----------------------------------------------------------------------------------------
+👉 “Beanshell rule run hote waqt SailPoint args me kaun-kaunse objects inject karta hai, aur ye kaun-kaunse rules me milta hai”?
+--
+🔥 🔹 1️⃣ args me kya-kya OBJECTS milte hain (REAL CASES)
+👉 args me ye sab objects aa sakte hain (depending on rule):
+identity (sailpoint.object.Identity)
+identityName (String)
+application (sailpoint.object.Application)
+schema (sailpoint.object.Schema)
+link / account (sailpoint.object.Link / ResourceObject)
+plan (sailpoint.object.ProvisioningPlan)
+accountRequest
+attributeRequest
+workflow (sailpoint.workflow.Workflow)
+workflowContext
+task (sailpoint.object.TaskItem)
+taskResult (sailpoint.object.TaskResult)
+certification (sailpoint.object.Certification)
+certificationItem
+approvalItem
+approvalSet
+form (Dynamic form object)
+value / oldValue / newValue
+arguments (nested map)
+context (rare, but sometimes passed manually)
+logger (in some execution modes)
+-----------------------------------------
+🔥 🔹 2️⃣ args kis kis rule me milta hai:-
+👉 Ye list of rule types jahan args mil sakta hai (depending on caller):
+🔹 Workflow related:-
+Workflow Rule
+Workflow Step Rule
+Approval Rule
+Approval Assignment Rule
+Approval Escalation Rule
+🔹 LCM / Provisioning:-
+BeforeProvisioning Rule
+AfterProvisioning Rule
+Provisioning Rule
+LCM Workflow Rule
+🔹 Certification:-
+Certification Rule
+Certification Exclusion Rule
+Certification Item Rule
+🔹 Task:-
+TaskDefinition Rule
+Custom Task Rule
+🔹 UI / Form:-
+Form Rule
+UI Rule
+🔹 Custom execution:-
+context.runRule(rule, args)
+-----------------------------------------------------------------------
+
+*///////////

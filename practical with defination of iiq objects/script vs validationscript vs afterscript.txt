@@ -1,0 +1,61 @@
+/////////////*
+<Script> (Data Loader / Value Script)
+Kaam kya hai: Iska kaam field ke andar data ko load ya populate karna hota hai.
+Ye batata hai ki us box me user ko kya dikhega.
+ex:-
+1. <Script> Ka Kaam (Step ke Shuru me):-
+Yeh step ke shuru hote hi chalta hai taaki approval ke liye taiyari ki ja sake.
+XML
+<Script>
+  // Step shuru hone se pehle manager ka naam dhoodho
+  String manager = getManagerName(identityName, launcher, "Default Workgroup");
+  workflow.put("approverName", manager); 
+</Script>
+
+2. <AfterScript> Ka Kaam (Step Khatam hone ke Baad):
+Ab manager ne screen par "Approve" ya "Reject" button daba diya aur step khatam ho gaya. 
+ex:-
+Ab <AfterScript> trigger hoga yeh dekhne ke liye ki manager ne kya faisla liya:-
+XML
+<AfterScript>
+  // Step khatam hone ke baad check karo manager ne kya kiya
+  String decision = item.getApprovalState(); // Approve ya Reject check karna
+  log.error("Manager ka decision tha: " + decision);
+  
+  if("Rejected".equals(decision)) {
+      // Agar reject kiya toh koi alert trigger karo
+      sendAlertToSecurityTeam(identityName);
+  }
+</AfterScript>
+
+3. <ValidationScript> (Data Checker / Guard):-
+Kaam kya hai: Iska kaam user ke bhare hue data ko check (verify) karna hota hai ki wo sahi hai ya galat.
+Kab chalta hai: Jab user form poora bharne ke baad "Save" ya "Next" button daba kar submit karta hai. 
+Return Type: * Agar data galat hai, to ye ek Error Message (String) return karta hai 
+(jo screen par red color me dikhta hai aur workflow ko aage badhne se rok deta hai).
+Agar data sahi hai, to ye null ya kuch return nahi karta, jisse workflow aage badh jata hai.
+
+toh yeh script check karti hai ki jo data submit kiya ja raha hai, woh sahi hai ya nahi.
+1. Yeh Kab Aur Kaise Chalta Hai?
+Jab workflow kisi Form ya Approval step par ruka hota hai aur user button click karta hai, 
+toh SailPoint agle step par jaane se pehle <ValidationScript> ko chalata hai.
+ex:-
+2. Ek Real-World Example Se Samjhein:-
+Maan lijiye aapke native change approval workflow me aapne manager ko ek text box diya hai jisme use likhna hai: "Aap is native change ko kyun approve kar rahe hain? (Reason)"
+Aap chahte hain ki manager bina reason likhe "Approve" na kar paye. Wahan aap <ValidationScript> ka use karenge:
+XML
+<ValidationScript>
+  <Source>
+    // Manager ne jo comments likhe hain use nikalye
+    String comments = item.getComments(); 
+    
+    // Agar comments khali hain ya bohot chhote hain
+    if (comments == null || comments.trim().length() &lt; 10) {
+        // Form rok do aur screen par error dikhao
+        return "Error: Native change ko approve karne ke liye kam se kam 10 characters ka reason likhna zaroori hai!";
+    }
+    
+    return null; // Sab sahi hai, aage badhne do
+  </Source>
+</ValidationScript>
+*///////////////////

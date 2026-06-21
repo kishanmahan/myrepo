@@ -1,0 +1,22 @@
+2️⃣ Database / IAM / SailPoint me:-
+Jab hum user attributes ko account fields ke saath link karte hain, usse bhi mapping kehte hain.
+Mapping ka matlab hai: identity ke attributes ko database ya account ke fields ke saath link karna.
+Example:-
+accountConfig.setUsernameAttribute("username");
+accountConfig.setPasswordAttribute("password");
+Matlab:Is step me koi value database me save nahi hoti.
+Ye sirf “kaunsa attribute kis column se match karega” define karta hai.
+
+()toh kya har aggretion or provissioning ke pehle mapping karna hoga har project me?
+--1️⃣ Mapping har project me kyun chahiye?
+SailPoint ya kisi IAM me system ko ye pata hona chahiye:-
+Identity ka kaunsa attribute database/account ke kaunse field se link hoga
+Kaunsa data read hoga (aggregation) aur kaunsa write hoga (provisioning)
+Agar mapping nahi hogi → system ko samajh nahi aayega username, email, role, 
+password kaunsa field me hai, aur aggregation/provisioning fail ho jayega.
+
+2️⃣ Har aggregation/provisioning ke liye mapping?
+Har connector ke liye mapping define karni padti hai.
+Ek baar mapping define ho jaye → tu baar-baar aggregation/provisioning run kar sakta hai
+bina mapping dobara likhe.
+

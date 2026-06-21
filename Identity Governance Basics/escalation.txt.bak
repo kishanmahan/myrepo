@@ -1,0 +1,57 @@
+1️⃣ Escalation kya hai?
+Matlab: Jab koi task, approval, ya issue apni original deadline me complete nahi hota, to wo upar ke level pe forward kar diya jata hai.
+IAM / SailPoint me mostly Access Request, Approval, ya Certification workflow me hota hai.
+Purpose: Delay ya inaction ko avoid karna aur ensure karna ki workflow complete ho.
+✅ Simple:
+“Escalation” = task ko upar ke manager / authority level pe bhejna, agar original owner action na le.
+
+2️⃣ Escalation kaam kya karta hai
+
+Approval me help karta hai:
+
+Agar manager access request approve/reject nahi karta, to system automatically next level manager ya admin ko notify karta hai.
+
+Access Certification / Review me help karta hai:
+
+Agar reviewer access certify nahi karta, to workflow escalate hota hai higher authority ke paas.
+
+Compliance aur SLA maintain karta hai:
+
+Business aur audit ke liye ensure karta hai ki task time pe complete ho jaye.
+
+3️⃣ Escalation ke andar kya hota hai
+
+Task / Request: Jo action pending hai
+
+Original Owner / Reviewer: Jisko kaam assign hua tha
+
+Escalation Rule: Kab aur kis level pe escalate karna hai
+
+Escalation Target: Upar ka manager, admin, ya authority
+
+4️⃣ Example (SailPoint / IAM Workflow)
+
+Scenario:
+
+User X ne Finance role request kiya.
+
+Manager Y ko approval mila.
+
+3 din me Manager Y approve nahi karta.
+
+Escalation Rule:
+
+3 din me approval nahi mila → Finance Director ko notification send karo
+
+Code / Pseudo Example:
+
+AccessRequest request = context.getObjectByName(AccessRequest.class, "Finance Role Request");
+
+if(request.isPending() && request.isOverdue()) {
+    request.escalate("Finance Director");
+    System.out.println("Request escalated to Finance Director");
+}
+
+Output:
+
+Request escalated to Finance Director

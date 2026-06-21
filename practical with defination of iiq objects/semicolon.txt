@@ -1,0 +1,28 @@
+//////////////*
+()semicolon(;):-
+kyunki SailPoint me semicolon (;) lagana hai ya nahi, 
+yeh is baat par depend karta hai ki aap script ko XML ke kis attribute ya tag ke andar likh rahe hain.
+
+-->Rule 1: Agar aap <Transition> tag ke andar hain (Semicolon NAHI lagana hai)
+Jab aap kisi step se dusre step par jaane ke liye single-line condition likhte hain (jaise when="Script:..."), toh wahan semicolon nahi lagaya jata.
+Kyun? Kyunki SailPoint wahan ek "Expression" expect karta hai jo turant true ya false (ya koi value) return kare. Semicolon lagane se BeanShell use ek statement maan leta hai aur kabhi-kabhi kuch return nahi karta (void ho jata hai), jisse workflow ruk jata hai.
+❌ Galat: when="Script: "Approved".equals(item.getApprovalState());"
+Sahi: when="Script: "Approved".equals(item.getApprovalState())"
+
+Rule 2: Agar aap <Source> ya <Script> tag ke andar hain (Semicolon ZAROORI hai).
+
+Rule 3:-
+Agar aap <Approval> tag ke attributes jaise ownerExpression, argIdentity, ya when ke andar script: prefix ke sath single-line expression likh rahe hain, toh wahan semicolon nahi lagana hai.
+
+Kyun? Kyunki SailPoint yahan direct ek dynamic value ya object return chahta hai. Semicolon lagane se logic break ho sakta hai.
+
+❌ Galat:
+
+XML
+<Approval name="Manager Approval" ownerExpression="script:getManagerName(identityName, launcher, fallbackApprover);" renderer="nativeChangeApprovalRenderer.xhtml">
+*   ✅ **Sahi:**
+    ```xml
+    <Approval name="Manager Approval" ownerExpression="script:getManagerName(identityName, launcher, fallbackApprover)" renderer="nativeChangeApprovalRenderer.xhtml">
+Scenario 2: Agar aap Approval ke andar <Script> ya <ValidationScript> block bana rahe hain (Semicolon HAMESHA lagega)
+
+*///////////

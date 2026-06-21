@@ -1,0 +1,217 @@
+()🔥 AuditManager kya hai?
+AuditManager bhi SailPoint IdentityIQ me ek class/service hoti hai
+Ye AuditEvent ko create, log, save aur manage karne ke liye use hoti hai
+
+👉 Simple:-
+AuditEvent = data (log record)
+AuditManager = us data ko handle karne wala controller/service.
+
+🔹 AuditManager ke methods:-
+log(AuditEvent event)
+log(String action, String actor, String target)
+log(String action, String actor, String target, String result)
+log(AuditEvent event, boolean persist)
+save(AuditEvent event)
+createEvent()
+getEvents()
+getEventsByAction(String action)
+getEventsByActor(String actor)
+getEventsByTarget(String target)
+getEventsByTrackingId(String trackingId)
+getEventsByDateRange(Date start, Date end)
+deleteEvent(AuditEvent event)
+archiveEvent(AuditEvent event)
+countEvents()
+countEventsByAction(String action)
+searchEvents(QueryOptions options)
+toMap(AuditEvent event)
+fromMap(Map map)
+toXml(AuditEvent event)
+fromXml(String xml)
+-----------------------------
+🔥 1️⃣ log(AuditEvent event):-
+📌 Purpose:-
+Ek complete AuditEvent ko log + persist (DB me save) karta hai
+⚙️ Internally:-
+Event validate hota hai
+Timestamp set hota hai
+DB me insert hota hai
+🧪 Example:-
+AuditEvent event = new AuditEvent();
+event.setAction("LOGIN");
+event.setActor("User1");
+auditManager.log(event);
+✅ Output:-
+Audit Event Logged
+
+🔥 1️⃣ log(AuditEvent event):-
+📌 Purpose:-
+Ek complete AuditEvent ko log + persist (DB me save) karta hai
+⚙️ Internally:
+Event validate hota hai
+Timestamp set hota hai
+DB me insert hota hai
+🧪 Example:
+AuditEvent event = new AuditEvent();
+event.setAction("LOGIN");
+event.setActor("User1");
+auditManager.log(event);
+✅ Output:
+Audit Event Logged
+
+🔥 3️⃣ log(String action, String actor, String target, String result):-
+📌 Purpose:
+Result ke saath audit log create karta hai
+🧪 Example:
+auditManager.log("REQUEST_APPROVE", "Manager1", "REQ123", "SUCCESS");
+✅ Output:
+Action=REQUEST_APPROVE, Result=SUCCESS
+
+🔥 4️⃣ log(AuditEvent event, boolean persist):-
+📌 Purpose:
+Decide karta hai ki event DB me save karna hai ya sirf runtime log
+🧪 Example:
+auditManager.log(event, false);
+✅ Output:
+Logged (not persisted)
+
+🔥 4️⃣ log(AuditEvent event, boolean persist):-
+📌 Purpose:
+Decide karta hai ki event DB me save karna hai ya sirf runtime log
+🧪 Example:
+auditManager.log(event, false);
+✅ Output:
+Logged (not persisted)
+
+🔥 6️⃣ createEvent():-
+📌 Purpose:
+Naya empty AuditEvent object create karta hai
+🧪 Example:
+AuditEvent event = auditManager.createEvent();
+event.setAction("LOGOUT");
+
+🔥 7️⃣ getEvents():-
+📌 Purpose:
+Saare audit events fetch karta hai
+🧪 Example:
+List<AuditEvent> list = auditManager.getEvents();
+System.out.println(list.size());
+✅ Output:
+10
+
+🔥 8️⃣ getEventsByAction(String action):-
+📌 Purpose:
+Specific action ke events fetch
+🧪 Example:
+auditManager.getEventsByAction("LOGIN");
+✅ Output:
+[LOGIN, LOGIN]
+
+🔥 9️⃣ getEventsByActor(String actor):-
+📌 Purpose:
+Specific user ke events fetch
+🧪 Example:
+auditManager.getEventsByActor("User1");
+✅ Output:
+[LOGIN, REQUEST]
+
+🔥 🔟 getEventsByTarget(String target):-
+📌 Purpose:
+Target object ke basis par filter
+🧪 Example:
+auditManager.getEventsByTarget("REQ123");
+✅ Output:
+[APPROVED, REJECTED]
+
+🔥 1️⃣1️⃣ getEventsByTrackingId(String trackingId):-
+📌 Purpose:
+Same transaction ke events fetch
+🧪 Example:
+auditManager.getEventsByTrackingId("TRK001");
+✅ Output:
+[Step1, Step2, Step3]
+
+🔥 1️⃣2️⃣ getEventsByDateRange(Date start, Date end):-
+📌 Purpose:
+Date range ke events fetch
+🧪 Example:
+auditManager.getEventsByDateRange(startDate, endDate);
+✅ Output:
+[Events between dates]
+
+🔥 1️⃣3️⃣ deleteEvent(AuditEvent event):-
+📌 Purpose:
+Event ko permanently delete
+🧪 Example:
+auditManager.deleteEvent(event);
+
+🔥 1️⃣3️⃣ deleteEvent(AuditEvent event):-
+📌 Purpose:
+Event ko permanently delete
+🧪 Example:
+auditManager.deleteEvent(event);
+
+🔥 1️⃣5️⃣ countEvents():-
+📌 Purpose:
+Total events count
+🧪 Example:
+int count = auditManager.countEvents();
+System.out.println(count);
+✅ Output:
+50
+
+🔥 1️⃣6️⃣ countEventsByAction(String action):-
+📌 Purpose:
+Specific action ka count
+🧪 Example:
+auditManager.countEventsByAction("LOGIN");
+✅ Output:
+15
+
+🔥 1️⃣7️⃣ searchEvents(QueryOptions options):-
+📌 Purpose:
+Advanced filtering (custom query)
+⚙️ Internally:
+QueryOptions me filters define hote hain
+🧪 Example:
+QueryOptions qo = new QueryOptions();
+qo.addFilter("action", "LOGIN");
+auditManager.searchEvents(qo);
+✅ Output:
+[Filtered Events]
+
+🔥 1️⃣8️⃣ toMap(AuditEvent event):-
+📌 Purpose:-
+AuditEvent → Map convert
+🧪 Example:-
+Map map = auditManager.toMap(event);
+System.out.println(map);
+✅ Output:
+{action=LOGIN, actor=User1}
+
+🔥 1️⃣9️⃣ fromMap(Map map):-
+📌 Purpose:
+Map → AuditEvent convert
+🧪 Example:
+AuditEvent event = auditManager.fromMap(map);
+✅ Output:
+AuditEvent Object Created
+
+🔥 2️⃣0️⃣ toXml(AuditEvent event):-
+📌 Purpose:
+AuditEvent → XML
+🧪 Example:
+String xml = auditManager.toXml(event);
+System.out.println(xml);
+✅ Output:
+<AuditEvent>
+  <action>LOGIN</action>
+</AuditEvent>
+
+🔥 2️⃣1️⃣ fromXml(String xml):-
+📌 Purpose:
+XML → AuditEvent
+🧪 Example:
+AuditEvent event = auditManager.fromXml(xml);
+✅ Output:
+AuditEvent Created from XML

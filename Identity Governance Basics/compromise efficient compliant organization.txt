@@ -1,0 +1,77 @@
+1️⃣ Compliant:-
+Matlab: Jo rules, laws, ya standards ko follow kare.
+Hindi: Anuroop ya niyamon ka paalan karne wala.
+Example:-
+The company is compliant with data privacy regulations.
+→ Company data privacy ke niyamon ka palan kar rahi hai.
+
+2️⃣ Efficient:-
+Matlab: Kaam ko kam samay, kam resources me ache se karna.
+
+()Organization ke andar kya hota hai:-
+Departments: Organization ke andar ka sub-unit.
+Teams / Groups: Department ke andar chhote groups.
+Users / Identities: Individual log jo organization me kaam karte hain.
+Roles & Access Profiles: Organization aur department ke liye define kiye jaate hain.
+example:-IT Division,Finance Division aur HR Division.
+
+()1️⃣ Compromise kya hai (SailPoint context):-
+Compromise ka matlab hack nahi hai.
+Ye policy violation ke liye business exception allow karna hota hai.
+Mostly use hota hai:-
+SoD (Segregation of Duties) violations
+Policy violations
+Access risk
+
+✅ Simple definition:-
+Jab koi user ya account normally rule violate karta hai,
+lekin business reason se exception approve kar di jati hai, usko compromise kehte hain.
+
+2️⃣ Compromise kya karta hai?
+Risk ko temporarily accept karta hai
+User ko necessary role ya access diya jata hai, jo normally rule violate karta hai.
+Audit aur reporting me track hota hai
+Pata hota hai ki kaunse exception approve hue.
+Business continuity maintain karta hai
+Zaruri operations block nahi hote, lekin risk controlled rehta hai.
+
+3️⃣ Compromise ke andar kya hota hai?
+PolicyViolation object – Kaunse rule ya policy violate hui hai
+Reason / Justification – Manager ya business ne exception kyu allow kiya
+Status – Violation ka status “Compromised” ho jata hai.
+
+4️⃣ Example (Java - IdentityIQ):-
+PolicyViolation violation = context.getObjectByName(PolicyViolation.class, "SoD Conflict");
+
+// Agar violation business critical hai to compromise allow karo
+if(violation.isBusinessCritical()) {
+    violation.compromise("Manager approved exception");
+}
+
+// Status check karo
+System.out.println("Violation status: " + violation.getStatus());
+
+Output:-
+Violation status: Compromised
+/////////*
+1️⃣ violation.compromise("Manager approved exception");:-
+Kya karta hai:-
+Ye policy violation ko compromise status me set karta hai.
+Matlab, normally ye rule violate ho raha hai, lekin business reason / manager approval ke liye exception allow kar di ja rahi hai.
+
+Parameter explanation:-
+"Manager approved exception" → ye reason ya justification hai ki kyun violation compromise ho raha hai.
+
+Effect:-
+Violation object ka status change ho jata hai “Compromised”.
+System me ye recorded hota hai ki exception allow ki gayi hai aur kaun approve kiya.
+
+2️⃣ violation.getStatus();:-
+Kya karta hai:-
+Ye current status of violation ko return karta hai.
+Example: "Active" (rule still violated), "Compromised" (exception approved), "Resolved" (issue fix ho gaya).
+
+Effect:-
+Ye read-only operation hai, kuch change nahi karta.
+Hum status check karne ke liye use karte hain.
+*//////////

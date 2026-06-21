@@ -1,0 +1,969 @@
+()Authoritative application kya hota hai?
+-> Authoritative Application = Source of truth (main data source)
+-> ye wo System hota hai jahan se identity ka original data aata hai.
+Ex -> HRSystem (SAP, workday) -> Employee database
+
+Ex -> अगर HR System में Employee add hua :-
+-> Sailpoint usko detect karega.
+-> identity create karega.
+-> Baaki System pe account banayega.
+
+-> iska kaam :-
+-> identity create / update karna.
+-> joiner / mover / leaver process chalana.
+
+()Authoritative Application Ke important classes :-
+
+identity -> sailpoint.object.Identity
+-> ये class represent करती है user को (Employee(report(subordinate))).
+
+identityService -> sailpoint.api.IdentityService
+
+Aggregation Task -> sailpoint.task.AggregationTask
+-> Ye HR system se data pull karta hai.
+---------------------------------------------------------practical-------------------------------------------------------------------------
+()Authoritative Application :-
+
+-> Delimited file (CSV) 20% use करते है company.
+
+-> JDBC (Mysql) को 70% use करते हैं।
+
+-> Workday जहाँ Hr आपके सारे Data देखता है CSV और JDBC का ।
+
+->पहले एक CSV Data file बनाओ जिसमे user का employeeId, Firstname, lastname, ManagerId, fullname, email,
+department, region, location, inactiveIdentity, jobtitle, costcenter.
+example:- 1a, James, Smith, Null, James.Smith, James.Smith@demolexample.com, Executive, Management, Americas, Austin, inactivate, L103, L07, L08, L09 " हो ।
+
+-> फिर identityiq में जाओ login करके
+
+-> फिर http://localhost:8080/identityiq/define/applications/applications.jsf
+
+-> फिर Add New Application ->
+
+-> Name -> HR Feed File
+
+-> owner -> The Administrator
+
+-> Application type -> DelimitedFile
+
+-> Configuration -> अपने आप File type के अनुसार configure होगा।
+
+-> Details -> Authoritative Application
+
+-> Revoker -> ये वो जो Approve या revoke करता है वो person दे।
+
+(kata hua word) -> और proxy Application क्या है।
+
+वो जो identityiq और Target System के बीच Data का लेन देन करता है।
+
+-> profile class ->
+
+-> वो path दो जहाँ csv file है ->
+
+-> जैसे -> Configuration -> File Path
+
+-> C:\Training\Training\Training Data\AuthEmployee.csv ->
+
+-> File Transport -> में हमेशा FTP और SCP में भेजे।
+
+-> फिर Delimiter मतलब " , " comma(,), "tab", "space" ही होता है।
+
+-> तो Delimeter -> [ , ] क्यों Csv file में comma ही है।
+
+-> File has Column Header or First line तो [Tick Mark] क्योंकि हाँ पहला line Column Header है।->
+
+->Schema->
+
+-> Native Object Type -> account ->
+
+-> Display Attribute -> Full Name तो ज्यादा information दे useful information दे । और कोई भी Attribute दे सकते है जैसे Email.
+
+-> identity Attribute -> जो unique Attribute जैसे employeeId.
+
+-> identity Attribute -> employeeId
+
+-> और preview आपको बताता है कि file connected है या नहीं । और Top Ten users को दिखाता है। connected File का।
+
+-> Save -> फिर Hemanth HR feed File का Application created.
+
+-> फिर identity warehouse में जाओ -
+
+-> पहले -> identities -> identity warehouse
+
+-> यहाँ identity जो हमने बनाया वो नहीं आया तो क्या करें कि->
+
+->
+--------------------------------------------------------------------------------------------------------------------------------------
+identifier आ जाए सारे -> aggregation
+
+-> Applications -> Application Definition में जाओ -> (Hemanth HR Feed File)
+
+-> अब Setup में जाओ ->
+
+-> Tasks में -> New task ->
+
+-> Account Aggregation -> फिर
+
+-> Standard properties -> Name ->
+
+-> task का naam जैसे -> Acc Agg - HR Feed File -> नीचे -> Right में -> Account Aggregation options के Right में ->
+
+-> Hemanth HR Feed File -> चुनो ->
+
+-> नीचे -> Save and Execute को ।
+
+-> फिर Task Results में जाओं और देखो
+
+-> फिर AccAgg-HR Feed File को खोलो -> और देखो क्या कर रहा है निचे Attribute में ।
+
+-> फिर identifier -> identity Warehouse -> देखे । फिर कोई भी identity पे click करो और view identity Henry.Buttler ->Application -> Accounts में जाओं ->
+
+-> AI Hemanth HR Feed File -> और देखो।
+
+Note:- एक बार identity load हो गई तो हम नया identity Attribute नहीं add कर पाएंगे।
+
+-> अब हम logout करेंगे तो
+
+-> फिर login करेगें create किए हुए identity में से किसी एक के जैसे मैंने अपने identifier में दिए थे 1a, James, Smith, Null, James.Smith, JamesSmithdemoexample@gmail.com, Executive management, "L103 / L07, L08, L09" हो । तो हमे
+
+ये ही identity से login करना है जो CSV File में save है, ताकी पता चले कि जो हमने Application Hemanth HR Feed file में identifier बनाई है क्या work कर रही है या नहीं।
+
+-> username -> JamesSmith ->
+
+-> और password लेकिन हमने identifier के password नहीं दिया तो login नहीं हो रहा है ।
+
+इसलिए हमे हर identifier का password देना होगा CSV file में । और बनाई हुई Hemanth HR Feed File को Delete करना होगा ताकी नया Application बना सके ।
+
+लेकिन हमें Hemanth HR Feed file में ही Password हर Identifier का देना है तो
+
+-> identifier -> identity warehouse ->
+
+-> Henry Buttler -> कोई भी random identity जो तुमने बनाई है Hemanth HR Feed File में -> search में Henry Buttler
+
+-> फिर नीचे आए -> change password -> और password दे admin1 -> save.
+
+19 -> फिर logout और username Henry Buttler और password दे admin1 -> login हो गया ।
+
+लेकिन सब identifier को password set करते करते महीनो लग जाएगा । इसलिए हमें rule.xml banana hoga for set all identity password.
+--------------------------------------------------------------------------------------------------------------------------------------
+()agar koi attribute nahi hai csv me aur tum ushe aggregate kar chuke ho toh hum wo Password attribute ko schema me add karenge.
+->application-definition->add application->configuration-schema->Add new schema attribute->password->add-save.
+----------------------------------------------------------
+->map attribute:-globalsetting->identity mappings->yaha tumhe 10 searchable attribute ko hi iiq to application map karna hai.
+->display attribute->add source->application attribute-tick->select application->select attribute-full name->save->
+->first name->add source->application attribute-tick->select application->select attribute->first name->save->
+->last name->add source->application attribute-tick->select application->select attribute->last name->save->
+->email->add source->application attribute-tick->select application->select attribute->email->save->
+->employeeid->add source->application attribute-tick->select application->select attribute->employeeid->save->
+->manager->add source->application attribute-tick->select application->select attribute->managerid->save->
+->employeetype->add source->application attribute-tick->select application->select attribute->employeetype->save->
+save->
+--------------------------------------------------------------------------------------------------------------------------------------
+().how to change password of all identity?
+--
+Step 1:-
+->iiq console:-C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\identityiq\WEB-INF\bin-> ke cmd khole->
+->iiq console->
+->abb ishe UpdatepasswordNow.xml import karo global setting me jake aur save->
+
+---Import karne ke baad check kaise karein?
+Ye confirm karne ke liye ki rule system mein aa gaya hai, console mein ye command likhein:->list Rule
+--Agar aapko list mein "Update All Passwords Rule" dikh raha hai, iska matlab import success ho gaya hai.
+--Import hone ke baad rule ko chalane ke liye aapko Run Rule Task banana hoga.
+
+--Step 2: Naya Run Rule Task create karein:-
+Tasks page par, right side mein New Task button dikhega, us par click karein.
+Ek lambi list khulegi, usme se Run Rule select karein.
+
+Step 3: Task Details bharein:-
+Ab aapke samne ek form khulega, usme ye details daalein:-
+Name: Is task ko koi bhi naam de dein, jaise: Manual Password and Capability Update.
+Description (Optional): "Task to update passwords and add Employee capability".
+Rule: Yahan ek dropdown hoga. Us dropdown mein se apna rule "Update All Passwords Rule" select karein (jo aapne abhi import kiya tha).
+
+Step 4: Save aur Execute karein:-
+Page ke niche Save and Execute button par click karein.
+Jaise hi aap click karenge, SailPoint rule ko execute karna shuru kar dega.
+
+Step 5: Result check karein:-
+Task chalne ke baad, automatically Task Results tab khul jayega.
+Apne task ke naam par click karein.
+Agar sab sahi raha, toh niche Output ya Result Messages mein likha aayega:
+"Total passwords updated successfully!"
+
+Step 6: login any identity->
+--Aadhya Mishra
+--R@VAN143->toh login ho jayega.
+
+()UpdatepasswordNow.xml-ko save karo all types se jo save karte waqt niche aata.
+import 
+
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="Update All Passwords Rule" language="beanshell">
+  <Source>
+    import sailpoint.object.*;
+    import java.util.*;
+
+    QueryOptions qo = new QueryOptions();
+    qo.addFilter(Filter.ne("name", "spadmin")); 
+
+    List identities = context.getObjects(Identity.class, qo);
+    int count = 0;
+
+    for(Identity id : identities) {
+        id.setPassword("Welcome@123");
+        
+        Capability cap = context.getObjectByName(Capability.class, "Employee");
+        if(cap != null &amp;&amp; !id.hasCapability(cap.getName())) {
+            id.addCapability(cap);
+        }
+        
+        context.saveObject(id);
+        count++;
+    }
+    
+    context.commitTransaction();
+    return "Total passwords updated successfully!";
+  </Source>
+</Rule>
+------------------------------------------------------------------------------------------------
+()Agar aap chahte hain ki password update sirf ek specific application se aayi hui identities par hi chale 
+(na ki pure IIQ ki identities par), toh aapko apne Rule mein ek Filter add karna hoga jo Link (Account) ko check kare.
+Step 1:-create rule:-
+
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="UpdateAppPasswordRule-UltraSafe">
+  <Source>
+    import sailpoint.object.Identity;
+    import sailpoint.object.Filter;
+    import sailpoint.object.QueryOptions;
+    import sailpoint.object.Capability;
+    import java.util.Iterator;
+    import java.util.ArrayList;
+    import java.util.List;
+
+    String targetAppName = "identity_data_90_lines"; 
+    int count = 0;
+
+    List identityIds = new ArrayList();
+    QueryOptions qo = new QueryOptions();
+    qo.addFilter(Filter.eq("links.application.name", targetAppName));
+    qo.addFilter(Filter.ne("name", "spadmin"));
+    
+    Iterator it = context.search(Identity.class, qo, "id");
+    while (it != null &amp;&amp; it.hasNext()) {
+        Object[] row = (Object[]) it.next();
+        identityIds.add((String) row[0]);
+    }
+    sailpoint.tools.Util.flushIterator(it);
+
+    if (identityIds != null) {
+        for (String id : identityIds) {
+            Identity identity = (Identity) context.getObjectById(Identity.class, id);
+            if (identity != null) {
+                
+                // 1. Sirf Password set karein
+                identity.setPassword("R@VAN143");
+                
+                // 2. Capability (Login Permission) dena sabse zaroori hai
+                Capability loginCap = context.getObjectByName(Capability.class, "IIQ_User");
+                if (loginCap != null) {
+                    identity.addCapability(loginCap);
+                }
+
+                // 3. Object save karein
+                context.saveObject(identity);
+                count = count + 1;
+
+                if (count % 20 == 0) {
+                    context.commitTransaction();
+                    context.decache();
+                }
+            }
+        }
+    }
+
+    context.commitTransaction();
+    return "Final Update Success: " + count;
+  </Source>
+</Rule>
+*//////////
+
+--save karo Update-Application-identity-data-90-lines-Passwords.xml---all type me.
+--Is Rule ko chalane ka rasta:-
+XML File Update Karein: Is naye code ko apni .xml file mein paste karein aur Rule name thoda badal dein (e.g., UpdateAppPasswordRule-UltraSafe).
+
+Import Karein: IIQ Console ya UI se ise wapas import karein.
+
+Run Rule Task: * Setup -> Tasks -> New Task -> Run Rule.
+
+Is naye rule ko select karein aur Save and Execute karein.
+----------------------------------------------------------------
+
+------------------------------------------------------------------------------------------------------------------------
+1. Issue: Name vs Email:-
+->configuration me->displayName->full name aur identity Attribute me->employeeid de.aur native object type-account de.
+->corellation-rule me->
+import sailpoint.object.*;
+    import java.util.*;
+
+    Map returnMap = new HashMap();
+
+    // 1. Account se employeeId uthao
+    String empId = account.getStringAttribute("employeeId");
+
+    if (empId != null) {
+        // 2. Batao ki Identity ke kis attribute se match karna hai
+        returnMap.put("identityAttributeName", "employeeId");
+        
+        // 3. Batado ki value kya match karni hai
+        returnMap.put("identityAttributeValue", empId);
+    }
+
+    return returnMap;
+
+fir ->aggregation->
+fir task ko run rule-UpdateAppPasswordRule-UltraSafe-task-ko-run fir refresh identity cube run fir login karo single tab me.
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+
+/////////*ye old tarika hai ->
+->aise bhi kar sakte ho for single account:-
+-> Applications के Applications Definition में जाए -> Hemanth HR Feed File
+
+-> Rules -> creation Rule -> ...
+
+-> अब Rule लिखो -> यहाँ ->
+
+-> Rule Name -> Set Password : Creation
+
+-> Rule Type -> identityCreation
+
+-> Return Type -> void
+
+-> Arguments -> (kata hua) मे Sailpoint देगा -> फिर Description के ऊपर जो खाली डब्बा है वो rule लिखने के लिए है तो लिखो Rule ->
+
+-> (kata hua: import sailpoint object)
+
+()rule:-
+-> import sailpoint.object.Identity;
+
+-> identity.setPassword("xyzzy");
+
+-> log.warn("this is creation rule" + identity.getName());
+
+-> save -> Creation Rule ->
+
+select Rule -> identity creation : SetPassword को select -> scroll -> save.
+
+-> setup -> tasks -> AccAgg-HR Feed file को right click -> execute in Background -> ok .
+
+-> task Results -> AccAgg-HR Feed file -> अगर ये न दिखे तो Refresh को दबाए -> फिर AccAgg-HR Feed File में जाए -> और देखे ।
+
+*/////////
+----------------------------------------------------------------------------------------------------------------------------------
+--जिसे attribute की list बनाना है उसके right मे edit -> Multivalued [Tick Mark] click करो -> save, save ->
+---> configuration -> schema ->
+
+-> ओर जिसे attribute की list बनाना है उसके right मे edit -> Multivalued [Tick Mark] click करो -> save, save ->
+
+-> identities -> identity warehouse ->
+
+-> कोई भी identity में जाओ ->
+
+-> Application Accounts में ->
+
+-> फिर Hemanth HR Feed File
+
+-> नहीं हुआ update तो ->
+
+-> Setup -> tasks -> search -> करो ->
+
+-> Refresh identity cube -> में जाओ ->
+
+-> scroll-down -> सारे checkbox के ticks को हटा दे -> सिर्फ Refresh identity Attributes को select करो -> save and execute -> .
+
+-> फिर identity warehouse में ->
+
+-> Koi-bhi identity में जाओ ->
+
+-> Application accounts में जाओ ->
+
+-> Hemanth HR Feed File को देखो -> Cost center में changes नहीं हुआ तो -> Setup -> tasks -> AccAgg - HR Feed File को Tap करो -> (kata hua)
+(fir identity warehouse me jao identity me jao aur)
+
+-> right click -> Execute in Background -> ok -> फिर identity warehouse में -> Kisi bhi identity में जाओं ->
+
+-> Application Account -> Hemanth HR Feed File, -> अब Cost center में changes हो गया list में ।
+
+Multivalued attribute को सिर्फ add / remove / replace कर सकते हो लेकिन overwrite नहीं कर सकते । 
+overwrite मतलब पुरानी values को completely हर एक हटाके नयी values डाल देना ही overwrite होता है ।
+----------------------------------------------------------------------------------------------------------------------------------
+->corellation->
+
+(1)manager Correlation:-
+Isko ek live project ke example se samajhte hain:-
+Maan lijiye do log hain: Employee A aur Manager B.
+SailPoint Employee A ka Workday account read karta hai.
+Us account ke andar MANAGER_ID ki value aati hai, maan lijiye "EMP-999".
+Ab SailPoint apne database mein search karta hai ki kis Identity ka Employee Id "EMP-999" hai.
+Usey pata chalta hai ki yeh Manager B ki Identity hai.
+Toh ab SailPoint, Employee A ki Identity Cube ke andar jayega aur uske manager attribute mein Manager B ko set kar dega.
+
+--Manager Correlation Mapping:-
+Field Name	              Value (Jo aapko select/likhna hai)	              Logic / Explanation
+Application Attribute----------------MANAGER_ID---------------------Ye wo column hai jo Source Application (aapke case mein Workday ya CSV) se aa raha hai aur manager ki info hold karta hai.
+Identity Attribute-------------------employeeId---------------------Ye wo attribute hai jiske saath SailPoint Identity Cube mein search karega. Aapne bataya ki "EMP-999" ek Employee Id hai, isliye hum yahan employeeId select karenge.
+
+(2)Account Correlation (Upar wala section - Jo abhi blank hai):-
+Kya ho raha hai: Yahan abhi koi configuration select nahi ki gayi hai.
+Iska Kaam: Yeh section SailPoint ko batata hai ki Workday se aane wale raw accounts ko kis existng SailPoint Identity ke sath jorna (link)
+karna hai. Example ke liye, yahan rule set karna padta hai ki Workday ka Email = SailPoint ka email attribute. 
+Jab tak yeh set nahi hoga, naye accounts "Uncorrelated" reh sakte hain.
+
+Step 1: B:-eanshell Rule Taiyar Karein:-
+-aur save kare all types se.
+
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="My Custom Correlation Rule" type="Correlation">
+  <Source>
+    import sailpoint.object.*;
+    import java.util.*;
+
+    Map returnMap = new HashMap();
+
+    // 1. Account se employeeId uthao
+    String empId = account.getStringAttribute("employeeId");
+
+    if (empId != null) {
+        // 2. Batao ki Identity ke kis attribute se match karna hai
+        returnMap.put("identityAttributeName", "employeeId");
+        
+        // 3. Batado ki value kya match karni hai
+        returnMap.put("identityAttributeValue", empId);
+    }
+
+    return returnMap;
+  </Source>
+</Rule>
+
+Step 2: Rule ko Import Karein:-
+IIQ Console kholiye.
+Command likhiye: import "C:/path/to/your/MyCorrelationRule.xml"
+Ya phir UI mein Gear Icon -> Global Settings -> Import from File se import karein.
+
+Step 3: Application mein Rule select karein (Aapki 2nd Image ke mutabik):-
+Ab aapko apni application ki settings mein is rule ko attach karna hai:-
+Apni application (identity_data_90_lines) ke Rules tab par jayein (jaisa aapne image 2 mein dikhaya hai).
+Sabse pehla option Correlation Rule ke dropdown par click karein.
+Wahan list mein se apna rule "My Custom Correlation Rule" select karein.
+Page ke niche jaakar Save button dabayein.
+
+Step 4: Account Correlation Tab check karein (Aapki 1st Image ke mutabik):-
+Jab aap Rule select kar lete hain, toh aapko Correlation tab mein koi manual configuration karne ki zaroorat nahi padti. 
+Rule apne aap backend mein kaam karega.
+Dhyan dein: Agar aapne Rule select kar liya hai, toh "Account Correlation" section mein "New" button dabakar manual mapping karne ki koi
+zaroorat nahi hai. SailPoint pehle Rule check karta hai, agar rule mil gaya toh wo usi ko follow karega.
+
+Step 5: Aggregation:-
+Setup -> Tasks mein jayein.
+Apna Account Aggregation task run karein.
+Task finish hone ke baad check karein ki accounts link hue ya nahi.
+Kaise check karein ki Correlation hua?
+Kisi bhi Identity par jayein.
+Uski details mein Application Accounts tab dekhein.
+----------------------------------------------------------------------------------------------------------------------------------
+()note:- Jin Application में Attribute change नहीं कर सकते :-
+Ex -> HRMS
+-> Workday
+-> SAP HR
+-> ye sare system source of truth hote hain aur identity ka data yahi se aata Hai, (name, email, department) etc. 
+Agar identityiq में Attribute change करना है इन Applications का Toh Original System में change करना पडेगा।
+
+()CSV vs Live Applications:-
+Feature	                     CSV(Delimited File)	           Active Directory / DB
+Aggregation(Read)----------✅ Bahut aasaan hai.-----------------✅ Standard hai.
+Provisioning (Write)-------❌ Direct support nahi hai.----------✅ Direct support hai (Create/Update/Delete).
+Use Case-------------------HRMS data lane ke liye.---------------Target system mein account banane ke liye.
+
+()1. File-Based Connectors:-
+Ye applications hamesha static data sources hoti hain, isliye inme direct provisioning nahi ho sakti.
+--Delimited File (CSV/TSV): Jaise aapne abhi CSV file banayi hai. Ye sirf data import karne ke kaam aati hai.
+--Excel Application: .xlsx ya .xls files se data read karne ke liye.
+--XML File: Jab data structured XML format mein ho.
+
+2. HR / Inbound Systems:-
+In systems ko hum "Source of Truth" maante hain, jahan se employees ka data IIQ mein aata hai. 
+Hum HR system mein IIQ ke zariye data change nahi karte.
+--JDBC (Read-Only Mode): Agar aapne database application banayi hai lekin use sirf aggregation ke liye configure kiya hai.
+--SAP HR / Workday (Read-Only): Zyadatar organizations in systems se sirf data fetch karti hain.
+--Log Files / Audit Logs: Sirf monitoring aur reporting ke liye use hone wale systems.
+
+3. Reporting aur Analytical Connectors:-
+--Logical Applications: Ye "virtual" applications hoti hain jinka koi direct physical system nahi hota.
+--Manual Applications: Jisme provisioning ke liye kisi admin ko email ya ticket jata hai(Direct technical provisioning nahi hoti).
+
+()Ex -> Legacy System (old banking app):-
+-> Reporting tool
+-> CSV File based app
+-> सिर्फ aggregate होगा
+
+()Disconnected Applications:-
+-> ye wo applications hote hain जहाँ iiq directly connect नहीं होता ।
+()Kaise kaam karta hai?
+-> iiq change ko ticket में convert करता है फिर admin manually change करता है । इसमे automation नहीं होता ।
+
+()Policy-controlled Attributes:-user ki kisi property (attribute) ki value user khud ya admin manually change nahi karta, 
+balki system ke predefined rules ya roles decide karte hain.
+
+1. Ye Kaam Kaise Karta Hai?
+Policy-controlled attributes ka asli khel Role-Based Access Control (RBAC) aur Attribute-Based Access Control (ABAC) ke beech hota hai.
+Logic-Driven: Agar user ka Department change hokar "Finance" hota hai, toh SailPoint ki policy automatically uska Security_Level attribute update kar degi.
+Consistency: Isse ye faida hota hai ki do same role wale users ke paas hamesha same attributes aur access rahenge. Human error ka chance khatam ho jata hai.
+
+2. Examples jo aap use kar sakte hain:-
+Aapne Manager wala example diya, uske alawa ye bhi kaafi common hain:-
+--Email Generation: User ke Firstname aur Lastname ke basis par email attribute automatically policy se generate hota hai (e.g., first.last@company.com).
+--Account Status: Agar inactiveIdentity attribute "true" hota hai, toh policy-controlled rule automatically assignedRoles ko remove kar sakta hai ya account ko disable kar sakta hai.
+--Birthright Access: Naye employee ke join karte hi uske Department ke basis par use "Basic Network Access" ka attribute mil jana.
+
+3. IIQ mein ye kahan dikhte hain?
+Jab aap SailPoint mein Identity Profile setup karte hain, toh wahan Mapping section hota hai.
+Wahan aap decide karte hain ki kaunsa attribute Source (CSV/AD) se aayega aur kaunsa Rule/Script se calculate hoga.
+Jo attributes Rule ya logic se calculate hote hain, wahi "Policy-controlled" ki category mein aate hain.
+
+4. Iska Difference:-
+Attribute Type          Kaun Decide Karta Hai?                               Example
+Source Attribute:------Authoritative Source (CSV/HRMS):-------------Employee ID,First Name
+Policy-Controlled:-----SailPoint Business Logic (Rules/Roles):------Work Email,Assigned Scope,Job Title based Access
+-------------------------------------------------------------------------------------------------------------------------------
+-> Identity warehouse -> कोई भी identity को tap करो और देखो user Rights ->
+
+-> user Capabilities में से कोई भी Rights देदो इस Identity को तो -> select in user capabilities -> identity Administrator का दे दिया तो -> Save -> (kata hua) save.
+
+-> logout करों और जिस identity को दिया था वो Right / entitlement उस user/identity का username और password से login करो ->see.
+------------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+How to create identity attributes?
+
+-> Global Setting -> Identity Mappings -> Add New Attribute ->
+
+-> Attribute Name -> Hemanth
+
+-> Display Name -> Hemanth -> save
+
+-> Identityiq -> identity warehouse ->
+
+-> kisi bhi identity में जाओ ->
+
+-> कहीं भी Hemanth या कोई दूसरा attribute नहीं दिखेगा । reflect या changes नहीं हुआ ui में तो ->
+
+-> फिर localhost:8080/identityiq/debug/debug.jsf -> search -> list ->
+
+-> UIConfig ->
+
+-> ओर right में configuration object -> 3rd box में UIConfiguration ->
+
+-> फिर एक UIConfig खुलेगा click (kata hua) control + f ->
+
+-> लिखो -> identityView ->
+
+Image 9 (Page 36)
+-> ruko 2 minute -> फिर इस tag के <entry key="identityViewAttributes">
+
+value="name, firstname, lastname, email, inactive, manager, empId, status, costcenter, department, jobtitle, region, location, Hemanth"/>
+
+36
+
+के साथ Hemanth जो कि attribute name है जो set किया है हमने ।
+
+-> save फिर identity warehouse किसी भी identity में जाओं देखो क्या changes हुआ । attribute add हुआ
+
+(kata hua line)
+
+-> tag में UIConfig में हमेशा attribute name दे जैसे -> Hemanth और आप identity warehouse मे देखोगे Hemanth (kata hua) smaller case में Display attribute जो तुमने दिया था ।
+
+How to attribute value ?
+
+->
+
+Image 10 (Page 37)
+----------------------------------------------------------------------------------------------------------------------------------
+ जैसे मुझे Firstname map करना है तो Firstname पे Double Tap -> Add Source पे click -> Application Attributes select करें 
+-> Application select करो
+
+A. Source mapping तीन तरह से होता है :-
+
+Application Attribute
+
+Application Rule
+
+Global Rule (kuch scribbles hain aage)
+
+(kata hua: koi bhi application select kare aur fir dusra bhi select kare)
+
+-> पहले Hemanth HR Feed File -> Attribute -> Firstname select करों ->
+
+-> Add -> फिर Add Source -> Contractor Feed File -> Firstname select ->
+
+-> Add -> save -> फिर lastname पे click करों -> Add Source ->
+
+-> select Application Attribute ->
+
+-> Select Application ->
+
+-> Hemanth HR Feed File ->
+
+-> Attribute -> lastname -> Add ->
+
+-> Add Source -> Application Attribute
+
+-> Select Application ->
+
+-> Contractor Feed File ->
+
+-> Attribute -> lastname ->
+
+-> Add -> save ->
+
+38
+
+Identity Refresh Task Chalayein:-
+Setup -> Tasks -> New Task -> Identity Refresh->par jayein.
+Is task ka naam "Final Mapping Refresh" rakhein.
+"Refresh identity attributes" checkbox ko zaroor tick karein.
+"Refresh role metadata" aur "Process events" ko bhi tick karein.
+Save and Execute par click karein.
+
+-----------------------------------------------------------------------------------------------------------------
+-> identityiq -> identity warehouse ->
+
+-> (kata hua: see) -> click कोई भी identity कोई भी firstname और last name नहीं Add हुआ Application से identityiq में
+
+तो (kata hua: fir se refresh identity cube)
+
+-> (kata hua) क्योंकि refresh करना है ->
+
+-> (kata hua)
+
+-> Setup -> Tasks ->
+
+-> Tasks -> में search ->
+
+-> refresh identity cube ->
+
+-> click it -> और
+
+-> Refresh identity attributes ->
+
+[Tick mark] -> save and execute ->
+
+-> फिर Task Results ->
+
+-> first box search ->
+
+-> Refresh identity cube ->
+
+-> click it -> status success
+
+-> फिर identity warehouse
+
+-> click any identity ->
+
+-> see first name and lastname also mapped.
+----------------------------------------------------------------------------------------------------------------------------------------
+Image 2 (Page 39)
+-> और Application Accounts से match करलो कि सही map हुआ है identity iq से ।
+
+B -> Global setting जो (Gear/Flower icon) -> identity-mappings -> status पे click -> Add source -> Application -> Hemanth HR Feed File -> Attribute -> में status नहीं तो
+
+अब सवाल ये है कि हम Application Rule क्यों use कर रहें हैं क्योंकि CSV file में भी status नहीं है। तो कैसे CSV में और identityiq और Application Account से status map करे -> तो Application Rule का प्रयोग करके ->
+
+-> Add source -> Application Rule ->
+
+-> Application select -> Hemanth HR Feed File -> Rule -> ... ->
+
+-> Rule Name -> Ruthie: Status: Employee
+
+-> Rule Editor -> return "Emp";
+
+-> select rule -> Ruthie: Status: Employee
+
+-> और save -> Add source ->
+
+-> Application Rule -> Application select
+
+-> Contractor Feed File -> Rule ->
+
+-> ... -> Rule Name -> Ruthie: Status: CTR
+
+-> Rule Editor -> return "CTR"; -> save ->
+
+select rule -> Ruthie: Status: CTR ->
+
+-> add -> save -> Setup -> tasks -> refresh identity cube -> right click it -> execute in Background -> ok ->
+
+Image 3 (Page 40)
+40
+
+(kata hua: identity warehouse -> अब मुझे)
+
+-> identity warehouse -> identity कोई भी -> देखो आया , status .
+--------------------------------------------------------------------------------------------------------------------------------------
+Attribute Category configuration.
+
+Identity Warehouse mein attributes different categories (tabs) mein divide hote hain. Agar aapka attribute kisi category ka hissa nahi hai, toh wo UI par display nahi hota.
+
+Ise fix karne ke liye ye Steps follow karein:-
+Identity Configuration mein jayein:-
+
+->Global Settings (Gear Icon) > Identity Configuration.->
+
+->Attribute check karein:-
+
+->empStatus attribute ko edit karein.->
+
+->Category Check karein:
+
+Wahan Category naam ka ek drop-down hoga.
+
+Check karein wahan kya select hai? Aksar ye "Attributes" category mein hota hai.
+
+Agar wo khali hai, toh use "Attributes" select karke Save karein.
+
+UI Configuration (Identity Cube Layout):
+
+Agar category set karne ke baad bhi nahi dikha, toh aapko Object Config check karna hoga:
+
+Global Settings > Object Configuration > Identity.
+
+Wahan Attributes tab mein dekhein ki empStatus list mein hai ya nahi.
+
+Wahin par niche ek option hota hai layout set karne ka.
+---------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------
+Image 1 (Page 41)
+अगर 500 attributes है organization/company का तो हमें कम समय में attribute mapping करना है सारे identities को तो कैसे करें ?
+
+localhost:8080/identityiq/debug/ ->
+
+-> First box -> ObjectConfig -> search
+
+-> identity -> click -> देखो कि
+
+-> तो ObjectAttribute firstname और lastname का बना हुआ है लेकिन मुझे Department का भी बनाना है जिससे Department mapping auto हो जाए तो -> 
+->तुम्हें -> CSV file से attribute को department को copy करो और एक अलग
+
+->aur csv aur debug ka spelling match karna chahiye->
+
+->नया ObjectAttribute में paste करो in -> debug -> identity में ->
+
+-> attribute का spelling copy हुआ जैसे department -> CSV में debug में spelling match होना चाहिए।
+
+-> <ObjectAttribute displayName="Department" editMode="ReadOnly" extendedNumber="2" groupFactory="true" name="department" type="String">
+-> <AttributeSource name="department">// यहीं match करना spelling
+-> <ApplicationRef>
+-> <Reference class="sailpoint.object.Application" id="4a2880e772d698be50172bed0f8bf007f" name="Hemanth HR Feed File"/>
+-> </ApplicationRef>
+-> </AttributeSource>
+-> <AttributeSource name="department">
+-> <ApplicationRef>
+-> <Reference class="sailpoint.object.Application" id="402880e77d3d3cc017d73f412d40022" name="Contractor Feed File"/>
+-> </ApplicationRef>
+-> </AttributeSource>
+-> </ObjectAttribute> -> Save
+
+-> Global setting -> identity Mappings -> Department open करो -> देखो -> source mapping also had configured.
+
+->Attribute Name = Status
+
+-> Display Name = Status में
+
+->Actual Attribute Name (Status) है जो code में या har जगह call होता है। Display Name सिर्फ ui में Display होता है।
+
+-> Attribute Type हमेशा दो तरह के होंगे पहला "String" दुसरा "identity",
+
+->identityiq (automatic) Employee में manager id को डालता है।
+identity              Firstname         lastname         managerId                Fullname                 email                      
+La2a                   linda             Davis              123b                lindaDavislinda     DavisDavis@gmail.com
+Lab2                   William           moore              326b                WilliamMooreWilliam Demo@gmail.com
+
+यहाँ Lab2 जो company में एक Identity Employee हो । और इस managerId ko किसी Employee identity के managerId में assign करो Lab2 को।
+identity       Firstname     lastname   managerId    Fullname    email                      
+ 1234a           Jhon         peey        Lab2      Jhon Peey   @nyg.net
+-> ये काम identityiq खुद करता है।
+
+कैसे हुआ तो -> Global Settings ->
+
+-> identityMappings -> Status पे click -> Attribute type यहाँ String + type है ->
+
+Note -> Every attribute in IIQ is string Type except Manager.
+
+-> Global Setting -> Identity Mappings
+
+-> Manager -> Attribute type
+
+-> Identity -> Add source ->
+
+-> Application Attribute ->
+
+-> Application -> Hemanth Feed, Contractor Feed File ->
+
+-> Attribute -> managerId ->
+
+-> Add -> Add Source ->
+
+-> Application Attribute ->
+
+-> Contractor Feed File ->
+
+-> managerId -> Add -> Save
+
+-> Applications -> Application Definition ->
+
+-> open Hemanth HR Feed File -> Correlation ->
+
+-> Application Attribute -> managerId ->
+
+-> identity Attribute -> EmpID ->
+
+-> Save ->
+
+-> Global setting ->
+
+-> identity Mappings ->
+
+-> empId -> Double click ->
+
+-> Searchable [ ] unclick करों तो ->
+
+-> Save -> Application Definition
+
+Image 5 (Page 45)
+-> Hemanth HR Feed File ->
+
+-> correlation -> identity Attribute के अंदर जाओं तो empId गायब होजाएगा। इसलिए Searchable हमेशा [Tick Mark] रखो।
+
+Global setting -> identity Mappings
+
+-> empId -> Edit Mode ->
+
+-> Edit mode तीन तरह के होते है।
+
+Read Only 2. Permanent 3. Temporary
+
+45
+
+-> Read Only करें और Save -> फिर
+
+-> identity warehouse -> कोई भी identity -> यहाँ EmpID Edit नहीं होगा और यही permanent रहे तो Edit होगा और यही Temporary रहें तो कुछ समय के लिए edit होगा फिर बंद ।
+
+Global setting -> identity Mappings ->
+
+-> empId -> Multivalued [ ] -> फिर Applications -> Application Definition -> Hemanth HR Feed File ->
+
+-> Configuration -> Schema ->
+
+-> scroll -> यहाँ Cost center का [Tick Mark] है Multivalue इसलिए यहाँ Multivalue दिख रहा हैं। 
+मतलब Multivalue मतलब List of String values store होगा without comma.
+
+->Global setting -> identity Mappings ->
+
+-> Department -> Group Factory [ ]
+
+-> Setup -> Group -> create New Group -> Group Attribute यहाँ सिर्फ तीन Attribute है सिर्फ Bydefault ->
+ अब अगर तुम्हे और कोई Attribute चाहिए Attribute based Groups बनाने के लिए तो -> Global Settings -> identity Mappings ->
+
+-> अब Department ->
+
+-> Group Factory [Tick Mark] अब जाओं
+
+-> Setup -> Group -> create new group
+
+-> Group Attributes -> यहाँ Department दिखेगा क्योंकि Group Factory [Tick Mark] है।
+
+-> Global Settings -> identity Mappings -> empId -> Add Source ->
+
+-> Application Attribute ->
+
+-> Application -> Hemanth HR Feed File -> Attribute ->
+
+-> employee id -> Add ->
+
+-> Add Source -> Application Attribute -> Contractor Feed File ->
+
+-> Attribute -> employee id -> Add -> ok -> Save.
+
+-> और Global setting -> identity Mapping ->
+
+-> location123 -> Attribute Name ->
+
+-> location -> Display Name -> Location
+
+-> save .
+
+-> फिर Global setting -> identity Mapping ->
+
+-> Display Name -> Add Source ->
+
+-> Hemanth HR Feed File -> Attribute ->
+
+-> FullName -> Add -> Add Source ->
+
+-> Contractor Feed File -> Attribute ->
+
+-> FullName -> Add -> ok -> save.
+
+47
+
+-> फिर identity Mapping -> Cost-center ->
+
+-> Add source -> Hemanth HR Feed File
+
+-> CostCenter -> Add -> Add Source ->
+
+-> Application Attribute -> Application Contractor Feed File -> Attribute
+
+-> CostCenter -> Add -> save.
+
+-> फिर identity Mapping -> Email ->
+
+-> Add source -> Application Attribute ->
+
+-> Application -> Hemanth HR Feed File
+
+-> Attribute -> Email -> Add -> Add Source
+
+-> Application Attribute -> Application ->
+
+-> Contractor Feed File -> Attribute
+
+-> Email -> Add -> save.
+
+-> फिर inactive और Jobtitle और location और Region को भी करलो Map ऊपर के तरह ।
+
+और managerId पहले ही बनना चाहिए
+
+Setup -> Tasks -> Task Results ->
+
+-> see -> Tasks -> Refresh identity Cube -> click it -> scroll
+
+-> Refresh identity attributes [Tick Mark]
+
+-> Refresh managed attributes [Tick Mark]
+
+-> Save and execute -> ok
+
+-> identity warehouse ->
+
+-> सिर्फ Refresh manager attribute इसलिए use होता है कि अगर user promoted manager तब use होगा।
+
+-> Application Definition ->
+
+-> Contractor Feed ->
+
+-> Correlation -> Application Attribute -> और identity Attribute -> save.
+
+Setup -> Tasks -> Refresh identity Cube -> Execute in Background -> ok -> identity warehouse -> tap -> (refresh icon) -> see.

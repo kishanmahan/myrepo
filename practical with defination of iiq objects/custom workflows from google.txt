@@ -1,0 +1,472 @@
+ye custom workflow hai:-
+-----------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------
+()Jab bhi koi employee company chhodta hai (Off-board/Leaver) ya delete hota hai, 
+toh SailPoint ka standard engine automatic uske owned objects (jaise Application, Role, ya Workgroup)
+ka owner hatata nahi hai. Agar hum sahi waqt par unhe re-assign na karein, toh woh saare objects "Orphan" (bina owner ke) ho 
+jaate hain, jo ki ek bada security audit issue hai.
+
+Isliye BeanShell script ka use karke hum database se un saare objects ko khinchte hain, 
+ek mast HTML table banate hain, aur direct email ke zariye notification bhej dete hain.
+
+Aaiye iska ekdam complete live-project jaisa code aur workflow structure samajhte hain, 
+jisme aapke bataye saare objects (Application, Bundle/Role, Workgroup, aur Rule) cover ho jayein:-
+
+Object 1: Email Template XML (OwnedObjectsEmailTemplate.xml):-
+Yeh aapka custom email template hai jo automatic HTML format mein bani-banayi table ko render karega.
+XML
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE EmailTemplate PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<EmailTemplate name="Identity Offboarding Owner Alert" subject="URGENT: Re-assignment Required for Objects Owned by $identityName">
+  <Body>
+    <![CDATA[
+    <html>
+    <body style="font-family: Arial, sans-serif; color: #333333;">
+      <h2 style="color: #d9534f;">URGENT: Re-assignment Required</h2>
+      <p>Dear IAM Governance Team,</p>
+      <p>An off-boarding or status change has been detected for user: <strong>$identityName</strong>.</p>
+      <p>This user is currently configured as the <strong>OWNER</strong> for critical infrastructure objects in IdentityIQ. To prevent orphan components, please re-assign these items immediately.</p>
+      <br/>
+      
+      <!-- Yahan workflow se direct HTML Table aakar chipak jayegi -->
+      $ownedObjectsTable
+      
+      <br/>
+      <p>Regards,<br/>IdentityIQ Governance Automation Team</p>
+    </body>
+    </html>
+    ]]>
+  </Body>
+</EmailTemplate>
+
+----------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------
+import sailpoint.object.*;
+
+import sailpoint.api.*;
+
+import java.util.*;
+
+import sailpoint.object.Workflow.Step;
+
+import sailpoint.object.Form.Section;
+
+import sailpoint.object.Form.Button;
+
+
+Workflow.Approval wa= new Workflow.Approval();
+
+Workflow.Step ws= new Workflow.Step();
+
+Button btn= new Button();
+
+Form forms = new Form();
+
+forms.setName("Hello Form");
+
+forms.setLabelAlign("Form Label");
+
+System.out.println("-------------------------");
+
+Section sects = new Section();
+
+sects.setName("Section name");
+
+sects.setType("text");
+
+sects.setLabel("Sec Label");
+
+Field fv = new Field();
+
+fv.setName("fieldname");
+
+fv.setType("String");
+
+fv.setValue(workflow.get("launcher"));
+
+
+
+sects.add(fv);
+
+forms.add(sects);
+
+forms.setPageTitle("Form Page Title");
+
+forms.add(fv);
+
+btn.setAction("next");
+
+btn.setLabel("Ok");
+
+List bList = new ArrayList();
+
+bList.add(btn);
+
+forms.setButtons(bList);
+
+// context.saveObject(forms);
+
+// context.commitTransaction();
+
+Identity idn = context.getObjectByName(Identity.class,"spadmin");
+
+System.out.println("idn : "+idn);
+
+System.out.println("forms : "+forms.toXml());
+
+wa.setName("workflow approval");
+
+wa.setForm(forms);
+
+wa.setOwner(workflow.get("launcher").toString());
+
+wa.setReturn("");
+
+wa.setSend("");
+
+wa.setAssimilated(true);
+
+
+
+
+
+//
+
+System.out.println("wa : "+wa.toXml());
+
+System.out.println("ws : "+ws.toXml());
+
+return wa;
+------------------------------------------------------------------------------------
+<?xml version='1.8' encoding='UTF-8' ?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<sailpoint>
+<Workflow type="IdentityLifecycle" name="customworkflow">
+<Variable name="identityName" input="true" initializer="Script:wfcontext.getIdentityName"></Variable>
+<Variable name="identityModel" input="true"></Variable>
+<Variable name="launcher" input="true"></Variable>
+<Variable name="custom-approval-form" input="true"></Variable>
+<Variable name="workItemNotificationTemplate" input="true"></Variable>
+<Variable name="WorkItemType" input="true"></Variable>
+<Variable name="event" input="true"></Variable>
+<Variable name="plan" input="true"></Variable>
+<Variable name="source" input="true" initializer="Script:event.getName()"></Variable>
+<Variable name="trace" initializer="false"></Variable>
+<Variable name="quickLinkIdentityId" input="true"></Variable>
+<Variable name="driveAction" input="true"></Variable>
+<Variable name="WorkItemForm" initializer="Custom_Identity_Review_Form"></Variable>
+<Variable name="transient" initializer="false"></Variable>
+<Variable name="policyViolations" input="true"></Variable>
+<Variable name="confirmationForm" input="true"></Variable>
+<Variable name="flow" initializer="Registration"></Variable>
+
+<Step name="start">
+<Transition to="next1"/>
+</Step>
+<Step name="next1" action="call:getIdentityModel" resultVariable="identityName">
+<Transition to="next2">
+</Step>
+<Step name="next2" resultVariable="identityName">
+<Script>
+<Source>
+import sailpoint.api.SailpointContext;
+import sailoint.object.Identity;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+Logger log = Logger.getLogger("customworkflow");
+if(identityModel!=null)
+{
+identityModel.put("qucikLinkIdentityId",quickLinkIdentityId);
+Identity identity=context.getObjectById(Identity.class,quickLinkIdentityId);
+String identityName=identity.getName();
+return identityName;
+}else{
+log.error("identityModel null hai");
+return null;
+}
+</Source>
+</Script>
+<Transition to="next3"/>
+</Step>
+<Step name="next3">
+<Approval name="formapproval" mode="serial" resultVariable="driveAction" owner="ref:launcher" send="identityModel">
+<Arg name="WorkItemType" value="Form">
+<Arg name="WorkItemForm" value="Custom_Identity_Review_Form"/>
+<Arg name="workItemDescription" value="HERE_DEFINE_YOUR_FORM_DESCRIPTION"/>
+</Approval>
+<Transition to="end"/>
+</Step>
+<Step name="end"/>
+<Workflow>
+</sailpoint>
+/////////////*
+Quick Comparison Table:-
+Feature                         return Attribute                                    resultVariable Attribute
+Kahan use hota hai?---------<Approval> aur <SubWorkflow> tags ke andar.------------<Step> aur <Script> tags ke andar.
+Kaam kya hai?----Kisi doosre object (jaise WorkItem ya SubWorkflow) se data ko Parent Workflow mein map karna.---Kisi step ke Script/Rule ka output ek workflow variable mein store karna.
+*///////////
+-------------------------------------->>>>>>>>>>>>
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Form PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Form name="Custom_Identity_Review_Form" title="user_details_Approve_Form">
+
+<Section name="next1" type="text">
+<Field name="firstName" displayName="firstName" readOnly="true" type="String">
+<Script>
+<Source>
+import sailpoint.object.Identity;
+import sailpoint.api.SailpointContext;
+if(identityModel!=null)
+{
+String identityName=null;
+Identity idn=context.getObjectById(Identity.class,identityModel);
+if(idn!=null)
+identityName = idn.getFirstName();
+else 
+return null;
+
+if(identityName!=null)
+return identityName;
+}
+else 
+return null;
+</Source>
+</Script>
+</Field>
+<Field name="department" displayName="department" readOnly="true" type="String" required="true">
+<Script>
+<Source>
+import sailpoint.object.Identity;
+import sailpoint.api.SailpointContext;
+if(identityModel!=null)
+{
+String department=null;
+Identity idn=context.getObjectById(Identity.class,identityModel);
+if(idn!=null)
+{
+department=idn.getDepartment();
+if(department!=null)
+return department;
+else
+return null;
+}
+else
+return null;
+}
+else
+return null;
+</Script>
+</Source>
+</Field>
+
+<Field name="lastname" readOnly="true" displayName="lastname" type="String"  required="true">
+import sailpoint.object.Identity;
+import sailpoint.api.SailpointContext;
+if(identityModel!=null)
+{
+String lastname = null;
+Identity idn=context.getObjectById(Identity.class,identityModel); 
+return (idn!=null)?idn.getLastName():null;
+}
+else
+return null;
+</Field>
+<Field name="reason for request" displayName="reason for request" type="String"  required="true"/>
+</Section>
+<Button label="submit" action="next" editable="false"/>
+<Button label="cancel" action="cancel" editable="false"/>
+</Form>
+---------------------------------------------------------------------------------------------------------
+()Custom Policy Alert Rule XML Example:-
+Yeh rule tab chalta hai jab koi policy violation trigger hoti hai. Yeh check karta hai ki violation kitni severe hai, 
+aur uske hisab se account se offending entitlement ko hatane ka plan banata hai.
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="CustomSODAlertPlanRule" type="PolicyAlert">
+  <Description>
+    Yeh custom rule policy violation hone par automatic buildAlertPlan ka kaam karta hai
+    aur critical violations ke liye remediation plan generate karta hai.
+  </Description>
+  
+  <Source>
+    <![CDATA[//]]>
+    import sailpoint.object.Identity;
+    import sailpoint.object.PolicyViolation;
+    import sailpoint.object.ProvisioningPlan;
+    import sailpoint.object.ProvisioningPlan.AccountRequest;
+    import sailpoint.object.ProvisioningPlan.AttributeRequest;
+    import sailpoint.api.SailpointContext;
+    import org.apache.log4j.Logger;
+
+    Logger log = Logger.getLogger("custom.rule.alertPlan");
+    log.info("--- Custom buildAlertPlan Rule Started ---");
+
+    // SailPoint is rule me 'policyViolation' aur 'identity' object by default deta hai
+    if (policyViolation == null || identity == null) {
+        log.warn("Policy Violation ya Identity null hai. Plan nahi ban sakta.");
+        return null;
+    }
+
+    // 1. Ek naya Provisioning Plan banayein
+    ProvisioningPlan plan = new ProvisioningPlan();
+    plan.setIdentity(identity);
+
+    // 2. Violation ki details nikaalein (Jaise kaun si entitlement violate hui hai)
+    String applicationName = policyViolation.getApplication();
+    String entitlementName = policyViolation.getArgument(); // Ya fir description se nikal sakte hain
+    String nativeIdentity = identity.getName(); // User ki unique ID target system par
+
+    // 3. Agar violation ki severity "High" ya "Critical" hai, tabhi auto-remediate karenge
+    String severity = policyViolation.getSeverity();
+    
+    if (severity != null && (severity.equalsIgnoreCase("High") || severity.equalsIgnoreCase("Critical"))) {
+        log.info("Critical Violation mili! Automatically entitlement hatane ka plan ban raha hai for: " + identity.getDisplayName());
+
+        // Target application ke liye Account Request banayein
+        AccountRequest accReq = new AccountRequest(AccountRequest.Operation.Modify, applicationName, null, nativeIdentity);
+        
+        // Offending entitlement ko REMOVE karne ka request dalein
+        AttributeRequest attrReq = new AttributeRequest();
+        attrReq.setName("groups"); // Aapka entitlement attribute name (e.g., groups, memberOf)
+        attrReq.setOperation(ProvisioningPlan.Operation.Remove);
+        attrReq.setValue(entitlementName);
+        
+        // Requests को plan mein add karein
+        accReq.add(attrReq);
+        plan.add(accReq);
+        
+        log.info("Custom Alert Plan successfully taiyar ho gaya.");
+        return plan;
+    }
+
+    // Agar severity low hai, toh koi auto-action nahi chahiye, sirf alert generate hoga
+    log.info("Violation severity low hai, auto-remediation plan ki zaroorat nahi hai.");
+    return null;
+    ]]>
+  </Source>
+</Rule>
+------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="usercheck" type="custom">
+<Source><![CDATA[//]]>
+import sailpoint.object.Identity;
+import sailpoint.api.SailpointContext;
+import sailpoint.api.SailpointContextFactory;
+SailpointContext context=SailpointContextFactory.getContext();
+Identity idn= context.getObjectByName(Identity.class,identityName);
+if(idn!=null){
+String Status;
+
+Status=idn.getStatus();
+if(Status!=null &amp;&amp; "Active".equals(Status))
+{
+idn.setStatus("Active");
+return Status;
+}
+else if("InActive".equals(Status))
+{
+idn.setStatus("InActive");
+return Status;
+}
+else
+return null;
+}
+else
+return null;
+]]>
+</Source>
+</Rule>
+////////*
+()String Comparison (==): Java/Beanshell mein strings compare karne ke liye == nahi, balki .equals() use hota hai.
+
+()1. Risk kya hai? (status.equals("InActive"))
+Agar status ki value null hai, aur aap likhte hain status.equals(...),toh aap aakhirkar null.equals(...) call karne ki koshish kar rahe hain.
+Java mein kisi bhi null object par koi method call karne se turant NullPointerException (NPE) aata hai aur aapka rule/workflow wahin crash ho jata hai.
+
+2. Safe tareeka kyun hai? ("InActive".equals(status))
+Yahan par "InActive" ek String Literal hai (yaani ek pakka object jo kabhi null nahi ho sakta).
+Jab aap "InActive".equals(status) likhte hain, toh .equals() method check karta hai ki andar bheja gaya variable (status) null hai ya nahi.
+Agar status null hota hai, toh ye bina crash kiye chupchaap false return kar deta hai.
+*/////////
+-------------------------------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="user_access" type="Custom">
+<Source><![CDATA[          //]]>
+import sailpoint.api.SailpointContext;
+import sailpoint.object.Identity;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.object.Provisioner;
+
+Logger log=getLogger("sailpoint.rules.user_access.rule");
+if(identityName!=null)
+{
+String Active=null;
+Identity idn=context.getObjectByName(Identity.class,identityName);
+if(idn!=null)
+{
+Active=(idn.getStatus()!=null)?"Active".equals(idn.getStatus())?"Active" :"InActive" : null;
+if(Active!=null)
+{
+
+ProvisioningPlan plan =new ProvisioningPlan(context);
+plan.setIdentity(idn);
+AccountRequest aqqr= new AccountRequest(AccountRequest.Operation.Modify,"SAP",null,idn.getName());
+
+AttributeRequest attr= new AttributeRequest(ProvisioningPlan.Operation.Remove,"department","Finance");
+aqqr.add(attr);
+
+AttributeRequest attre= new AttributeRequest(ProvisioningPlan.Operation.Add,"department","IT");
+aqqr.add(attre);
+
+plan.add(aqqr);
+ProvisioningProject project=null;
+Provisioner pro =new Provisioner(context);
+project=pro.compile(plan);
+pro.execute(project);
+return plan;
+}
+else{
+log.error("not found active");
+return null;
+}
+}
+else{
+log.error("not found idn");
+return null;
+}
+}
+else{
+log.error("not found identityName");
+return null;
+}
+]]>
+</Source>
+</Rule>
+/////////*
+()Aapne constructor mein department likha hai bina quotes ke.
+Beanshell ise ek variable samjhega aur "Variable not found" ka error dega.
+Kyunki ye attribute ka naam hai, isliye ye String hona chahiye: "department".
+Attribute hamesha string hoga kyuki ye variable nahi hota hai.
+kyuki attribute key string aur attributevalue object toh ye attribute map object hai.
+
+()Agar SAP Application mein "department" ya "roles" ek multi-valued attribute hai 
+(yaani ek user ek se zyada departments ya roles ka hissa ho sakta hai), 
+toh aap AttributeRequest ke andar value ki jagah poori Java List pass kar sakte hain,lekin same attributename ki.
+
+()new ProvisioningProject() Syntax Error: Java mein ProvisioningProject ek complex object hai jo pro.compile(plan) se automatic
+generate hota hai. Aapne line ProvisioningProject project = new ProvisioningProject(); nahi likhna 
+sirf ye likhe:-ProvisioningProject pro=provisioner.compile(plan);
+*////////
+-------------------------------------------------------------------------------------------------------------------

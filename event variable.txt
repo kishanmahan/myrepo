@@ -1,0 +1,120 @@
+()event Variable ke andar kya hota hai?
+Jab type="IdentityLifecycle" workflow chalta hai, toh event object ke paas main 3 cheezein hoti hain:-
+-->Old Identity Object (getOldIdentity()): Data badalne se pehle user ki profile kaisi dikhti thi.
+-->New Identity Object (getNewIdentity()): Data badalne ke baad (yaani current) user ki profile kaisi dikhti hai.
+-->Attribute Name (getAttributeName()): Woh specific field jo badli hai (agar yeh ek Attribute Change trigger tha).
+
+()Jab SailPoint ka Mover Workflow chalega, toh event variable ke andar yeh saara data hoga:-
+Method / Call	                     Kya Return Karega?
+event.getAttributeName():-----------"department" (Kyuki department badla hai)
+event.getOldValue():----------------"Sales" (Purana department)
+event.getNewValue():----------------"Marketing" (Naya department)
+
+event.getAttributeName() -> "manager"
+event.getOldValue() -> "Amit" (Purane manager ka naam/ID)
+event.getNewValue() -> "Suresh" (Naye manager ka naam/ID)
+
+event.getAttributeName() -> "lastname"
+event.getOldValue() -> "Sharma"
+event.getNewValue() -> "Verma"
+
+event.getAttributeName() -> "status"
+event.getOldValue() -> "Active"
+event.getNewValue() -> "LOA"
+
+event.getAttributeName() -> "employeeType"
+event.getOldValue() -> "Contractor"
+event.getNewValue() -> "Employee"
+ex:-
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.api.Provisioner;
+import sailpoint.tools.Util;
+import java.util.List;
+import java.util.ArrayList;
+
+// 1. Check karein ki event null toh nahi hai aur data sahi hai ya nahi
+if (event != null && "Contractor".equals(event.getOldValue()) && "Employee".equals(event.getNewValue())) {
+    
+    // Identity object fetch karna jo system ne automatically pass kiya hai
+    if (identity != null) {
+        String identityName = identity.getName();
+        
+        // Provisioning Plan create karein
+        ProvisioningPlan plan = new ProvisioningPlan();
+        plan.setIdentity(identity);
+        
+        // Active Directory ka nativeIdentity (DN) nikalna account requests ke liye
+        // Maan kar chal rahe hain ki user ke paas AD account pehle se hai
+        String adNativeIdentity = null;
+        List links = identity.getLinks();
+        if (links != null) {
+            for (Object link : links) {
+                sailpoint.object.Link l = (sailpoint.object.Link) link;
+                if ("Active Directory".equals(l.getApplicationName())) {
+                    adNativeIdentity = l.getNativeIdentity();
+                    break;
+                }
+            }
+        }
+
+        // ---------------------------------------------------------------------
+        // STEP 1: Contractor wali temporary AD groups remove karo
+        // ---------------------------------------------------------------------
+        if (Util.isNotNullOrEmpty(adNativeIdentity)) {
+            AccountRequest adReq = new AccountRequest(AccountRequest.Operation.Modify, "Active Directory", null, adNativeIdentity);
+            
+            // Example: Contractor group ko remove karna
+            // Aap multiple groups ke liye multiple AttributeRequest add kar sakte hain
+            adReq.add(new AttributeRequest("memberOf", ProvisioningPlan.Operation.Remove, "CN=Contractor-Temp-Access,OU=Groups,DC=company,DC=com"));
+            
+            plan.add(adReq);
+        }
+
+        // ---------------------------------------------------------------------
+        // STEP 2: Full-Time Employee ke automatic birthright roles assign karo
+        // ---------------------------------------------------------------------
+        // SailPoint mein direct Identity Object par Role assign karne ke liye 
+        // IIQ Application account request banayi jaati hai
+        AccountRequest iiqReq = new AccountRequest(AccountRequest.Operation.Modify, "IIQ", null, identityName);
+        
+        // "FullTime-Employee-Birthright-Role" aapke Business Role ka naam hai
+        iiqReq.add(new AttributeRequest("assignedRoles", ProvisioningPlan.Operation.Add, "FullTime-Employee-Birthright-Role"));
+        
+        plan.add(iiqReq);
+
+        // ---------------------------------------------------------------------
+        // Provisioning Plan ko Execute karna
+        // ---------------------------------------------------------------------
+        Provisioner provisioner = new Provisioner(context);
+        provisioner.compile(plan);
+        provisioner.execute();
+
+        // ---------------------------------------------------------------------
+        // STEP 3: IT Helpdesk ko ticket/email raise karo laptop dispatch ke liye
+        // ---------------------------------------------------------------------
+        // SailPoint mein ticketing tool (ServiceNow/Jira) ke liye integration 
+        // ya simple standard Email Notification use kiya jata hai.
+        
+        String emailTemplateName = "IT-Helpdesk-Laptop-Dispatch-Template";
+        sailpoint.object.EmailTemplate template = context.getObjectByName(sailpoint.object.EmailTemplate.class, emailTemplateName);
+        
+        if (template != null) {
+            sailpoint.object.EmailOptions options = new sailpoint.object.EmailOptions();
+            options.setTo("it-helpdesk@company.com");
+            
+            // Email template ke andar use hone wale variables pass karein
+            options.setVariable("employeeName", identity.getDisplayName());
+            options.setVariable("employeeId", identityName);
+            options.setVariable("managerName", identity.getManager() != null ? identity.getManager().getDisplayName() : "N/A");
+            
+            // Email send karein
+            context.sendEmailNotification(template, options);
+        } else {
+            // Agar template nahi mila toh standard log print karein (Troubleshooting ke liye)
+            System.out.println("ERROR: Email Template " + emailTemplateName + " nahi mila.");
+        }
+    }
+}

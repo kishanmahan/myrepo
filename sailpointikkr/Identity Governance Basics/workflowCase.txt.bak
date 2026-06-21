@@ -1,0 +1,638 @@
+()SailPoint me WorkflowCase basically ek object hai jo workflow ke execution instance ko represent karta hai.
+ Matlab jab bhi koi workflow trigger hota hai, ek WorkflowCase create hota hai, aur iske andar workflow ke sare state, 
+ tasks, aur data track hote hain.WorkflowCase me work items, approvals, escalations store hote hain.
+
+
+❗ Short Answer (direct):-
+👉 WorkflowContext data leta hai → WorkflowCase se ✅
+👉 Workflow se nahi ❌ kyuki workflow ke basis par workflowcase banata hai sailpoint.
+
+🧠 Ab detail me samajh
+🔷 1️⃣ Workflow kya hai?
+Ye definition / design hai
+XML/config hota hai
+Static hota hai
+
+👉 Example:-
+OnboardingWorkflow.xml
+
+👉 Isme:-
+steps
+transitions
+rules
+
+🔷 2️⃣ WorkflowCase kya hai?
+Ye runtime instance hai
+Jab workflow run hota hai tab banta hai
+Isme actual data store hota hai
+👉 Example:-
+john.doe ka onboarding run → ek WorkflowCase banega
+👉 Isme hota hai:-
+arguments
+status
+messages
+variables
+
+🔷 3️⃣ WorkflowContext kya hai?
+Ye execution helper / wrapper hai
+WorkflowCase ko access karne ka tool
+
+🔥 Relationship (sabse important):-
+Workflow (design)
+      ↓
+WorkflowCase (runtime data)
+      ↓
+WorkflowContext (access / execution)
+----------------------------------------------------------------------------------
+()Detail me breakdown karte hain ki WorkflowCase ke andar kya kya hota hai:-
+
+1️⃣ Basic Info / Metadata:-
+getId() → WorkflowCase ka unique ID
+getName() → Workflow ka naam
+getStatus() → Workflow ka current status (Pending, Running, Completed, Failed)
+getCreated() / getModified() → Case kab create aur last modified hua
+
+2️⃣ Tasks / Steps:-
+getTasks() → Is workflow ke andar kaun kaunse tasks hain
+Har task me hota hai:-
+Task ID
+Task name
+Assigned user / group
+Status (Completed, Pending, Failed)
+
+3️⃣ Input / Output Data:-
+getInputData() → Workflow start hone se pehle jo data pass hua
+getOutputData() → Workflow complete hone ke baad ka result
+Example: Identity info, request details, approval decision
+
+4️⃣ Associations:-
+getIdentity() → Agar workflow kisi identity ke liye hai, to uska reference
+getApplication() → Agar workflow kisi application provisioning ya deprovisioning se related hai
+getScope() → Workflow ka scope (like access request, account, group)
+
+5️⃣ Audit / Tracking:-
+getLogs() → Workflow me kya kya actions perform hue, step by step
+getComments() → Manual inputs ya approver comments
+getExecutionTime() → Total time workflow execute hone me laga
+
+6️⃣ State Management:-
+Pending / Active / Completed / Failed / Cancelled
+Ye status check karke workflow ko monitor aur manage kar sakte ho.
+
+-------------------------------------
+sare methods of workflowcase:-
+📌 Basic Metadata / Identity:-
+-------------------------------------
+getId() → WorkflowCase unique ID
+getName() → WorkflowCase ka name
+getStatus() → Current status (e.g., Pending, Completed, Failed)
+getType() → Workflow type (Approval / Provisioning etc.)
+getCreated() → Case ka creation time
+getModified() → Last modification time
+
+📌 Workflow Definition & References:-
+getWorkflow() → Associated Workflow definition object
+getWorkflowName() → Workflow ka naam
+getWorkflowVersion() → Version info
+
+📌 Target / Scope:-
+getTargetName() → Jiske liye workflow launch hua (like identity name)
+getTargetType() → Kya target hai (Identity / Role / Plan)
+getTarget() → Target object reference
+
+📌 Input & Output:-
+getInputData() → Workflow case ke input variables
+getOutputData() → Result / output variables
+getVariables() → All variables mapping
+
+📌 State & Execution:-
+getState() → Current internal state
+getCurrentStep() → Step name jahan workflow currently hai
+getStepStatus() → Step ka status
+getExecutionTime() → Workflow ka run time
+isCompleted() → Check if workflow finished
+isFailed() → Check if workflow failed
+
+📌 Tasks / TaskResults:-
+getTasks() → List of tasks related to the case
+getTaskResults() → TaskResult objects list
+getPendingTasks() → Only pending tasks
+getCompletedTasks() → Completed task list
+
+📌 Approvals / WorkItems:-
+getWorkItems() → Approval work items collection
+getPendingWorkItems() → Pending approvals
+getApprovedWorkItems() → Approved tasks
+getWorkItemById() → Specific workitem
+
+📌 Associations:-
+getIdentity() → Identity object if identity workflow
+getApplication() → Associated application object
+getProvisioningPlan() → Provisioning plan object (if provisioning workflow)
+
+📌 Audit / Logging:-
+getLogs() → Workflow case logs
+getMessages() → Messages added by workflow steps
+addMessage(String msg) → Add message to case
+addError(String err) → Add error message
+
+📌 Status / Lifecycle:-
+setStatus(String status) → Status update
+markCompleted() → Mark workflow as Complete
+markFailed() → Mark workflow as Failed
+---------------------------------------------------------------------------------------------------------------------------------
+()🔷 1️⃣ getId()
+👉 Kya karta hai:-
+WorkflowCase ka unique ID return karta hai
+Ye DB me stored primary identifier hota hai
+
+✅ Code:-
+String id = context.getId();
+System.out.println("WorkflowCase ID: " + id);
+🟢 Output:-
+WorkflowCase ID: 8a80828f93ab12340193ab567890abcd
+💡 Use:-
+Specific workflow run track karne ke liye
+Logs / debugging
+
+()🔷 2️⃣ getName():-
+👉 Kya karta hai:-
+WorkflowCase ka naam return karta hai,
+Usually workflow definition se aata hai.
+✅ Code:-
+String name = context.getName();
+System.out.println("Workflow Name: " + name);
+🟢 Output:-
+Workflow Name: IdentityRequestWorkflow
+
+🔷 3️⃣ getStatus():-
+👉 Kya karta hai:-
+Current execution status return karta hai
+✅ Code:-
+String status = context.getStatus();
+System.out.println("Status: " + status);
+🟢 Output:-
+Status: Pending
+👉 Possible values:-
+Pending
+Completed
+Failed
+
+()🔷 4️⃣ getType():-
+👉 Kya karta hai:-
+Workflow ka type/category return karta hai
+
+✅ Code:-
+String type = context.getType();
+System.out.println("Type: " + type);
+🟢 Output:-
+Type: Provisioning
+
+👉 Examples:-
+Approval
+Provisioning
+Certification
+
+💡 Use:-
+Logic branch karne ke liye
+Different workflows handle karne ke liye
+
+()🔷 5️⃣ getCreated()
+👉 Kya karta hai:-
+WorkflowCase kab create hua → time deta hai
+
+✅ Code:-
+System.out.println("Created: " + context.getCreated());
+🟢 Output:-
+Created: 2026-03-18 10:15:30
+
+🔷 6️⃣ getModified():-
+👉 Kya karta hai:-
+Last update kab hua
+
+✅ Code:-
+System.out.println("Modified: " + context.getModified());
+🟢 Output:
+Modified: 2026-03-18 10:20:45
+
+💡 Use:-
+Last activity track karna,
+Workflow delay identify karna.
+-----------------------------------------------------------------------------------
+🔥 Ek saath full example:-
+System.out.println("ID: " + context.getId());
+System.out.println("Name: " + context.getName());
+System.out.println("Status: " + context.getStatus());
+System.out.println("Type: " + context.getType());
+System.out.println("Created: " + context.getCreated());
+System.out.println("Modified: " + context.getModified());
+------------------------------------------------------------------------------------
+🔷 1️⃣ getWorkflow():-
+👉 Kya karta hai:-
+Associated Workflow definition object return karta hai,
+Matlab jo actual XML/config workflow hai (design), wo deta hai.
+
+✅ Code:
+Object wf = context.getWorkflow();
+System.out.println(wf);
+🟢 Output:
+Workflow[name=OnboardingWorkflow, version=1]
+
+🔷 2️⃣ getWorkflowName():-
+👉 Kya karta hai:-
+Workflow ka naam (String) return karta hai.
+
+✅ Code:-
+String name = context.getWorkflowName();
+System.out.println("Workflow Name: " + name);
+🟢 Output:-
+Workflow Name: OnboardingWorkflow
+
+🔷 3️⃣ getWorkflowVersion():-
+👉 Kya karta hai:-
+Workflow ka version number return karta hai
+
+✅ Code:-
+String version = context.getWorkflowVersion();
+System.out.println("Version: " + version);
+🟢 Output:
+Version: 1
+---------------------------------------------------------------------------------------------------
+🔷 1️⃣ getTargetName():-
+👉 Kya karta hai:-
+Jiske liye workflow launch hua → uska naam return karta hai
+
+✅ Code:-
+String targetName = context.getTargetName();
+System.out.println("Target Name: " + targetName);
+🟢 Output:-
+Target Name: john.doe
+💡 Use:-
+Kaunsa user / role process ho raha hai check karne ke liye.
+
+🔷 2️⃣ getTargetType():-
+👉 Kya karta hai:-
+Target ka type batata hai
+
+✅ Code:-
+String type = context.getTargetType();
+System.out.println("Target Type: " + type);
+🟢 Output:-
+Target Type: Identity
+💡 Possible values:-
+Identity
+Role
+ProvisioningPlan
+
+🔷 3️⃣ getTarget():-
+👉 Kya karta hai:-
+Target ka actual object return karta hai
+
+✅ Code:-
+Object target = context.getTarget();
+System.out.println(target);
+🟢 Output:-
+Identity[name=john.doe]
+
+🔷 4️⃣ getInputData():-
+👉 Kya karta hai:-
+Workflow start hone ke time jo data diya gaya (UI / API se) wo deta hai.
+
+✅ Code:-
+Map input = context.getInputData();
+System.out.println("Input: " + input);
+🟢 Output:-
+Input: {identity=john.doe, role=EmployeeRole}
+💡 Use:-
+Request ka original data check karna.
+
+🔷 5️⃣ getOutputData():-
+👉 Kya karta hai:-
+Workflow ke end me jo result nikla wo deta hai
+
+✅ Code:-
+Map output = context.getOutputData();
+System.out.println("Output: " + output);
+🟢 Output:
+Output: {status=SUCCESS, accountCreated=true}
+
+🔷 6️⃣ getVariables():-
+👉 Kya karta hai:-
+Workflow ke saare variables (input + intermediate + output) return karta hai
+
+✅ Code:-
+Map vars = context.getVariables();
+System.out.println("Variables: " + vars);
+🟢 Output:-
+Variables: {
+  identity=john.doe,
+  role=EmployeeRole,
+  status=SUCCESS,
+  approved=true
+}
+💡 Use:-
+Full debugging
+Complete workflow state dekhne ke liye.
+-------------------------------------------------------------------
+🔷 1️⃣ getState()
+👉 Kya karta hai:-
+Workflow ka internal state return karta hai
+Engine-level state hota hai
+
+✅ Code:-
+String state = context.getState();
+System.out.println("State: " + state);
+🟢 Output:-
+State: RUNNING
+💡 Possible values:-
+RUNNING
+WAITING
+COMPLETED
+FAILED
+-----------------------------------
+🔷 2️⃣ getCurrentStep():-
+👉 Kya karta hai:-
+Workflow abhi kis step pe hai
+
+✅ Code:-
+String step = context.getCurrentStep();
+System.out.println(step);
+🟢 Output:-
+ManagerApproval
+
+🔷 3️⃣ getStepStatus()
+👉 Kya karta hai:-
+Current step ka status batata hai
+
+✅ Code:-
+String stepStatus = context.getStepStatus();
+System.out.println(stepStatus);
+🟢 Output:-
+PENDING
+------------------------------------------------------------------------------------------------------------------------
+✅ Common Steps (real projects me use hote hain)
+🔹 1. Start
+Workflow ka starting point
+
+🔹 2. Initialize / PreProcess
+Variables set karna
+data prepare karna
+
+🔹 3. ManagerApproval
+Manager approval lena
+
+🔹 4. OwnerApproval
+Application owner approval
+
+🔹 5. SecurityApproval
+Security team approval
+
+🔹 6. PolicyCheck
+Policy violations check
+
+🔹 7. BuildPlan
+ProvisioningPlan banana
+
+🔹 8. Provisioning
+Account create / update
+
+🔹 9. PostProvisioning
+After actions (email, audit)
+
+🔹 🔟 End / Complete
+Workflow finish
+
+----------------------------------------------------
+✅ Common Step Status:-
+Status	         Meaning
+PENDING	     Wait kar raha hai
+APPROVED 	 Approve ho gaya
+REJECTED	 Reject ho gaya
+COMPLETED	 Step finish
+FAILED	     Error aaya
+WAITING	     External input ka wait
+-----------------------------------------------------------------------------------------------------------------------
+🔷 4️⃣ getExecutionTime():-
+👉 Kya karta hai:-
+Workflow run hone me kitna time laga
+
+✅ Code:-
+long time = context.getExecutionTime();
+System.out.println(time);
+🟢 Output:-
+2500
+👉 (milliseconds)
+
+🔷 5️⃣ isCompleted()
+👉 Kya karta hai:-
+Workflow complete hua ya nahi
+
+✅ Code:-
+boolean done = context.isCompleted();
+System.out.println(done);
+🟢 Output:-
+true
+💡 Meaning:-
+Workflow successfully finish ho gaya
+
+🔷 6️⃣ isFailed();-
+👉 Kya karta hai:-
+Workflow fail hua ya nahi
+
+✅ Code:-
+boolean fail = context.isFailed();
+System.out.println(fail);
+🟢 Output:-
+false
+💡 Meaning:-
+Workflow fail nahi hua.
+------------------------------------------------------------------------
+🔹 getTasks():-
+👉 Kya karta hai:-
+WorkflowCase se related saare tasks return karta hai
+List tasks = context.getTasks();
+System.out.println(tasks);
+
+🟢 Output:-
+[Task[RoleAssignmentTask], Task[ProvisioningTask]]
+
+🔹 getTaskResults():-
+👉 Kya karta hai:-
+Tasks ke result objects deta hai
+List results = context.getTaskResults();
+System.out.println(results);
+
+🟢 Output:-
+[TaskResult[SUCCESS], TaskResult[FAILED]]
+
+🔹 getPendingTasks():-
+👉 Kya karta hai:-
+Sirf pending tasks
+List pending = context.getPendingTasks();
+System.out.println(pending);
+
+🟢 Output:-
+[Task[ProvisioningTask]]
+
+🔹 getCompletedTasks():-
+👉 Kya karta hai:-
+Completed tasks list
+
+List completed = context.getCompletedTasks();
+System.out.println(completed);
+
+🟢 Output:-
+[Task[RoleAssignmentTask]]
+--------------------------------------------------------------------
+👉 WorkItems = approval requests (manager approval, owner approval).
+
+🔹 getWorkItems():-
+👉 Kya karta hai:-
+Saare approval items deta hai
+List items = context.getWorkItems();
+System.out.println(items);
+
+🟢 Output:-
+[WorkItem[ManagerApproval], WorkItem[OwnerApproval]]
+
+🔹 getPendingWorkItems():-
+👉 Kya karta hai:-
+Pending approvals
+List pending = context.getPendingWorkItems();
+System.out.println(pending);
+
+🟢 Output:-
+[WorkItem[ManagerApproval]]
+
+🔹 getApprovedWorkItems():-
+👉 Kya karta hai:-
+Approved workitems
+List approved = context.getApprovedWorkItems();
+System.out.println(approved);
+
+🟢 Output:-
+[WorkItem[OwnerApproval]]
+
+🔹 getWorkItemById():-
+👉 Kya karta hai:-
+Specific workitem fetch karta hai.
+Object item = context.getWorkItemById("WI-12345");
+System.out.println(item);
+
+🟢 Output:-
+WorkItem[id=WI-12345, status=PENDING]
+
+🔷 📌 3️⃣ Associations (linked objects):-
+👉 Workflow kis object pe run ho raha hai (identity, app, plan).
+
+🔹 getIdentity():-
+👉 Kya karta hai:-
+Identity workflow hai to user object deta hai
+
+Object identity = context.getIdentity();
+System.out.println(identity);
+🟢 Output:-
+Identity[name=john.doe]
+
+🔹 getApplication():-
+👉 Kya karta hai:-
+Associated application deta hai.
+Object app = context.getApplication();
+System.out.println(app);
+🟢 Output:-
+Application[Active Directory]
+
+🔹 getProvisioningPlan():-
+👉 Kya karta hai:-
+Provisioning workflow me plan object deta hai
+Object plan = context.getProvisioningPlan();
+System.out.println(plan);
+🟢 Output:-
+ProvisioningPlan[Create Account, Assign Role]
+----------------------------------------------------------------------
+🔹 getLogs():-
+👉 Kya karta hai:-
+Workflow execution ke internal logs deta hai
+List logs = context.getLogs();
+System.out.println(logs);
+
+🟢 Output:-
+[INFO: Workflow started, INFO: Approval step executed, ERROR: Provisioning failed]
+💡 Use:-
+Debugging
+Error trace
+
+🔹 getMessages():-
+👉 Kya karta hai:-
+Workflow me manually add kiye gaye messages return karta hai.
+List msgs = context.getMessages();
+System.out.println(msgs);
+
+🟢 Output:-
+[Request received, Manager approved, Account created]
+💡 Use:-
+UI display
+User-friendly info
+
+🔹 addMessage(String msg):-
+👉 Kya karta hai:-
+WorkflowCase me message add karta hai
+context.addMessage("Provisioning started");
+🟢 Output:-
+Message added: Provisioning started
+💡 Use:-
+Step-by-step info store karna
+
+🔹 addError(String err):-
+👉 Kya karta hai:-
+Error message add karta hai
+context.addError("Provisioning failed due to connection issue");
+🟢 Output:-
+Error added: Provisioning failed due to connection issue
+
+💡 Use:-
+Failure tracking
+UI me error show karna
+----------------------------------------------------------------------------------------------
+🔹 setStatus(String status):-
+👉 Kya karta hai:-
+WorkflowCase ka status manually update karta hai
+context.setStatus("PENDING_APPROVAL");
+🟢 Output:-
+Status updated: PENDING_APPROVAL
+💡 Use:-
+Custom status set karna
+
+🔹 markCompleted();-
+👉 Kya karta hai:-
+Workflow ko complete mark karta hai
+context.markCompleted();
+🟢 Output:-
+Workflow marked as COMPLETED
+💡 Use:-
+Successful end
+
+🔹 markFailed():-
+👉 Kya karta hai:-
+Workflow ko failed mark karta hai
+context.markFailed();
+🟢 Output:-
+Workflow marked as FAILED
+💡 Use:-
+Error condition
+
+🔥 Full Example (real flow):-
+context.addMessage("Workflow started");
+
+try {
+    // some logic
+    context.addMessage("Processing done");
+    context.markCompleted();
+} catch (Exception e) {
+    context.addError("Error occurred: " + e.getMessage());
+    context.markFailed();
+}
+🟢 Output:-
+Workflow started
+Processing done
+Workflow marked as COMPLETED

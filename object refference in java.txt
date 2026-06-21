@@ -1,0 +1,143 @@
+()Ek class ka multiple objects create Krna pe memory address kitna bnega?
+
+🔹 Short Answer
+👉 Jitne objects banaoge, utne hi alag-alag memory address banenge.
+🔹 Samajhne ke liye Example
+Java
+class Test {
+    int x = 10;
+}
+
+public class Demo {
+    public static void main(String[] args) {
+        Test obj1 = new Test();
+        Test obj2 = new Test();
+        Test obj3 = new Test();
+    }
+}
+👉 Yahan:
+obj1 → alag memory address
+obj2 → alag memory address
+obj3 → alag memory address
+✅ Total = 3 objects → 3 alag memory locations
+🔹 Important Concept
+Har object Heap Memory me banta hai
+Har object ka unique memory address/reference hota hai
+Variables (obj1, obj2) sirf reference store karte hain.
+
+🔹 Visual Samjho:-
+obj1 ───► [Object1 | x=10]
+obj2 ───► [Object2 | x=10]
+obj3 ───► [Object3 | x=10]
+👉 Sabka data same ho sakta hai, par memory address alag hota hai
+🔥 Final Line
+👉 "1 object = 1 memory address"
+👉 "n objects = n memory addresses"
+----------------------------------------------------------------------------------------------------------
+class F1
+{
+public static void main(String [] args)
+{
+panda a1= new panda();
+panda a2 = new panda();
+a1.fun1();
+a2.fun3();
+
+panda.fun4();
+}
+}
+
+class panda 
+{
+private static int x;
+private int y;
+
+void fun1(){
+x=55;
+y=17;
+
+}
+
+void fun2 (){
+
+System.out.println(x);
+}
+
+ void  fun3(){
+System.out.println(y);
+
+}
+
+static void fun4 (){
+System.out.println(x);
+}
+}
+
+🔥 Final Output:-
+0
+55
+
+/////*
+🔹 static variable (x)
+ek hi copy
+kisi bhi object se change karo → sab pe effect
+🔹 non-static variable (y)
+har object ka alag
+a1 ka alag, a2 ka alag
+*//////
+-----------------------------------------------------------------------------------
+class User {
+    String name;
+
+    // Constructor
+    User(String name) {
+        this.name = name;
+    }
+
+    // Override toString() for printing object
+    @Override
+    public String toString() {
+        return "User{name='" + name + "'}";
+    }
+
+    // Override equals()
+    @Override
+    public boolean equals(Object o) {
+        System.out.println("this: " + this);
+        System.out.println("o: " + o);
+
+        // Check reference equality
+        if (this == o) {
+            return true;
+        }
+
+        // Check null and type
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
+
+        // Typecast
+        User u = (User) o;
+
+        // Compare content
+        return this.name.equals(u.name);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+
+        User u1 = new User("Alice");
+        User u2 = new User("Bob");
+        User u3 = new User("Alice");
+
+        System.out.println("---- u1.equals(u2) ----");
+        System.out.println(u1.equals(u2));  // false
+
+        System.out.println("\n---- u1.equals(u1) ----");
+        System.out.println(u1.equals(u1));  // true
+
+        System.out.println("\n---- u1.equals(u3) ----");
+        System.out.println(u1.equals(u3));  // true (same name)
+    }
+}

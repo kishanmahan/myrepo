@@ -1,0 +1,196 @@
+📘 POLICIES – ALL CHAPTERS (END-TO-END)
+🟢 CHAPTER 1: Policy Overview
+Policy kya hoti hai?
+👉 Rule jo check karta hai ki koi access conflict ya risk create to nahi kar raha.
+Purpose:-
+Compliance
+Risk reduction
+SoD enforcement
+Audit readiness
+
+🟢 CHAPTER 2: Types of Policies
+Mainly 3 types:-
+1️⃣ Segregation of Duties (SoD) Policy
+2️⃣ Activity-Based Policy
+3️⃣ Advanced Policy (Rule-based)
+
+🟢 CHAPTER 3: Segregation of Duties (SoD)
+Most common 🔥
+Example:-
+User cannot have:-
+Create Vendor
+Approve Payment
+Conflict detect hoga if dono access present.
+
+Components:-
+Left side access
+Right side access
+Risk level
+Violation owner
+
+🟢 CHAPTER 4: Entitlement vs Role Based SoD
+Policy create kar sakte ho:-
+Entitlement vs Entitlement
+Role vs Role
+Role vs Entitlement
+Flexible governance model.
+
+🟢 CHAPTER 5: Policy Risk Scoring
+Each policy me define hota hai:-
+Risk score (numeric)
+Severity (Low / Medium / High / Critical)
+Violation hone pe:-
+Identity risk score increase hota hai.
+
+🟢 CHAPTER 6: Policy Violation Lifecycle
+Flow:-
+Access assign →
+Policy engine evaluate →
+Violation detect →
+Risk update →
+Certification trigger (optional) →
+Remediation
+
+🟢 CHAPTER 7: Policy Enforcement Points
+Policy check hota hai:-
+1️⃣ Access request time
+2️⃣ Role assignment time
+3️⃣ Identity refresh
+4️⃣ Aggregation
+5️⃣ Certification
+
+🟢 CHAPTER 8: Preventive vs Detective Policy
+Preventive:-
+Request block karta hai
+
+Detective:-
+Allow karta hai but violation record karta hai
+
+🟢 CHAPTER 9: Policy Violation Actions
+Options:-
+✔ Block provisioning
+✔ Allow with approval
+✔ Allow with mitigation
+✔ Notify security
+
+🟢 CHAPTER 10: Mitigation
+If violation accepted:-
+Business justification required
+Expiry date define
+Compensating control mention
+Audit evidence store hota hai.
+
+🟢 CHAPTER 11: Activity-Based Policies
+Check karta hai:-
+User activity logs
+High-risk behavior
+Less common but advanced governance me use hota hai.
+
+🟢 CHAPTER 12: Advanced Rule-Based Policies
+Custom logic use karte hain:-
+BeanShell rule
+Complex attribute comparison
+Conditional checks
+Example:-
+If department = Finance
+AND role = Admin
+→ Violation
+
+🟢 CHAPTER 13: Policy Scope
+Define kar sakte ho:-
+Specific application
+Specific department
+Specific identity type
+High-risk users only
+
+🟢 CHAPTER 14: Policy Simulation
+Before activation:-
+Test policy
+See potential violations
+Avoid false positives
+Best practice 🔥
+
+🟢 CHAPTER 15: Policy Reporting
+Generate kar sakte ho:-
+Violation report
+High-risk users report
+Open mitigations
+Policy effectiveness
+
+🟢 CHAPTER 16: Policy & Certification Integration
+Violation detect →
+Certification generate →
+Reviewer decide approve/revoke
+Strong compliance model.
+
+🟢 CHAPTER 17: Policy & Access Request Integration
+During access request:-
+Real-time policy check
+Violation popup show
+User justification capture
+
+🟢 CHAPTER 18: Policy & Role Management
+When role modified:-
+Recalculate violations
+All members impacted
+Risk recalculation
+Identity refresh required.
+
+🟢 CHAPTER 19: Policy Violation Ownership
+Define kar sakte ho:-
+Manager responsible
+Application owner
+Security team
+Escalation possible.
+
+🟢 CHAPTER 20: Policy Lifecycle
+Stages:-
+1️⃣ Draft
+2️⃣ Simulation
+3️⃣ Active
+4️⃣ Deprecated
+5️⃣ Retired
+
+🟢 CHAPTER 21: Performance Considerations
+Large org me:-
+Thousands of identities
+Multiple policies
+
+Optimize:-
+Avoid too many overlapping policies
+Use scoped policies
+Use scheduled refresh wisely
+
+🟢 CHAPTER 22: False Positives Handling
+Reasons:-
+Overlapping entitlements
+Wrong mapping
+Incomplete role design
+
+Solution:-
+Fine-tune policy
+Add exclusions
+Adjust scope
+
+🟢 CHAPTER 23: Real Project Scenarios
+Scenario 1:
+User gets conflicting SAP roles
+→ Policy violation detect
+→ Block request
+
+Scenario 2:
+Violation detected during aggregation
+→ Identity risk increase
+→ Certification trigger
+
+Scenario 3:
+Violation mitigated
+→ Stored with expiry date
+
+🟢 CHAPTER 24: Best Practices
+✔ Clear naming convention
+✔ Business validation before activation
+✔ Use simulation
+✔ Avoid duplicate policies
+✔ Define mitigation process
+✔ Review policy annually

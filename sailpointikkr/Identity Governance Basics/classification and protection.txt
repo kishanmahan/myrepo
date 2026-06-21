@@ -1,0 +1,19 @@
+()Classification = kisi cheez ko type ya category me divide karna,
+taaki manage karna easy ho aur rules apply kar sake.
+Classified = aisi information jo restricted ho aur sirf authorized log hi access kar saken.
+
+3️⃣ Example in IT / Compliance (SOX, GDPR, HIPAA):-
+Regulation	        Classified Example	                                       Purpose
+SOX--------Financial statements of company → internal use only------------Unauthorized tampering se bachana
+GDPR-------Personal info → email, address, health data--------------------Sirf authorized staff hi access kare
+HIPAA------PHI (Patient Health Info) → doctors, nurses ke liye------------Patient privacy protect karna
+
+()Protection = kisi cheez ko safe rakhna, damage, misuse, ya unauthorized access se bachana.
+3️⃣ Example in IT / Compliance (SOX, GDPR, HIPAA):-
+Regulation	   Protection Example	                        Purpose
+SOX-------------Encrypt financial records-------------Financial data ko tampering se bachana
+GDPR------------Secure personal data with passwords---EU citizens ka data misuse se bachana
+HIPAA-----------Encrypt patient health info-----------PHI ko unauthorized access se protect karna
+
+()1️⃣ Restricted = Limited Access:-
+Matlab information, system, ya area ko sabke liye open nahi rakha, sirf authorized log hi use kar saken.

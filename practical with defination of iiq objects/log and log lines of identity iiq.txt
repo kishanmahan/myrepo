@@ -1,0 +1,251 @@
+------------------------------------------------------------logger------------------------------------------------------------------------
+()log4j kya hai in iiq?
+--log4j ek logging framework/system hai jo application ke andar hone wale events,errors,aur activity ko record karta hai.
+
+()log4j ke main kaam:-
+->errors ko log karna(exception)
+->debug information dena(developer ko)
+->system actvity track karna
+->troubleshooting me help karna
+
+()log levels:-
+--debug:-developer ke liye detailed info.
+--info:-normal system activity
+--warn:-warning
+--error:-exception me
+--FATAL:-system crash type issue
+
+()sailpoint me log4j ka use:-
+🔹 1. Log Levels in SailPoint (Log4j)
+👉 1. DEBUG (sabse detailed)
+
+👉 Developer ke liye deep internal info
+
+log.debug("Entering provisioning rule for user: " + identity.getName());
+
+✔ Use kab:
+
+Rule debugging
+Workflow trace
+Variable values check
+
+👉 2. INFO (normal activity)
+
+👉 System kya kar raha hai (normal flow)
+
+log.info("User created successfully: " + identity.getName());
+
+✔ Use kab:
+
+Successful operations
+Important steps (aggregation start/end)
+
+👉 3. WARN (warning)
+
+👉 Kuch galat ho sakta hai, but system chal raha hai
+
+log.warn("Manager not found for user: " + identity.getName());
+
+✔ Use kab:
+
+Missing data
+Optional field null
+
+👉 4. ERROR (serious problem)
+
+👉 Operation fail ho gaya
+
+log.error("Provisioning failed for user: " + identity.getName());
+
+✔ Use kab:
+
+Exception
+Provisioning failure
+DB connection issue
+
+👉 5. FATAL (system crash type)
+
+👉 Bahut critical error (rare use)
+
+log.fatal("System is down! Unable to connect to database");
+
+✔ Use kab:
+
+Server crash
+Critical system failure
+🔹 🔥 Combined Example (Real SailPoint Rule)
+import sailpoint.object.Identity;
+
+Identity identity = context.getObjectByName(Identity.class, "Raj");
+
+log.debug("Step 1: Fetching identity");
+
+if(identity != null){
+
+    log.info("User found: " + identity.getName());
+
+    if(identity.getManager() == null){
+        log.warn("Manager not assigned for user: " + identity.getName());
+    }
+
+    try{
+        // Provisioning logic
+        log.debug("Starting provisioning");
+
+        // assume success
+        log.info("Provisioning successful for user: " + identity.getName());
+
+    }catch(Exception e){
+        log.error("Provisioning failed: " + e.getMessage());
+    }
+
+}else{
+    log.fatal("Identity not found in system!");
+}
+----------------------------------------------------------
+()log4j.appender.file.File=G:/Training/Asha Training Notes/Hemanth_Ruthie/Sailpoint.log=ye txt file hai aur sare sailpoint ke logs yahi save honge live.
+()#log4j.rootLogger=warn, stdout
+👉 # ka matlab:-
+Ye line ignore hogi (disabled)
+stdout = console pe print
+📌 Important Concept:-
+Log4j me inheritance hota hai
+Agar kisi class ka logger define nahi hai → rootLogger use hoga.
+
+--------------------------------------------------------------------------
+()log4j.rootLogger=warn, file, stdout
+🔷 1. rootLogger=warn kya hota hai?
+👉 rootLogger = main boss logger
+👉 warn = minimum level (threshold)
+🔥 Matlab:-
+Sirf ye logs allow honge:-
+WARN
+ERROR
+FATAL
+
+❌ Ye logs ignore honge:-
+TRACE
+DEBUG
+INFO
+
+🔹 file:-
+Ek appender (logs file me jayenge)
+🔹 stdout:-
+Ek appender (logs console pe dikhenge)
+
+🔷 3. Appender kya hota hai?
+👉 Appender = “logs kaha bhejne hai”
+
+🔥 Types:-
+FileAppender → file me
+ConsoleAppender → console me
+RollingFileAppender → file rotate hoti hai
+----------------------------------------------------------------------------
+()log4j.appender.file=org.apache.log4j.FileAppender
+Type = FileAppender
+📌 Internally:-
+Ye ek Java class hai jo file handling karta hai
+Ye logs ko disk pe write karta hai.
+
+🔷 4. log4j.appender.file:-
+log4j.appender.file=org.apache.log4j.FileAppender
+
+👉 Matlab:-
+file naam ka appender define hua
+Type = FileAppender
+📌 Ye logs ko file me likhega.
+
+
+------------------------------------------------------------------------------
+🔷 5. log4j.appender.file.layout
+log4j.appender.file.layout=org.apache.log4j.PatternLayout
+
+👉 Layout = log ka design / format
+
+🔥 Matlab:
+Logs kaise dikhenge (structure)
+
+🔷 6. PatternLayout kya karta hai?
+👉 Ye define karta hai:-
+Date dikhe ya nahi
+Class name dikhe ya nahi
+Line number dikhe ya nahi
+
+🔷 7.Line:
+log4j.appender.file.layout=org.apache.log4j.PatternLayout
+🔥 Iska exact matlab:-
+👉 Ye line custom pattern nahi likh rahi,
+👉 Ye sirf bol rahi hai ki “PatternLayout use karo”.
+
+⚡ Simple samajh:-
+PatternLayout = ek tool / engine hai
+ConversionPattern = actual custom format
+🔥 Dono ka relation
+1️⃣ Ye line:-
+log4j.appender.file.layout=org.apache.log4j.PatternLayout
+👉 “Main PatternLayout use karunga”
+
+2️⃣ Ye line:-
+log4j.appender.file.layout.ConversionPattern=%d{ISO8601} %5p %c{4}:%L - %m%n
+👉 “Aur mera custom pattern ye hoga”
+-------------------------------------------------------------------------------
+🔹 Conversion Pattern:-
+log4j.appender.file.layout.ConversionPattern=%d{ISO8601} %5p %c{4}:%L - %m%n
+👉 Ye pura log ka structure define karta hai
+
+🔥 Deep Breakdown:-
+🕒 %d{ISO8601}
+
+👉 Date & time
+2026-04-24 12:30:45
+
+⚡ %5p
+👉 Log level (fixed width 5)
+INFO
+WARN
+ERROR
+
+📦 %c{4}
+👉 Class name (last 4 package parts)
+Example:-
+sailpoint.connector.LDAPConnector
+→ output: connector.LDAPConnector
+
+📍 %L
+👉 Line number jahan log likha hai
+
+💬 %m
+👉 Actual message
+
+🔚 %n
+👉 New line
+
+🔥 Final Output Example
+2026-04-24 12:30:45 WARN LDAPConnector:120 - Connection failed
+------------------------------------------------------------------------------------------------------------
+🔷 4. Specific Logger (Class Level Control):-
+log4j.logger.sailpoint.connector.LDAPConnector=trace
+
+👉 Ye sabse powerful line hai 🔥
+👉 Meaning:-
+Sirf is class ke liye logging override ho rahi hai
+
+🔥 Log Levels (Hierarchy):-
+TRACE (lowest, most detailed)
+DEBUG
+INFO
+WARN
+ERROR
+FATAL (highest)
+👉 Yaha trace set hai:-
+📌 Matlab:-
+Har ek chhoti se chhoti detail log hogi
+Even internal method calls bhi
+
+🔥 Priority Rule:-
+Logger Type	     Level
+RootLogger-------WARN
+LDAPConnector----TRACE
+👉 Result:-
+Baaki sab classes → WARN+
+LDAPConnector → TRACE (full detail)

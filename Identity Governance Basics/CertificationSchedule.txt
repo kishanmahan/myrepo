@@ -1,0 +1,228 @@
+()CertificationSchedule kya karta hai?
+--
+👉 CertificationSchedule = Certification ko automatically chalane ka setup
+Matlab:-
+“Certification kab, kitni baar aur kaise run hoga” ye define karta hai.
+
+🔹 Simple Example:-
+👉 Tu bolta hai:-
+Har month access review ho
+Ya har 3 mahine me
+👉 Ye kaam karta hai → CertificationSchedule
+
+🔹 CertificationSchedule kya karta hai?
+👉 Ye decide karta hai:-
+Certification kab start hoga
+Kitni baar repeat hoga
+Kis type ka certification run hoga
+Kaun reviewer hoga.
+
+🔹 Real Scenario:-
+Monthly Certification:-
+Start Date: 1 April
+Repeat: Every 30 days
+Reviewer: Manager
+👉 Ye sab store hota hai → CertificationSchedule me.
+
+🔹 Kya DB me store hota hai?
+👉 ✅ Haan bhai, store hota hai
+🔸 Table:-
+spt_certification_schedule
+🔸 Related tables bhi ho sakte:-
+spt_task_schedule (kab run hoga)
+spt_certification (actual run)
+---------------------------------------------------------------------------
+🔹 CertificationSchedule ke andar kya hota hai?
+🔸 1️⃣ Basic Info:-
+id
+name
+description
+
+🔸 2️⃣ Timing/Schedule:-
+startDate
+endDate
+frequency (daily / weekly / monthly)
+cronExpression
+
+🔸 3️⃣ Certification Setup:-
+certificationType
+scope (kaunse users)
+applications
+roles
+
+🔸 4️⃣ Reviewer Info:-
+reviewer
+escalation rules
+
+🔸 5️⃣ Settings:-
+autoSignOff
+reminders
+notifications
+
+🔸 6️⃣ Status:-
+enabled / disabled
+lastRunDate
+-----------------------------------------------------------------------------------------------------
+🔹 Methods kitne hote hain?
+👉 Exact count fixed nahi hota (version pe depend karta hai)
+👉 But approx categories me methods hote hain:-
+
+🔸 Basic Methods:-
+getId()
+setId()
+getName()
+setName()
+🔸 Schedule Methods:-
+getStartDate()
+setStartDate()
+getCronExpression()
+setCronExpression()
+🔸 Config Methods:-
+getCertificationType()
+setCertificationType()
+getScope()
+setScope()
+🔸 Reviewer Methods:-
+getReviewer()
+setReviewer()
+🔸 Status Methods:-
+isEnabled()
+setEnabled()
+🔸 Utility Methods:-
+toString()
+equals()
+hashCode()
+-----------------------------------------------------------------------------------------------------------------
+🔹 getCronExpression():-
+👉 Ye method current cron expression return karta hai
+👉 Matlab:-
+“Schedule ka timing rule kya hai?” wo batata hai
+
+🔸 Example:-
+System.out.println(schedule.getCronExpression());
+schedule.setCronExpression("0 0 1 * *");
+
+👉 Ab certification:-
+Daily 1 AM pe run hoga
+✅ Output:-
+0 0 1 * *
+
+👉 Meaning:-
+Har din raat 1 baje run hoga
+
+🔹 setCronExpression():-
+👉 Ye method schedule ka timing set karta hai
+👉 Matlab:-
+“Certification kab run hoga” define karta hai.
+
+🔥 Cron Expression kya hota hai?
+👉 Ye ek time pattern language hai
+👉 Scheduler isi se decide karta hai kab run karna hai
+
+🔸 Basic Format:-
+Minute Hour Day Month DayOfWeek
+🔸 Examples:-
+Cron	      Meaning
+0 0 * * *-----Daily midnight
+0 0 1 * *-----Har mahine 1 tareekh
+0 12 * * 1----Har Monday 12 PM
+*/5 * * * *---Har 5 minute
+-----------------------------------------------------------------------------------------------------------------------
+()getId():-
+👉 schedule ka unique ID return karta hai,
+System.out.println(schedule.getId());
+✅ Output:-
+SCH101
+
+()setId(String id):-
+👉 schedule ka ID set karta hai
+schedule.setId("SCH101");
+
+()getName():-
+👉 schedule ka naam deta hai,
+System.out.println(schedule.getName());
+✅ Output:-
+Monthly Access Review
+
+()setName(String name):-
+👉 schedule ka naam set karta hai
+schedule.setName("Monthly Access Review");
+
+()getStartDate():-
+👉 schedule kab start hoga wo date deta hai
+System.out.println(schedule.getStartDate());
+✅ Output:-
+2026-04-01
+
+()setStartDate(Date startDate):-
+👉 start date set karta hai
+schedule.setStartDate(new Date());
+
+()getCronExpression():-
+👉 schedule ka timing pattern return karta hai
+System.out.println(schedule.getCronExpression());
+✅ Output:-
+0 0 1 * *
+
+()setCronExpression(String cron):-
+👉 schedule kab run hoga wo set karta hai
+schedule.setCronExpression("0 0 1 * *");
+
+()getCertificationType():-
+👉 kis type ka certification run hoga batata hai
+System.out.println(schedule.getCertificationType());
+✅ Output:-
+Manager Certification
+
+()setCertificationType(String type):-
+👉 certification type set karta hai
+schedule.setCertificationType("Manager Certification");
+
+()getScope():-
+👉 kin users / systems pe certification lagega
+System.out.println(schedule.getScope());
+✅ Output:-
+All Employees
+
+()setScope(String scope):-
+👉 scope set karta hai
+schedule.setScope("All Employees");
+
+()getReviewer():-
+👉 reviewer ka naam deta hai
+System.out.println(schedule.getReviewer());
+✅ Output:-
+Manager1
+
+()setReviewer(String reviewer):-
+👉 reviewer set karta hai
+schedule.setReviewer("Manager1");
+
+()isEnabled():-
+👉 schedule active hai ya nahi batata hai
+System.out.println(schedule.isEnabled());
+✅ Output:-
+true
+
+()setEnabled(boolean enabled):-
+👉 schedule ko enable/disable karta hai
+schedule.setEnabled(true);
+
+()toString():-
+👉 object ko readable string me convert karta hai
+System.out.println(schedule.toString());
+✅ Output:-
+CertificationSchedule[id=SCH101, name=Monthly Access Review]
+
+()equals(Object obj):-
+👉 2 schedule objects same hain ya nahi check karta hai
+schedule1.equals(schedule2);
+✅ Output:-
+true / false
+
+()hashCode():-
+👉 object ka unique hash number deta hai
+System.out.println(schedule.hashCode());
+✅ Output:-
+45879632
+--------------------------------------------------------------------------------------------------------------------------

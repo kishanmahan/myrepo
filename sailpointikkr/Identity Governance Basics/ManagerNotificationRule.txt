@@ -1,0 +1,38 @@
+🔹 1️⃣ ManagerNotificationRule kya hai?
+👉 ManagerNotificationRule = ek SailPoint Rule hai
+jo decide karta hai:-
+➡️ Manager ko notification bhejna hai ya nahi
+➡️ Kaun sa manager / kaun se log notify honge
+➡️ Kya message / email jayega
+
+💡 Simple line me:-
+👉 “Manager ko kab aur kya notify karna hai” = ManagerNotificationRule
+
+🔹 2️⃣ Ye class hai ya nahi?
+👉 ❌ Java class nahi hai
+👉 ✅ SailPoint Rule (script/XML based)
+Bilkul ApprovalRule ki tarah:-
+UI / XML me likhte ho
+DB me store hota hai
+Runtime pe execute hota hai.
+
+🔹 3️⃣ Ye kab use hota hai?
+👉 Jab koi event hota hai:-
+Access request submit hua
+Approval pending hai
+Access granted ho gaya
+Access revoke hua
+👉 Tab system decide karta hai:-
+➡️ Manager ko email bhejna hai ya nahi.
+
+🔹 4️⃣ Iske andar kya hota hai?
+✔️ Inputs milte hain:-
+identity → user jiska access hai
+manager → uska manager
+context → SailPointContext
+approval / request → optional
+✔️ Rule kya karta hai:
+Manager identify karta hai
+Email bhejne ka decision karta hai
+Custom logic apply karta hai.
+----------------------------------------------

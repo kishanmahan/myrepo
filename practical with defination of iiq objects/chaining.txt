@@ -1,0 +1,181 @@
+()Chaining use:-
+/*4. Employee Salary System
+Concepts
+Abstraction
+Inheritance
+Polymorphism
+Constructor
+Task
+Abstract class Employee
+method:
+calculateSalary()
+Child classes:
+Manager
+Developer
+Intern
+Constructor se salary initialize karo
+Parent reference se methods call karo*/
+
+abstract class Employee{
+	int salary;
+	String name;
+	
+	public Employee(String name, int salary){
+		this.name=name;
+		this.salary=salary;
+	}
+	abstract void  calculateSalary();
+}
+
+
+class Manager extends Employee{
+	
+	public Manager( String name, int salary){
+		super(name,salary);
+	}
+	public void calculateSalary(){
+		System.out.println(name+" Your salary is "+ salary);
+	}
+}
+
+
+class Developer extends Employee{
+	
+	public Developer( String name,int salary){
+		super(name,salary);
+	}
+	public void calculateSalary(){
+		System.out.println( name+" Your salary is "+ salary);
+	}
+}
+
+
+class Intern extends Employee{
+	
+	public Intern(String name , int salary){
+		super(name,salary);
+		
+	}
+	public void calculateSalary(){
+		System.out.println(name+" You are Intern this is  salary "+ salary);
+	}
+}
+class Trash7{
+	public static void main(String arg[]){
+		
+		Employee arr[]={
+			new Manager("Aman",50000),
+			new Developer("Anuj",40000),
+			new Intern("Arav",30000),
+		};
+		
+		for( Employee e1 : arr){
+			e1.calculateSalary();
+		}
+		
+		
+	}
+}
+-----------------------------------------------------------------------------------------------------------------------------
+/*2. Online Food Delivery
+Concepts
+Abstraction
+Polymorphism
+Constructor
+Task
+Abstract class Food
+methods:
+prepareFood()
+price()
+Child classes:
+Pizza
+Burger
+Biryani
+Constructor se item name set karo
+Array of parent reference use karke runtime polymorphism dikhao*/
+
+abstract class Food{
+	abstract void  prepareFood();
+	abstract void  price();
+}
+
+class Pizza extends Food{
+	String name ;
+	
+	public Pizza(String name){
+		this.name = name ;
+	}
+	
+	public void prepareFood(){
+	System.out.println("Your "+name+" is making wait 😊");
+	System.out.println("Your "+name+" is Ready ");
+	System.out.println(" ");
+	}
+
+	public void price (){
+		System .out.println("Your " +name+ " price 9$.");
+		System.out.println("Thanks for visting my store 😊");
+	}
+}
+
+class Burger extends Food{
+	String name ;
+	
+	public Burger(String name){
+		this.name = name ;
+	}
+	
+	public void prepareFood(){
+	System.out.println(" ");
+	System.out.println("Your "+name+" is making wait 😊");
+	System.out.println("Your "+name+" is Ready");
+	System.out.println(" ");
+	}
+	
+	
+	public void price (){
+		System .out.println("Your " +name+ "  price 5$.");
+		System.out.println("Thanks for visting my store 😊");
+	}
+}
+
+class Biryani extends Food{
+	String name ;
+	
+	public Biryani(String name){
+		this.name = name ;
+	}
+	
+	public void prepareFood(){
+	System.out.println(" ");
+	System.out.println("Your "+name+" is making wait 😊");
+	System.out.println("Your "+name+" is Ready");
+	System.out.println(" ");
+	}
+	
+	
+	
+	public void price (){
+		System .out.println("Your " +name+ "  price 10$.");
+		System.out.println("Thanks for visting my store 😊");
+	}
+}
+
+
+class Thrad5 {
+	public static void main(String arg[]){
+		
+		
+			Food arr[] = {                         // this ways called array parent using by runtime polymorphism
+			new Pizza("Hawaiian Pizza"),
+			new Burger("Kuban Chicken Burger"),
+			new Biryani("Chicken Biryani")
+		};
+
+		for(Food f : arr){
+			f.prepareFood();
+			f.price();
+		}
+		
+	}
+}

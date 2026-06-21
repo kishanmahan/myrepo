@@ -1,0 +1,98 @@
+
+()SailPoint me “efficiently” propagate karna ka matlab basically ye hota hai ki changes ko target systems tak fast, accurate, 
+aur minimal overhead ke saath push karein. 😎
+
+1️⃣ Efficient Propagation ka matlab:-
+Fast: Requests aur changes jaldi target system tak pohonche.
+Accurate: Jo change approve hua, wo exactly apply ho, bina duplicate ya missing updates ke.
+Minimal load: Target system ya SailPoint engine pe unnecessary load na padhe.
+
+2️⃣ Best Practices for Efficient Propagation:-
+
+()Batch Processing:-
+Multiple requests ko batch me propagate karo instead of one by one.
+Example: 100 users ke role updates ek saath push karo.
+
+()Retry & Error Handling:-
+Agar propagation fail ho jaaye → automatic retry karo.
+Failed actions ka audit log maintain karo.
+
+()Delta Updates:-
+Sirf changed attributes push karo, puri object nahi.
+Example: Sirf email update hua → baki sab fields na bhejo.
+-------------------------------
+️⃣ Connector Optimization:-
+Matlab:-
+Connector optimization ka goal hai ki SailPoint aur target system ke beech data transfer fast aur efficient ho.
+Ye important hai jab large number of users/accounts ke updates ho rahe ho.
+Techniques:-
+
+()Filter Queries:-
+Sirf relevant objects ko fetch ya update karo.
+Example: AD me sirf active users ko sync karo, disabled users ignore karo.
+
+()Delta Queries:-
+Sirf changed attributes propagate karo, puri object push karne ki zarurat nahi.
+
+()Batch Operations:-
+Multiple requests ek saath target system me send karo.
+Example: 100 users ka role ek hi API call me update.
+
+()Connector Caching:-
+Frequently used reference data local cache me rakho.
+Example: Role IDs ya Group IDs cache me, baar-baar query na karna.
+
+()Connection Pooling:-
+Target system ke liye persistent connections use karo instead of creating a new connection each time.
+----------------------------------
+()Advantages of async propagate:-
+UI / Workflow fast: Approval ke turant baad user ko next step dikh sakta hai.
+Retry Mechanism easy: Agar propagation fail ho jaye, engine automatically retry kar sakta hai.
+Scalable: Large number of requests easily handle ho jaate hain.
+Load Balancing: Target system pe unnecessary load avoid hota hai.
+
+2️⃣ Asynchronous Propagation:-
+Normally, jab request approve hoti hai, propagation target system me apply hoti hai.
+Synchronous propagation me workflow tab tak wait karta hai jab tak propagation complete na ho → slow ho sakta hai, especially slow systems ya large batches me.
+Asynchronous propagation me propagation background me run hoti hai, workflow/UI block nahi hote.
+
+1️⃣ Workflow ka matlab:-
+Workflow basically ek sequence of steps ka process hota hai jo identity governance tasks ko automate karta hai.
+Ye define karta hai request ka lifecycle: approval, validation, notifications, propagation, etc.
+
+2️⃣ Workflow kya karta hai?
+a) Request Processing:-
+Workflow decide karta hai request approve/reject kaise hoga.
+Example: User ne access request ki → workflow check karta hai:
+Kya approval required hai?
+Kaunse approver(s) assign karne hain?
+
+b) Approval Management:-
+Workflow approval items create aur assign karta hai.
+Approvers ko notify karta hai.
+Approval ke state track karta hai: Pending / Approved / Rejected.
+
+c) Validation:-
+Workflow request ke rules validate karta hai:
+Mandatory fields check
+Compliance rules
+Policy violations
+
+d) Notifications:-
+Workflow notifications bhejta hai approvers aur requestor ko.
+Example: “Your request approved/rejected” email ya portal notification.
+
+e) Propagation Trigger:-
+Approval ke baad workflow decide karta hai propagation start karna hai ya nahi.
+Workflow state update karta hai → “Pending Propagation”
+
+f) Error Handling:-
+Workflow failed steps ko track karta hai.
+Retry logic, exception handling aur audit log maintain karta hai.
+
+g) Audit & Reporting:-
+Workflow request ke sare steps aur approvals log karta hai.
+Reports generate karna easy hota hai:
+Kaunse request approve hue, reject hue
+Approval time, escalations.
+

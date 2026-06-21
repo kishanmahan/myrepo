@@ -1,0 +1,195 @@
+📘 PROVISIONING – COMPLETE CHAPTERS
+🟢 CHAPTER 1: Provisioning Fundamentals
+Provisioning kya hai?
+👉 Target application me account ya access create / update / delete karna.
+Types:-
+Account provisioning
+Entitlement provisioning
+
+🟢 CHAPTER 2: Provisioning Triggers
+Provisioning kab start hota hai?
+1️⃣ Joiner event
+2️⃣ Mover event
+3️⃣ Leaver event
+4️⃣ Access request
+5️⃣ Certification revoke
+6️⃣ Role assignment
+7️⃣ Policy remediation
+
+🟢 CHAPTER 3: Provisioning Flow (Internal Working 🔥)
+Flow inside SailPoint IdentityIQ
+Identity change →
+Provisioning Plan create →
+Workflow execute →
+Connector call →
+Target system update →
+Status return →
+Identity cube update
+
+🟢 CHAPTER 4: Provisioning Plan
+Provisioning plan me hota hai:-
+Operation (Create / Modify / Delete / Enable / Disable)
+Application name
+Native identity
+Attribute changes
+Entitlement changes
+Ye ek structured object hota hai jo connector ko diya jata hai.
+
+🟢 CHAPTER 5: Provisioning Policies
+Define karte hain:-
+Required fields
+Optional fields
+Default values
+Transform logic
+Example:-
+Username auto-generate rule.
+
+🟢 CHAPTER 6: Account Creation
+Steps:-
+1️⃣ Required attributes collect
+2️⃣ Username generate
+3️⃣ Connector create call
+4️⃣ Password set
+5️⃣ Confirmation
+
+🟢 CHAPTER 7: Entitlement Assignment
+Example:-
+AD group add
+DB role grant
+SAP role assign
+Modify operation use hota hai.
+
+🟢 CHAPTER 8: Deprovisioning
+Triggered by:
+Leaver
+Role removal
+Certification revoke
+
+Types:
+Disable account
+Delete account
+Remove entitlement only
+
+🟢 CHAPTER 9: Enable / Disable Account
+Common in AD, DB, SAP:-
+Disable = access stop
+Delete = account remove
+Best practice:-
+Leaver pe pehle disable, baad me delete.
+
+🟢 CHAPTER 10: Real-Time vs Batch Provisioning
+Real-Time
+Immediate connector call
+Batch
+Queued request
+Scheduled execution
+
+🟢 CHAPTER 11: Provisioning Workflow
+Default workflow:-
+Approval step
+Policy check
+Plan execution
+Notification
+Custom workflow bhi bana sakte hain.
+
+🟢 CHAPTER 12: Approval Process
+Levels:-
+Manager approval
+Application owner approval
+Security approval
+Auto approval
+
+🟢 CHAPTER 13: Before & After Provisioning Rules
+Before Provisioning Rule:-
+Modify plan
+Add attributes
+
+After Provisioning Rule:-
+Log success
+Trigger notification
+
+🟢 CHAPTER 14: Error Handling
+Common errors:-
+ConnectorException
+Authentication failed
+Permission denied
+Attribute missing
+Timeout
+Logs check:-
+catalina.out
+
+🟢 CHAPTER 15: Retry Mechanism
+If provisioning fail:-
+Manual retry
+Automatic retry
+Reconciliation after fix
+
+🟢 CHAPTER 16: Provisioning & Role-Based Access
+Role assign hota hai →
+Role ke entitlements →
+Provisioning auto trigger
+RBAC ka core part hai.
+
+🟢 CHAPTER 17: Provisioning & Policy
+If SoD violation:
+Block provisioning
+Allow with approval
+Increase risk score
+
+🟢 CHAPTER 18: Password Management
+Random password generate
+Password policy
+Password reset provisioning
+Vault integration
+
+🟢 CHAPTER 19: Multi-Application Provisioning
+Ek request me:-
+AD account create
+Email mailbox create
+SAP role assign
+All in single workflow.
+
+🟢 CHAPTER 20: Service Account Provisioning
+Special handling:-
+No HR trigger
+Manual approval
+Separate governance
+
+🟢 CHAPTER 21: Provisioning Reports
+Track:-
+Success rate
+Failed requests
+Pending approvals
+SLA breaches
+Audit ke liye important.
+
+🟢 CHAPTER 22: Performance Tuning
+Increase connector pool
+Async provisioning
+Optimize workflow
+JVM tuning
+
+🟢 CHAPTER 23: Troubleshooting Scenarios
+Scenario 1:-
+Account not created
+→ Check provisioning policy
+
+Scenario 2:-
+Entitlement not assigned
+→ Check schema mapping
+
+Scenario 3:-
+Approval stuck
+→ Check workflow
+
+Scenario 4:-
+Connector timeout
+→ Check network
+
+🟢 CHAPTER 24: Advanced Provisioning
+Custom web service integration
+REST API provisioning
+SCIM provisioning
+Parallel provisioning
+Provisioning plan transformation
+

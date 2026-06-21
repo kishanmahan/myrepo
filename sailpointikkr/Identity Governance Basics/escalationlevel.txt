@@ -1,0 +1,11 @@
+🔷 1️⃣ EscalationLevel
+🔹 Kya hai:-
+WorkItem me current escalation stage ko represent karta hai.
+Jab approver action nahi leta, workflow escalate hota hai higher authority ya manager ko.
+Ye level track karta hai ki abhi WorkItem original approver ke paas hai ya escalate ho chuka hai.
+🔹 Possible Levels:-
+Level	         Meaning
+0	Original approver (first person)
+1	First escalation (manager / next in line)
+2	Second escalation (higher manager / admin)
+3+	Further escalation steps (optional, workflow dependent)

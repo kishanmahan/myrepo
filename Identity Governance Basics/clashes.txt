@@ -1,0 +1,66 @@
+()“Clashes” ka matlab simple shabdon me takraav ya conflict hota hai.
+Software/Technical context me clash ka matlab hai conflict ya takraav jo code, version, ya resources ke beech hota hai.
+Thoda aur detail me samjhaun:-
+
+()Code Merge Clash / Conflict:-
+Jab do developers ek hi file me alag-alag changes karte hain aur unhe ek saath merge karna padta hai.
+Agar Git ya kisi version control me system decide nahi kar paata ki kaunsa change rakha jaye, to merge conflict aata hai.
+
+Example:-
+Dev A ne line 10 me value = 5 kiya
+Dev B ne line 10 me value = 10 kiya
+→ Merge karte waqt clash hoga.
+
+()Resource Clash:-
+Jab do processes ya applications ek hi resource (jaise memory, file, network port) use karna chahte hain.
+Example:-
+Do programs ek hi file me write kar rahe hain → clash hoga,
+Ek port pe do services bind karne ki koshish → clash hoga.
+
+()Dependency Clash (Version Clash):-
+Definition: Jab ek project me alag-alag libraries ya modules ki version requirements ek dusre se conflict kar rahi hoti hain.
+Problem: Agar ye clash resolve nahi hota, to project build fail ho sakta hai ya runtime pe errors aayenge.
+
+Example:-
+Project me do libraries hain:-
+Library A ko Library X v1.0 chahiye
+Library B ko Library X v2.0 chahiye
+Ab project me ek hi Library X ki version install hogi.
+Isliye ya to build fail hoga ya run-time pe unexpected behavior aayega.
+Real-life Example (Maven/Java):-
+
+<dependency>
+    <groupId>com.example</groupId>
+    <artifactId>library-a</artifactId>
+    <version>1.0</version>
+</dependency>
+<dependency>
+    <groupId>com.example</groupId>
+    <artifactId>library-b</artifactId>
+    <version>2.0</version>
+</dependency>
+------------------------------------------------------------------------------------------------------------------------
+()name clashes kya hai?
+Simple Explanation:-
+Programming me har variable, function, ya class ka ek unique naam hona chahiye scope ke andar.
+Agar same naam do jagah define ho jaye → name clash ho jata hai.
+Ye compile-time error ya unexpected behavior cause kar sakta hai.
+
+Example 1: Variables (Java):-
+int x = 5;
+int x = 10; // Name clash, compiler error
+----
+Example 2: Functions (Python):-
+def greet():
+    print("Hello")
+
+def greet():
+    print("Hi")  # Name clash, pehle wala overwrite ho jayega
+-------
+Example 3: Classes:-
+package com.example.a;
+class Person {}
+
+package com.example.b;
+class Person {} // Agar dono same package me ho to clash.
+-------------------------------------------------------------------------

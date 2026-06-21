@@ -1,0 +1,98 @@
+///////////*
+()abstract class me abstract method,concrete method,instance variable,constructor sirf.
+Abstract Class me Kaun-Kaun Se Variables aur Methods Ho Sakte Hain?
+Variables
+Java id="r8e7ui"
+Copy code
+int a;                  // instance variable
+static int b;           // static variable
+final int c = 10;       // final variable
+private int d;
+protected int e;
+public int f;
+✅ Sab tarah ke variables allowed hain.
+Methods
+Java id="1h1m3c"
+Copy code
+abstract void m1();     // abstract
+
+void m2() { }           // concrete
+
+static void m3() { }    // static
+
+final void m4() { }     // final
+
+private void m5() { }   // private
+
+protected void m6() { } // protected
+
+public void m7() { }    // public
+✅ Ye sab allowed hain.
+Constructor
+Java id="d2r7g3"
+Copy code
+abstract class Test {
+
+    Test() {
+        System.out.println("Constructor");
+    }
+}
+✅ Constructor allowed hai.
+
+--------------------------------------
+))interface me abstract method,concreate method,multiple inhartance hoga sirf.
+Interface me bhi concrete methods ho sakte hain, lekin wo default, static, ya private hone chahiye.
+
+Interface me Kaun-Kaun Se Variables aur Methods Ho Sakte Hain?
+Variables
+Java id="2r9z2r"
+Copy code
+interface Test {
+
+    int A = 10;
+}
+Compiler internally:
+Java id="8vrg4x"
+Copy code
+public static final int A = 10;
+
+✅ Interface me sirf public static final variables (constants) hote hain.
+❌ Instance variable allowed nahi.
+Methods
+-->Abstract Method
+Java id="4e4m5r"
+Copy code
+void m1();
+--Compiler internally:
+Java id="h2q1cx"
+Copy code
+public abstract void m1();
+
+-->Default Method (Java 8+)
+Java id="m8j80z"
+Copy code
+default void m2() {
+
+}
+
+-->Static Method (Java 8+)
+Java id="bjlwmv"
+Copy code
+static void m3() {
+
+}
+
+-->Private Method (Java 9+)
+Java id="mq49lp"
+Copy code
+private void m4() {
+
+}
+
+-->Private Static Method (Java 9+)
+Java id="x7wj6o"
+Copy code
+private static void m5() {
+
+}
+*////////

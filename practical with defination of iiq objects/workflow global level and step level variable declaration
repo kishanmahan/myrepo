@@ -1,0 +1,43 @@
+()Workflow me do levels hote hain: ek Global level aur step level kya hai?
+-->
+()1. Global Level (Workflow Level):-
+Ye poore workflow ke level par hota hai.
+Matlab:-
+Jo variable/attribute yaha define hoga workflow ke kisi bhi step me access ho sakta hai.
+<Workflow name="MyWorkflow">
+
+    <Variable name="department" input="true"/> //global level variable hai.
+
+    <Step name="Start">
+        <Script>
+            <Source>
+                System.out.println(department);
+            </Source>
+        </Script>
+    </Step>
+
+    <Step name="Approval">
+        <Script>
+            <Source>
+                System.out.println(department);
+            </Source>
+        </Script>
+    </Step>
+
+</Workflow>
+
+2. Step Level:-
+Ye sirf particular step ke andar hota hai.
+Matlab variable/value ek hi step tak limited hota hai.
+Example:-
+<Step name="CreatePlan">
+
+    <Arg name="dept" value="IT"/>    // ye Step level argument hai.
+
+    <Script>
+        <Source>
+            System.out.println(dept);
+        </Source>
+    </Script>
+
+</Step>

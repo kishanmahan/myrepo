@@ -1,0 +1,53 @@
+()1️⃣ Enforce kya hoti hai?
+Definition: Rules, policies, aur access controls ko strictly apply karna taaki users sirf allowed actions hi kar saken.
+Purpose:-
+Security maintain karna
+Compliance ensure karna
+Unauthorized access prevent karna
+Ek line me:-
+“Enforce = apply rules strictly so user cannot bypass access controls”
+
+Example:-
+Policy: Finance Reports ka access sirf Managers ko allowed
+Rahul jo Employee role me hai → access request kar raha hai
+SailPoint enforces the rule → Access Denied
+
+import java.util.ArrayList;
+import java.util.List;
+
+class Identity {
+
+    String name;
+    List<String> permissions = new ArrayList<String>();
+
+    Identity(String name) {
+        this.name = name;
+    }
+
+    void addPermission(String permission) {
+        permissions.add(permission);
+    }
+
+    boolean hasPermission(String permission) {
+        return permissions.contains(permission);
+    }
+}
+
+public class AccessPolicyExample {
+
+    public static void main(String[] args) {
+
+        Identity rahul = new Identity("Rahul");
+
+        // Permissions add kar rahe hain
+        rahul.addPermission("Email Access");
+        rahul.addPermission("HR Portal Access");
+
+        // Policy check
+        if (!rahul.hasPermission("Finance Report Access")) {
+            System.out.println("Access Denied! Policy Enforced.");
+        } else {
+            System.out.println("Access Granted!");
+        }
+    }
+}

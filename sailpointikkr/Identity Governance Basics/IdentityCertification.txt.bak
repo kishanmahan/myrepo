@@ -1,0 +1,122 @@
+1️⃣ IdentityCertification kya hai?
+👉 IdentityCertification = user ke access ka review object
+Matlab:-
+kisi user ke paas jo access hai
+usko review / verify / approve / revoke karna
+➡ Ye process IdentityCertification ke through hota hai
+✅ Example:-
+User: Rahul
+Access:-
+SAP Write
+Admin Role
+
+➡ Manager bole:-
+SAP Write ❌ (revoke)
+Admin Role ✅ (keep)
+👉 Ye pura review = IdentityCertification
+
+🔹 2️⃣ Ye kya karta hai?
+👉 Ye manage karta hai:-
+access review process
+approvals / revocations
+compliance tracking
+
+🔹 3️⃣ Kya ye DB me store hota hai?
+✅ Haan bhai, DB me store hota hai,
+📦 Structure:-
+Identity (Rahul)
+   ↓
+IdentityCertification
+   ↓
+Items (Role, Entitlement)
+
+🔹 4️⃣ Iske andar kya hota hai?
+Field	      Meaning
+id:---------certification ID
+name:-------certification ka naam
+type:-------user / role based
+status:-----Pending / Completed
+reviewer:---kaun review karega
+items:------access items (role, entitlement)
+createdDate:----kab start hua
+completedDate:--kab finish hua
+
+🔹 5️⃣ Important Methods:-
+🔸 Basic:-
+getId() → certification ID deta hai
+setId(String id) → ID set karta hai
+getName() → certification ka naam
+setName(String name) → naam set karta hai
+getType() → certification type deta hai
+setType(String type) → type set karta hai
+
+🔸 Status:-
+getStatus() → current status (Pending / Completed)
+setStatus(String status) → status set karta hai
+
+🔸 Reviewer:-
+getReviewer() → reviewer ka naam deta hai
+setReviewer(String reviewer) → reviewer set karta hai
+
+🔸 Items:-
+getItems() → access items list deta hai
+addItem(Object item) → ek item add karta hai
+
+🔸 Date:-
+getCreatedDate() → start date
+setCreatedDate(Date date)
+getCompletedDate() → end date
+setCompletedDate(Date date)
+
+🔸 Utility:-
+toString() → readable string
+equals(Object obj) → compare karta hai
+hashCode() → hash generate karta hai
+
+🚀 🔥 Full Code (SailPointContext ke saath)
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointFactory;
+import sailpoint.object.IdentityCertification;
+import java.util.Date;
+
+public class CertificationExample {
+
+    public static void main(String[] args) throws Exception {
+
+        SailPointContext context = SailPointFactory.getCurrentContext();
+
+        IdentityCertification cert = new IdentityCertification();
+
+        // Basic
+        cert.setId("CERT101");
+        cert.setName("Access Review");
+        cert.setType("User");
+
+        // Status
+        cert.setStatus("Pending");
+
+        // Reviewer
+        cert.setReviewer("Manager");
+
+        // Dates
+        cert.setCreatedDate(new Date());
+
+        // Print
+        System.out.println(cert.getId());
+        System.out.println(cert.getName());
+        System.out.println(cert.getStatus());
+        System.out.println(cert.getReviewer());
+
+        // Save
+        context.saveObject(cert);
+        context.commitTransaction();
+
+        System.out.println("✅ Certification Saved");
+    }
+}
+📤 Output:-
+CERT101
+Access Review
+Pending
+Manager
+✅ Certification Saved

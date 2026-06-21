@@ -1,0 +1,77 @@
+()ish class ko samjhane ke liye pehle constructor iiq samjho.
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+()1. Yeh Kya Hai Aur Kaun Banata Hai?
+Yeh Java ki ek inbuilt library (java.lang) ka hissa hai. 
+Ise tum (Developer) import karte ho jab tumhein runtime par (yaani jab code chal raha ho)
+kisi Java Class ke Constructor ko dynamic tareeqe se access karna ho aur uska object banana ho, bina new ClassName() likhe.
+ 
+()3. Live Code Implementation in SailPoint:-
+Maan lo tumhare paas ek custom helper class hai jiska naam hai CustomLoggerHelper. 
+Aur is class ka ek constructor hai jo ek argument leta hai: SailPointContext context.
+Ab tum direct new CustomLoggerHelper(context) nahi likhna chahte, balki runtime par reflection ke through iska object banana chahte ho.
+
+()Pehle Dekho Custom Class Kaisi Dikhrahi Hai:-
+Java
+package com.custom.utils;
+import sailpoint.api.SailPointContext;
+
+public class CustomLoggerHelper {
+    private SailPointContext context;
+
+    // Yeh hai woh constructor jise hum reflection se call karenge
+    public CustomLoggerHelper(SailPointContext context) {
+        this.context = context;
+    }
+
+    public void logMessage(String msg) {
+        // Tumhara custom logic
+        System.out.println("IIQ Custom Log: " + msg);
+    }
+}
+
+()Ab Dekho SailPoint Rule/Beanshell Mein Reflection Ka Code:-
+Yahan hum java.lang.reflect.Constructor ka use karenge.
+->>
+import java.lang.reflect.Constructor;
+import sailpoint.api.SailPointContext;
+
+try {
+    // 1. Class ko uske fully qualified name se load karo
+    Class targetClass = Class.forName("com.custom.utils.CustomLoggerHelper");
+
+    // 2. Batao ki constructor kis type ka parameter leta hai (Yahan yeh SailPointContext.class leta hai)
+    Class[] constructorArgs = new Class[] { SailPointContext.class };
+
+    // 3. Constructor object fetch karo (Yahan java.lang.reflect.Constructor kaam aata hai)
+    Constructor constructor = targetClass.getConstructor(constructorArgs);
+
+    // 4. Runtime par parameter pass karke naya instance (object) create karo
+    // 'context' variable SailPoint ke har rule mein implicitly available hota hai
+    Object helperInstance = constructor.newInstance(new Object[] { context });
+
+    // 5. Ab tum is object ka method dynamic call kar sakte ho ya cast karke use kar sakte ho
+    if(helperInstance != null) {
+        // Method invoke karne ke liye (Simple casting approach agar class classpath mein hai)
+        com.custom.utils.CustomLoggerHelper helper = (com.custom.utils.CustomLoggerHelper) helperInstance;
+        helper.logMessage("Bhai, reflection chal gaya successfully!");
+    }
+
+} catch (ClassNotFoundException e) {
+    log.error("Class nahi mili bhai: " + e.getMessage());
+} catch (NoSuchMethodException e) {
+    log.error("Aisa koi constructor nahi mila: " + e.getMessage());
+} catch (Exception e) {
+    log.error("Reflection mein kuch bafda hua: " + e.getMessage());
+}
+/////////*
+()1. Class kya hai?
+Class Java Reflection ka main class hai.
+Import ki zarurat nahi padti usually, kyunki ye java.lang package me hota hai.
+
+()2. Class.forName():-
+given name wali class runtime pe load karo.
+
+
+*/////////
+

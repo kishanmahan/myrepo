@@ -1,0 +1,571 @@
+()ApprovalSet SailPoint me ek object hai jo workflow me approvals ko manage karne ke liye use hota hai.
+Simple shabdon me, ye batata hai ki kaun approve kar raha hai, kaun pending hai aur kaun reject kar chuka hai.
+
+()approvalSet me kya hota hai?
+ApprovalSet ek object hota hai jisme:-
+approval items
+entitlement changes
+account changes
+approve/reject decisions
+store hote hain.
+
+()ApprovalSet ka kaam:-
+1️⃣ Approvers list rakhna – Kaun log approve karenge ya kar chuke hain.
+2️⃣ Pending approvals track karna – Kaun abhi action nahi liya.
+3️⃣ Approval status maintain karna – Approved, Pending, Rejected.
+4️⃣ Workflow me decisions control karna – Agar saare approvals mil gaye → workflow aage badhe.
+
+Example Code:-
+ApprovalSet set = new ApprovalSet();
+set.addApprover("manager1"); // Approver add kiya
+set.addApprover("manager2");
+workflowCase.setApprovalSet(set);
+System.out.println(workflowCase.getApprovalSet().getApprovers());
+
+Output:-
+[manager1, manager2]
+-----------------------------------------------------------------------------------------------------------------------------------
+addApprover(String approver)
+addApprover(Identity approver)
+addApprovers(List<String> approvers)
+addApprovers(List<Identity> approvers)
+removeApprover(String approver)
+removeApprover(Identity approver)
+getApprovers()
+getApproverCount()
+isApprover(String approver)
+isApprover(Identity approver)
+
+getApprovalStatus(String approver)
+setApprovalStatus(String approver, String status)
+getApprovalStatus(Identity approver)
+setApprovalStatus(Identity approver, String status)
+getApprovedCount()
+getRejectedCount()
+getPendingCount()
+isApproved()
+isRejected()
+isPending()
+clearApprovals()
+clone()
+equals(Object obj)
+hashCode()
+toString()
+
+validate()
+
+toXml()
+fromXml(String xml)
+toMap()
+fromMap(Map map)
+getCreated()
+setCreated(Date date)
+getModified()
+setModified(Date date)
+getCreatedBy()
+setCreatedBy(Identity identity)
+getModifiedBy()
+setModifiedBy(Identity identity)
+---------------------------------------------------------------------------------------------------------------------
+4️⃣ addApprovers(List<Identity> approvers):-
+Kya karta hai: Multiple Identity objects ek saath add karta hai.
+set.addApprovers(List.of(new Identity("manager5"), new Identity("manager6")));
+System.out.println(set.getApprovers());
+Output:-
+[manager1, manager2, manager3, manager4, manager5, manager6]
+
+5️⃣ removeApprover(String approver):-
+Kya karta hai: ApprovalSet se string approver ko remove karta hai.
+set.removeApprover("manager3");
+System.out.println(set.getApprovers());
+Output:-
+[manager1, manager2, manager4, manager5, manager6]
+
+6️⃣ removeApprover(Identity approver):-
+Kya karta hai: ApprovalSet se Identity approver remove karta hai.
+set.removeApprover(new Identity("manager4"));
+System.out.println(set.getApprovers());
+Output:-
+[manager1, manager2, manager5, manager6]
+
+7️⃣ getApprovers():-
+Kya karta hai: ApprovalSet me sabhi current approvers list me return karta hai.
+System.out.println(set.getApprovers());
+Output:-
+[manager1, manager2, manager5, manager6]
+
+8️⃣ getApproverCount():-
+Kya karta hai: ApprovalSet me total approvers ka count return karta hai.
+System.out.println(set.getApproverCount());
+Output:-
+4
+
+9️⃣ isApprover(String approver):-
+Kya karta hai: Check karta hai ki given String approver ApprovalSet me exist karta hai ya nahi.
+System.out.println(set.isApprover("manager2"));
+System.out.println(set.isApprover("manager3"));
+Output:-
+true
+false
+
+🔟 isApprover(Identity approver):-
+Kya karta hai: Check karta hai ki given Identity approver ApprovalSet me exist karta hai ya nahi.
+System.out.println(set.isApprover(new Identity("manager5")));
+System.out.println(set.isApprover(new Identity("manager4")));
+Output:-
+true
+false
+--------------------------------------------------------------------------------------------------------------------------
+()ApprovalSet – Approval Status Types:-
+1️⃣ Pending:-
+Approver ne abhi approve/reject action nahi liya.
+
+2️⃣ Approved:-
+Approver ne task ya request approve kar diya.
+
+3️⃣ Rejected:-
+Approver ne task ya request reject kar diya.
+
+4️⃣ Escalated (optional, implementation dependent):-
+Agar approver ne action nahi liya aur escalation ho gayi, status Escalated ho sakta hai.
+
+5️⃣ Not Required (optional, implementation dependent):-
+Kabhi kabhi approval ki requirement cancel ho jaye → status Not Required.
+---------------------------
+Example with Output:-
+ApprovalSet set = new ApprovalSet();
+set.addApprovers(List.of("manager1","manager2","manager3"));
+
+// Set status
+set.setApprovalStatus("manager1","Approved");
+set.setApprovalStatus("manager2","Pending");
+set.setApprovalStatus("manager3","Rejected");
+
+// Get status
+System.out.println(set.getApprovalStatus("manager1")); // Approved
+System.out.println(set.getApprovalStatus("manager2")); // Pending
+System.out.println(set.getApprovalStatus("manager3")); // Rejected
+
+// Counts
+System.out.println("Approved Count: " + set.getApprovedCount());
+System.out.println("Rejected Count: " + set.getRejectedCount());
+System.out.println("Pending Count: " + set.getPendingCount());
+
+Output:-
+Approved
+Pending
+Rejected
+Approved Count: 1
+Rejected Count: 1
+Pending Count: 1
+-------------------------------------------------------------------------------------------------------------------------------
+1️⃣ getApprovalStatus(String approver):-
+Kya karta hai: Approver ke status ko string me return karta hai (Pending, Approved, Rejected).
+
+System.out.println(set.getApprovalStatus("manager1"));
+Output:-
+Approved
+
+2️⃣ setApprovalStatus(String approver, String status):-
+Kya karta hai: Approver ka status set karta hai (Pending, Approved, Rejected).
+
+set.setApprovalStatus("manager2", "Pending");
+System.out.println(set.getApprovalStatus("manager2"));
+Output:-
+Pending
+
+3️⃣ getApprovalStatus(Identity approver):-
+Kya karta hai: Identity object ke liye approval status return karta hai.
+
+Identity id = new Identity("manager3");
+set.setApprovalStatus(id, "Rejected");
+System.out.println(set.getApprovalStatus(id));
+Output:-
+Rejected
+
+4️⃣ setApprovalStatus(Identity approver, String status):-
+Kya karta hai: Identity object ke approval status ko set karta hai.
+
+Identity id = new Identity("manager4");
+set.setApprovalStatus(id, "Approved");
+System.out.println(set.getApprovalStatus(id));
+Output:-
+Approved
+
+5️⃣ getApprovedCount():-
+Kya karta hai: Total approved approvers return karta hai.
+System.out.println(set.getApprovedCount());
+Output:-
+2
+
+6️⃣ getRejectedCount():-
+Kya karta hai: Total rejected approvers return karta hai.
+System.out.println(set.getRejectedCount());
+Output:-
+1
+
+7️⃣ getPendingCount():-
+Kya karta hai: Total pending approvers return karta hai.
+System.out.println(set.getPendingCount());
+Output:-
+1
+
+8️⃣ isApproved():-
+Kya karta hai: Agar sab approvers approved hain, true return karta hai.
+
+System.out.println(set.isApproved());
+Output:-
+false
+
+9️⃣ isRejected():-
+Kya karta hai: Agar koi approver rejected hai, true return karta hai.
+
+System.out.println(set.isRejected());
+Output:-
+true
+
+🔟 isPending():-
+Kya karta hai: Agar koi approver pending hai, true return karta hai.
+
+System.out.println(set.isPending());
+Output:-
+true
+
+11️⃣ clearApprovals():-
+Kya karta hai: Sabhi approvals clear kar deta hai (approvers aur status remove).
+
+set.clearApprovals();
+System.out.println(set.getApprovers());
+Output:-
+[]
+
+12️⃣ clone():-
+Kya karta hai: ApprovalSet ka exact copy banata hai.
+
+ApprovalSet cloneSet = (ApprovalSet) set.clone();
+System.out.println(cloneSet.getApprovers());
+Output:-
+[] // kyunki original clear ho chuka tha.
+
+13️⃣ equals(Object obj):-
+Kya karta hai: Check karta hai ki do ApprovalSet same content rakhte hain ya nahi.
+
+ApprovalSet set2 = new ApprovalSet();
+System.out.println(set.equals(set2));
+Output:-
+true
+
+14️⃣ hashCode():-
+Kya karta hai: ApprovalSet ka unique hashcode return karta hai (mostly collections ke liye).
+System.out.println(set.hashCode());
+Output:-
+12345678  // number implementation dependent
+
+15️⃣ toString():-
+Kya karta hai: ApprovalSet ka readable string representation return karta hai.
+System.out.println(set.toString());
+Output:-
+ApprovalSet{approvers=[], status={}}
+-----------------------------------------------------------------------------------------------------------------------------------
+1️⃣ toXml():-
+Kya karta hai: Object ko XML format me convert karta hai
+
+String xml = set.toXml();
+System.out.println(xml);
+
+Output:-
+<ApprovalSet>
+  <approver>manager1</approver>
+</ApprovalSet>
+
+2️⃣ fromXml(String xml):-
+Kya karta hai: XML ko wapas object me convert karta hai
+
+ApprovalSet newSet = new ApprovalSet();
+newSet.fromXml(xml);
+System.out.println(newSet.getApprovers());
+
+Output:-
+[manager1]
+
+3️⃣ toMap():-
+Kya karta hai: Object ko Map format me convert karta hai
+
+Map map = set.toMap();
+System.out.println(map);
+
+Output:-
+{approvers=[manager1]}
+
+4️⃣ fromMap(Map map):-
+Kya karta hai: Map ko object me convert karta hai
+
+ApprovalSet s2 = new ApprovalSet();
+s2.fromMap(map);
+System.out.println(s2.getApprovers());
+
+Output:-
+[manager1]
+
+5️⃣ getCreated() / setCreated(Date date):-
+Kya karta hai: Object ka creation time set/get karta hai
+
+set.setCreated(new Date());
+System.out.println(set.getCreated());
+
+Output:-
+Thu Mar 19 12:00:00 IST 2026
+
+6️⃣ getModified() / setModified(Date date):-
+Kya karta hai: Last modified time set/get karta hai
+
+set.setModified(new Date());
+System.out.println(set.getModified());
+
+Output:-
+Thu Mar 19 12:05:00 IST 2026
+
+7️⃣ getCreatedBy() / setCreatedBy(Identity identity):-
+Kya karta hai: Object ko kisne create kiya wo set/get karta hai
+
+Identity user = new Identity("admin");
+set.setCreatedBy(user);
+System.out.println(set.getCreatedBy().getName());
+
+Output:-
+admin
+
+8️⃣ getModifiedBy() / setModifiedBy(Identity identity):-
+Kya karta hai: Object ko last kisne modify kiya wo set/get karta hai
+
+Identity user2 = new Identity("manager1");
+set.setModifiedBy(user2);
+System.out.println(set.getModifiedBy().getName());
+
+Output:-
+manager1
+-------------------------------------------------------------------------------------------------------------------------------------
+()✅ validate() kya-kya check karta hai:-
+1️⃣ Approvers empty na ho:-
+ApprovalSet me kam se kam 1 approver hona chahiye
+
+set = new ApprovalSet();
+set.validate();
+
+❌ Output:-
+ValidationException: No approvers defined
+
+2️⃣ Duplicate approvers na ho:-
+Same approver 2 baar nahi hona chahiye
+
+set.addApprover("manager1");
+set.addApprover("manager1");
+set.validate();
+
+❌ Output:-
+ValidationException: Duplicate approver
+
+3️⃣ Valid approval status:-
+Status sirf valid hona chahiye:-
+Pending
+Approved
+Rejected
+
+set.setApprovalStatus("manager1","DONE");
+set.validate();
+
+❌ Output:-
+ValidationException: Invalid status
+
+4️⃣ Har approver ka status hona chahiye:-
+Har approver ke paas ek valid status assign hona chahiye
+
+set.addApprover("manager2");
+set.validate();
+
+❌ Output:-
+ValidationException: Status missing for approver
+
+5️⃣ Null values check:-
+Approver name ya Identity null nahi hona chahiye
+
+set.addApprover((String) null);
+set.validate();
+
+❌ Output:-
+ValidationException: Approver cannot be null
+
+6️⃣ Consistency check:-
+Example:-
+Sab Approved → valid
+Mixed → valid
+Invalid combination → error
+
+✅ 1️⃣ Sab Approved → VALID:-
+Sab approvers ne approve kar diya
+
+ApprovalSet set = new ApprovalSet();
+set.addApprovers(List.of("m1","m2"));
+
+set.setApprovalStatus("m1","Approved");
+set.setApprovalStatus("m2","Approved");
+
+set.validate();
+System.out.println("Valid");
+
+Output:-
+Valid
+✔️ Reason: Sab approve → workflow aage badh sakta hai
+
+✅ 2️⃣ Mixed (Approved + Pending) → VALID:-
+Kuch approve, kuch pending
+set.setApprovalStatus("m1","Approved");
+set.setApprovalStatus("m2","Pending");
+set.validate();
+System.out.println("Valid");
+Output:-
+Valid
+✔️ Reason: Abhi process chal raha hai → allowed hai
+
+❌ 3️⃣ Invalid Combination → ERROR:-
+Case 1: Rejected + Approved (conflict case)
+set.setApprovalStatus("m1","Approved");
+set.setApprovalStatus("m2","Rejected");
+set.validate();
+Output:-
+ValidationException: Conflicting approval states
+
+👉 Reason:-
+Ek ne approve kiya
+Ek ne reject kiya
+➡️ Final decision clear nahi → conflict
+
+Case 2: Final state + Pending (invalid flow)
+set.setApprovalStatus("m1","Rejected");
+set.setApprovalStatus("m2","Pending");
+set.validate();
+Output:-
+ValidationException: Invalid state combination
+
+👉 Reason:-
+Reject already ho gaya → process end hona chahiye
+Pending still hai → inconsistent
+-------------------------------------------------------------------------------------------------------------------------------
+✅ ApprovalSet Methods – Real Project Code:-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.ApprovalSet;
+import sailpoint.object.Identity;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+public class ApprovalSetExample {
+
+    public static void main(String[] args) {
+
+        SailPointContext context = null;
+
+        try {
+            // 🔹 Get SailPoint Context
+            context = SailPointFactory.createContext();
+
+            // 🔹 Create ApprovalSet object
+            ApprovalSet approvalSet = new ApprovalSet();
+
+            // ============================================
+            // 1️⃣ Add Approvers
+            // ============================================
+
+            // Add single approver (String)
+            approvalSet.addApprover("john.doe");
+
+            // Add single approver (Identity)
+            Identity id1 = context.getObjectByName(Identity.class, "jane.smith");
+            approvalSet.addApprover(id1);
+
+            // Add multiple approvers (String list)
+            List<String> approverNames = Arrays.asList("user1", "user2");
+            approvalSet.addApprovers(approverNames);
+
+            // Add multiple approvers (Identity list)
+            Identity id2 = context.getObjectByName(Identity.class, "manager1");
+            Identity id3 = context.getObjectByName(Identity.class, "manager2");
+            approvalSet.addApprovers(Arrays.asList(id2, id3));
+
+            // ============================================
+            // 2️⃣ Remove Approvers
+            // ============================================
+
+            approvalSet.removeApprover("user1");
+
+            Identity removeId = context.getObjectByName(Identity.class, "manager2");
+            approvalSet.removeApprover(removeId);
+
+            // ============================================
+            // 3️⃣ Validate ApprovalSet
+            // ============================================
+
+            boolean isValid = approvalSet.validate();
+            System.out.println("Is ApprovalSet Valid? " + isValid);
+
+            // ============================================
+            // 4️⃣ Convert to XML
+            // ============================================
+
+            String xml = approvalSet.toXml();
+            System.out.println("ApprovalSet XML:");
+            System.out.println(xml);
+
+            // ============================================
+            // 5️⃣ Convert from XML
+            // ============================================
+
+            ApprovalSet newApprovalSet = new ApprovalSet();
+            newApprovalSet.fromXml(xml);
+            System.out.println("ApprovalSet recreated from XML");
+
+            // ============================================
+            // 6️⃣ Convert to Map
+            // ============================================
+
+            Map map = approvalSet.toMap();
+            System.out.println("ApprovalSet Map: " + map);
+
+            // ============================================
+            // 7️⃣ Convert from Map
+            // ============================================
+
+            ApprovalSet mapApprovalSet = new ApprovalSet();
+            mapApprovalSet.fromMap(map);
+            System.out.println("ApprovalSet recreated from Map");
+
+            context.commitTransaction();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+        } finally {
+            if (context != null) {
+                context.decache(true);
+                context.close();
+            }
+        }
+    }
+}
+🔥 Output (Sample):-
+Is ApprovalSet Valid? true
+
+ApprovalSet XML:-
+<ApprovalSet>
+   <Approver>john.doe</Approver>
+   <Approver>jane.smith</Approver>
+   <Approver>user2</Approver>
+   <Approver>manager1</Approver>
+</ApprovalSet>
+
+ApprovalSet recreated from XML
+
+ApprovalSet Map: {approvers=[john.doe, jane.smith, user2, manager1]}
+
+ApprovalSet recreated from Map

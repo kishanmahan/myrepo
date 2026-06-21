@@ -1,0 +1,220 @@
+Schema Class Overview
+
+()Schema ek object hai jo batata hai ki application ya account ke attributes ka structure kya hai
+aur unko kaise map karna hai IdentityIQ/SailPoint me.
+
+1️⃣ getName() / setName(String name):-
+getName() → Schema ka naam return karta hai.
+
+setName(String name) → Schema ka naam set karta hai.
+Example:-
+Schema schema = new Schema();
+schema.setName("EmployeeSchema");
+System.out.println("Schema Name: " + schema.getName());
+
+Output:-
+Schema Name: EmployeeSchema
+-------------------------------------------------------------
+2️⃣ getDescription() / setDescription(String description):-
+getDescription() → Schema ka description return karta hai.
+setDescription(String description) → Schema ka description set karta hai.
+
+Example:-
+schema.setDescription("Schema for Employee Accounts");
+System.out.println("Description: " + schema.getDescription());
+
+Output:-
+Description: Schema for Employee Accounts
+-----------------------------------------------------------------
+3️⃣ getAttributes() / setAttributes(Map<String, Attribute> attrs):-
+
+getAttributes() → Schema me defined saare attributes return karta hai (List/Map).
+setAttributes() → Schema ke attributes set karta hai.
+
+Example:-
+Map<String, Attribute> attrs = new HashMap<>();
+attrs.put("username", new Attribute("username", "String"));
+attrs.put("email", new Attribute("email", "String"));
+
+schema.setAttributes(attrs);
+
+System.out.println("All Attributes: " + schema.getAttributes().keySet());
+
+Output:-
+All Attributes: [username, email]
+-----------------------------------------------------------------------------
+4️⃣ getAttribute(String name) / addAttribute(Attribute attr) / removeAttribute(String name):-
+
+getAttribute(name) → Specific attribute return karta hai.
+
+addAttribute(attr) → Schema me new attribute add karta hai.
+
+removeAttribute(name) → Attribute remove karta hai name ke basis par.
+
+Example:-
+Attribute dept = new Attribute("department", "String");
+schema.addAttribute(dept);
+
+System.out.println("Department Attribute: " + schema.getAttribute("department").getName());
+
+schema.removeAttribute("department");
+System.out.println("After Removal: " + schema.getAttributes().keySet());
+
+Output:-
+Department Attribute: department
+After Removal: [username, email]
+-------------------------------------------------------------------------------------
+7️⃣ getType(String attrName):-
+Returns: Attribute ka type → "String", "Integer", "Boolean", etc.
+
+Example:-
+System.out.println("Type of username: " + schema.getType("username"));
+
+Output:-
+Type of username: String
+--------------------------------------------------------------------------------------
+11️⃣ equals(Object obj) / hashCode():-
+
+()equals() → Do schemas ko compare karta hai.
+
+()hashCode() → Hash code return karta hai (collections, maps me use hota hai).
+
+Schema schema2 = new Schema();
+schema2.setName("EmployeeSchema");
+
+System.out.println("Schemas equal? " + schema.equals(schema2));
+System.out.println("Schema hashCode: " + schema.hashCode());
+
+Output:-
+Schemas equal? false
+Schema hashCode: 12345678
+--------------------------------------------------------------------------------------
+Page 1️⃣ – getAccountConfig() / setAccountConfig(AccountConfig config):-
+Kya karta hai:-
+getAccountConfig() → Schema ke account configuration object ko return karta hai.
+setAccountConfig(AccountConfig config) → Schema ke liye account configuration set karta hai.
+AccountConfig me connector-specific info hoti hai jaise username attribute, password attribute, login rules etc.
+
+Example:-
+import sailpoint.object.Schema;
+import sailpoint.object.AccountConfig;
+
+public class AccountConfigExample {
+    public static void main(String[] args) {
+        Schema schema = new Schema();
+
+        AccountConfig accountConfig = new AccountConfig();
+        accountConfig.setUsernameAttribute("username");
+        accountConfig.setPasswordAttribute("password");
+
+        // Set account configuration
+        schema.setAccountConfig(accountConfig);
+
+        // Get account configuration
+        AccountConfig ac = schema.getAccountConfig();
+        System.out.println("Username Attribute: " + ac.getUsernameAttribute());
+        System.out.println("Password Attribute: " + ac.getPasswordAttribute());
+    }
+}
+Output:-
+Username Attribute: username
+Password Attribute: password
+-----------------------------------------------------------------------------------------------------
+Page 2️⃣ – isMultivalued(String attrName):-
+Kya karta hai:
+
+Check karta hai ki given attribute multi-valued hai ya nahi.
+
+Multi-valued attributes = multiple values rakh sakte hai (jaise roles, emails).
+
+Example:
+import sailpoint.object.Schema;
+import sailpoint.object.Attribute;
+
+public class IsMultivaluedExample {
+    public static void main(String[] args) {
+        Schema schema = new Schema();
+        schema.addAttribute(new Attribute("email", "String", true));  // multi-valued
+        schema.addAttribute(new Attribute("department", "String", false));
+
+        System.out.println("Is email multi-valued? " + schema.isMultivalued("email"));
+        System.out.println("Is department multi-valued? " + schema.isMultivalued("department"));
+    }
+}
+Output:-
+Is email multi-valued? true
+Is department multi-valued? false
+-------------------------------------------------------------------------------------------------
+Page 4️⃣ – clone():-
+Kya karta hai:
+
+Schema ka deep copy create karta hai.
+
+Useful hai agar original schema ko preserve karke modified copy create karna ho.
+
+Example:
+import sailpoint.object.Schema;
+
+public class CloneSchemaExample {
+    public static void main(String[] args) {
+        Schema schema = new Schema();
+        schema.setName("EmployeeSchema");
+
+        // Clone schema
+        Schema clonedSchema = schema.clone();
+        System.out.println("Original Name: " + schema.getName());
+        System.out.println("Cloned Name: " + clonedSchema.getName());
+    }
+}
+Output:-
+Original Name: EmployeeSchema
+Cloned Name: EmployeeSchema
+-------------------------------------------------------------------------------------------------
+Page 5️⃣ – toString()
+Kya karta hai:
+
+Schema ka readable string representation return karta hai.
+
+Debugging aur logging ke liye useful hai.
+
+Example:
+import sailpoint.object.Schema;
+import sailpoint.object.Attribute;
+
+public class ToStringSchemaExample {
+    public static void main(String[] args) {
+        Schema schema = new Schema();
+        schema.setName("EmployeeSchema");
+        schema.addAttribute(new Attribute("username", "String"));
+        schema.addAttribute(new Attribute("email", "String"));
+
+        System.out.println("Schema Info: " + schema.toString());
+    }
+}
+Output:-
+Schema Info: Schema{name='EmployeeSchema', attributes=[username, email], accountConfig=null}
+-------------------------------------------------------------------------------------------------
+()validate():-ye sirf Schema object ke liye kaam karta hai, Identity ya Application ke liye nahi.
+
+Step 2: Ye kya karta hai?
+Ye check karta hai ki schema sahi hai ya nahi.
+Matlab, agar tu ne koi schema define kiya (attributes, types, account config),
+to ye confirm karta hai ki sab kuch required format me hai.
+
+Step 3: Kya check karta hai internally?
+Required Attributes Check:-
+Agar koi attribute required hai aur wo schema me missing hai, to invalid ho jayega.
+Example: "username" required hai, lekin schema me nahi hai → invalid.
+
+Type Check:-
+Attribute ka type check karta hai (String, Boolean, Integer etc.)
+Example: "email" attribute ko String hona chahiye, agar Integer set hua → invalid.
+
+Account Configuration Check:-
+Agar schema kisi account ke liye hai, to account config (username, password mapping) sahi hai ya nahi ye check karta hai.
+
+Step 5: Kab use hota hai?
+Jab tu schema save kar raha ho.
+Jab tu aggregation / provisioning task run kar raha ho.
+Matlab, error se bachne ke liye pre-check.
+

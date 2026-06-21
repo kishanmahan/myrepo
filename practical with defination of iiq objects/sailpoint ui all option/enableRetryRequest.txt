@@ -1,0 +1,7 @@
+3.<Arg name="enableRetryRequest" value="false"/>
+👉 Ye setting SailPoint provisioning engine ko batati hai ki failed request ko automatically retry karna hai ya nahi.
+Meaning:-
+enableRetryRequest="false"
+👉 Matlab:-
+Agar provisioning request fail ho jaye, to system automatically dobara try nahi karega.
+Ye SailPoint ke “LCM Provisioning” workflow (called workflow) ko bheje ja rahe hain.

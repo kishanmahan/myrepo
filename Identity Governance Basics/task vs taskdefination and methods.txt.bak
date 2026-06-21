@@ -1,0 +1,1063 @@
+()🚀 TaskDefinition kya hai?
+👉 TaskDefinition:-
+👉 Ye ek configuration object hota hai jo batata hai task kya karega
+💡 Simple Definition:-
+👉 TaskDefinition = “Task ka blueprint / design”
+👉 “TaskDefinition SailPoint me task ka configuration object hota hai jo define karta hai ki task kya karega aur kaise karega.”
+
+🔥Isme kya-kya hota hai?
+👉TaskDefinition me hota hai:-
+Task ka naam
+Arguments (input parameters)
+Schedule
+Owner
+Description
+
+💡 Simple Samajh (1 line):-
+👉 TaskDefinition = kya karna hai
+👉 Task = kaam kar raha hai (execution)
+
+🔥 Detailed Difference Table:-
+Feature	          TaskDefinition	                Task
+Meaning      	Blueprint / Config	              Actual execution
+Role	      Define karta hai task kya karega	Task ko run karta hai
+Data	          Static (config)	            Dynamic (runtime)
+Change hota hai?	Rarely	                      Har run me
+Output	           ❌ nahi	                 ✅ TaskResult deta hai
+------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+🚀 TaskDefinition ke Types:-
+👉 SailPoint me mostly ye common task types use hote hain:-
+Aggregation
+AccountAggregation
+IdentityRefresh
+Provisioning
+Certification
+Report
+LiveReport
+Workflow
+Rule
+Maintenance
+SystemMaintenance
+TaskExecution
+DataExport
+DataImport
+-----------------------------------------------------------------------------------------------------------
+🔹 Aggregation:-
+👉 External system se data pull karna (accounts/users)
+Example: AD se users lana
+
+🔹 AccountAggregation:-
+👉 Sirf accounts ka aggregation
+Example: Sirf user accounts sync karna
+
+🔹 IdentityRefresh:-
+👉 Identity ko recalculate/update karna
+Example: roles, entitlements refresh
+
+🔹 Provisioning:-
+👉 System me account create/update/delete karna
+Example: AD me user create karna
+
+🔹 Certification:-
+👉 Access review / approval process
+Example: Manager approve kare user ka access
+
+🔹 Report:-
+👉 Basic report generate karna
+Example: users list report
+
+🔹 LiveReport:-
+👉 Real-time report (UI se run hone wala)
+Example: on-demand report
+
+🔹 Workflow:-
+👉 Workflow run karna
+Example: joiner workflow trigger
+
+🔹 Rule:-
+👉 Custom rule execute karna
+Example: custom validation logic
+
+🔹 Maintenance:-
+👉 System cleanup / maintenance
+Example: old logs delete karna
+
+🔹 SystemMaintenance:-
+👉 System level maintenance
+Example: DB cleanup, cache clear
+
+🔹 TaskExecution:-
+👉 Ek task ke through dusra task run karna
+Example: master task → multiple tasks run
+
+🔹 DataExport:-
+👉 Data bahar export karna
+Example: CSV me users export
+
+🔹 DataImport:-
+👉 Data system me import karna
+Example: CSV se users load
+-----------------------------------------------------------------------------------------------------------
+🚀 Version kya hota hai?
+👉 Version = task definition ka version number (configuration change tracking).
+
+👉 Jab tu task me change karega:-
+arguments change
+
+schedule change
+→ version update ho sakta hai
+
+🔹 Example:-
+System.out.println(td.getVersion());
+Output:-
+1.0
+
+🔹 Set Version:-
+td.setVersion("2.0");
+System.out.println(td.getVersion());
+
+Output:-
+2.0
+----------------------------------------------------------------------------------------------------------------
+🚀 Owner kya hota hai? (IMPORTANT):-
+✅ Sahi samajh:-
+👉 Owner = jo user/admin task ka responsible hai
+👉 Matlab:-
+kisne task banaya
+kaun manage karega
+kaun run karega (UI se)
+
+💡 Example:-
+System.out.println(td.getOwner().getName());
+
+Output:-
+admin
+
+🔥 Clear Difference:-
+Concept	        Meaning
+Owner------Task ka responsible user
+Target-----Task kispe perform ho raha hai
+
+🎯 Example samajh:-
+👉 Identity Aggregation task:-
+Field	   Value
+Owner------admin
+Target-----Active Directory
+--------------------------------------------------------------------------------------
+()Template = Ready-made blueprint / predefined configuration.
+Matlab:-
+Ek aisa task jo already set hota hai (config ke saath), jise baar-baar reuse kar sakte ho.
+
+💡 Template ka matlab:-
+👉 Template = reusable task design
+Example:-
+Ek base aggregation config → multiple tasks me reuse.
+
+🧩 1️⃣ Template kya hota hai?
+👉 Template = reusable design (ready-made config)
+👉 Ek baar bana, baar-baar use karo
+💡 Example:-
+Template Task:
+Aggregation Template
+   ↓
+Use karke banao:
+Aggregation for AD
+Aggregation for SAP
+Aggregation for DB
+👉 Har baar naya task likhne ki zarurat nahi.
+-------------------------------------------------------------------------------------------
+🌳 2️⃣ Parent kya hota hai?
+👉 Parent = main/master task
+
+👉 Ye decide karta hai:-
+kaunse child tasks chalenge
+kis order me chalenge
+
+💡 Example:-
+Parent Task: Daily Job
+👉 Iske andar multiple tasks honge
+
+🌿 3️⃣ Child kya hota hai?
+👉 Child = sub-task (parent ka part)
+👉 Parent ke andar run hota hai.
+
+💡 Example:-
+Parent: Daily Job
+   ↓
+   ├── Child 1: Aggregation
+   ├── Child 2: Identity Refresh
+   ├── Child 3: Provisioning
+-------------------------------------
+🔥 Real Flow:-
+Parent Task start
+   ↓
+Child Task 1 run
+   ↓
+Child Task 2 run
+   ↓
+Child Task 3 run
+   ↓
+Parent complete
+--------------------------
+💻 Code Example:-
+TaskDefinition parent = new TaskDefinition();
+parent.setName("Main Task");
+
+TaskDefinition child = new TaskDefinition();
+child.setName("Sub Task");
+
+parent.addChild(child);
+
+System.out.println(parent.getChildren());
+
+Output:-
+[Sub Task]
+------------------------------------------------------------------------------------------
+🏷️ 1️⃣ Tags kya hote hain?
+👉 Tags = labels / keywords jo task ko identify aur filter karne me help karte hain
+
+💡 Example:-
+Tags:-
+aggregation
+daily
+critical
+
+👉 UI me tu filter kar sakta hai:-
+sirf “aggregation” wale tasks
+sirf “critical” tasks
+
+💻 Code:-
+td.addTag("aggregation");
+td.addTag("daily");
+System.out.println(td.getTags());
+Output:-
+[aggregation, daily]
+
+🎨 2️⃣ Icon kya hota hai?
+👉 Icon = UI me task ka chhota image/symbol
+💡 Example:-
+Aggregation Task → 🔄 icon
+Provisioning Task → ⚙️ icon
+Report Task → 📊 icon
+👉 Sirf UI me dikhane ke liye hota hai
+
+💻 Code:-
+td.setIcon("aggregation-icon");
+System.out.println(td.getIcon());
+Output:-
+aggregation-icon
+
+❓ 3️⃣ HelpKey kya hota hai?
+👉 HelpKey = help/documentation ka reference key
+👉 Jab user UI me help click karega → system iss key se help text dikhata hai
+💡 Example:-
+HelpKey: aggregation.help
+👉 Ye kisi help file ya message se linked hota hai
+
+💻 Code:-
+td.setHelpKey("aggregation.help");
+System.out.println(td.getHelpKey());
+Output:-
+aggregation.help
+------------------------------------------------------------------------------------------
+🚀 TaskDefinition Methods List
+getId()
+getName()
+setName(String name)
+getType()
+setType(String type)
+getDescription()
+setDescription(String description)
+getOwner()
+setOwner(Identity owner)
+getArguments()
+setArguments(Map<String,Object> args)
+getArgument(String key)
+setArgument(String key, Object value)
+
+getTemplate()
+setTemplate(boolean template)
+isTemplate()
+getParent()
+setParent(TaskDefinition parent)
+getChildren()
+setChildren(List<TaskDefinition> children)
+addChild(TaskDefinition child)
+removeChild(TaskDefinition child)
+
+getCategory()
+setCategory(String category)
+getSubType()
+setSubType(String subType)
+
+getExecutor()
+setExecutor(String executor)
+getHandler()
+setHandler(String handler)
+
+getSchedule()
+setSchedule(TaskSchedule schedule)
+getAttributes()
+setAttributes(Map<String,Object> attributes)
+getAttribute(String key)
+setAttribute(String key, Object value)
+getCreated()
+setCreated(Date date)
+getModified()
+setModified(Date date)
+getCreatedBy()
+setCreatedBy(Identity identity)
+getModifiedBy()
+setModifiedBy(Identity identity)
+
+getVersion()
+setVersion(String version)
+getTags()
+setTags(List<String> tags)
+addTag(String tag)
+removeTag(String tag)
+getTimeout()
+setTimeout(int timeout)
+isEnabled()
+setEnabled(boolean enabled)
+isVisible()
+setVisible(boolean visible)
+
+getIcon()
+setIcon(String icon)
+getHelpKey()
+setHelpKey(String helpKey)
+
+toXml()
+fromXml(String xml)
+toMap()
+fromMap(Map map)
+clone()
+equals(Object obj)
+hashCode()
+toString()
+
+validate()
+
+---------------------------------------------------------------------------------------------------------
+🚀 Basic Info Methods:-
+1️⃣ getId():-
+👉 TaskDefinition ka unique ID deta hai
+
+System.out.println(td.getId());
+Output:-
+TD123456
+
+2️⃣ getName():-
+👉 Task ka naam deta hai
+
+System.out.println(td.getName());
+Output:-
+Identity Aggregation
+
+3️⃣ setName(String name):-
+👉 Task ka naam set/change karta hai
+
+td.setName("My Task");
+System.out.println(td.getName());
+Output:-
+My Task
+🚀 Type Methods:-
+
+4️⃣ getType():-
+👉 Task ka type batata hai
+
+System.out.println(td.getType());
+Output:-
+Aggregation
+
+5️⃣ setType(String type):-
+👉 Task ka type set karta hai
+
+td.setType("Provisioning");
+System.out.println(td.getType());
+Output:-
+Provisioning
+
+🚀 Description Methods:-
+
+6️⃣ getDescription():-
+👉 Task ka description deta hai
+
+System.out.println(td.getDescription());
+Output:-
+This task aggregates users
+
+7️⃣ setDescription(String description):-
+👉 Description set karta hai
+
+td.setDescription("My custom task");
+System.out.println(td.getDescription());
+Output:-
+My custom task
+
+🚀 Owner Methods:-
+
+8️⃣ getOwner():-
+👉 Task ka owner (Identity) deta hai
+System.out.println(td.getOwner());
+Output:-
+Identity[name=admin]
+
+9️⃣ setOwner(Identity owner):-
+👉 Owner set karta hai
+
+Identity id = context.getObjectByName(Identity.class, "admin");
+td.setOwner(id);
+System.out.println(td.getOwner().getName());
+Output:-
+admin
+
+🚀 Arguments Methods (IMPORTANT):-
+
+🔟 getArguments():-
+👉 Task ke input parameters (Map) deta hai
+System.out.println(td.getArguments());
+Output:-
+{application=AD, limit=100}
+
+1️⃣1️⃣ setArguments(Map<String,Object> args):-
+👉 Pura arguments set karta hai
+
+Map args = new HashMap();
+args.put("application", "SAP");
+td.setArguments(args);
+System.out.println(td.getArguments());
+Output:-
+{application=SAP}
+
+1️⃣2️⃣ getArgument(String key):-
+👉 Specific argument ka value deta hai
+
+System.out.println(td.getArgument("application"));
+Output:-
+SAP
+
+1️⃣3️⃣ setArgument(String key, Object value):-
+👉 Ek argument add/update karta hai
+
+td.setArgument("limit", 50);
+System.out.println(td.getArguments());
+Output:-
+{application=SAP, limit=50}
+
+🧩 1️⃣ getTemplate():-
+👉 Check karta hai task template hai ya nahi
+System.out.println(td.getTemplate());
+Output:-
+true
+
+🧩 2️⃣ setTemplate(boolean template):-
+👉 Task ko template bana deta hai
+td.setTemplate(true);
+System.out.println(td.getTemplate());
+Output:-
+true
+
+🧩 3️⃣ isTemplate():-
+👉 Same check (boolean form me)
+System.out.println(td.isTemplate());
+Output:-
+true
+
+🌳 4️⃣ getParent():-
+👉 Parent TaskDefinition deta hai
+System.out.println(td.getParent().getName());
+Output:-
+Main Task
+
+🌳 5️⃣ setParent(TaskDefinition parent):-
+👉 Parent set karta hai
+td.setParent(parentTask);
+System.out.println(td.getParent().getName());
+Output:-
+Main Task
+
+🌳 6️⃣ getChildren():-
+👉 Child tasks list deta hai
+System.out.println(td.getChildren());
+Output:-
+[ChildTask1, ChildTask2]
+
+🌳 7️⃣ setChildren(List<TaskDefinition> children):-
+👉 Pura children list set karta hai
+List list = new ArrayList();
+list.add(child1);
+td.setChildren(list);
+System.out.println(td.getChildren());
+Output:-
+[ChildTask1]
+
+🌳 8️⃣ addChild(TaskDefinition child):-
+👉 Ek child add karta hai
+td.addChild(childTask);
+System.out.println(td.getChildren());
+Output:-
+[ChildTask]
+
+🌳 9️⃣ removeChild(TaskDefinition child):-
+👉 Child remove karta hai
+td.removeChild(childTask);
+System.out.println(td.getChildren());
+Output:-
+[]
+
+📂 1️⃣ getCategory():-
+👉 Task kis category/group me aata hai
+System.out.println(td.getCategory());
+
+Output:-
+Aggregation Tasks
+
+📂 2️⃣ setCategory(String category):-
+👉 Task ko kisi category me daalna
+
+td.setCategory("Provisioning Tasks");
+System.out.println(td.getCategory());
+
+Output:-
+Provisioning Tasks
+
+💡 Category ka matlab:-
+👉 UI me grouping ke liye use hota hai
+
+Example UI:-
+Aggregation Tasks
+   → Identity Aggregation
+   → Account Aggregation
+
+Provisioning Tasks
+   → Create Account
+   → Disable Account
+   
+🏷️ 3️⃣ getSubType():-
+👉 Task ka specific type (category ke andar detail)
+System.out.println(td.getSubType());
+Output:-
+FullAggregation
+
+🏷️ 4️⃣ setSubType(String subType):-
+👉 SubType set karta hai
+
+td.setSubType("IncrementalAggregation");
+System.out.println(td.getSubType());
+
+Output:-
+IncrementalAggregation
+
+🏃 1️⃣ getExecutor():-
+👉 Executor = task ko actually chalane wala thread/class/engine
+System.out.println(td.getExecutor());
+Output:-
+DefaultTaskExecutor
+
+🏃 2️⃣ setExecutor(String executor):-
+👉 Task ko assign karta hai kaunsa executor use hoga
+td.setExecutor("CustomExecutor");
+System.out.println(td.getExecutor());
+Output:-
+CustomExecutor
+
+⚙️ 3️⃣ getHandler():-
+👉 Handler = task ka main logic / class jo kaam perform karega
+System.out.println(td.getHandler());
+Output:-
+sailpoint.task.AggregationHandler
+
+⚙️ 4️⃣ setHandler(String handler):-
+👉 Task ka main logic assign karta hai
+td.setHandler("sailpoint.task.ProvisioningHandler");
+System.out.println(td.getHandler());
+Output:-
+sailpoint.task.ProvisioningHandler
+
+-----------------------------------------------------------------------------------------------------------------------
+🚀 Handler ka concept — SailPoint me:-
+Handler = wo class ya code jo task ka real kaam perform karta hai.
+TaskDefinition me sirf task ka blueprint/configuration hota hai (name, category, schedule, etc.)
+Handler me logic hota hai ki task actually kya karega
+
+💡 Important Points:-
+Handler class hoti hai (Java class)
+Ye implement karti hai SailPoint ka TaskHandler interface
+Execution time pe executor handler ko call karta hai
+Multiple tasks ek hi handler use kar sakte hain
+Custom logic likhna ho → custom handler bana sakte ho
+
+🏗 Handler ka kaam — Step by Step:-
+Step	Kaam
+1	Task start hota hai
+2	Executor task ko pick karta hai
+3	Executor handler class ka execute() method call karta hai
+4	Handler logic perform karta hai (Aggregation, Provisioning, Certification etc.)
+5	Handler result return karta hai
+6	Task status update hota hai (Completed, Failed etc.)
+-------------------------------------------------------------------------------------------------------------------------
+🕒 1️⃣ getSchedule():-
+👉 Task ka schedule return karta hai (kab run hoga)
+TaskSchedule schedule = td.getSchedule();
+System.out.println(schedule);
+Output (Example):-
+Daily at 2:00 AM
+
+🕒 2️⃣ setSchedule(TaskSchedule schedule):-
+👉 Task ke liye schedule set karta hai
+TaskSchedule ts = new TaskSchedule();
+ts.setFrequency("Daily");
+td.setSchedule(ts);
+System.out.println(td.getSchedule().getFrequency());
+Output:-
+Daily
+
+📂 3️⃣ getAttributes():-
+👉 Task ke custom attributes return karta hai (Map format)
+Map<String,Object> attrs = td.getAttributes();
+System.out.println(attrs);
+Output:-
+{system=AD, priority=high}
+
+📂 4️⃣ setAttributes(Map<String,Object> attributes):-
+👉 Task ke custom attributes set karta hai
+Map<String,Object> attrs = new HashMap<>();
+attrs.put("system", "SAP");
+attrs.put("priority", "medium");
+td.setAttributes(attrs);
+System.out.println(td.getAttributes());
+Output:-
+{system=SAP, priority=medium}
+
+📂 5️⃣ getAttribute(String key):-
+👉 Specific attribute value get karta hai
+System.out.println(td.getAttribute("system"));
+Output:- 
+SAP
+
+📂 6️⃣ setAttribute(String key, Object value):-
+👉 Specific attribute value set karta hai
+td.setAttribute("priority", "high");
+System.out.println(td.getAttribute("priority"));
+Output:-
+high
+
+🕰️ 7️⃣ getCreated():-
+👉 Task ka creation date return karta hai
+System.out.println(td.getCreated());
+Output (Example):-
+Sun Mar 19 2026 11:00:00 IST
+
+🕰️ 8️⃣ setCreated(Date date):-
+👉 Task ka creation date manually set karta hai
+td.setCreated(new Date());
+System.out.println(td.getCreated());
+Output:-
+Thu Mar 19 2026 11:15:00 IST
+
+🕰️ 9️⃣ getModified():-
+👉 Task ka last modified date return karta hai
+System.out.println(td.getModified());
+Output:-
+Thu Mar 19 2026 11:20:00 IST
+
+🕰️ 🔟 setModified(Date date):-
+👉 Task ka last modified date set karta hai
+td.setModified(new Date());
+System.out.println(td.getModified());
+Output:-
+Thu Mar 19 2026 11:25:00 IST
+
+👤 11️⃣ getCreatedBy():-
+👉 Task ka creator Identity return karta hai
+System.out.println(td.getCreatedBy().getName());
+Output:-
+Admin
+
+👤 12️⃣ setCreatedBy(Identity identity):-
+👉 Task ka creator manually set karta hai
+td.setCreatedBy(adminIdentity);
+System.out.println(td.getCreatedBy().getName());
+Output:-
+Admin
+
+👤 13️⃣ getModifiedBy():-
+👉 Task ka last modifier Identity return karta hai
+System.out.println(td.getModifiedBy().getName());
+Output:-
+Manager
+
+👤 14️⃣ setModifiedBy(Identity identity);-
+👉 Task ka last modifier manually set karta hai
+td.setModifiedBy(managerIdentity);
+System.out.println(td.getModifiedBy().getName());
+Output:-
+Manager
+
+🏷️ 1️⃣ getVersion():-
+👉 Task ka version return karta hai
+System.out.println(td.getVersion());
+Output:-
+1.0
+
+🏷️ 2️⃣ setVersion(String version):-
+👉 Task ka version set karta hai
+td.setVersion("1.1");
+System.out.println(td.getVersion());
+Output:-
+1.1
+
+🏷️ 3️⃣ getTags():-
+👉 Task ke tags list return karta hai
+System.out.println(td.getTags());
+Output:-
+[aggregation, daily, critical]
+
+🏷️ 4️⃣ setTags(List<String> tags):-
+👉 Task ke tags set karta hai
+td.setTags(Arrays.asList("provisioning","weekly"));
+System.out.println(td.getTags());
+Output:-
+[provisioning, weekly]
+
+🏷️ 5️⃣ addTag(String tag):-
+👉 Task me ek tag add karta hai
+td.addTag("manual");
+System.out.println(td.getTags());
+Output:-
+[provisioning, weekly, manual]
+
+🏷️ 6️⃣ removeTag(String tag):-
+👉 Task se ek tag remove karta hai
+td.removeTag("weekly");
+System.out.println(td.getTags());
+Output:-
+[provisioning, manual]
+
+⏱️ 7️⃣ getTimeout():-
+👉 Task ka timeout return karta hai (seconds)
+System.out.println(td.getTimeout());
+Output:-
+300
+
+⏱️ 8️⃣ setTimeout(int timeout):-
+👉 Task ka timeout set karta hai
+td.setTimeout(600);
+System.out.println(td.getTimeout());
+Output:-
+600
+
+✅ 9️⃣ isEnabled():-
+👉 Check karta hai ki task enabled hai ya disabled
+System.out.println(td.isEnabled());
+Output:-
+true
+
+✅ 🔟 setEnabled(boolean enabled):-
+👉 Task enable/disable karta hai
+td.setEnabled(false);
+System.out.println(td.isEnabled());
+Output:-
+false
+
+👁️ 11️⃣ isVisible():-
+👉 Check karta hai ki task UI me visible hai ya hidden
+System.out.println(td.isVisible());
+Output:-
+true
+
+👁️ 12️⃣ setVisible(boolean visible):-
+👉 Task UI me show/hide karta hai
+td.setVisible(false);
+System.out.println(td.isVisible());
+Output:-
+false
+-------------------------------------------------------------------------------------------------------------------
+🎨 1️⃣ getIcon():-
+👉 Task ka UI icon return karta hai (symbol / image)
+System.out.println(td.getIcon());
+Output:-
+aggregation-icon
+
+🎨 2️⃣ setIcon(String icon):-
+👉 Task ka UI icon set karta hai
+td.setIcon("provisioning-icon");
+System.out.println(td.getIcon());
+Output:-
+provisioning-icon
+
+❓ 3️⃣ getHelpKey():-
+👉 Task ka help/documentation reference key return karta hai
+System.out.println(td.getHelpKey());
+Output:-
+aggregation.help
+
+❓ 4️⃣ setHelpKey(String helpKey):-
+👉 Task ka help key set karta hai
+td.setHelpKey("provisioning.help");
+System.out.println(td.getHelpKey());
+
+Output:-
+provisioning.help
+
+📄 5️⃣ toXml():-
+👉 Task ko XML format me convert karta hai (save / export ke liye)
+String xml = td.toXml();
+System.out.println(xml);
+Output (simplified):-
+<TaskDefinition name="AD Aggregation Task" category="Aggregation" icon="aggregation-icon">
+    <Handler>com.mycompany.AggregationHandler</Handler>
+    <Tags>
+        <Tag>aggregation</Tag>
+        <Tag>daily</Tag>
+    </Tags>
+</TaskDefinition>
+
+📄 6️⃣ fromXml(String xml):-
+👉 XML se TaskDefinition object create karta hai
+TaskDefinition td2 = TaskDefinition.fromXml(xml);
+System.out.println(td2.getName());
+Output:-
+AD Aggregation Task
+
+🗂️ 7️⃣ toMap():-
+👉 Task ko Map format me convert karta hai
+Map<String,Object> map = td.toMap();
+System.out.println(map.get("name"));
+Output:-
+AD Aggregation Task
+
+🗂️ 8️⃣ fromMap(Map map):-
+👉 Map se TaskDefinition object create karta hai
+TaskDefinition td3 = TaskDefinition.fromMap(map);
+System.out.println(td3.getCategory());
+Output:-
+Aggregation
+
+🧩 9️⃣ clone():-
+👉 Task ka copy / duplicate create karta hai
+TaskDefinition tdCopy = td.clone();
+System.out.println(tdCopy.getName());
+Output:-
+AD Aggregation Task
+
+⚖️ 10️⃣ equals(Object obj):-
+👉 Do tasks same hai ya nahi check karta hai
+System.out.println(td.equals(tdCopy));
+Output:-
+true
+
+🔢 11️⃣ hashCode():-
+👉 Task ka hash code return karta hai (hashing / collection me use hota hai)
+System.out.println(td.hashCode());
+Output (example):-
+123456789
+
+📜 12️⃣ toString():-
+👉 Task ka string representation return karta hai
+System.out.println(td.toString());
+Output (simplified):-
+TaskDefinition[name=AD Aggregation Task, category=Aggregation, handler=com.mycompany.AggregationHandler]
+---------------------------------------------------------------------------------------------------------------
+()validate:-
+🚀 1️⃣ Purpose of validate():-
+Object me koi mandatory field missing hai ya nahi
+Object ke values valid hai ya nahi
+Object ke internal consistency / logical rules follow ho rahe hain ya nahi
+Relationship / references sahi hai ya nahi
+Basically ye method task ya workflow ko run karne se pehle error-free banata hai.
+
+🛠 2️⃣ TaskDefinition / Task / ApprovalSet / Workflow me validate() kya check karta hai
+Object	                                                    Kya check karta hai
+TaskDefinition:----Name, Type, Handler, Executor, Schedule, Version, Tags present hai ya nahi; Attributes valid hai ya nahi;
+Child tasks / Parent relationship correct hai
+Task:---------Arguments valid hai ya nahi; Executor/Handler set hai ya nahi; Timeout, Enabled, Visible values correct hai ya nahi
+ApprovalSet:--Approvers set hai ya nahi; Duplicate approvers nahi; Consistency check – koi mixed approvals nahi; Approval statuses valid hai ya nahi
+Workflow:--Steps defined hai ya nahi; Transitions correct hai; Actions assigned hai; End step present hai; Messages/Events valid hai
+TaskResult:---Status aur CompletionStatus valid hai; Progress/PercentComplete 0-100 me hai; Messages, Warnings, Errors valid hai.
+
+⚡ 3️⃣ Validation ke common checks:-
+Mandatory Fields:-
+Name, Type, Handler, Executor, Schedule, Category, etc.
+
+Data Type / Value Check:-
+Timeout ≥ 0
+PercentComplete 0–100
+Status enum me hona chahiye
+
+Relationships:-
+Parent/Child TaskDefinition consistency
+Workflow Step transitions valid
+
+Consistency:-
+ApprovalSet → sab approved ya pending/consistent
+No invalid combination
+
+Duplicates:-
+Tags unique
+Approvers unique
+-------------------------------------------------------------------------------------------------------------------------------------
+✅ TaskDefinition – Real Project Code Example
+import sailpoint.api.SailPointContext;
+import sailpoint.object.TaskDefinition;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class TaskDefinitionExample {
+
+    public static void main(String[] args) {
+
+        SailPointContext context = null;
+
+        try {
+            // 🔹 Get SailPoint Context
+            context = SailPointFactory.createContext();
+
+            // 🔹 Load TaskDefinition by name or ID
+            String taskDefName = "Certification Task Definition";
+            TaskDefinition taskDef = context.getObject(TaskDefinition.class, taskDefName);
+
+            if (taskDef == null) {
+                System.out.println("TaskDefinition not found: " + taskDefName);
+                return;
+            }
+
+            // ============================================
+            // 1️⃣ Icon & Help Key
+            // ============================================
+            System.out.println("Icon: " + taskDef.getIcon());
+            taskDef.setIcon("icon-certification.png");
+            System.out.println("Updated Icon: " + taskDef.getIcon());
+
+            System.out.println("Help Key: " + taskDef.getHelpKey());
+            taskDef.setHelpKey("TASK_CERT_HELP");
+            System.out.println("Updated Help Key: " + taskDef.getHelpKey());
+
+            // ============================================
+            // 2️⃣ Template
+            // ============================================
+            System.out.println("Is Template? " + taskDef.isTemplate());
+            taskDef.setTemplate(true);
+            System.out.println("Updated Template Flag: " + taskDef.isTemplate());
+
+            // ============================================
+            // 3️⃣ Parent & Children
+            // ============================================
+            TaskDefinition parentDef = taskDef.getParent();
+            System.out.println("Parent TaskDefinition: " + (parentDef != null ? parentDef.getName() : "None"));
+
+            // Set parent
+            TaskDefinition newParent = context.getObject(TaskDefinition.class, "Parent TaskDef");
+            taskDef.setParent(newParent);
+
+            // Children
+            List<TaskDefinition> children = taskDef.getChildren();
+            System.out.println("Children count: " + (children != null ? children.size() : 0));
+
+            // Add child
+            TaskDefinition childDef = context.getObject(TaskDefinition.class, "Child TaskDef");
+            taskDef.addChild(childDef);
+
+            // Remove child
+            taskDef.removeChild(childDef);
+
+            // ============================================
+            // 4️⃣ Category & SubType
+            // ============================================
+            System.out.println("Category: " + taskDef.getCategory());
+            taskDef.setCategory("Certification");
+            System.out.println("Updated Category: " + taskDef.getCategory());
+
+            System.out.println("SubType: " + taskDef.getSubType());
+            taskDef.setSubType("Quarterly");
+            System.out.println("Updated SubType: " + taskDef.getSubType());
+
+            // ============================================
+            // 5️⃣ Executor & Handler
+            // ============================================
+            System.out.println("Executor: " + taskDef.getExecutor());
+            taskDef.setExecutor("sailpoint.api.TaskExecutor");
+            System.out.println("Updated Executor: " + taskDef.getExecutor());
+
+            System.out.println("Handler: " + taskDef.getHandler());
+            taskDef.setHandler("sailpoint.task.certification.Handler");
+            System.out.println("Updated Handler: " + taskDef.getHandler());
+
+            context.commitTransaction();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (context != null) {
+                context.decache(true);
+                context.close();
+            }
+        }
+    }
+}
+🔥 Sample Output (Example)
+Icon: default-icon.png
+Updated Icon: icon-certification.png
+Help Key: TASK_HELP_DEFAULT
+Updated Help Key: TASK_CERT_HELP
+Is Template? false
+Updated Template Flag: true
+Parent TaskDefinition: None
+Children count: 2
+Category: General
+Updated Category: Certification
+SubType: Standard
+Updated SubType: Quarterly
+Executor: sailpoint.api.DefaultExecutor
+Updated Executor: sailpoint.api.TaskExecutor
+Handler: sailpoint.task.DefaultHandler
+Updated Handler: sailpoint.task.certification.Handler
+
+1️⃣ taskDef.isTemplate():-
+Ye boolean field hota hai jo batata hai ki ye TaskDefinition template hai ya normal task.
+Template ka matlab: Ye ek reusable blueprint hota hai, jisse nayi Tasks create ki ja sakti hain.
+Output Example:-
+Is Template? true
+Agar ye true → Task create karte waqt developer is template ko choose karke nayi task bana sakta hai.
+Agar false → Ye sirf ek normal TaskDefinition hai, jo directly schedule/run hota hai.
+
+2️⃣ taskDef.getChildren():-
+Ye list of TaskDefinition objects return karta hai.
+Child TaskDefinitions ka matlab: Ye parent task ke under run hone wale sub-tasks hain.
+Output Example:-
+Children count: 2
+Child Task 1: Certification Subtask 1
+Child Task 2: Certification Subtask 2
+addChild() / removeChild() → developer ya SailPoint admin manage karta hai task hierarchy me.
+
+3️⃣ taskDef.getParent():-
+Ye TaskDefinition return karta hai jo current task ka parent hai.
+Output Example:-
+Parent TaskDefinition: Quarterly Certification Parent Task
+Agar parent null → task standalone hai.
+

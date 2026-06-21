@@ -1,0 +1,51 @@
+👉 “Beanshell rule run hote waqt SailPoint args me kaun-kaunse objects inject karta hai, aur ye kaun-kaunse rules me milta hai”?
+--
+🔥 🔹 1️⃣ args me kya-kya OBJECTS milte hain (REAL CASES)
+👉 args me ye sab objects aa sakte hain (depending on rule):
+identity (sailpoint.object.Identity)
+identityName (String)
+application (sailpoint.object.Application)
+schema (sailpoint.object.Schema)
+link / account (sailpoint.object.Link / ResourceObject)
+plan (sailpoint.object.ProvisioningPlan)
+accountRequest
+attributeRequest
+workflow (sailpoint.workflow.Workflow)
+workflowContext
+task (sailpoint.object.TaskItem)
+taskResult (sailpoint.object.TaskResult)
+certification (sailpoint.object.Certification)
+certificationItem
+approvalItem
+approvalSet
+form (Dynamic form object)
+value / oldValue / newValue
+arguments (nested map)
+context (rare, but sometimes passed manually)
+logger (in some execution modes)
+-----------------------------------------
+🔥 🔹 2️⃣ args kis kis rule me milta hai:-
+👉 Ye list of rule types jahan args mil sakta hai (depending on caller):
+🔹 Workflow related:-
+Workflow Rule
+Workflow Step Rule
+Approval Rule
+Approval Assignment Rule
+Approval Escalation Rule
+🔹 LCM / Provisioning:-
+BeforeProvisioning Rule
+AfterProvisioning Rule
+Provisioning Rule
+LCM Workflow Rule
+🔹 Certification:-
+Certification Rule
+Certification Exclusion Rule
+Certification Item Rule
+🔹 Task:-
+TaskDefinition Rule
+Custom Task Rule
+🔹 UI / Form:-
+Form Rule
+UI Rule
+🔹 Custom execution:-
+context.runRule(rule, args)

@@ -1,0 +1,29 @@
+()Authoritative source (HR system) kya hai?
+--1️⃣ Authoritative Source kya hota hai?
+Ye wo system hai jahan se SailPoint identity attributes (user info, roles, department, email, etc.) ko verify karta hai.
+Mostly HR system ko authoritative source maana jata hai, kyunki HR me employee ka official record hota hai.
+SailPoint me aggregation process ke through ye data fetch hota hai
+
+Example: HR System as Authoritative Source
+HR system me Rahul ka record:-
+EmployeeID: EMP12345
+Name: Rahul Kumar
+Email: rahul@company.com
+Department: Finance
+Role: Finance Manager
+Cost Center: CC1001
+Status: Active
+
+💡 Tip bhai:-
+Sirf HR system nahi, aur bhi systems ho sakte hain jaise:
+Active Directory → AD accounts
+Finance system → Cost Center data
+ERP system → Project assignments
+
+--SailPoint aggregation:-
+Identity rahul = aggregateFromHR("EMP12345"); 
+// Ab Rahul ki identity SailPoint me ready hai
+Authoritative source ka fayda:-
+SailPoint me official data hamesha HR se sync hota hai
+Manual updates ki zarurat kam hoti hai
+Policies aur workflows automatically apply ho sakte hain.

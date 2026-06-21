@@ -1,0 +1,886 @@
+🚀 Handler ka concept — SailPoint me:-
+Handler = wo class ya code jo task ka real kaam perform karta hai.
+TaskDefinition me sirf task ka blueprint/configuration hota hai (name, category, schedule, etc.)
+Handler me logic hota hai ki task actually kya karega
+
+💡 Important Points:-
+Handler class hoti hai (Java class)
+Ye implement karti hai SailPoint ka TaskHandler interface
+Execution time pe executor handler ko call karta hai
+Multiple tasks ek hi handler use kar sakte hain
+Custom logic likhna ho → custom handler bana sakte ho
+
+🏗 Handler ka kaam — Step by Step:-
+Step	Kaam
+1	Task start hota hai
+2	Executor task ko pick karta hai
+3	Executor handler class ka execute() method call karta hai
+4	Handler logic perform karta hai (Aggregation, Provisioning, Certification etc.)
+5	Handler result return karta hai
+6	Task status update hota hai (Completed, Failed etc.)
+
+()👉 Executor = task ko actually chalane wala thread/class/engine.
+🔹 Executor:-
+Ye Java class hota hai jo task execution ke liye engine ko batata hai kaunse code ko run karna hai.
+Example: "sailpoint.api.TaskExecutor"
+Kaun banata hai?
+Usually developer banata hai custom executor class.
+Default executors SailPoint provide karta hai for standard tasks.
+Use kyun hota hai?
+Task engine ko batane ke liye “Ye code run karna hai”.Reusable execution logic create karne ke liye.
+
+🔹 2. Handler:-
+Definition / Matlab
+Handler bhi ek Java class hai, lekin ye task-specific logic handle karta hai.
+Matlab:-
+Executor task ko run karega, aur handler decide karega task ke andar kya kaam hoga.
+Kaam / Responsibilities
+Task ke business logic ko implement karta hai.
+Input parameters process karta hai (e.g., identities, accounts).
+Output / result prepare karta hai.
+TaskDefinition me assign hota hai, taki jab task run ho handler ka code execute ho jaye.
+Kaun banata hai?
+Mostly developer, jab koi custom processing logic chahiye.
+SailPoint ke paas standard handlers hote hain common tasks ke liye (Certification, Provisioning, Aggregation).
+Use kyun hota hai?
+Task ke andar jo real kaam hoga uske liye.
+Executor sirf task start/stop karta hai, handler task ka kaam perform karta hai.
+
+🔹 3. Executor vs Handler – Difference:-
+Feature	              Executor	                                     Handler
+Role:----------Task execution ko control karta hai:--------Task-specific logic perform karta hai
+Example:-------sailpoint.api.TaskExecutor:-----------------sailpoint.task.certification.Handler
+Banata:--------SailPoint ya developer (custom):---------------------Mostly developer
+Focus;---------Task run karna, engine interaction:------------Business logic / processing
+Assignment:----TaskDefinition me executor assign hota hai:----TaskDefinition me handler assign hota hai
+
+💡 Example Flow:-
+Task run hota hai → Executor trigger hota hai
+Executor task context create karta hai
+Executor Handler call karta hai
+Handler business logic execute karta hai
+Result Executor ke through task system me update hota hai
+
+🔹 1. Executor:-
+Type: Java Interface / Class
+Purpose: Task ko run karne ke liye engine ko batata hai kaunsa code execute karna hai.
+Default Example: sailpoint.api.TaskExecutor
+Custom: Developer apni class bana sakta hai implements TaskExecutor karke.
+Key Point: Ye task ko execute karne ka framework-level handle hai, logic nahi.
+
+🔹 2. Handler:-
+Type: Java Class
+Purpose: Task ke andar ka specific business logic perform karta hai.
+Default Example: sailpoint.task.certification.Handler
+Custom: Developer apni class bana sakta hai extends Handler karke aur apna logic likh sakta hai.
+Key Point: Ye task ka kaam perform karta hai, engine ko bas Executor ke through call kiya jata hai.
+----------------------------------------------------------------------------------------------------------------------------------------
+()🔹 Executor:-
+🔹 Executor (sailpoint.api.TaskExecutor):-
+void execute(Task task, TaskResult result, SailPointContext context)
+(Sirf 1 primary method in interface)
+-----------------------------------------------------------------------------------------------------------------------------------------
+🔹 Handler (sailpoint.task.Handler / sub‑classes):-
+Note: Handler class ke methods based on SailPoint IdentityIQ core framework.
+
+public void execute(TaskContext context)
+public Map<String, Object> getResults()
+public void init(Task task)
+public void finish(TaskResult result)
+public void setParameters(Map<String, Object> params)
+public Map<String, Object> getParameters()
+
+🔹 Certification Handler (sailpoint.task.certification.Handler):-
+(inherits parent Handler methods; may include these)
+
+public void review(AccessReview review)
+public void performReviewActions()
+public int getReviewCount()
+public void setReviewCount(int count)
+
+🔹 Aggregation Handler (sailpoint.task.AggregationHandler):-
+public void process()
+public void aggregateAccount(Account account)
+public void aggregateIdentity(Identity identity)
+public void processAttributes(Map<String,Object> attrs)
+
+🔹 Provisioning Handler (sailpoint.task.ProvisioningHandler):-
+public void provision(ProvisioningPlan plan)
+public void processResults(ProvisioningResult result)
+public List<ProvisioningPlan> getPlans()
+
+🔹 Certification Reconciliation Handler:-
+public void reconcile()
+public void setReconciliationResults(List<Object> list)
+public List<Object> getReconciliationResults()
+
+🔹 Quick List (common handler methods):-
+public void start()
+public void stop()
+public boolean isEnabled()
+public void setEnabled(boolean status)
+public void cleanup()
+public void reset()
+public void terminate()        // kabhi termination support ke liye
+public boolean isFinished()    // status check
+
+------------------------------------------------------------------------------------------------------------------------------------------
+()1️⃣ TaskResult aur SailPointContext ka source?
+()SailPointContext:-
+Ye SailPoint IdentityIQ engine ke through create hota hai.Engine ke andar developer ya admin context ke through tasks ko run karta hai.
+()TaskResult:-
+Ye bhi task execution ke time engine create karta hai aur executor ko pass karta hai,
+jisse executor status set kar sake, messages add kar sake, validate kar sake.
+()Task:-TaskDefinition se engine ke andar create hota hai aur run time pe executor ko milta hai.
+Matlab: tu manually new TaskResult() ya new SailPointContext() create nahi karega. Ye sab engine handle karta hai.
+
+1️⃣ TaskDefinition aur Task ka creation responsibility:-
+Object	               Kaun Create Karta Hai	                                             Notes
+()TaskDefinition------------------Admin--------------------IdentityIQ me Admin UI se ya XML import / console se create karta hai. Ye define karta hai:
+                                                       • Task ka name
+                                                       • Executor class (jo developer ne banaya)
+                                                       • Schedule, category, description, tags etc.
+
+()Task--------------------SailPoint Engine---------------Jab scheduled ya manually run hota hai,
+                                                       tab engine TaskDefinition se Task instance create karta hai aur executor ko pass karta hai.
+                                                       Developer manually Task create nahi karta, wo sirf executor me logic likhta hai.
+													 
+----------------------------------------------------------------------------------------------------------------------------------------------------
+1️⃣ Admin: TaskDefinition Creation (Java-style, normally IdentityIQ admin UI me hota hai)
+package com.example.sailpoint.admin;
+
+import sailpoint.api.SailPointContext;
+import sailpoint.object.TaskDefinition;
+
+public class TaskDefinitionAdmin {
+
+    public static TaskDefinition createTaskDefinition(SailPointContext context) throws Exception {
+        // New TaskDefinition create karna
+        TaskDefinition taskDef = new TaskDefinition();
+        taskDef.setName("DemoTask");
+        taskDef.setDescription("This is a demo task created by admin.");
+        taskDef.setExecutorClass("com.example.sailpoint.tasks.DeveloperTaskExecutor"); // developer executor
+        taskDef.setCategory("Demo");
+        taskDef.setTemplate(false);
+
+        // Context me save karna
+        context.saveObject(taskDef);
+        context.commitTransaction();
+
+        System.out.println("TaskDefinition created: " + taskDef.getName());
+        return taskDef;
+    }
+}
+2️⃣ Engine: Task & TaskResult Generation (Normally handled by IdentityIQ engine)
+package com.example.sailpoint.engine;
+
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Task;
+import sailpoint.task.TaskResult;
+import sailpoint.object.TaskDefinition;
+
+public class TaskEngineSimulator {
+
+    public static void runTask(SailPointContext context, TaskDefinition taskDef) {
+        try {
+            // Engine creates Task instance
+            Task task = new Task();
+            task.setName(taskDef.getName());
+            task.setId("T12345"); // Normally engine generates unique ID
+            System.out.println("Task instance created: " + task.getName());
+
+            // Engine creates TaskResult
+            TaskResult result = new TaskResult();
+            result.setStatus(TaskResult.Status.Ready);
+
+            // Developer executor call
+            com.example.sailpoint.tasks.DeveloperTaskExecutor executor = new com.example.sailpoint.tasks.DeveloperTaskExecutor();
+            executor.execute(task, result, context);
+
+            // After execution, engine would commit result
+            context.saveObject(result);
+            context.commitTransaction();
+
+            System.out.println("Task execution finished. Status: " + result.getStatus());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+3️⃣ Developer: Executor (Logic/Handler)
+package com.example.sailpoint.tasks;
+
+import sailpoint.api.SailPointContext;
+import sailpoint.task.Task;
+import sailpoint.task.TaskExecutor;
+import sailpoint.task.TaskResult;
+
+/**
+ * Developer writes task execution logic here
+ */
+public class DeveloperTaskExecutor implements TaskExecutor {
+
+    @Override
+    public void execute(Task task, TaskResult result, SailPointContext context) {
+        try {
+            System.out.println("Executing task: " + task.getName());
+            result.setStatus(TaskResult.Status.Running);
+            result.addMessage("DeveloperTaskExecutor started execution.");
+
+            // =========================================
+            // Handler-like logic inside executor
+            // =========================================
+            defaultHandler(task, result, context);
+
+            // Complete TaskResult
+            result.setCompletionStatus(TaskResult.Status.Completed);
+            result.addMessage("DeveloperTaskExecutor finished execution.");
+
+        } catch (Exception e) {
+            result.setStatus(TaskResult.Status.Failure);
+            result.addMessage("Task execution failed: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    // Handler method simulating internal logic
+    private void defaultHandler(Task task, TaskResult result, SailPointContext context) {
+        System.out.println("Handler running for task: " + task.getName());
+        // Simple demo logic
+        result.addMessage("Handler logic executed successfully.");
+    }
+}
+4️⃣ Full Flow: Notepad Test
+package com.example.sailpoint.main;
+
+import sailpoint.api.SailPointContext;
+import com.example.sailpoint.admin.TaskDefinitionAdmin;
+import com.example.sailpoint.engine.TaskEngineSimulator;
+import sailpoint.object.TaskDefinition;
+
+public class Main {
+
+    public static void main(String[] args) throws Exception {
+        SailPointContext context = null;
+
+        try {
+            // 🔹 Normally engine provides context
+            context = SailPointFactory.createContext();
+
+            // 1️⃣ Admin creates TaskDefinition
+            TaskDefinition taskDef = TaskDefinitionAdmin.createTaskDefinition(context);
+
+            // 2️⃣ Engine runs Task & TaskResult
+            TaskEngineSimulator.runTask(context, taskDef);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (context != null) {
+                context.decache(true);
+                context.close();
+            }
+        }
+    }
+}
+///////////*
+2️⃣ TaskEngineSimulator.runTask(context, taskDef);
+Ye line Notepad/testing purpose ke liye maine banayi thi, real production me SailPoint engine automatically ye karta hai:-
+TaskEngineSimulator.runTask(context, taskDef);
+🔹 Ye kya karti hai:-
+TaskDefinition se Task instance create karna,
+Engine normally task ka unique instance generate karta hai.
+Example: task.setName(taskDef.getName())
+
+()TaskResult create karna:-
+Engine runtime pe result object banata hai
+Example: TaskResult result = new TaskResult();
+
+()Developer executor ko call karna:-
+Example: executor.execute(task, result, context);
+Yaha defaultHandler() bhi call hota hai
+
+()TaskResult save & commit karna:-
+Engine me ye commit hota hai database me
+
+🔹 Kaun call karta hai:-
+Notepad test me → hum manually call karte hain
+Production me → SailPoint server engine automatically call karta hai
+
+🔹 Effect:-
+Task instance aur TaskResult generate hota hai
+Executor ka execute() method run hota hai
+Internal handler logic execute hota hai
+TaskResult ka final status engine me commit hota hai
+
+
+1️⃣ defaultHandler(task, result, context); ka purpose:-
+Ye executor ke andar ek method call hai, jo developer ka internal “handler” logic run karne ke liye hota hai.
+
+🔹 Kya hum isme karte hain?
+Yes bhai, ye wahi jagah hai jahan developer apna task logic likhta hai.
+Example ke liye:-
+User provisioning
+Approval checks
+Logging messages
+Any other business logic
+Ye handler method modular banata hai:agar executor ka logic bada hai, to ye step-wise divide ho jata hai.
+*///////////
+--------------------------------------------------------------------------------------------------------------------------------
+()defaultHandler() me handler ka logic likhte hai toh kya kya likh sakte hai sabka list de?
+--hum handler ke andar koi specific task hi likh sakte hai,jaise:-
+🔹 1️⃣ TaskResult Related Logic:-
+Status update:-
+result.setStatus(TaskResult.Status.Running);
+result.setCompletionStatus(TaskResult.Status.Completed);
+
+Messages add karna:-
+result.addMessage("Step 1 executed successfully");
+
+Validate TaskResult:-
+boolean valid = result.validate();
+if(!valid) result.addMessage("Validation failed");
+
+🔹 2️⃣ Task/Identity Related Logic:-
+
+Task metadata read karna:-
+String taskName = task.getName();
+String taskId = task.getId();
+
+Conditional execution based on task:-
+if(taskName.contains("Demo")) {
+    result.addMessage("Demo task logic applied");
+}
+
+Identity related provisioning:-
+// context.getObject(Identity.class, "someId")
+// Apply role, entitlement, approval etc.
+
+🔹 3️⃣ Provisioning / Workflow Calls:
+Provisioning actions:-
+// example: assign role, remove entitlement
+
+Workflow initiation:-
+// start approval workflow, request access
+
+Event triggers / notifications:
+// send email / add launch message
+
+🔹 4️⃣ Conditional Logic / Loops:-
+Multiple steps handle karna:-
+for(String step : steps) {
+    result.addMessage("Executed step: " + step);
+}
+
+Error handling per step:-
+try {
+    // some logic
+} catch(Exception e) {
+    result.addMessage("Step failed: " + e.getMessage());
+}
+
+🔹 5️⃣ Logging / Debugging:-
+Console logs:-
+System.out.println("Handler executing task: " + task.getName());
+
+Audit messages in TaskResult:-
+result.addMessage("Audit: task executed at " + new Date());
+
+🔹 6️⃣ External API / System Calls:-
+External system integration:-
+// call external HR, IT, or ERP system
+
+REST/SOAP calls for provisioning:-
+// use context or Java HTTP client
+
+🔹 7️⃣ Validation & Checks:-
+Check identity attributes / task criteria:-
+if(identity.isActive()) {
+    result.addMessage("Identity is active");
+}
+
+Custom business rules:-
+if(entitlement.equals("Admin")) {
+    result.addMessage("Admin entitlement detected");
+}
+🔹 8️⃣ Error Handling:-
+Catch exceptions:-
+try {
+    // task step
+} catch(Exception e) {
+    result.addMessage("Handler error: " + e.getMessage());
+    result.setStatus(TaskResult.Status.Failure);
+}
+---------------------------------------------------------------------------------------------------------------------------------------------
+()✅ 🔥 sailpoint.task.Handler kya hota hai?
+👉 Ye ek interface / class concept hai jo task ke andar actual processing step ko define karta hai.
+
+✅ 1️⃣ Admin (TaskDefinition Creation)
+package com.example.sailpoint.admin;
+
+import sailpoint.api.SailPointContext;
+import sailpoint.object.TaskDefinition;
+
+public class TaskDefinitionAdmin {
+
+    public static TaskDefinition createTaskDefinition(SailPointContext context) throws Exception {
+
+        TaskDefinition taskDef = new TaskDefinition();
+        taskDef.setName("HandlerBasedTask");
+        taskDef.setDescription("Task using real Handler architecture");
+        taskDef.setExecutorClass("com.example.sailpoint.tasks.DeveloperTaskExecutor");
+        taskDef.setCategory("Demo");
+        taskDef.setTemplate(false);
+
+        context.saveObject(taskDef);
+        context.commitTransaction();
+
+        System.out.println("TaskDefinition created: " + taskDef.getName());
+        return taskDef;
+    }
+}
+✅ 2️⃣ Handler Interface (Project Level – Clean Design)
+package com.example.sailpoint.handler;
+
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Task;
+import sailpoint.task.TaskResult;
+
+public interface TaskHandler {
+
+    void execute(Task task, TaskResult result, SailPointContext context) throws Exception;
+}
+✅ 3️⃣ First Handler (Business Logic 1)
+package com.example.sailpoint.handler;
+
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Task;
+import sailpoint.task.TaskResult;
+
+public class ValidationHandler implements TaskHandler {
+
+    @Override
+    public void execute(Task task, TaskResult result, SailPointContext context) throws Exception {
+
+        System.out.println("ValidationHandler started");
+
+        if (task.getName() == null) {
+            throw new Exception("Task name is null");
+        }
+
+        result.addMessage("Validation successful");
+    }
+}
+✅ 4️⃣ Second Handler (Business Logic 2)
+package com.example.sailpoint.handler;
+
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Task;
+import sailpoint.task.TaskResult;
+
+public class ProcessingHandler implements TaskHandler {
+
+    @Override
+    public void execute(Task task, TaskResult result, SailPointContext context) throws Exception {
+
+        System.out.println("ProcessingHandler running");
+
+        for (int i = 1; i <= 3; i++) {
+            result.addMessage("Processing step: " + i);
+        }
+    }
+}
+✅ 5️⃣ Third Handler (Finalization)
+package com.example.sailpoint.handler;
+
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Task;
+import sailpoint.task.TaskResult;
+
+public class CompletionHandler implements TaskHandler {
+
+    @Override
+    public void execute(Task task, TaskResult result, SailPointContext context) {
+
+        System.out.println("CompletionHandler running");
+
+        result.addMessage("Task completed successfully.");
+    }
+}
+✅ 6️⃣ Executor (REAL COMPANY STYLE 🔥)
+package com.example.sailpoint.tasks;
+
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Task;
+import sailpoint.task.TaskExecutor;
+import sailpoint.task.TaskResult;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.example.sailpoint.handler.TaskHandler;
+import com.example.sailpoint.handler.ValidationHandler;
+import com.example.sailpoint.handler.ProcessingHandler;
+import com.example.sailpoint.handler.CompletionHandler;
+
+public class DeveloperTaskExecutor implements TaskExecutor {
+
+    @Override
+    public void execute(Task task, TaskResult result, SailPointContext context) {
+
+        try {
+            System.out.println("Executor started");
+
+            result.setStatus(TaskResult.Status.Running);
+
+            // 🔥 Handler Chain (Real pattern)
+            List<TaskHandler> handlers = new ArrayList<TaskHandler>();
+            handlers.add(new ValidationHandler());
+            handlers.add(new ProcessingHandler());
+            handlers.add(new CompletionHandler());
+
+            // 🔥 Loop through handlers
+            for (TaskHandler handler : handlers) {
+                handler.execute(task, result, context);
+            }
+
+            result.setCompletionStatus(TaskResult.Status.Completed);
+
+            System.out.println("Executor completed");
+
+        } catch (Exception e) {
+            result.setStatus(TaskResult.Status.Failure);
+            result.addMessage("Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+}
+✅ 7️⃣ Engine Simulator
+package com.example.sailpoint.engine;
+
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Task;
+import sailpoint.task.TaskResult;
+import sailpoint.object.TaskDefinition;
+
+public class TaskEngineSimulator {
+
+    public static void runTask(SailPointContext context, TaskDefinition taskDef) {
+
+        try {
+            Task task = new Task();
+            task.setName(taskDef.getName());
+            task.setId("T1000");
+
+            TaskResult result = new TaskResult();
+            result.setStatus(TaskResult.Status.Ready);
+
+            com.example.sailpoint.tasks.DeveloperTaskExecutor executor =
+                    new com.example.sailpoint.tasks.DeveloperTaskExecutor();
+
+            executor.execute(task, result, context);
+
+            context.saveObject(result);
+            context.commitTransaction();
+
+            System.out.println("Final Status: " + result.getStatus());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+✅ 8️⃣ Main Class
+package com.example.sailpoint.main;
+
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointFactory;
+
+import com.example.sailpoint.admin.TaskDefinitionAdmin;
+import com.example.sailpoint.engine.TaskEngineSimulator;
+import sailpoint.object.TaskDefinition;
+
+public class Main {
+
+    public static void main(String[] args) throws Exception {
+
+        SailPointContext context = null;
+
+        try {
+            context = SailPointFactory.createContext();
+
+            TaskDefinition taskDef = TaskDefinitionAdmin.createTaskDefinition(context);
+
+            TaskEngineSimulator.runTask(context, taskDef);
+
+        } finally {
+            if (context != null) {
+                context.decache(true);
+                context.close();
+            }
+        }
+    }
+}
+///////*
+()taskDef.setExecutorClass("sailpoint.task.AccountAggregationExecutor"); ye kya karta hai taskdefinition me?
+--💥 Ye karta kya hai?
+
+👉 Ye TaskDefinition ko bind karta hai ek built-in SailPoint executor se
+Matlab:-
+"Jab ye task run hoga → Account Aggregation logic chalega"
+👉 AccountAggregationExecutor = SailPoint ka ready-made engine logic
+✔ Accounts fetch karega
+✔ Application se data laayega
+✔ Identity se match karega
+✔ Update karega system me
+
+🔽 Step-by-step:-
+1️⃣ Task run hota hai (UI / Scheduler se)
+2️⃣ Engine TaskDefinition load karta hai
+3️⃣ executorClass read karta hai
+4️⃣ AccountAggregationExecutor load hota hai
+5️⃣ execute() call hota hai
+-------------------------------------------------
+🔥 Inside AccountAggregationExecutor:-
+
+
+(1)🔥 ✅ SABSE SHURU ME KYA HOTA HAI?
+🧠 1️⃣ TaskDefinition CREATE hota hai (CONFIG STAGE):-
+
+👉 Sabse pehle system me ye hota hai:-
+TaskDefinition taskDef = new TaskDefinition();
+
+taskDef.setName("MyTask");
+taskDef.setExecutorClass("sailpoint.task.AccountAggregationExecutor");
+
+👉 Matlab:-
+"Ye task jab chalega → AccountAggregationExecutor chalega"
+fir Enfine call karega executor.execute(task, result, context);
+
+🧠 Example se samajh:-
+--taskDef.setExecutorClass("com.example.sailpoint.tasks.DeveloperTaskExecutor");
+--fir ye Engine call karta hai:-
+executor.execute(task, result, context);
+()executor = us class ka object hai jo tu setExecutorClass() me deta hai,jaise:-
+-------------------------------------------
+✅ 2️⃣ Inputs Read (VERY IMPORTANT 🔥):-
+Executor sabse pehle inputs uthata hai:-
+
+applicationName = "Active Directory"
+aggregationType = "Full / Delta"
+checkDeleted = true
+promoteAttributes = true
+correlationRule = "MyRule"
+
+👉 Ye aate hai:-
+UI se
+XML <Inputs> se
+--------------------------------
+✅ 3️⃣ Application Load:-
+Application app = context.getObjectByName(Application.class, applicationName);
+
+👉 Application me hota hai:-
+Connector config
+Schema
+Attribute mapping
+--------------------------------
+✅ 4️⃣ Connector Create 🔥:-
+Connector connector = ConnectorFactory.getConnector(app);
+
+👉 Connector = bridge between:-
+IdentityIQ ↔ External System
+Examples:-
+Active Directory
+Database
+LDAP
+--------------------------------------
+✅ 5️⃣ Accounts Fetch (CORE 🔥):-
+connector.iterateObjects("account");
+👉 Ye karta hai:-
+✔ External system se users laata hai
+✔ Batch me fetch karta hai (performance)
+✔ Streaming hota hai (memory safe)
+-----------------------------------------
+✅ 6️⃣ Loop for EACH ACCOUNT 🔥:-
+for each account:-
+🔥 🔹 (a) ResourceObject kya hota hai?
+ResourceObject account;
+💡 Deep samajh:-
+👉 Ye raw data container hota hai jo external system se aata hai,
+External System → Connector → ResourceObject me aata hai.
+
+🧠 Iske andar kya hota hai?
+accountId / username  → unique id
+attributes            → key-value data
+Example:-
+username = john.doe
+email = john@gmail.com
+department = IT
+status = active
+
+👉 Internally ye java me aise hota hai:-
+account.getAttribute("email");
+account.getAttribute("department");
+
+🔥 🔹 (b) Correlation (DEEP 🔥)
+💡 Goal:-
+👉 Account ko correct Identity se match karna
+
+🧠 Real Matching कैसे होता है?
+✔ Default Matching:
+account.email == identity.email
+account.username == identity.name
+account.employeeId == identity.employeeId
+
+👉 Real me aur complex hota hai:-
+domain check
+multiple attribute mapping
+fallback logic
+
+✔ Identity mil gaya → OK
+❌ Nahi mila → New identity create ho sakta hai.
+
+🔥 🔹 (c) Identity Mapping (DEEP):-
+👉 Correlation ke baad decide hota hai:-
+
+✔ Case 1: Identity mil gaya toh,
+Existing identity me update hoga attributes.
+👉 Example:-
+john@gmail.com already exist
+→ same identity use hoga.
+
+✔ Case 2: Identity nahi mila:-
+New identity create ho sakta hai.
+👉 Depends on config:-
+Auto create ON → new identity banega
+OFF → skip ya error
+
+🔥 🔹 (d) Link Create / Update:-
+🧠 Simple samajh
+Identity ↔ Link ↔ Application Account
+✔ Link me kya store hota hai?
+applicationName  → AD / DB / etc
+accountId        → john.doe
+attributes       → email, dept, etc
+🔥 Cases:-
+✔ New account
+Link create hoga
+✔ Existing account
+Link update hoga
+
+🔥 🔹 (e) Attribute Sync / Promotion (DEEP):-
+💡 Goal:-
+👉 Account ke data ko Identity me update karna
+
+🧠 Kaise hota hai?
+account.email → identity.email
+account.department → identity.department
+
+🔥 Real me configurable hota hai:-
+👉 XML ya UI se define hota hai:-
+"email" → "email"
+"dept" → "department"
+
+🧠 Important:-
+✔ Har attribute promote nahi hota,
+✔ Sirf mapped attributes hi aate hai.
+/////////////////*
+🔥 ✅ 1️⃣ “Sirf mapped attributes promote hote hai” ka matlab
+💡 Simple line
+👉
+Jo attributes map kiye gaye hai wahi account se identity me copy honge
+
+🧠 Example se samajh:-
+🔽 Account (external system se aaya):-
+username = john.doe
+email = john@gmail.com
+department = IT
+salary = 50000
+location = India
+🔽 Mapping config (IMPORTANT 🔥):-
+email       → email
+department  → department
+
+👉 Notice:-
+❌ salary mapped nahi hai
+❌ location mapped nahi hai.
+*/////////////////
+
+🔥 ✅ 2️⃣ Entitlement Processing (DEEP 🔥)
+💡 Entitlement kya hai?
+👉
+Access / Permission / Group / Role
+
+🧠 Simple example:-
+External system (AD):-
+john.doe → Groups:
+- Admin
+- HR
+
+🔥 Step-by-step processing:-
+🔹 Step 1: Fetch Entitlements
+Account se groups nikalta hai.
+Example:-
+account.groups = [Admin, HR]
+
+🔹 Step 2: Convert to IdentityIQ format
+👉 System convert karta hai:-
+Group → Managed Attribute.
+
+🔹 Step 3: Link ke andar store hota hai
+Link (account record) me save hota hai.
+
+🔹 Step 4: Identity se attach hota hai
+Identity → Entitlements assign.
+🔥 Final Result
+Identity: John
+   ↓
+Entitlements:
+   - Admin
+   - HR
+-------
+🧠 Real Example (AD):-
+()AD user: john.doe
+Groups: IT, Finance
+
+()Aggregation ke baad:-
+IdentityIQ:
+Identity: John
+Access:
+   - IT
+   - Finance
+---------------------------------------------
+✅ 7️⃣ Deleted Accounts Check:-
+Agar:-
+checkDeleted = true
+
+👉 To:-
+✔ Jo account ab external system me nahi hai
+✔ Unhe disable/delete mark karega
+-------------------------------------------------
+✅ 8️⃣ Full vs Delta Aggregation:-
+🔥 Full:-
+Sab accounts fetch honge
+🔥 Delta:-
+Sirf changed accounts fetch honge
+
+👉 Based on:-
+last aggregation time
+-------------------------------------------------
+✅ 9️⃣ Promotion (Optional):-
+Account attributes → Identity attributes
+-----------------------------------------------
+✅ 🔟 Commit to Database
+context.commitTransaction();
+
+👉 Save hota hai:
+
+✔ Identity
+✔ Link
+✔ Account data
+--------------------------------------------------
+✅ 1️⃣1️⃣ TaskResult Update
+result.addMessage("Processed: 1000 accounts");
+result.setStatus(Completed);
+*////////

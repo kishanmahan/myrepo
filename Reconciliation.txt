@@ -1,0 +1,44 @@
+()SailPoint IdentityIQ (IIQ) me Reconciliation ka matlab hota hai:-
+👉 Target systems (jaise AD, DB, Apps) se data laake IdentityIQ ke andar stored data se compare karna,
+aur differences ko update/identify karna.
+
+🔹 IIQ me Reconciliation ka purpose:-
+Users ke accounts ka actual status check karna
+Missing entitlements detect karna
+Unauthorized access pakadna
+Data ko sync me rakhna
+
+🔹 Step-by-step flow:-
+()Aggregation:-
+IIQ target system se data fetch karta hai
+(Accounts, Entitlements, Groups)
+
+()Correlation:-
+Ye decide hota hai ki kaunsa account kis Identity ka hai
+(jaise email ya employeeId se match)
+
+()Comparison (Reconciliation):-
+IIQ ka data vs system ka data compare hota hai
+
+()Difference detect:-
+Kya extra access hai?
+Kya missing access hai?
+
+()Update / Action:-
+Identity Cube update hota hai
+Policy violations detect hote hain
+Provisioning trigger ho sakta hai
+
+🔹 Example:-
+Maan lo:-
+👤 User: Ravi
+
+IIQ me: Ravi ke paas "Finance Access" hai
+Actual system me: Ravi ke paas "Finance + Admin Access" hai
+
+👉 Reconciliation bolega:-
+"Admin Access extra hai ❌"
+
+➡️ Ab IIQ:-
+Violation create karega
+Ya provisioning se access remove karega

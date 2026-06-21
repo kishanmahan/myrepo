@@ -1,0 +1,378 @@
+()🔷 ProvisioningPolicy kya hai?
+👉 ProvisioningPolicy =
+Rules / Template / Form jo decide karta hai ki
+➡️ Account create/update/delete karte time kaun-kaun se fields chahiye
+➡️ Kaise values fill hongi
+➡️ Mandatory kya hai
+📌 Simple line me:-
+👉 “Account banate waqt kya data dena hai aur kaise dena hai” — ye ProvisioningPolicy decide karta hai.
+
+🔷 Real Life Example:-
+Maan le tu user ko Active Directory me create kar raha hai:
+To system bolega:-
+username chahiye
+password chahiye
+email chahiye
+OU (Organizational Unit) chahiye
+👉 Ye sab kisne define kiya?
+➡️ ProvisioningPolicy
+-----------------------------------------------------
+🔷 Ye kya karta hai:-
+1️⃣ Form define karta hai
+Account create karte time ka UI form
+Kaun fields dikhenge
+
+2️⃣ Mandatory fields decide karta hai:-
+Example:-
+username → required
+password → required
+phone → optional
+
+3️⃣ Default values set karta hai:-
+Example:-
+country = "India"
+status = "Active"
+
+4️⃣ Value generation logic:-
+Example:-
+username = firstname + lastname
+email = firstname.lastname@company.com
+
+5️⃣ Validation karta hai:-
+Example:-
+password length >= 8
+email valid format
+
+6️⃣ Identity se mapping karta hai:-
+Example:-
+Identity.firstname → account.givenName
+Identity.email → account.mail
+----------------------------------------------------------
+🔷 ProvisioningPolicy ke andar kya hota hai?
+Internally ye object hota hai:-
+
+🔹 1. Fields (sabse important):-
+Har field ek object hota hai:-
+name → "username"
+type → string
+required → true/false
+defaultValue → "test"
+source → identity attribute
+
+🔹 2. Field Attributes:-
+Har field ke andar:-
+displayName
+description
+required flag
+multiValued ya nahi
+readOnly ya editable
+
+🔹 3. Field Mapping:-
+Identity → Target system mapping
+
+🔹 4. Rules/Scripts:-
+Custom logic:-
+username generate karna
+password generate karna
+
+🔹 5. Operation Type
+--------------------------------------------------------
+🔷 Flow me kaise use hota hai?
+Jab tu ye karta hai:-
+ProvisioningPlan plan = new ProvisioningPlan();
+👉 System internally karta hai:-
+Application check karta hai
+ProvisioningPolicy uthata hai
+Required fields validate karta hai
+Missing values fill karta hai
+AccountRequest banata hai
+
+🔷 DB me store hota hai kya?
+👉 ✅ Haan bhai, store hota hai
+📍 Table:-
+spt_provisioning_policy
+DB me kya store hota hai?
+policy name
+application reference
+XML format me fields
+rules / mappings
+------------------------------------------------------------
+🔷 Developer likh ye sakta hai?
+👉 ❌ Direct code me nahi likhta usually
+👉 ✅ UI ya XML config se define hota hai
+-----------------------------------------------------------------------------------------------------------------------
+🔷 1️⃣ Operation Type kya hota hai?
+👉 Operation Type =
+Ye batata hai ki account pe kaunsa action perform ho raha hai,
+
+🔥 Main Operation Types:-
+✅ 1. CREATE:-
+👉 Naya account banana
+Use case:-
+New employee join hua
+Account AD / DB / App me create hoga
+Example:-
+accountRequest.setOperation(AccountRequest.Operation.Create);
+
+✅ 2. MODIFY:-
+👉 Existing account update karna
+Use case:-
+Role change
+Email update
+Department change
+accountRequest.setOperation(AccountRequest.Operation.Modify);
+
+✅ 3. DELETE:-
+👉 Account remove karna
+Use case:-
+Employee resign
+Account delete
+accountRequest.setOperation(AccountRequest.Operation.Delete);
+
+✅ 4. DISABLE:-
+👉 Account disable (soft delete)
+Use case:-
+Temporary block
+Leave pe hai user
+accountRequest.setOperation(AccountRequest.Operation.Disable);
+
+✅ 5. ENABLE:-
+👉 Disabled account ko wapas active karna
+accountRequest.setOperation(AccountRequest.Operation.Enable);
+
+✅ 6. LOCK / UNLOCK:-
+👉 Account lock ya unlock
+-----------------------------------------------------------------------------------------------------------
+🔷 2️⃣ Types of ProvisioningPolicy:-
+👉 Ye Operation Type ke basis pe hi divide hoti hai 🔥
+
+🔥 1. Create ProvisioningPolicy:-
+👉 Jab Operation = CREATE
+
+Ye kya karta hai?
+Required fields check karta hai
+Default values fill karta hai
+Username/password generate karta hai
+📌 Example fields:-
+username (required)
+password (required)
+email
+
+🔥 2. Modify ProvisioningPolicy:-
+👉 Jab Operation = MODIFY
+
+Ye kya karta hai?
+Sirf update hone wale fields handle karta hai
+Sab fields required nahi hote
+📌 Example:-
+phone update
+department change
+
+🔥 3. Delete ProvisioningPolicy:-
+👉 Jab Operation = DELETE
+Ye kya karta hai?
+Usually minimal data chahiye
+Sirf identify karta hai account ko
+
+📌 Example:-
+nativeIdentity (username)
+
+🔥 4. Disable / Enable Policy:-
+👉 Jab Operation = DISABLE / ENABLE
+Ye kya karta hai?
+Account status change karta hai
+Mostly extra fields nahi chahiye
+
+🔥 5. Role-Based ProvisioningPolicy:-
+👉 Jab koi Role assign hota hai
+Ye kya karta hai?
+Automatically account create/update karta hai
+Role ke basis pe fields fill hoti hain
+
+📌 Example:-
+Role = "Manager" ko assign kiya toh 
+→ system automatically:-
+access dega
+attributes set karega
+------------------------------------------------------------------------------------------------------------
+🔥 1️⃣ Basic Methods:-
+✅ getName():-
+👉 Policy ka naam deta hai
+String name = policy.getName();
+
+✅ getApplication():-
+👉 Ye batata hai kis application ke liye policy hai,
+Application app = policy.getApplication();
+
+✅ getType():-
+👉 Policy ka type (Create / Modify)
+String type = policy.getType();
+
+✅ setType(String type):-
+policy.setType("Create");
+---------------------------------------------------------------
+🔥 2️⃣ Field Handling Methods:-
+Field Handling Methods – Kyu use hote hain?
+👉 Simple line:-
+ProvisioningPolicy ke fields ko read / check / modify karne ke liye.
+
+✅ 1. Required fields check karne ke liye:-
+👉 Example:-
+username required hai ya nahi
+password missing hai ya nahi
+
+✅ 2. Dynamic logic likhne ke liye:-
+👉 Example:-
+agar username nahi diya → generate karo
+agar email nahi hai → default do
+
+✅ 3. Debugging ke liye:-
+👉 Logs me dekhte hain:-
+kaun-kaun fields aa rahe hain
+required kya hai
+
+✅ 4. Mapping samajhne ke liye:-
+👉 Identity → Account mapping kaise ho rahi hai
+
+🔥 Important Field Handling Methods:-
+✅ getFields():-
+👉 Sare fields deta hai
+
+✅ getField("name"):-
+👉 Specific field deta hai
+
+✅ addField():-
+👉 Runtime me field add kar sakte ho (rare case)
+
+✅ removeField():-
+👉 Field hata sakte ho
+
+🔷 💻 Code + Output Example:-
+ProvisioningPolicy policy = application.getProvisioningPolicy();
+
+for (ProvisioningPolicy.Field field : policy.getFields()) {
+
+    System.out.println("Field Name: " + field.getName());
+    System.out.println("Required: " + field.isRequired());
+    System.out.println("Type: " + field.getType());
+    System.out.println("Default Value: " + field.getValue());
+    System.out.println("------");
+}
+🖥️ Output (Example):-
+Field Name: username
+Required: true
+Type: string
+Default Value: null
+------
+
+Field Name: password
+Required: true
+Type: string
+Default Value: null
+------
+
+Field Name: email
+Required: false
+Type: string
+Default Value: test@gmail.com
+------
+---------------------------------------------------------------
+🔥 3️⃣ Field Class ke Methods (Nested Class):-
+👉 ProvisioningPolicy.Field sabse important hai 🔥
+
+✅ getName():-
+field.getName();
+
+✅ getDisplayName():-
+field.getDisplayName();
+
+✅ isRequired():-
+👉 Mandatory hai ya nahi
+field.isRequired();
+
+✅ setRequired(boolean):-
+field.setRequired(true);
+
+✅ getType():-
+👉 Data type (string, boolean, etc.)
+field.getType();
+
+✅ getValue():-
+👉 Default value ya assigned value
+Object value = field.getValue();
+
+✅ setValue(Object value)
+field.setValue("testUser");
+
+✅ getSource():-
+👉 Value kahan se aayegi (Identity attribute etc.)
+field.getSource();
+
+✅ setSource(String source):-
+field.setSource("identity.firstname");
+
+✅ isMultiValued():-
+field.isMultiValued();
+
+✅ isReadOnly():-
+field.isReadOnly();
+
+🔥 4️⃣ Advanced Methods (Real Use Cases)
+✅ apply():-
+👉 Policy ko apply karta hai plan pe (internally use hota hai)
+policy.apply(plan);
+📌 Note: Mostly internal use, directly rarely call karte hain
+
+✅ validate():-
+👉 Fields validate karta hai
+policy.validate();
+
+✅ toXml():-
+👉 Policy ko XML me convert karta hai
+String xml = policy.toXml();
+
+✅ fromXml():-
+👉 XML se policy banata hai
+ProvisioningPolicy policy = ProvisioningPolicy.fromXml(xml);
+
+🔥 5️⃣ Utility Methods:-
+✅ getDescription():-
+policy.getDescription();
+
+✅ setDescription():-
+policy.setDescription("Create Account Policy");
+
+✅ isEmpty():-
+👉 Check karta hai koi field hai ya nahi
+policy.isEmpty();
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+🔷 🔥 validate() kya karta hai?
+👉 validate() = Policy ke rules ke against data check karta hai
+📌 Simple:-
+👉 “Jo data diya hai wo sahi hai ya nahi”
+🔥 validate() kya kya check karta hai?
+
+✅ 1. Required fields present hai ya nahi
+👉 agar missing:
+❌ Error throw karega
+
+✅ 2. Data type check
+👉 Example:
+string me number na aa jaye
+boolean valid ho
+
+✅ 3. Value constraints
+👉 Example:
+password length
+allowed values
+
+✅ 4. Mapping correctness
+👉 source valid hai ya nahi
+(identity attribute exist karta hai ya nahi)
+
+✅ 5. Multi-valued fields check
+👉 agar list expected hai to list hi aaye
+
+✅ 6. Read-only fields modify na ho
+👉 agar readOnly hai → change nahi hone dega.
+---------------------------------------------------------------------------------------------------------------------------

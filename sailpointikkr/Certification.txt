@@ -1,0 +1,175 @@
+📘 CERTIFICATION – ALL METHODS & TYPES:-
+🟢 1️⃣ Manager Certification
+Kya hota hai?
+Manager apne team members ka access review karta hai.
+Review karta hai:-
+Accounts
+Entitlements
+Roles
+
+Actions:-
+✔ Approve
+❌ Revoke
+💬 Add comment
+
+Use case:-
+SOX / Internal audit compliance
+
+🟢 2️⃣ Application Owner Certification
+Kya hota hai?
+Application owner review karta hai:-
+Kaun users us application me access rakhte hain
+
+Owner confirm karta hai:-
+Business justified hai ya nahi
+
+🟢 3️⃣ Role Certification
+Review hota hai:-
+Role members
+Role ke entitlements
+
+Check:-
+Role sahi bana hai?
+Koi extra entitlement to nahi?
+
+🟢 4️⃣ Entitlement (Managed Attribute) Certification
+Review hota hai:-
+Specific group / privilege
+High-risk entitlements
+
+Example:-
+Domain Admin group review.
+
+🟢 5️⃣ Account Certification
+Review hota hai:-
+Application accounts
+Especially orphan accounts
+
+Check:-
+Account active hona chahiye?
+Disable karna hai?
+
+🟢 6️⃣ Identity Certification
+Review hota hai:-
+Entire identity access
+All linked accounts
+All roles
+Risk score
+Most comprehensive review type 🔥
+
+🟢 7️⃣ Targeted Certification
+Specific criteria based:-
+Department = Finance
+Location = US
+High-risk users only
+Filter-based certification.
+
+🟢 8️⃣ Event-Based Certification
+Trigger hota hai:-
+Joiner
+Mover
+Policy violation
+High-risk detection
+Real-time governance.
+
+🟢 9️⃣ Policy Violation Certification
+If SoD violation detect hota hai:-
+→ Certification generate hoti hai
+→ Reviewer decide karega approve ya revoke
+
+🟢 🔟 Risk-Based Certification
+High risk identity →
+Automatic certification trigger
+Risk score based review.
+
+🟢 11️⃣ Periodic Certification
+Schedule based:-
+Monthly
+Quarterly
+Yearly
+Compliance regulation ke liye.
+
+🟢 12️⃣ Continuous Certification
+Rolling basis pe:-
+New access granted
+Immediately review required
+Advanced governance model.
+
+🟢 13️⃣ Ad-Hoc Certification
+Manual create ki jati hai:-
+Audit demand
+Investigation
+Emergency review
+
+🟢 14️⃣ Hierarchical Certification
+Multi-level review:-
+Manager →
+Application owner →
+Security team
+
+🟢 15️⃣ Delegated Certification
+If reviewer unavailable:-
+Delegate to another user
+Temporary reassignment
+
+🟢 16️⃣ Revocation-Based Certification
+If revoke select kare:-
+→ Deprovision trigger
+→ Access remove
+→ Audit log store
+
+🟢 17️⃣ Expiry-Based Review
+Temporary access expire hone se pehle:-
+→ Review trigger
+→ Extend ya revoke
+
+🟢 18️⃣ Campaign-Based Certification
+Large organization wide campaign:-
+All employees
+All apps
+Defined timeframe
+Used in audits.
+
+🟢 19️⃣ Automated Decision Certification
+Based on rule:-
+Low risk → Auto approve
+High risk → Manual review
+
+🟢 20️⃣ Exception Certification
+If violation accepted:-
+Mitigation record store
+Justification mandatory
+Audit safe.
+
+🟢 Certification Actions
+During review reviewer kar sakta hai:-
+✔ Approve
+❌ Revoke
+↩ Reassign
+⏳ Delegate
+💬 Comment
+
+🟢 Certification Workflow
+Flow:-
+Campaign create →
+Reviewer assign →
+Access review →
+Decision →
+Provisioning trigger (if revoke) →
+Audit store
+
+🟢 Certification Evidence
+Stored:-
+Who reviewed
+When reviewed
+What decision
+Justification comment
+Provisioning status
+Audit ke liye critical 🔥
+
+🟢 Certification Reports
+Generate kar sakte ho:-
+Completed campaigns
+Open reviews
+Revoked access
+High-risk identities

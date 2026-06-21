@@ -1,0 +1,257 @@
+()ProvisioningRule kya karta hai?
+--Provisioning Rule SailPoint IdentityIQ me ek aisa rule hota hai jo identity provisioning ke time execute hota hai 
+— jab bhi kisi user ke account me create / update / disable / delete operation hota hai.
+
+🔹 Provisioning Rule kya karta hai?
+Account create karna (Create)
+Account update karna (Update)
+Account disable / enable karna
+Account delete karna
+Attribute modify karna (jaise email, role, group)
+Target system ke request ko modify karna
+
+🔹 Kab execute hota hai?
+Provisioning Rule tab execute hota hai jab:-
+Workflow se provisioning request jaati hai
+Entitlement assign / remove hota hai
+Identity update hoti hai
+Role assignment hota hai
+Access request approve hota hai
+
+🔹 Kaunse objects milte hain?
+Provisioning Rule me generally ye objects milte hain:-
+ProvisioningPlan
+ProvisioningPlan.AccountRequest
+ProvisioningPlan.AttributeRequest
+Application
+Identity
+ProvisioningResult
+
+🔹 Basic Example (BeanShell Style):-
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.Application;
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.api.SailPointContext;
+
+ProvisioningPlan plan = (ProvisioningPlan) args.get("plan");
+SailPointContext context = (SailPointContext) args.get("context");
+
+List accountRequests = plan.getAccountRequests();
+
+for (Object obj : accountRequests) {
+    AccountRequest accReq = (AccountRequest) obj;
+
+    System.out.println("Operation: " + accReq.getOperation());
+    System.out.println("Application: " + accReq.getApplication());
+    
+    List attrRequests = accReq.getAttributeRequests();
+
+    for (Object attrObj : attrRequests) {
+        AttributeRequest attrReq = (AttributeRequest) attrObj;
+
+        System.out.println("Attribute: " + attrReq.getName());
+        System.out.println("Value: " + attrReq.getValue());
+    }
+}
+return plan;
+------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="ENT_JDBC_Provisioning_Rule" type="Provisioning">
+  <Description>
+    Ye rule Provisioning Plan ko SQL queries mein convert karta hai aur 
+    JDBC connection ka use karke target database mein execute karta hai.
+  </Description>
+  <Signature returnType="ProvisioningResult">
+    <Inputs>
+      <Argument name="plan" type="sailpoint.object.ProvisioningPlan" />
+      <Argument name="application" type="sailpoint.object.Application" />
+      <Argument name="schema" type="sailpoint.object.Schema" />
+      <Argument name="connection" type="java.sql.Connection">
+        <Description>A connection object to connect to database.</Description>
+      </Argument>
+    </Inputs>
+  </Signature>
+  <Source>
+  // 1. Explicit Imports (No Wildcards)
+  import java.sql.Connection;
+  import java.sql.PreparedStatement;
+  import java.sql.SQLException;
+  import sailpoint.object.ProvisioningPlan;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import sailpoint.object.ProvisioningPlan.AttributeRequest;
+  import sailpoint.object.ProvisioningResult;
+  import org.apache.commons.logging.Log;
+  import org.apache.commons.logging.LogFactory;
+
+  // 2. Logger Setup
+  Log logger = LogFactory.getLog("custom.rule.JDBCProvisioning");
+  
+  // Rule hamesha ProvisioningResult return karta hai
+  ProvisioningResult result = new ProvisioningResult();
+
+  if (plan == null) {
+      logger.error("Provisioning Plan null hai!");
+      result.setStatus(ProvisioningResult.STATUS_FAILED);
+      return result;
+  }
+
+  PreparedStatement statement = null;
+
+  try {
+      // 3. Plan ke andar se Account Requests nikalna
+      for (AccountRequest accReq : plan.getAccountRequests()) {
+          
+          // Identity ka asil ID (jaise E12345)
+          String nativeIdentity = accReq.getNativeIdentity();
+          AccountRequest.Operation op = accReq.getOperation();
+          
+          logger.debug("Processing " + op + " request for Account: " + nativeIdentity);
+
+          // ----------------------------------------------------
+          // CASE 1: CREATE ACCOUNT (Naya user database me dalna)
+          // ----------------------------------------------------
+          if (AccountRequest.Operation.Create.equals(op)) {
+              
+              String firstName = "";
+              String lastName = "";
+              String department = "";
+
+              // Plan se attribute values nikalna
+              for (AttributeRequest attrReq : accReq.getAttributeRequests()) {
+                  String attrName = attrReq.getName();
+                  Object attrValue = attrReq.getValue();
+
+                  if ("FIRST_NAME".equals(attrName)) firstName = (String) attrValue;
+                  else if ("LAST_NAME".equals(attrName)) lastName = (String) attrValue;
+                  else if ("DEPARTMENT".equals(attrName)) department = (String) attrValue;
+              }
+
+              // 4. SQL Query Banana aur Execute Karna
+              String sql = "INSERT INTO USERS_TABLE (EMP_ID, FIRST_NAME, LAST_NAME, DEPARTMENT, STATUS) VALUES (?, ?, ?, ?, 'Active')";
+              
+              statement = connection.prepareStatement(sql);
+              statement.setString(1, nativeIdentity);
+              statement.setString(2, firstName);
+              statement.setString(3, lastName);
+              statement.setString(4, department);
+
+              int rows = statement.executeUpdate();
+              
+              if (rows > 0) {
+                  logger.info("Successfully created account in DB for " + nativeIdentity);
+                  result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+              } else {
+                  logger.error("Insert query failed for " + nativeIdentity);
+                  result.setStatus(ProvisioningResult.STATUS_FAILED);
+              }
+          }
+          
+          // Iske baad aap MODIFY, DELETE, ENABLE/DISABLE ke if-else conditions lagayenge...
+          // else if (AccountRequest.Operation.Modify.equals(op)) { ... }
+      }
+
+  } catch (Exception e) {
+      logger.error("Provisioning Exception: " + e.getMessage(), e);
+      result.setStatus(ProvisioningResult.STATUS_FAILED);
+      result.addError(e);
+  } finally {
+      // 5. Memory Management: Database objects close karna bohot zaroori hai
+      if (statement != null) {
+          try {
+              statement.close();
+          } catch (SQLException sqle) {
+              logger.error("Statement close karne mein error: " + sqle.getMessage());
+          }
+      }
+      // Note: Hum 'connection' ko close nahi karte kyunki SailPoint usko khud manage karta hai.
+  }
+
+  return result;
+  </Source>
+</Rule>
+//////////*
+🔹 1️⃣ SQL Query String:-
+String sql = "INSERT INTO USERS_TABLE (EMP_ID, FIRST_NAME, LAST_NAME, DEPARTMENT, STATUS) VALUES (?, ?, ?, ?, 'Active')";
+👉 Kya hai:-
+Ye ek SQL query string hai
+USERS_TABLE me data insert karega
+
+👉 Columns:-
+EMP_ID
+FIRST_NAME
+LAST_NAME
+DEPARTMENT
+STATUS
+
+👉 Values:-
+? → placeholders (dynamic values)
+'Active' → fixed value (hardcoded)
+
+✔ Matlab:-
+4 values runtime pe aayengi
+1 value fixed hai (Active)
+---------------------------------------
+🔹 2️⃣ PreparedStatement create karna:-
+statement = connection.prepareStatement(sql);
+👉 Kya hota hai:-
+connection → database connection object
+prepareStatement(sql) → SQL ko once compile karta hai
+
+✔ Fayda:-
+Fast execution
+SQL injection se protection.
+--------------------------------------
+🔹 3️⃣ Parameter set karna:-
+statement.setString(1, nativeIdentity);
+
+👉 Matlab:-
+? ke position pe value set kar rahe ho
+
+👉 Index 1:-
+First ?
+
+👉 Value:-
+nativeIdentity
+-----------------------------------------------
+statement.setString(2, firstName);
+👉 Second ? me firstName
+statement.setString(3, lastName);
+
+👉 Third ? me lastName
+statement.setString(4, department);
+
+👉 Fourth ? me department set hojayega.
+-------------------------------------------------
+🔥 Final Query banega aisa:
+INSERT INTO USERS_TABLE 
+(EMP_ID, FIRST_NAME, LAST_NAME, DEPARTMENT, STATUS)
+VALUES ('101', 'John', 'Doe', 'IT', 'Active');
+----------------------------------------------------
+🔹 4️⃣ Query execute karna:-
+int rows = statement.executeUpdate();
+
+👉 Kya karta hai:-
+Query ko database me run karta hai
+
+👉 executeUpdate():-
+INSERT / UPDATE / DELETE ke liye use hota hai
+---------------------------------------------------
+🔹 5️⃣ Return value (rows):-
+👉 rows kya hai?
+
+✔ Ye batata hai:-
+Kitni rows database me insert/update/delete hui
+
+👉 Example:-
+int rows = statement.executeUpdate();
+System.out.println(rows);
+
+✔ Output:-
+1
+
+👉 Matlab:-
+1 row successfully insert hui
+-------------------------------------------------------

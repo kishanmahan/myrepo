@@ -1,0 +1,139 @@
+🔹 LifecycleEvent kya hai?
+LifecycleEvent SailPoint me Identity ke lifecycle me hone wale changes ko represent karta hai.
+Jab identity create, update, disable, delete hoti hai → ek LifecycleEvent generate hota hai,
+Ye events Identity Governance ke liye track aur trigger hote hain.
+
+🔹 LifeCycleEvent ka kaam:-
+()Track Identity Changes:
+Kaun sa identity ka kya change hua
+Example: email change, role assign, manager change.
+
+()Trigger Policies / Rules:
+Approval workflow trigger karna
+Notifications bhejna.
+
+()Audit & Reporting:
+Historical changes record rakhna
+Compliance / audit ke liye use.
+
+🔹 LifecycleEvent ke Types (Common):-
+Event Type	           Kya hota hai
+CREATE	          Nayi identity create hui
+MODIFY/UPDATE	  Existing identity me change hua
+DISABLE	          Identity temporarily disable hui
+DELETE	          Identity delete hui
+ENABLE	          Identity re-enable hui.
+
+✅ Full Methods:-
+getType()
+setType(LifecycleEventType type)
+getIdentity()
+setIdentity(Identity identity)
+getTimestamp()
+setTimestamp(Date timestamp)
+getAttributes()
+setAttributes(Map<String, Object> attributes)
+getPreviousValues()
+setPreviousValues(Map<String, Object> previousValues)
+getNewValues()
+setNewValues(Map<String, Object> newValues)
+getEventId()
+setEventId(String eventId)
+clone()
+equals(Object obj)
+hashCode()
+toString()
+-------------------------------------------------------------------------------------------------------------------
+1️⃣ getType() & setType(LifecycleEventType type):-
+Kaam: Event ka type set aur get karne ke liye (CREATE, UPDATE, DELETE, etc.)
+LifecycleEvent event = new LifecycleEvent();
+event.setType(LifecycleEventType.CREATE);
+System.out.println(event.getType());
+Output:-
+CREATE
+
+2️⃣ getIdentity() & setIdentity(Identity identity):-
+Kaam: Kaun si identity pe event hua usko set/get karne ke liye
+Identity user = new Identity("Kishan");
+event.setIdentity(user);
+System.out.println(event.getIdentity().getName());
+Output:-
+Kishan
+
+3️⃣ getTimestamp() & setTimestamp(Date timestamp):-
+Kaam: Event kab hua uska timestamp set/get karna
+Date now = new Date();
+event.setTimestamp(now);
+System.out.println(event.getTimestamp());
+Output:-
+Tue Mar 21 11:45:30 IST 2026
+
+4️⃣ getAttributes() & setAttributes(Map<String, Object> attributes):-
+Kaam: Event ke saath associated attributes store karna
+Map<String, Object> attrs = new HashMap<>();
+attrs.put("email", "kishan@example.com");
+event.setAttributes(attrs);
+System.out.println(event.getAttributes());
+Output:-
+{email=kishan@example.com}
+
+4️⃣ getAttributes() & setAttributes(Map<String, Object> attributes):-
+Kaam: Event ke saath associated attributes store karna
+Map<String, Object> attrs = new HashMap<>();
+attrs.put("email", "kishan@example.com");
+event.setAttributes(attrs);
+System.out.println(event.getAttributes());
+Output:-
+{email=kishan@example.com}
+
+5️⃣ getPreviousValues() & setPreviousValues(Map<String, Object> previousValues):-
+Kaam: Event se pehle identity ke purane values
+Map<String, Object> prev = new HashMap<>();
+prev.put("email", "old@example.com");
+event.setPreviousValues(prev);
+System.out.println(event.getPreviousValues());
+Output:-
+{email=old@example.com}
+
+6️⃣ getNewValues() & setNewValues(Map<String, Object> newValues):-
+Kaam: Event ke baad identity ke naye values
+Map<String, Object> newVal = new HashMap<>();
+newVal.put("email", "kishan@example.com");
+event.setNewValues(newVal);
+System.out.println(event.getNewValues());
+Output:-
+{email=kishan@example.com}
+
+7️⃣ getEventId() & setEventId(String eventId):-
+Kaam: Event ka unique ID set/get karne ke liye
+event.setEventId("EVT12345");
+System.out.println(event.getEventId());
+Output:-
+EVT12345
+
+8️⃣ clone():-
+Kaam: Event ka duplicate create karta hai
+LifecycleEvent copy = event.clone();
+System.out.println(copy.getEventId());
+Output:-
+EVT12345
+
+9️⃣ equals(Object obj):-
+Kaam: Do events same hai ya nahi check karta hai
+LifecycleEvent e2 = event.clone();
+System.out.println(event.equals(e2));
+Output:-
+true
+
+10️⃣ hashCode():-
+Kaam: Event ka unique hash code generate karta hai
+System.out.println(event.hashCode());
+Output (example):-
+12345678
+
+11️⃣ toString():-
+Kaam: Event ka readable representation return karta hai
+System.out.println(event.toString());
+Output (example):-
+LifecycleEvent[eventId=EVT12345, type=CREATE, identity=Kishan, timestamp=Tue Mar 21 11:45:30 IST 2026]
+----------------------------------------------------------------------------------------------------------------------------------------

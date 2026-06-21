@@ -1,0 +1,141 @@
+()CertificationManager kya hai?
+--🔹 1️⃣ CertificationManager kya hai?
+CertificationManager = wo object ya banda jo certification process ka controller / manager hota hai.
+Ye ensure karta hai ki:
+Certification campaign (Certification) sahi tarah se run ho
+Reviewers aur entities assign ho rahe hain
+Status aur escalation rules properly follow ho rahe hain.
+
+🔹 2️⃣ CertificationManager ka kaam:-
+()Flow control:-
+Decide karta hai kaunse reviewers kaunse entities ko review karenge
+()Escalation handling:-
+Agar reviewer time me decision na le → escalate to next level
+()Notifications:-
+Reviewers ko remind karna, campaign start/end alerts
+()Metrics & Reporting:-
+Kaun entity complete hua, kaun pending, aggregate stats.
+
+3️⃣ Usage Example:-
+Agar ek company ke 5 employees ke training scores hain: [70, 80, 90, 100, 85]
+Count = 5
+Sum = 70+80+90+100+85 = 425
+Average = 425 ÷ 5 = 85
+Min = 70
+Max = 100
+Ye sab aggregate stats ke examples hain.
+
+1️⃣ Common Aggregate Stats Methods in CertificationManager:-
+Method	                            Kya karta hai	                       Example Output
+getTotalCertifications()	Total certifications available	                     50
+getCompletedCount()	       Kitne certifications complete ho chuke	             35
+getPendingCount()	       Kitne certifications pending hain	                 15
+getApprovedCount()	       Total approved certification items	                 30
+getRevokedCount()	        Total revoked certification items	                  5
+getCompletionPercentage()	Overall % of completed certifications	             70%
+
+2️⃣ Usage Example (Pseudo-code):-
+CertificationManager manager = new CertificationManager();
+int total = manager.getTotalCertifications();
+int completed = manager.getCompletedCount();
+int pending = manager.getPendingCount();
+int approved = manager.getApprovedCount();
+int revoked = manager.getRevokedCount();
+double completionPercent = manager.getCompletionPercentage();
+
+System.out.println("Total: " + total);
+System.out.println("Completed: " + completed);
+System.out.println("Pending: " + pending);
+System.out.println("Approved: " + approved);
+System.out.println("Revoked: " + revoked);
+System.out.println("Completion %: " + completionPercent);
+
+Output Example:-
+Total: 50
+Completed: 35
+Pending: 15
+Approved: 30
+Revoked: 5
+Completion %: 70.0
+
+🔹 3️⃣ CertificationManager ke andar kya hota hai?
+Field/Attribute	                         Description
+id	                           Unique ID of CertificationManager
+name	                          Name / label of manager
+assignedCertifications	      List of Certifications ye manager monitor kar raha hai
+reviewers	                         List of assigned reviewers
+status	                             Active / Inactive / Paused
+escalationRules	                     Rules for pending reviews
+createdDate	                             Kab create hua
+modifiedDate	                       Last modified date
+
+🔹 4️⃣ CertificationManager ke Methods (SailPoint style):-
+Basic Info
+getId()       // Unique ID
+setId(String id)
+hasId()
+getName()
+setName(String name)
+hasName()
+Assigned Certifications
+getAssignedCertifications()       // List<Certification>
+setAssignedCertifications(List<Certification>)
+hasAssignedCertifications()
+Reviewers
+getReviewers()       // List<String> or List<Identity>
+setReviewers(List<Identity>)
+hasReviewers()
+Status
+getStatus()          // Active / Inactive
+setStatus(String status)
+hasStatus()
+Escalation Rules
+getEscalationRules()     // List<EscalationRule>
+setEscalationRules(List<EscalationRule>)
+hasEscalationRules()
+Dates
+getCreatedDate()
+setCreatedDate(Date date)
+getModifiedDate()
+setModifiedDate(Date date)
+Utility
+toString()
+equals(Object obj)
+hashCode()
+---------------------------------------------------------------------------------------------------------------------------------
+🔹 1️⃣ Certification Status:-
+Status	                 Meaning
+Pending:-----------Campaign create hua, abhi run nahi hua.
+In Progress:-------Campaign start ho chuka, reviewers review kar rahe hain.
+Completed:---------Sab CertificationEntities ka review complete ho gaya.
+Closed:------------Campaign officially close ho gaya.
+Cancelled:---------Admin ne campaign cancel kar diya.
+Failed:------------Campaign execution me koi error aaya.
+🔹 2️⃣ CertificationEntity Status:-
+Status	              Meaning
+Pending:--------Entity review ke liye wait kar rahi hai
+In Progress:----Reviewer ne review start kiya hai
+Completed:------Entity ka review complete ho gaya
+Approved:-------Reviewer ne approve kiya (item-wise)
+Revoked:--------Reviewer ne access revoke karne ka decision diya
+Escalated:------Reviewer ne timely decision nahi liya, escalation hua
+🔹 3️⃣ CertificationItem Status:-
+Status	             Meaning
+Pending:------Item review ke liye wait kar raha hai
+Approved:-----Reviewer ne approve kiya
+Revoked:------Reviewer ne revoke kiya
+Exception:----Item me koi issue ya exception aaya
+Escalated:----Reviewer action nahi liya, item escalate hua
+🔹 4️⃣ CertificationManager Status:-
+Status	              Meaning
+Active:-----Manager currently campaign ko monitor kar raha hai.
+Inactive:---Manager temporarily inactive hai
+Paused:-----Certification process temporarily paused hai
+Completed:---Manager ke under sab campaigns complete ho gaye
+🔹 5️⃣ CertificationSchedule Status:-
+Status	            Meaning
+Scheduled:---Campaign future me run hoga
+Running:-----Campaign abhi chal raha hai
+Completed:---Campaign successfully complete ho gaya
+Cancelled:---Campaign cancel kar diya gaya.
+---------------------------------------------------------------------------------------------------------------------------

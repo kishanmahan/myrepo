@@ -1,0 +1,3998 @@
+⚙️ QuickLink Rule kya hai?
+
+--------------------
+()identity cube->it contains identity'attribute,entitlements,applications,application account,policy,risk,event,userright.
+()provissioning->any changes from identity iiq to target system.
+()account provissioning->create account,enable,disable,update account,unlock,change-password,delete,account.
+()group provisioning->create group,update group.
+()quicklinks->tab/button/link in iiq is called quicklinks.
+
+()how to open debug page?
+->http://localhost:8080/identity/debug/
+()doc page sailpoint ke sare methods aur classes batata hai?
+->http://localhost:8080/identity iq/doc/javadoc
+-----------------------
+()Architecture sailpoint:-
+->identity ipp application hai jo database se hibernate file ke through connect hota hai,aur identity iq application connector ke through 
+application/apps se connect hota hai.
+
+()kya download kre?
+->identity=7.2.zip->
+->iiq software.zip->
+->jdk1.8.0_251->
+->jre1.8.0_251.
+
+()create your oracle account->download jre-8u202-windows-x64.exe and downloads->jdk-8u202-windows-x64.exe.
+->first go to cdrive->program-files->if you have java toh control pannel me jao->aur java 16 ko delete kardo->
+->taki naya java 17 ya 11 delete kar paye fir download me jake Jre ko click kare->install kare->ok.
+
+()search->properties->advanced-system settings->environment variable->system variables tab->new->JRE_HOME->browse directory->c:Drive->
+->program-files->Java->JRE select->ok->ok->click path in system variables tab->edit->new->%JRE_home%\bin aur->ok->ok->ok->cmd->java-version->enter.
+
+()search->properties->advanced-system settings->environment variable->system variables tab->new->JAVA_HOME->browse directory->c:Drive->
+->program-files->Java->JDK select->ok->ok->click path in system variables tab->edit->new->%JAVA_home%\bin aur->ok->ok->ok->cmd->java-version->enter.
+
+()mysql->download and setup karo.
+()mysql command line client search->enter password->root->username bhi root.
+
+(Main Steps/Instructions):-
+
+-> Open Microsoft -> Browser ->
+
+https://www.office.com
+
+-> login karo through company
+
+email -> (TCS/Asha24 wala)
+
+-> email डालो -> password daalo
+
+-> login ho jao. ->
+
+-> top left corner me 9 dots
+
+(App launcher) dikhega ->
+
+-> uspe click करो ->
+
+waha list milega ->
+
+Microsoft sharepoint -> uspe click
+
+karo -> Ab Sharepoint open
+
+ho gaya -> "Sites" ya
+
+"following" me jao -> Waha
+
+workday ya Asha24 site dhoondo
+
+-> uspe click karo ->
+
+()Image 1 (First Page):-
+-----------------------------------
+-> Document -> फिर दिखेगा ->
+
+(Star) identity-7.2.zip ->
+
+(Star) iiq software.zip ->
+
+(Star) Smash.zip -> फिर तीनो में किसी पे click करो Toh Top left में Download का button मिलेगा -> उसे Dabao और फिर तो बाकि के भी ऐसे ही Download करलो ।
+
+-> Download -> (kata hua word) iiq software (kata hua word) में right click और extract All
+
+-> Double Tap iiq software ->
+
+-> फिर mysql को Extract All
+
+-> फिर mysql-5.5.62-winx64
+
+-> Next -> Next -> complete -> install
+
+-> finish -> Next -> Next -> Next -> Next -> Next -> Next -> Next -> Next -> Next -> root -> root password username डाल फिर -> Back -> port number 3306 -> Next -> Next -> Next -> Next -> Execute .
+
+-> Window search -> mysql command line client -> root -> (kata hua) <Enter/Arrow symbol>
+
+-> show databases
+
+-> show databases ; <Enter/Arrow symbol>
+
+-> (kata hua) अगर error तो -> show databases;
+
+()Image 2 (Second Page):-
+---------------------------------
+(Star) -> Download -> identity-7.2 -> extract All -> फिर एक नया identity-7.2 के copy और उस file को -> This pc में -> C: Drive -> New folder create करो name Sailpoint -> फिर paste करदो इसमें । फिर Sailpoint folder इसी में click करो identityiq-7.2 में और cmd खोलो ->
+
+फिर -> jar -xvf identityiq.war -> <Enter/Arrow symbol> ->
+
+(Ek bada paragraph pen se kata/scribble kiya hua hai)
+
+(Star) -> this pc -> c: Drive -> Sailpoint ->
+
+-> identity-7.2 -> WEBINF ->
+
+-> database -> पुरे path को copy करो और फिर open mysql command line और -> फिर Type करो : Source + selected path paste (kata hua) करो
+
+फिर \ + name of file ->
+
+Ex -> Source C:\Sailpoint\identityiq-7.2\WEB-INF\database\create_identityiq_tables-7.2.mysql <Enter/Arrow symbol>
+
+Image 3 (Third Page)
+-> और scroll करो upssid देखो कि first दो Line error नहीं तो Database काम Perfect कर रहा है।
+
+फिर show databases ; <Enter/Arrow symbol> फिर दो databases दिखेगा पहला है identityiq और दूसरा है identityiqplugin..
+
+(Star) Download -> iiq software folder मे extract All -> फिर New file iiq software पे click -> फिर iiq software मे click -> फिर apache-tomcat-7.0.96-windows-x64 को Extract All -> फिर नये Extracted file apache-tomcat-7.0.96 को copy करो और c: Drive के Sailpoint folder के अंदर paste करदो ।
+
+(Q) -> How to host A web based tool(sailpoint) into the Application server tomcat ?
+
+(A) -> Open apache-tomcat-7.0.96 जो C: Drive के Sailpoint मे है।
+
+(Ek line pen se kaati hui hai)
+
+पहले इस Sailpoint के identity-7.2 file को copy करो और Sailpoint के apache-tomcat-7.0.96 में जाओ ->
+
+Image 1 (First Page)
+-> में webapps -> paste करदो .
+
+webapps के अंदर ।
+
+फिर webapps के अंदर जो
+
+paste किया है identityiq-7.2
+
+को Rename करदो सिर्फ
+
+identityiq .
+
+-> फिर window search में ->
+
+cmd -> Right click -> Run as
+
+administrator -> फिर type cd..
+
+<- cd.. तब-तक जब तक
+
+\window/c> से बाहर निकल जाओ
+
+और जब location C:> .
+
+फिर type -> (kata hua word)
+
+(kata hua) -> C:>cd sailpoint\
+
+apache-tomcat-7.0.96\webapps\ <Enter symbol>
+
+-> C:\sailpoint\apache-tomcat-
+
+7.0.96\webapps>cd identityiq <-
+
+-> C:\sailpoint\apache-tomcat-7.0.96
+
+\webapps\identityiq> cd WEB-INF\
+
+<-
+
+-> C:\sailpoint\apache-tomcat-
+
+7.0.96\webapps\identityiq\
+
+WEB-INF > cd bin <-
+
+-> C:\sailpoint\apache-tomcat-
+
+7.0.96\webapps\identityiq\
+
+Image 2 (Second Page)
+\WEB-INF\bin> iiq console <-
+
+-> import init.xml <-
+
+(chote aksharon mein niche) बस यही लिखना
+
+-> अगर fail हुआ Caused by !!_
+
+और last line (AbstractBatcher.java:21)
+
+तो इस line को पढ़ो -> Caused by:
+
+java.sql.BatchUpdateException:
+
+parameter of prepaid statement
+
+which is set through mysql_
+
+send_long_data() is longer
+
+than 'max_long_data_size'
+
+bytes -> means mysql database
+
+is not able to handle the things
+
+which is provided by the sailpoint-
+
+-identityiq. the memory which is not
+
+able to capture the things so you
+
+should to increase the size of
+
+memory into the mysql .
+
+-> तो फिर c: drive -> program file ->
+
+-> mysql -> MYSQL Server 5.5
+
+-> my को select कर write
+
+click -> Edit notepad++ ->
+
+-> और last में 213 line में
+
+max_allowed_packet = 32M ->
+
+save -> yes -> now save as
+
+again -> yes फिर window search
+
+में जाओ और services -> open को
+
+right click करके run as administrator
+
+(kata hua) ->
+
+Image 3 (Third Page)
+-> फिर MySQL को Right/Left
+
+click करके restart करो ।-
+
+फिर खुले हुए Administrator:
+
+command prompt - iiq console
+
+जहाँ error आया Type करें >
+
+-> या नया cmd खोलो -> cmd ->
+
+Run as administrator -> और
+
+cd.. -> cd.. तब-तक तब-तक
+
+C:> ना आ जाए ।
+
+फिर type c:>cd sailpoint\
+
+apache-tomcat-7.0.96\webapps\
+
+identityiq\WEB-INF\bin -><-
+
+-> iiq console <-
+
+-> > import init.xml <-
+
+Tomcat Server को start करो।
+
+-> This pc. -> windows (c:) ->
+
+-> Sailpoint -> apache-tomcat-7.0.96
+
+-> bin -> startup - window
+
+Batch File -> click और
+
+-> allow access -> INFO: Server startup in 5345ms
+
+-> तो आपका tomcat start हो गया । अब ->
+
+browser -> और http://localhost:8080/identityiq
+
+/ (kata hua word) search -> फिर password
+
+Image 1
+-> spadmin -> admin <-
+
+अब (Star) -> Gear box में जाओ -> global setting में जाओ -> और import from File -> choose File -> C: Drive -> sailpoint -> apache-tomcat-7.0.96 -> webapps -> identityiq -> WEB-INF -> config -> init-lcm -> open -> अब import -> Done -> फिर ≡ में जाओ देखो आ गया MyTasks QuickLinks & (Tab/button/link in identityiq) -> फिर -> Manage identity -> Manage Access तो तुम्हें logout करके login करना होगा ताकी सब दिखने लगे ।
+
+अब http://localhost:8080/identityiq/doc/javadoc और देखो क्या क्या तुमने नहीं पढ़ा है।
+
+eclipse और VS code और notepad++ Download होना चाहिए।
+
+TFS (Azure ADO) and visual studio, visual studio code.
+
+-> visual studio -> close the repo for code, provided by dev env.
+
+-> go to cmd -> run the build.bat -> build.bat. <-
+
+Image 2
+eclipse -> git hub desktop -> application.xml -> base branch ->
+
+dev -> create a branch -> syntax (Feature/bug 10101) -> Application.xml -> push origin -> it will push your code in to github ->
+
+go to github -> create pull request -> you need to assign reviewer -> merge your changes -> your changes will reflect on UI.
+
+इसको chatgpt से समझ ।
+
+-> SVN -
+
+-> Git -
+
+-> TFS -
+
+-> SSb -
+
+How to delete any object from identityiq?
+
+-> 2 Ways 1. Debug page 2. iiq console
+
+-> http://localhost:8080/identityiq/debug/debug.jsf -> <-
+
+-> फिर Object Browser में जाके
+
+Image 3
+-> फिर Application -> फिर <- -> जो तुमने बनाया है जैसे Test Application select और select action में लो right side में है Delete <-
+
+How to make application?
+
+-> http://localhost:8080/identityiq/application/applications.jsf <- ->
+
+-> Add new Application -> फिर Name -> test -> owner -> spadmin (kata hua) -> The Administrator -> Application type -> DelimitedFile -> save -> Configuration -> File Path -> C:\Training\Training Data\AuthEmployee.csv -> save.
+
+How to change database user name and password in apache tomcat?
+
+-> chat gpt
+
+(Yahan ek bada paragraph pen se kata hua hai jisme "this pc -> c drive -> sailpoint..." likha tha)
+
+Image 4
+Authoritative application kya hota hai?
+
+-> Authoritative Application = Source of truth (main data source)
+
+-> ye wo System hota hai jahan se identity ka original data aata hai.
+
+Ex -> HRSystem (SAP, workday) -> Employee database
+
+Ex -> अगर HR System में Employee add hua :-
+
+-> Sailpoint usko detect karega.
+
+-> identity create karega.
+
+-> Baaki System pe account banayega.
+
+-> iska kaam :-
+
+-> identity create / update karna.
+
+-> joiner / mover / leaver process chalana.
+
+(Star) Authoritative Application Ke important classes :-
+
+identity -> sailpoint.object.Identity
+
+-> ये class represent करती है user को (Employee).
+
+Image 5
+identityService -> sailpoint.api.IdentityService
+
+Aggregation Task -> sailpoint.task.AggregationTask
+
+-> Ye HR system se data pull karta hai.
+
+NON-Authoritative Application kya hota hai?
+
+-> NON-Authoritative = Target System (Jahan Account banega)
+
+-> ye system identity ka source nahi hota. Sirf account store karta hai.
+
+Ex -> Active Directory -> Database -> Salesforce
+
+-> iska kaam :-
+
+-> Account create / update / delete karna
+
+-> Access manage करना ।
+
+Non-Authoritative ke important classes :-
+
+link (Account) -> sailpoint.object.Link
+
+ye represent करता है user का account किसी application me.
+
+Image 6
+Application -> sailpoint.object.Application
+
+-> Application configuration store karta hai.
+
+ProvisioningPlan -> sailpoint.object.ProvisioningPlan
+
+-> Ye decide karta hai :- kya create/update/delete करना है ।
+
+Provisioner -> sailpoint.api.Provisioner
+
+(Ek line kaati hui hai)
+
+(Star) Authoritative Application :-
+
+-> Delimited file (CSV) 20% use करते है company.
+
+-> JDBC (Mysql) को 70% use करते हैं।
+
+-> Workday जहाँ Hr आपके सारे Data देखता है CSV और JDBC का ।
+
+पहले एक CSV Data file बनाओ जिसमे user का employeeId, Firstname, lastname, ManagerId, fullname, email,
+
+Image 7
+department, region, location, inactiveIdentity, jobtitle, costcenter.
+
+और 1a, James, Smith, Null, James.Smith, James.Smith@demolexample.com, Executive, Management, Americas, Austin, inactivate, L103, L07, L08, L09 " हो ।
+
+-> फिर identityiq में जाओ login करके
+
+-> फिर http://localhost:8080/identityiq/define/applications/applications.jsf
+
+-> फिर Add New Application ->
+
+-> Name -> HR Feed File
+
+-> owner -> The Administrator
+
+-> Application type -> DelimitedFile
+
+-> Configuration -> अपने आप File type के अनुसार configure होगा।
+
+-> Details -> Authoritative Application
+
+-> Revoker -> ये वो जो Approve या revoke करता है वो person दे।
+
+(kata hua word) -> और proxy Application क्या है।
+
+वो जो identityiq और Target System के बीच Data का लेन देन करता है।
+
+-> profile class ->
+
+-> वो path दो जहाँ csv file है ->
+
+-> जैसे -> Configuration -> File Path
+
+-> C:\Training\Training\Training Data\AuthEmployee.csv ->
+
+Image 8
+-> File Transport -> में हमेशा FTP और SCP में भेजे।
+
+-> FTP vs SCP ->
+
+FTP :- Purana File transfer protocol
+
+(Star) Features :-
+
+-> Port :- 21
+
+-> unsecure (data plain text me jata hai)
+
+-> username/password bhi encrypt nahi hota.
+
+-> separate control & data connection use karta hai.
+
+-> Firewall issues aa sakta hai.
+
+(Star) use :-
+
+-> Public File Sharing
+
+-> Old systems
+
+SCP :- (Secure Copy Protocol)
+
+(Star) Feature :-
+
+-> port : 22 (SSH)
+
+-> Fully secure (encrypted)
+
+-> simple command based transfer
+
+-> Ek hi connection use karta hai.
+
+(Star) use :-
+
+-> server to server transfer
+
+-> secure environments (production)
+
+Image 9
+(Star) Common terms (FTP & SCP dono me same concept) :-
+
+Host (Server Address) -> Jis system pe tu file bhejna ya lena chahta Hai.
+
+-> ip address ya domain name hota hai.
+
+-> Ex -> 192.168.1.10
+
+-> example.com / https://www.google.com/search?q=myindustry.com
+
+(kata hua text)
+
+user (username) :-> server pe login karne wala account.
+
+-> linux server ka user hota hai.
+
+-> Ex -> root, ubuntu, Kishan मतलब server पे बना हुआ account.
+
+Password -> user ka login password, same password jo server pe login के लिए use hota है।
+
+2a. -> user ----- Access
+
+-> root ----- Full control
+
+-> ubuntu ----- limited
+
+-> Kishan ----- custom
+
+Image 10
+-> फिर Delimiter मतलब " , " comma(,), "tab", "space" ही होता है।
+
+-> तो Delimeter -> [ , ] क्यों Csv file में comma ही है।
+
+-> File has Column Header or First line तो [Tick Mark] क्योंकि हाँ पहला line Column Header है।
+
+-> Display Attribute -> Full Name तो ज्यादा information दे useful information दे । और कोई भी Attribute दे सकते है जैसे Email.
+
+-> identity Attribute -> जो unique Attribute जैसे employeeId.
+
+-> identity Attribute -> employeeId
+
+-> और preview आपको बताता है कि file connected है या नहीं । और Top Ten users को दिखाता है। connected File का।
+
+-> Save -> फिर Hemanth HR feed File का Application created.
+
+-> फिर identity warehouse में जाओ -
+
+-> पहले -> identities -> identity warehouse
+
+-> यहाँ identity जो हमने बनाया वो नहीं आया तो क्या करें कि
+
+Image 1 (Page 17)
+identifier आ जाए सारे -> aggregation
+
+-> Applications -> Application Definition में जाओ -> (kata hua: Hemanth HR Feed File)
+
+-> अब Setup में जाओ ->
+
+-> Tasks में -> New task ->
+
+-> Account Aggregation -> फिर
+
+-> Standard properties -> Name ->
+
+-> task का naam जैसे -> Acc Agg - HR Feed File -> नीचे -> Right में -> Account Aggregation options के Right में ->
+
+-> Hemanth HR Feed File -> चुनो ->
+
+-> नीचे -> Save and Execute को ।
+
+17
+
+-> फिर Task Results में जाओं और देखो
+
+-> फिर AccAgg-HR Feed File को खोलो -> और देखो क्या कर रहा है निचे Attribute में ।
+
+-> फिर identifier -> identity Warehouse -> देखे । फिर कोई भी identity पे click करो और view identity Henry.Buttler -> (kata hua) Application -> Accounts में जाओं ->
+
+-> AI Hemanth HR Feed File -> और देखो।
+
+Note:- एक बार identity load हो गई तो हम नया identity Attribute नहीं add कर पाएंगे।
+
+Image 2 (Page 18)
+-> अब हम logout करेंगे तो
+
+-> फिर login करेगें create किए हुए identity में से किसी एक के जैसे मैंने अपने identifier में दिए थे 1a, James, Smith, Null, James.Smith, JamesSmithdemoexample@gmail.com, Executive management, "L103 / L07, L08, L09" हो । तो हमे
+
+ये ही identity से login करना है जो CSV File में save है, ताकी पता चले कि जो हमने Application Hemanth HR Feed file में identifier बनाई है क्या work कर रही है या नहीं।
+
+-> username -> JamesSmith ->
+
+-> और password लेकिन हमने identifier के password नहीं दिया तो login नहीं हो रहा है ।
+
+इसलिए हमे हर identifier का password देना होगा CSV file में । और बनाई हुई Hemanth HR Feed File को Delete करना होगा ताकी नया Application बना सके ।
+
+लेकिन हमें Hemanth HR Feed file में ही Password हर Identifier का देना है तो (ek line buri tarah kaati hui hai)
+
+Image 3 (Page 19)
+-> identifier -> identity warehouse ->
+
+-> Henry Buttler -> कोई भी random identity जो तुमने बनाई है Hemanth HR Feed File में -> search में Henry Buttler
+
+-> फिर नीचे आए -> change password -> और password दे admin1 -> save.
+
+19 -> फिर logout और username Henry Buttler और password दे admin1 -> login हो गया ।
+
+लेकिन सब identifier को password set करते करते महीनो लग जाएगा । इसलिए हमें identifier create करने से पहले ही attribute update और set कर लेना चाहिए ।
+
+-> अब सारे identities को Delete मारो।
+
+-> Way हर identifier को पारा पारी करके और या ।
+
+(Niche ki puri line kaati hui hai jisme console se related kuch tha)
+
+Image 4 (Page 20)
+CMD open Kar -> अब sailpoint folder में जा cmd में Type करके
+
+में -> cd c:\identityiq ->
+
+अगर Tomcat के अंदर है तो
+
+-> cd c:\apache-tomcat-9.0.XX\webapps\identityiq ->
+
+(kata hua: check kar k WEB-INF folder hona chahiye aur)
+
+-> फिर dir <- -> Agar output me iiq.bat दिखे तो perfect.
+
+20
+
+-> Ab ye run kar for start console -> iiq console ->
+
+-> Agar error aaye Toh iiq.bat console लिख -> <-
+
+-> ! important (Real case) :-
+
+कई बार identityiq folder ke andar iiq.bat nahi होता तो agar नहीं mila तो Back Jake bin folder me ja और
+
+-> cd.. -> cd.. -> cd bin ->
+
+-> ya direct -> cd c:\apache-tomcat-9.0.XX\webapps\identityiq
+
+Image 5 (Page 21)
+\WEB-INF\bin <- ->
+
+-> iiq console <- अगर फिर भी नहीं मिला तो वो search करे ये पूरा folder में खोज लेगा ।
+
+-> dir (kata hua) iiq.bat dir /s iiq.bat <- -> अगर sahi हुआ तो ये दिखेगा -> iiq console >
+
+21
+
+फिर delete identity * <-
+
+ये सारे identifier को delete मार देगा। लेकिन पहला way is correct to delete identity.
+
+-> Applications के Applications Definition में जाए -> Hemanth HR Feed File
+
+-> Rules -> creation Rule -> ...
+
+-> अब Rule लिखो -> यहाँ ->
+
+-> Rule Name -> Set Password : Creation
+
+-> Rule Type -> identityCreation
+
+-> Return Type -> void
+
+-> Arguments -> (kata hua) मे Sailpoint देगा -> फिर Description के ऊपर जो खाली डब्बा है वो rule लिखने के लिए है तो लिखो Rule ->
+
+-> (kata hua: import sailpoint object)
+
+Image 6 (Page 23)
+-> import sailpoint.object.Identity;
+
+-> identity.setPassword("xyzzy");
+
+-> log.warn("this is creation rule" + identity.getName());
+
+-> save -> Creation Rule ->
+
+select Rule -> identity creation : SetPassword को select -> scroll -> save.
+
+-> setup -> tasks -> AccAgg-HR Feed file को right click -> execute in Background -> ok .
+
+23
+
+-> task Results -> AccAgg-HR Feed file -> अगर ये न दिखे तो Refresh को दबाए -> फिर AccAgg-HR Feed File में जाए -> और देखे ।
+
+-> अब windows में CMD खोल के ये लिख -> cd c:\apache-tomcat-9.0.XX\webapps\identityiq\WEB-INF\bin
+
+-> (XX ko apne version se replace kar)
+
+-> Ab ye run kar:- iiq console लिख <-
+
+-> देख कि log Print हुआ या नहीं अगर नहीं तो जा tomcat में जा -> apache-tomcat-7.0.53 में जा जो (kata hua) c: Drive के sailpoint मे है।
+
+Image 7 (Bina page number, lagbhag Page 24)
+-> फिर webapps -> identityiq ->
+
+-> (kata hua) WEB-INF -> classes
+
+-> log4j को Edit with notepad++
+
+-> और यहाँ #log4j.appender.stdout के सारे # हटाये । -> और इसी file में निचे आए देखे कि log4j.appender.file.file = c:/Training/SS Training notes/Rama_Deepika_and_Sunil/Sailpoint.log.
+
+-> इसमें location हैं कि sailpoint log कहाँ है तो (kata hua) c: Drive के Training file के Rama_Deepika_and_Sunil के अंदर sailpoint में जाके देखें कि log Print हुआ identities का ।
+
+-> Application -> Application Definition में जाओं।
+
+Image 8 (Page 25)
+Mapping, add attr :-
+
+-> login -> http://localhost:8080/identityiq/define/applications/application.jsf
+
+-> Applications -> Application Definition ->
+
+-> Add new Application ->
+
+-> Name -> AuthEmployee ->
+
+-> Owner -> The Administrator ->
+
+-> Application type -> Delimited file ->
+
+-> Authoritative Application -> [Tick Mark] ->
+
+-> Configuration में जाओ ->
+
+-> File path -> C:\sailpoint\Training Data\AuthEmployee.csv
+
+25
+
+-> ये file x-sheets में है।
+
+-> filtering -> खाली
+
+-> Delimited -> [Dot symbol] -> Delimeter -> ,
+
+-> (kata hua: schema me jao) -> File has column header on first line -> [Tick Mark]
+
+-> schema में जाओ ->
+
+-> Native Object Type -> account ->
+
+-> identity Attribute -> employeeid ->
+
+-> Display Attribute -> fullname ->
+
+-> फिर Tap करो Discover Schema Attribute -> और Preview करो कि Data आया file से। फिर save ->
+
+-> फिर open करो AuthEmployee को Application Definition के अंदर ->
+
+Image 9 (Page 26)
+-> Application Definition ->
+
+-> Add New Application -> Application type -> Active Directory-Direct ->
+
+-> Configuration में Schema में जाओ -> यहाँ तुम्हें Discover Schema Attribute नहीं मिलेगा क्योंकि वो already हैं, -> क्योंकि Active Directory में पहले से मौजूद होता है, तुम चाहो तो Add new attribute / Delete attribute कर सकते हो ।
+
+Note -> Jin Application में Attribute change नहीं कर सकते :-
+
+26
+
+Ex -> HRMS
+
+-> Workday
+
+-> SAP HR
+
+-> ye sare system source of truth hote hain aur identity ka data yahi se aata Hai, (name, email, department) etc. Agar identityiq में Attribute change करना है इन Applications का Toh Original System में change करना पडेगा।
+
+Ex -> Read only Applications :-
+
+-> Kuch LDAP/AD connectors (agar read only mode में हो)
+
+-> (kata hua: CSV/file)
+
+Image 10 (Page 27)
+-> CSV / Flat File based apps तो, इनमे भी Aggregation होगा सिर्फ । -> provisioning नहीं होगा।
+
+Non-provisioning Applications :-
+
+Ex -> Ye wo applications hote hain jisme iiq sirf Data read karta hai, lekin koi change push nahi kar sakta.
+
+-> Application me Api/connector write Support nahi hota.
+
+-> Ya provisioning intentionally disable hota hai.
+
+27
+
+Ex -> Legacy System (old banking app)
+
+-> Reporting tool
+
+-> CSV File based app
+
+-> सिर्फ aggregate होगा Non-Provisioning Applications से iiq में ->
+
+Disconnected Applications ->
+
+-> ye wo applications hote hain जहाँ iiq directly connect नहीं होता ।
+
+(Star) Kaise kaam karta hai?
+
+-> iiq change ko ticket में convert करता है फिर admin (kata hua) manually change करता है । इसमे automation नहीं होता ।
+
+Image 1 (Page 28)
+Policy-controlled Attributes :-
+
+-> Ye wo attributes hote hain Jo :-
+
+-> Roles, Rules, Policies से control hote hai.
+
+-> Ex :- Role = "Manager" -> Automatically access milta है।
+
+-> Department ke basis pe access auto assign hota hai.
+
+(Star) Attribute change Kyu nahi hota?
+
+-> Agar tum manually change karoge, next refresh/aggregation me system usko wapash overwrite kar dega.
+
+28
+
+-> Rule :- "Agar department = IT toh role = Developer ही होगा"
+
+Applications -> Application definition
+
+-> फिर Hemanth HR-Feed file
+
+-> जहाँ identity fetch किया था ->
+
+-> configuration -> schema ->
+
+-> ओर (kata hua) जिसे attribute की list बनाना है उसके right मे edit -> Multivalued [Tick Mark] click करो -> save, save ->
+
+-> identities -> identity warehouse ->
+
+-> कोई भी identity में जाओ ->
+
+-> Application Accounts में ->
+
+-> फिर (kata hua) Hemanth HR Feed File
+
+Image 2 (Page 29)
+-> नहीं हुआ update तो ->
+
+-> Setup -> tasks -> search -> करो ->
+
+-> Refresh identity cube -> में जाओ ->
+
+-> scroll-down -> सारे checkbox के ticks को हटा दे -> सिर्फ Refresh identity Attributes को select करो -> save and execute -> .
+
+-> फिर identity warehouse में ->
+
+-> Koi-bhi identity में जाओ ->
+
+-> Application accounts में जाओ ->
+
+-> Hemanth HR Feed File को देखो -> Cost center में changes नहीं हुआ तो -> Setup -> tasks -> AccAgg - HR Feed File को Tap करो -> (kata hua)
+
+(kata hua: fir identity warehouse me jao identity me jao aur)
+
+29
+
+-> right click -> Execute in Background -> ok -> फिर identity warehouse में -> Kisi bhi identity में जाओं ->
+
+-> Application Account -> Hemanth HR Feed File, -> अब Cost center में changes हो गया list में ।
+
+Multivalued attribute को सिर्फ add / remove / replace कर सकते हो लेकिन overwrite नहीं कर सकते । overwrite मतलब पुरानी values को completely हर एक हटाके नयी values डाल देना ही overwrite होता है ।
+
+Image 3 (Page 30)
+(Ek heading buri tarah kaati hui hai)
+
+-> if you join the company they create three files
+
+a. one for employee
+
+b. one for contractor
+
+c. one for service
+
+-> ye teen type के identities/accounts है।
+
+-> Jab employee company Join karta hai tab kya hota hai?
+
+-> Jab koi banda company Join karta hai, uska data HR system में create होता है।
+
+30
+
+employee :- Koun Hota Hai?
+
+-> kaun hota hai?
+
+-> Full time company employee.
+
+-> Kaun banata hai?
+
+-> HR System (Jaise Workday/SAP HR)
+
+-> Kya Karta hai?
+
+-> iske basis pe:- Email account banta Hai, AD account banta Hai, Access milta Hai (apps, tools)
+
+Image 4 (Page 31)
+Ex -> id="Y2Y3gq"
+
+-> type=Employee
+
+-> Department=IT
+
+contractor :- Kaun hota Hai?
+
+-> Temporary banda (3 months/project based)
+
+-> Kaun banata hai?
+
+-> HR ya vendor system.
+
+-> Kya difference hai?
+
+-> limited access milta hai.
+
+-> Expiry date hoti hai.
+
+31
+
+Ex -> id="n8hzjg"
+
+-> type=contractor
+
+-> EndDate = 30-06-2026
+
+Service Account :- Koun hota Hai?
+
+-> ye human nahi hota x
+
+-> System/application ke liye account hota hai.
+
+-> Kaun banata hai?
+
+-> Admin / Devops / Application team.
+
+-> Kya Karta hai?
+
+-> Automation run karta hai !
+
+-> Background jobs chalata hai.
+
+Ex -> id="ubYOPt"
+
+-> username = app_batch_user
+
+-> purpose = Data Sync
+
+Image 5 (Page 32)
+-> service account (kata hua) real में target system में Hota Hai Aur identityiq me (kata hua) sirf managed record Hota Hai, Service account
+
+How can i onboard other Application :-
+
+-> Application Definition ->
+
+-> Add new Application ->
+
+-> Name -> Contractor Feed File
+
+-> owner -> The Administrator ->
+
+-> Application type -> DelimitedFile
+
+-> Authoritative Application -> [Tick Mark]
+
+-> Configuration ->
+
+-> File Path -> C:\Training\Training Data\AuthContractors.csv
+
+32
+
+-> [Dot symbol] Delimited -> Delimeter -> ,
+
+-> [Tick Mark] File has column header on first (kata hua) line ->
+
+-> Schema में जाओ ->
+
+-> Display Attribute -> FullName/empId, Id
+
+-> ओर (kata hua) identityiq का attribute spelling CSV से same match होना चाहिए ।
+
+-> Native object type -> account
+
+-> identity Attribute -> employeeid
+
+Image 6 (Page 33)
+-> Discover attribute -> preview -> save.
+
+save
+
+-> (kata hua: Setup) -> Application Definition में
+
+-> Contractor Feed File में -> जाओं ->
+
+-> Rules -> Creation Rule -> select Rule
+
+-> Set Password: Creation जो हमने पहले बनाया था -> ... ->
+
+-> import sailpoint.object.Identity;
+
+-> identity.setPassword("xyzzy");
+
+-> Save -> Save -> Setup -> Tasks -> New Task -> Account Aggregation -> Name -> AccAgg - Contractor Feed File -> (kata hua) scroll down -> Account Aggregation options के Right side में -> [Tick Mark] -> click -> Contractor Feed File ->
+
+33
+
+-> तुम यहाँ multiple Applications को भी select कर सकते हो लेकिन यहाँ सिर्फ एक aggregation और एक Application select (kata hua) करना best है।
+
+-> Save and Execute -> ok -> ok.
+
+Image 7 (Page 34)
+-> Setup -> Tasks -> Task-Results ->
+
+-> AccAgg-Contractor Feed File ->
+
+-> Double Tap -> see
+
+-> Identity warehouse -> कोई भी identity को tap करो और देखो user Rights ->
+
+-> user Capabilities में से कोई भी Rights देदो इस Identity को तो -> select in user capabilities -> identity Administrator का दे दिया तो -> Save -> (kata hua) save.
+
+-> logout करों और जिस identity को दिया था वो Right / entitlement उस user/identity का username और password से login करो ->
+
+34
+
+-> ओर देखो उसे Quicklinks में क्या क्या मिला ।
+
+-> फिर (kata hua) spadmin login करों और identity warehouse में जाके कोई भी (kata hua) identity को चुनो जैसे Saraberry ->
+
+-> में जाओं -> user rights ->
+
+-> system administrator में जाओ ->
+
+-> save -> ok -> फिर logout और उसी saraberry ->
+
+Image 8 (Page 35)
+-> xyzzy -> password से login करों और देखों कि quick links बढ़ गए या नहीं ।
+
+-> Sp rights -> rights ही है और Capability -> rights का Bundle
+
+(kata hua) मतलब one capability == rights of Bundle
+
+35
+
+How to create identity attributes?
+
+-> Global Setting -> Identity Mappings -> Add New Attribute ->
+
+-> Attribute Name -> Hemanth
+
+-> Display Name -> Hemanth -> save
+
+-> Identityiq -> identity warehouse ->
+
+-> kisi bhi identity में जाओ ->
+
+-> कहीं भी Hemanth या कोई दूसरा attribute नहीं दिखेगा । reflect या changes नहीं हुआ ui में तो ->
+
+-> फिर localhost:8080/identityiq/debug/debug.jsf -> search -> list ->
+
+(kata hua: configuration) -> UIConfig ->
+
+-> ओर right में configuration object -> 3rd box में UIConfiguration ->
+
+-> फिर एक UIConfig खुलेगा click (kata hua) control + f ->
+
+-> लिखो -> identityView ->
+
+Image 9 (Page 36)
+-> ruko 2 minute -> फिर इस tag के <entry key="identityViewAttributes">
+
+value="name, firstname, lastname, email, inactive, manager, empId, status, costcenter, department, jobtitle, region, location, Hemanth"/>
+
+36
+
+के साथ Hemanth जो कि attribute name है जो set किया है हमने ।
+
+-> save फिर identity warehouse किसी भी identity में जाओं देखो क्या changes हुआ । attribute add हुआ
+
+(kata hua line)
+
+-> tag में UIConfig में हमेशा attribute name दे जैसे -> Hemanth और आप identity warehouse मे देखोगे Hemanth (kata hua) smaller case में Display attribute जो तुमने दिया था ।
+
+How to attribute value ?
+
+->
+
+Image 10 (Page 37)
+How to mapping identityiq to application attributes :-
+
+Note -> all authoritative attribute should mapped / connect with identity attributes.
+
+37
+
+-> go to (Gear icon) Gear box -> Global setting ->
+
+-> identity mappings -> जैसे मुझे Firstname map करना है तो Firstname पे Double Tap -> Add Source पे click -> Application Attributes select करें -> Application select करो
+
+A. Source mapping तीन तरह से होता है :-
+
+Application Attribute
+
+Application Rule
+
+Global Rule (kuch scribbles hain aage)
+
+(kata hua: koi bhi application select kare aur fir dusra bhi select kare)
+
+-> पहले Hemanth HR Feed File -> Attribute -> Firstname select करों ->
+
+-> Add -> फिर Add Source -> Contractor Feed File -> Firstname select ->
+
+-> Add -> save -> फिर lastname पे click करों -> Add Source ->
+
+-> select Application Attribute ->
+
+Image 1 (Page 38)
+-> Select Application ->
+
+-> Hemanth HR Feed File ->
+
+-> Attribute -> lastname -> Add ->
+
+-> Add Source -> Application Attribute
+
+-> Select Application ->
+
+-> Contractor Feed File ->
+
+-> Attribute -> lastname ->
+
+-> Add -> save ->
+
+38
+
+-> identityiq -> identity warehouse ->
+
+-> (kata hua: see) -> click कोई भी identity कोई भी firstname और last name नहीं Add हुआ Application से identityiq में
+
+तो (kata hua: fir se refresh identity cube)
+
+-> (kata hua) क्योंकि refresh करना है ->
+
+-> (kata hua)
+
+-> Setup -> Tasks ->
+
+-> Tasks -> में search ->
+
+-> refresh identity cube ->
+
+-> click it -> और
+
+-> Refresh identity attributes ->
+
+[Tick mark] -> save and execute ->
+
+-> फिर Task Results ->
+
+-> first box search ->
+
+-> Refresh identity cube ->
+
+-> click it -> status success
+
+-> फिर identity warehouse
+
+-> click any identity ->
+
+-> see first name and lastname also mapped.
+
+Image 2 (Page 39)
+-> और Application Accounts से match करलो कि सही map हुआ है identity iq से ।
+
+B -> Global setting जो (Gear/Flower icon) -> identity-mappings -> status पे click -> Add source -> Application -> Hemanth HR Feed File -> Attribute -> में status नहीं तो
+
+अब सवाल ये है कि हम Application Rule क्यों use कर रहें हैं क्योंकि CSV file में भी status नहीं है। तो कैसे CSV में और identityiq और Application Account से status map करे -> तो Application Rule का प्रयोग करके ->
+
+-> Add source -> Application Rule ->
+
+-> Application select -> Hemanth HR Feed File -> Rule -> ... ->
+
+-> Rule Name -> Ruthie: Status: Employee
+
+-> Rule Editor -> return "Emp";
+
+-> (kata hua) select rule -> Ruthie: Status: Employee
+
+-> और save -> Add source ->
+
+-> Application Rule -> Application select
+
+-> Contractor Feed File -> Rule ->
+
+-> ... -> Rule Name -> Ruthie: Status: CTR
+
+-> Rule Editor -> return "CTR"; -> save ->
+
+select rule -> Ruthie: Status: CTR ->
+
+-> add -> save -> Setup -> tasks -> refresh identity cube -> right click it -> execute in Background -> ok ->
+
+Image 3 (Page 40)
+40
+
+(kata hua: identity warehouse -> अब मुझे)
+
+-> identity warehouse -> identity कोई भी -> देखो आया , status .
+
+Image 1 (Page 41)
+अगर 500 attributes है organization/company का तो हमें कम समय में attribute mapping करना है सारे identifier को तो कैसे करें ?
+
+localhost:8080/identityiq/debug/ ->
+
+-> First box -> ObjectConfig -> search
+
+-> identity -> click -> देखो कि
+
+-> तो ObjectAttribute firstname और lastname का बना हुआ है लेकिन मुझे Department का भी बनाना है जिससे Department mapping auto हो जाए तो -> तुम्हें -> CSV file से attribute को department को copy करो और एक अलग
+
+41
+
+नया ObjectAttribute में paste करो in -> debug -> identity में ->
+
+-> attribute का spelling copy हुआ जैसे department -> CSV में debug में spelling match होना चाहिए।
+
+-> <ObjectAttribute displayName="Department" editMode="ReadOnly" extendedNumber="2" groupFactory="true" name="department" type="String">
+
+-> <AttributeSource name="department">
+
+// यहीं match करना spelling
+
+-> <ApplicationRef>
+
+-> <Reference class="sailpoint.object.Application" id="4a2880e772d698be50172bed0f8bf007f"
+
+Image 2 (Page 42)
+name="Hemanth HR Feed File"/>
+
+-> </ApplicationRef>
+
+-> </AttributeSource>
+
+-> <AttributeSource name="department">
+
+-> <ApplicationRef>
+
+-> <Reference class="sailpoint.object.Application" id="402880e77d3d3cc017d73f412d40022" name="Contractor Feed File"/>
+
+42
+
+-> </ApplicationRef>
+
+-> </AttributeSource>
+
+-> </ObjectAttribute> -> Save
+
+-> Global setting -> identity Mappings -> Department open करो -> देखो -> source mapping also had configured.
+
+Attribute Name = Status
+
+-> Display Name = Status में
+
+Actual Attribute Name (Status) है जो code में या जगह call होता है। Display Name सिर्फ ui में Display होता है।
+
+Image 3 (Page 43)
+-> Attribute Type हमेशा दो तरह के होंगे पहला "String" दुसरा "identity",
+identityiq (automatic) Employee में manager id को डालता है।
+
+identity              Firstname         lastname         managerId                Fullname                 email                      
+La2a                   linda             Davis              123b                lindaDavislinda     DavisDavis@gmail.com
+Lab2                   William           moore              326b                WilliamMooreWilliam Demo@gmail.com
+
+यहाँ Lab2 जो company में एक Identity Employee हो । और इस managerId ko किसी Employee identity के managerId में assign करो Lab2 को।
+identity       Firstname     lastname   managerId    Fullname    email                      
+ 1234a           Jhon         peey        Lab2      Jhon Peey   @nyg.net
+-> ये काम identityiq खुद करता है।
+
+कैसे हुआ तो -> Global Settings ->
+
+-> identityMappings -> Status पे click -> Attribute type यहाँ String + type है ->
+
+Note -> Every attribute in IIQ is string Type except Manager.
+
+Image 4 (Page 44)
+-> Global Setting -> Identity Mappings
+
+-> Manager -> Attribute type
+
+-> Identity -> Add source ->
+
+-> Application Attribute ->
+
+-> Application -> Hemanth Feed, Contractor Feed File ->
+
+-> Attribute -> managerId ->
+
+-> Add -> Add Source ->
+
+-> Application Attribute ->
+
+-> Contractor Feed File ->
+
+-> managerId -> Add -> Save
+
+44
+
+-> Applications -> Application Definition ->
+
+-> open Hemanth HR Feed File -> Correlation ->
+
+-> Application Attribute -> managerId ->
+
+-> identity Attribute -> EmpID ->
+
+-> Save ->
+
+(Kata hua: Global settings -> identity mapping -> identity warehouse)
+
+-> Global setting ->
+
+-> identity Mappings ->
+
+-> empId -> Double click ->
+
+-> Searchable [ ] unclick करों तो ->
+
+-> Save -> Application Definition
+
+Image 5 (Page 45)
+-> Hemanth HR Feed File ->
+
+-> correlation -> identity Attribute के अंदर जाओं तो empId गायब होजाएगा। इसलिए Searchable हमेशा [Tick Mark] रखो।
+
+Global setting -> identity Mappings
+
+-> empId -> Edit Mode ->
+
+-> Edit mode तीन तरह के होते है।
+
+Read Only 2. Permanent 3. Temporary
+
+45
+
+-> Read Only करें और Save -> फिर
+
+-> identity warehouse -> कोई भी identity -> यहाँ EmpID Edit नहीं होगा और यही permanent रहे तो Edit होगा और यही Temporary रहें तो कुछ समय के लिए edit होगा फिर बंद ।
+
+Global setting -> identity Mappings ->
+
+-> empId -> Multivalued [ ] -> फिर Applications -> Application Definition -> Hemanth HR Feed File ->
+
+-> Configuration -> Schema ->
+
+-> scroll -> यहाँ Cost center का [Tick Mark] है Multivalue इसलिए यहाँ Multivalue दिख रहा हैं। मतलब Multivalue मतलब List of String values store होगा without comma.
+
+Image 6 (Page 46)
+Global setting -> identity Mappings ->
+
+-> Department -> Group Factory [ ]
+
+अब ->
+
+-> Setup -> Group -> create New Group -> Group Attribute यहाँ सिर्फ तीन Attribute है सिर्फ Bydefault -> अब अगर तुम्हे और कोई Attribute चाहिए Attribute based Groups बनाने के लिए तो -> Global Settings -> identity Mappings ->
+
+-> अब Department ->
+
+46
+
+-> Group Factory [Tick Mark] अब जाओं
+
+-> Setup -> Group -> create new group
+
+-> Group Attributes -> यहाँ Department दिखेगा क्योंकि Group Factory [Tick Mark] है।
+
+-> Global Settings -> identity Mappings -> empId -> Add Source ->
+
+-> Application Attribute ->
+
+-> Application -> Hemanth HR Feed File -> Attribute ->
+
+-> employee id -> Add ->
+
+-> Add Source -> Application Attribute -> Contractor Feed File ->
+
+-> Attribute -> employee id -> Add -> ok -> Save.
+
+Image 7 (Page 47)
+-> और Global setting -> identity Mapping ->
+
+-> location123 -> Attribute Name ->
+
+-> location -> Display Name -> Location
+
+-> save .
+
+-> फिर Global setting -> identity Mapping ->
+
+-> Display Name -> Add Source ->
+
+-> Hemanth HR Feed File -> Attribute ->
+
+-> FullName -> Add -> Add Source ->
+
+-> Contractor Feed File -> Attribute ->
+
+-> FullName -> Add -> ok -> save.
+
+47
+
+-> फिर identity Mapping -> Cost-center ->
+
+-> Add source -> Hemanth HR Feed File
+
+-> CostCenter -> Add -> Add Source ->
+
+-> Application Attribute -> Application Contractor Feed File -> Attribute
+
+-> CostCenter -> Add -> save.
+
+-> फिर identity Mapping -> Email ->
+
+-> Add source -> Application Attribute ->
+
+-> Application -> Hemanth HR Feed File
+
+-> Attribute -> Email -> Add -> Add Source
+
+-> Application Attribute -> Application ->
+
+-> Contractor Feed File -> Attribute
+
+-> Email -> Add -> save.
+
+-> फिर inactive और Jobtitle और location और Region को भी करलो Map ऊपर के तरह ।
+
+और managerId पहले ही बनना चाहिए
+
+Image 8 (Page 48)
+Setup -> Tasks -> Task Results ->
+
+-> see -> Tasks -> Refresh identity Cube -> click it -> scroll
+
+-> Refresh identity attributes [Tick Mark]
+
+-> Refresh managed attributes [Tick Mark]
+
+-> Save and execute -> ok
+
+-> identity warehouse ->
+
+-> सिर्फ Refresh manager attribute इसलिए use होता है कि अगर user promoted manager तब use होगा।
+
+48
+
+-> Application Definition ->
+
+-> Contractor Feed ->
+
+-> Correlation -> Application Attribute -> और identity Attribute -> save.
+
+Setup -> Tasks -> Refresh identity Cube -> Execute in Background -> ok -> identity warehouse -> tap -> (refresh icon) -> see.
+
+Image 9 (Page 49)
+Session 10 -> Merging or correlation of Non-Authoritative :-
+
+Note: Global setting -> Identity Mapping -> inactiveIdentity Attribute Name है और source Mapping में inactiveIdentity Same spelling होना चाहिए।
+
+(Star) Onboarding Non-Authoritative Application: (Delimited file use):-
+
+-> मैं csv file # 1 (finance-users.csv)
+
+49
+
+employee_id, db_id, app_privileged, acct_last_login, app_inactive, groups, username
+
+-> 1a2c3a, 112, false, 09/17/2012 21:26:43, false, false, Acctspayable, Richard Jackson
+
+-> 1a2c3a, 112, true, 09/17/2012 21:26:43, true, true, Acctspayable, Richard Jackson
+
+-> 1a2c3a, 112, true, 09/17/2012 21:26:43, false, false, Payroll Analyst, Richard Jackson
+
+-> 1a2c3a, 112, false, 09/17/2012 21:26:43, false, false, Payroll Analyst, Nan Review
+
+-> 1a2c3a, 112, true, 09/17/2012 21:26:43, false, false, AcctsReceivable, Richard Jackson - Admin
+
+Image 10 (Page 50)
+-> 1a2c3a, 212, true, 09/17/2012 21:26:43, true, true, AcctsReceivable, Richard Jackson Admin
+
+-> 1a2c3a, 212, true, 09/17/2012 21:26:43, true, true, AcctsReceivable, Richard Jackson Admin
+
+-> 1a2c3a, 212, true, 09/17/2012 21:26:43, false, false, Payroll Analyst, Richard Jackson Admin
+
+-> 1a2c3a, 212, true, 09/17/2012 21:26:43, false, false, plan Review, Richard Jackson Admin
+
+-> 1a2c3b, 113, false, 09/17/2012 21:26:43, false, false, AcctsReceivable, Mark White
+
+-> 1a2c3c, 114, true, 09/17/2012 21:26:43, false, false, DPA, Charles Harris
+
+-> 1a2c3c, 114, false, 09/17/2012 21:26:43, false, false, Financial Analyst, Charles Harris
+
+Image 1 (Page 51)
+-> 1a2c3c, 114, false, 09/17/2012 21:26:43, false, false, Strategy & planning, Charles Harris
+
+-> 1a2c3c, 114, false, 09/17/2012 21:26:43, false, false, Financial planning, Charles Harris
+
+-> 1a2c3c, 114, 09/17/2012 21:26:43, false, false, Plan Review, Charles Harris
+
+-> 1a2c3d, 115, true, 09/17/2012, 21:26:43, false, true, DPA, Susan Martin
+
+51
+
+-> 1a2c3d, 115, true, 09/17/2012 21:26:43, false, true, Financial Analysis, Susan Martin
+
+-> 1a2c3d, 115, true, 09/17/2012 21:26:43, false, true, Financial planning, Susan Martin
+
+-> 1a2c3a9a, 115, false, 09/17/2012 21:26:43, false, true, Strategy & planning, Susan Martin
+
+-> 1a2c3a9d, 158, false, 09/17/2012 21:26:43, false, false, AcctsPayable, Larry Morgan
+
+-> 1a2c3a9d, 159, true, 09/17/2012 21:26:43, false, false, AcctsPayable, Melissa Bailey
+
+Image 2 (Page 52)
+22 -> 1a2c3a9e, 159, true, 09/17/2012 21:26:43, false, false, AcctsPayable, Frank Rivera
+
+23 -> 1a2c3b4a, 161, true, 09/17/2012 21:26:43, false, true, AcctsReceivable, Brenda Cooper
+
+24 -> 1a2c3b4b, 162, false, 09/17/2012 21:26:43, false, false, AcctsReceivable, Scott Richardson
+
+52
+
+25 -> 1a2c3b4c, 163, false, 09/17/2012 21:26:43, false, false, AcctsReceivable, Amy Cox
+
+26 -> 1a2c3b4d, 164, false, 09/17/2012 21:26:43, false, false, AcctsReceivable, Eric Howard
+
+-> 1a2c3bae, 165, false, 09/17/2012 21:26:43, false, false, AcctsReceivable, Ann Howard
+
+28 -> 1a2c3caa, 166, false, 02/27/2008 21:42:51, false, false, Financial Analysis, Stephen Torres
+
+Image 3 (Page 53)
+29 -> 1a2c3caa, 166, false, 02/27/2008 21:42:51, false, false, Financial planning, Stephen Torres
+
+-> 1a2c3cab, 167, false, 09/17/2012 21:26:43, false, false, Financial Analysis, Rebecca Peterson
+
+और AuthEmployee.csv -> ये है
+
+-> employeeId, firstName, lastName, managerId, fullName, email, department, region, location, inactiveIdentity, jobtitle, costcenter
+
+53
+
+-> 1a, James, Smith, NULL, James.Smith, James.Smith@demoexample.com, Executive management, Americas, Austin, Inactive, "L103, L07, L08, L09"
+
+-> 1a1a, Mary, Jhonson, 1a, Mary.Jhonson, Mary.Jhonson@demoexample.com, Regional operations, Americas, Austin, Inactive, Global Infrastructure manager, "L103, L07"
+
+-> 1a2b, Jhon, Williams, 1a, John.Williams, John.Williams@demoexample.com, Regional operations, Americas, Brazil, True, "L103, L09"
+
+Image 4 (Page 54)
+If non-authoritative application aggregate and new identity created, that identity called orphan identity.
+
+-> If non-authoritative application aggregate, no new identity should create, all existing accounts should map with existing identity.
+
+(Star) Finance-users.csv है जो जिसमे Susan Martin का जो कि एक ही employee है, उसके चार Groupmbr (Groupmembers) है तो CSV में 4 line एक ही employee के identityiq में हमेशा एक होना चाहिए, OR Employee तो one ही Employee होना चाहिए identityiq में । तो Solution (kata hua) हमें merge करना होगा Susan Martin के चारो line को एक में।
+
+Q. तो How can we merge it?
+
+-> 1a2c3d, 115, false, 09/17/2012 21:26:43, false, true, "DPA,
+
+Image 5 (Page 55)
+Financial Analysis, Financial planning, Strategy & planning", Susan Martin.
+
+-> हो गया चार line से एक line in CSV. बाकि को भी ऐसे ही करलो । कुछ नहीं हुआ तो
+
+-> Application Definition -> Add New Application
+
+-> Name -> Financial Application ->
+
+-> The Administrator -> Delimited File
+
+-> Configuration -> File Path ->
+
+-> C:\Training\Training Data\Finance-users.csv
+
+55
+
+-> File encoding -> खाली रखे ->
+
+-> [Dot] Delimited -> Delimiter -> ,
+
+-> [Dot] Local -> [Tick Mark] file has column header on first line -> merging ->
+
+-> Data needs to be merged -> [Tick Mark]
+
+-> index column -> dbId ->
+
+-> Data sorted by the index column(s)? -> [Tick Mark] -> ignore case while merging ->
+
+-> और Which columns should be merged? में वही column CSV का दो जो merged करना है, अलग अलग:
+
+-> उस बड़े box -> Which columns should be merged? -> groupmbr -> और schema ->
+
+-> Display Attribute ->
+
+-> userName -> (kata hua) ->
+
+-> identity Attribute -> हमेशा unique ->
+
+-> dbId CSV का -> Native object type ->
+
+-> account -> Discover schema Attributes
+
+-> और हम To make attribute as a group
+
+Image 6 (Page 56)
+-> groupmbr को edit (hand icon) ->
+
+-> Managed [Tick Mark] Entitlement [Tick Mark]
+
+-> Multivalued [Tick Mark]
+
+-> Save -> preview -> merged दिख रहा होगा।
+
+-> save ->
+
+Note: Creation rule हमेशा Authoritative application के लिए बनेगा ।
+
+Note: Non-authoritative के लिए नहीं बनेगा।
+
+तो correlation होगा । correlation mapping account with identity.
+
+A. Correlation can be configured using two ways:-
+
+From UI -> Simplest
+
+Using rule -> correlation Rule
+
+From UI -> Application Definition -> Financial Application -> Correlation -> Account Correlation में click (kata hua) New
+
+-> Next -> enter a name for this new configuration ->
+
+-> Financial Application correlation: Hemanth
+
+Image 7 (Page 57)
+-> Next -> Next -> Application Attribute -> employeeId ->
+
+-> EmpID है क्योंकि EmpID से ही Map करेंगे identityiq to Account -> अगर AuthEmployee में खोलो (kata hua) EmpID है Susan Martin का -> Ctrl+F / Ctrl+V -> जो find what -> 1a2c3d -> तो Susan Martin मिल जाएगी लेकिन अगर (kata hua) Find what में Susan Martin जो Finance-users.csv के में username है -> Finance-users.csv के में तो space है लेकिन Susan Martin के बीच space तो नहीं मिलेगा -> Same spelling कर ले नहीं मिलेगा -> Finance-users.csv में और space को dot में convert कर दे (kata hua) तो match हो जाएगा AuthEmployee में लेकिन यहाँ match नहीं तो EmpId best है क्योंकि Employee Id (kata hua) AuthEmployee और Finance-users.csv से Match करता है।
+
+57
+
+-> (kata hua) Application Attribute में employeeId और identity Attribute में -> EmpId -> Add -> (kata hua) save -> save.
+
+-> Next -> (kata hua)
+
+-> Setup -> Tasks -> New tasks
+
+-> Account Aggregation ->
+
+-> Name -> AccAgg - Finance Application -> Account Aggregation options के Right में -> Financial Application -> scroll -> save and Execute.
+
+Image 8 (Page 58)
+-> ok -> Task Results ->
+
+-> AccAgg-Finance Application ->
+
+-> यहाँ identity created -> 4 यानी ये orphan identity है चारो।
+
+(Star) How orphan identity created?
+
+-> if identity doesn't exist in identityiq or correlation failed to identified the accounts.
+
+-> identity warehouse ->
+
+-> koi bhi identity में जाओ ->
+
+-> Susan Martin -> Application Accounts -> Financial Application ->
+
+-> Entitlements -> (kata hua) कोई भी Entitlement पे click करों तो देखोगे -> source -> Aggregation है ।
+
+-> identity warehouse ->
+
+-> Richard -> click ->
+
+-> Application Accounts (kata hua) -> दो है (kata hua)
+
+58
+
+Image 9 (Page 59)
+Manager correlation क्या है?
+
+-> Manager correlation ek process hota hai jo kisi user ke manager ko automatically identify और assign करता है।
+
+-> Ye system me:- user ke data (Jaise HR System से आया hua data) ko check करता है। Aur uske basis par manager kaun hai -> decide karta hai.
+
+-> Phir us manager ko user ke profile me link kar deta hai.
+
+59
+
+Ex -> Maan le HR System me data hai.
+
+-> Employee ----- Manager ID
+
+Rahul -------- M123
+
+Aman --------- M456
+
+-> Ab identityiq kya karega:-
+
+Rahul ke record me dekhega -> manager ID = M123
+
+System me M123 kis user ka ID hai -> usko find karega.
+
+Rahul ke profile me us manager ko attach karega.
+
+-> Isi process ko hi Manager correlation bolte hain.
+
+Image 10 (Page 60 - Upside down text transcribed normally)
+Attribute Based Correlation
+
+Assigns/Application Attribute == identity Attribute?
+
+use kya hota hai identityiq ?
+
+-> Attribute-based correlation ka kaam hota hai Application ke accounts ko identity (users) se match karna.
+
+-> "Application attributes == identity attributes" ka matlab system check karta hai ki Application ka attribute (jaise username, email, employeeId) aur identity ka bhi same field.
+
+-> agar match ho gaya -> account us identity se link ho jayega.
+
+-> Example:- identity:-
+
+Name:- Rahul
+
+Employee Id:- 101
+
+Email:- rahul@gmail.com
+
+Image 1 (Page 61)
+-> Application Account (Jaise AD ya PB)
+
+Username :- Rahul
+
+employeeId :- 101
+
+email :- rahul@gmail.com
+
+(Star) Correlation Rule :-
+
+-> Application.employeeId = Identity.employeeId
+
+-> Match mila lagbhag (exp == 101) toh identityiq bolega :- "ye account automatically Rahul se link ho jayega"
+
+-> Agar match na mile Toh Account uncorreleated/orphan account" ban Jata hai.
+
+-> Fir manually ya rule se link karna padta hai.
+
+-> Agar orphan account delete karna ho / aur delete karne se
+
+-> Setup -> tasks -> search prune identity cubes ->
+
+-> saare identifier ki delete account nahi hai (kata hua) -> prune identity cubes
+
+-> click it -> save and execute -> OK
+
+-> aur Task Results -> see -> success of not.
+
+Image 2 (Page 62)
+Disable optimization of unchanged accounts?
+
+-> Agar account me koi change nahi hua (unchanged account) to system usko SKIP kar deta hai processing me. (Taki performance fast rahe).
+
+-> Jab disable optimization of unchanged Accounts [Tick mark] Enable karte ho Tab system optimization OFF kar deta hai.
+
+62
+
+-> Matlab pehle unchanged accounts SKIP ho Jate the ab unchanged accounts bhi process hoge. Har account ko dobara check karega.
+
+Ex -> optimization ON (default):-
+
+-> sirf 100 changed accounts process honge. 900 unchanged -> SKIP -> fast.
+
+-> Disable optimization Enable :-
+
+-> 1000 ke 1000 accounts process honge -> slow -> but full re-check.
+
+Image 3 (Page 63)
+Use kab karte hain Disable optimization of unchanged accounts?
+
+-> ye tab use hota hai Jab:-
+
+A. correlation rule change kiya ho.
+
+B. policy/role/entitlement logic update hua ho.
+
+C. Re-evaluation chahiye sab accounts ka.
+
+D. Debugging/testing kar rahe ho.
+
+Q. Re-evaluation kya hai sab accounts ka?
+
+-> matlab sabhi accounts ko dobara se check karna. (current rules, polices, roles ke according).
+
+63
+
+Practical -> कोई भी Task में जाओ ->
+
+जैसे NON-Authoritative application task (kata hua) फिर -> scroll down ->
+
+-> disable optimization of unchanged accounts -> [Tick Mark] -> Disable हो गया ।
+
+-> save and execute -> ok . ->
+
+-> अब Task results में जाए -> फिर ush Task में click करो NON-Authoritative application task -> see कि सारे accounts process हो गये, fetch हो गए । (ये aggregate Task है ।)
+
+Image 4 (Page 64)
+Attribute based correlation assignment का Practical:-
+
+-> Application Definition ->
+
+-> Koi bhi Application जैसे
+
+-> NONAuth Financial -> click ->
+
+-> correlation -> (kata hua)
+
+-> (kata hua) select NONAuth Financial users
+
+-> scroll down -> Edit
+
+64
+
+के बगल में जो (kata hua) correlation select करों जो तुमने बनाई हो
+
+जैसे NONAuth Financial users ->
+
+edit -> Application Attributes
+
+-> employeeId -> identity Attributes में -> empId . ->
+
+-> save -> save. ->
+
+-> setup -> Tasks -> अब NON Authoritative Application Task
+
+write click -> Execute in Background -> Task result
+
+-> NON Authoritative Application Task
+
+-> click -> see -> .
+
+-> अब कोई भी identity में जाओ in identity warehouse में ->
+
+-> (kata hua) देखो -> Application Account में कि Account आया है या नहीं ।
+
+Image 5 (Page 65)
+Correlation ke liye pehle application Jaise (Database/CSV) jo aggregate karte ho aur identity kahan se aati hai?
+
+-> identity Authoritative source se Aati Hai.
+
+Ex -> Jaise:- HR System (SAP, workday)
+
+-> CSV file
+
+-> Database
+
+-> Ye Authoritative Applications Yaha se data aata hai Aur identityiq mein identity object ban Jata hai.
+
+65
+
+-> Tumhare case me Application ek NON Authoritative (Finance-users.csv) hai aur identityiq (AuthEmployee.csv) se Authoritative Application se Aata ka data same Rakha!
+
+-> Application Definition -> (kata hua)
+
+task Result -> AccAgg-Finance Application -> click -> see -> 4 orphan identities create hua hai -> identity created = 4
+
+-> Matlab NON Authoritative Application me identities nahi create hona chahiye.
+
+Image 6 (Page 66)
+-> तो हम manually identity correlation करेगें।
+
+-> identities -> identity correlation
+
+-> select uncorrelated Accounts
+
+-> तो हम Financial Application (NON Authoritative Application)
+
+-> तो यहाँ चार uncorrelated/orphan है ।
+
+-> तो Accounts कोई भी एक [Tick] select करों फिर -> select Target identity -> search ->
+
+66
+
+-> जिस AccountID को select किये उसका तीन spelling और Search अगर Authoritative Application में होगा तो आ जाएगा और दुसरा तो NON Authoritative (Financial Application) उसका भी आ जाएगा Account फिर उस तुम NON Authoritative Application का identity को Target identity के first identity पर [Tick mark] click करो
+
+perform merge -> अगर perform merge से पहले Application identity warehouse में
+
+Image 7 (Page 67)
+जाओं और कोई भी orphan identity जो (Authoritative Application) में Application Account
+
+Perform merge से पहले select किया उसको खोलके देखोगे तो एक HR Feed File होगा । जब perform merge करोगें तो Finance Application मिलेगा। ऐसे होता है manually.
+
+-> setup -> Tasks -> AccAgg-Finance Application -> Disable optimization of unchanged accounts -> [Tick Mark] .
+
+67
+
+(Star) Manual identity correlation में Disable optimization का role क्या है?
+
+-> tu manually account ko identity se link karta hai, But account me koi attribute change nahi hua
+
+-> To kya hoga?
+
+-> without Disable optimization:-
+
+-> System bolega "kuch change nahi hua"
+
+-> Aur correlation properly apply nahi hoga skip ho sakta hai.
+
+-> isiliye isko ON rakhe.
+
+Image 8 (Page 68)
+(Star) -> और manual correlation कैसे करोगें Authoritative Application (identity) -> with dot
+
+जैसे Angie.Bella और NON Authoritative Application (Application Account Target identity) जैसे -> Angie without dot.
+
+68
+
+क्योकि तुमने पहले ही Financial Application जो कि NON Authoritative Application है उसका Full Name without dot और Authoritative Application (HR Hemanth Feed file) इसका रखा है Full Name with dot.
+
+-> अब identity warehouse -> city में Angie.Bella में जाए तो Application Accounts -> तो दो Accounts अब हम फिर search करेगें identity warehouse में AngieBell उसमे नीए तो कुछ नहीं तो setup -> task -> prune identity cubes -> Right click -> Execute in Background -> ok -> क्योंकि यहाँ AngieBella का manual correlation हो गया बाकि AngieBella को delete मार दे ।
+
+Image 9 (Page 69)
+We will onboard JDBC Application :-
+
+जो NON Authoritative Application है !-
+
+69
+
+-> Application Definition -> Add New Application -> Name -> JDBC Application -> The Administrator -> Owner -> Configuration
+
+-> Application Type -> JDBC ->
+
+-> scroll down -> (kata hua)
+
+और पहले JDBC Drive के box में link दे तो link के लिए जाओ
+
+-> sailpoint -> apache-tomcat-7.0.53 -> webapps -> identityiq -> WEB-INF -> classes ->
+
+-> फिर right click -> और Edit with notepad++ ->
+
+और यहाँ mysql या कोई भी database का Driver mil जाएगा तो मुझे mysql का चाहिए तो copy ->
+
+-> com.mysql.jdbc.Driver -> paste
+
+-> Database URL देना है तो localhost:3306/?jdbc:mysql://
+
+क्यों ! अब हमें Database URL देना है तो create mysql Database first
+
+तो -> window search -> mysql query Browser -> open -> password root -> ok -> ignore -> Right click Any where -> create New Schema ->
+
+Image 10 (Page 70)
+-> Schema name -> ruthie -> ok
+
+-> ruthie -> (kata hua) Ruthie पे right click फिर -> create New table ->
+
+-> (kata hua) -> track ->
+
+-> Table name -> track ->
+
+-> Database -> ruthie ->
+
+-> column name -> Id ->
+
+-> column name -> Fname ->
+
+-> column name -> Lname ->
+
+-> email ->
+
+-> fullname ->
+
+-> permission ->
+
+-> description -> Apply changes
+
+70 -> execute ->
+
+-> अब -> ruthie -> track -> पे click
+
+-> अब डाटा को भरदो AuthEmployee.csv से -> तो
+
+-> ID Fname Lname email fullname permission description ->
+
+-> में 101, Robert, Brown, Robert.Brown@gmail.com, Robert.Brown@demoexample.com / robert.brown, Readonly / test -> Apply changes
+
+-> फिर (scribble)-> click
+
+-> एक और record देदो ।
+
+Image 1 (Page 71)
+-> अब Database check कर लेते है -> ०
+
+jdbc:mysql://localhost/ruthie ->
+
+-> Test connection sql [Tick mark] ->
+
+-> SELECT * FROM ruthie.track;
+
+-> Sql statement में भी यही SELECT * FROM ruthie.track;
+
+71
+
+-> test connection -> Connection Successful.
+
+-> और id हमेशा Integer रखना DB में ।
+
+-> schema name -> schema ->
+
+-> Display Attribute -> fullname ->
+
+-> identity Attribute -> ID ->
+
+-> Discover schema Attribute ->
+
+-> permission को edit -> multivalued , Entitlement , Managed -> save.
+
+-> preview और see. हो गया । save.
+
+-> Application definition end see.
+
+Correlation rule configure कैसे करते है?
+
+-> Application definition -> JDBC -> Correlation -> New -> Next ->
+
+-> Enter a name for this new configuration -> JDBC -> Next -> Next
+
+-> Application Attribute -> empId ->
+
+Image 2 (Page 72)
+-> identity Attribute -> EmpID
+
+-> save -> ऐसे कर लोगे लेकिन correlation rule से सिखना है तो -> वापस -> Rules ->
+
+72
+
+-> Correlation Rule -> ... ->
+
+-> map map = new HashMap();
+
+-> String empId = (String) account.getAttribute("empId"); // 1a2a3a
+
+-> map.put("identityAttributeName", "empId");
+
+-> map.put("identityAttributeValue", empId);
+
+-> return map;
+
+-> Rule Name ->
+
+JDBC Correlation : Hemanth
+
+-> Return type -> Map -> Save.
+
+-> Rule -> correlation Rule -> JDBC: correlation: Hemanth
+
+-> Save -> Tasks ->
+
+-> New Task -> Account Agg ->
+
+-> Name -> AccAgg JDBC
+
+-> Account Aggregation options के Right में [Tick mark]
+
+Image 3 (Page 73)
+Note:- जब भी Application बनाओगे तो Application field में Attribute value यहाँ से match होना चाहिए । spelling csv
+
+-> JDBC select -> save and execute.
+
+-> Task Results -> AccAgg JDBC ->
+
+-> identity warehouse -> identity में जाओ जो तुमने JDBC में दिया फिर Application Accounts Application देखो हो गया Success.
+
+अब LDAP में काम करे तो -> open
+
+HI software LDAP का ।
+
+-> Download and install करों ।
+
+Group क्या है?
+
+-> Bundle of identities based on Static attributes.
+
+population क्या है?
+
+-> Bundle of identities based on dynamic queries.
+
+Workgroup क्या है?
+
+-> Bundle of identities based on Capabilities.
+
+Q. तीनो में Difference क्या है?
+
+Group (119 me):- ye mostly Application / Entitlement based hota hai. Matlab kisi system ka access ya role represent karta hai.
+
+Image 4 (Page 74)
+-> Ex -> Active Directory group (like: - HR_Read_Access)
+
+-> Database access group.
+
+Q. Group karta kya hai?
+
+Q. Population kya karta hai?
+
+Q. Workgroup kya karta hai?
+
+-> Step1:- population :-
+
+74
+
+Sabse pehle iiq decide karta hai kis - kis user ko include karna hai.
+
+-> filter lagta hai (department, location, role etc).
+
+मतलब population iiq के system का feature है या object है, जो iiq के अंदर identities को filter करता हैं।
+
+Ex -> population filter :-
+
+department = IT
+
+-> सिर्फ IT के बंदे select होगे।
+
+Image 5 (Page 75)
+Population (iiq me) :- ye ek filter based dynamic list hoti hai identities ki. Conditions laga ke log select kiye jaate hain.
+
+Ex -> All users where department = "IT"
+
+-> All users in location = "india"
+
+Workgroup (iiq me) :- ye ek team hoti hai (identities ka group).
+
+-> mostly task assign karne ke liye use hoti hai.
+
+-> Ex -> certification reviewers team
+
+-> access approval team.
+
+75
+
+Step 2 :- user ya manager access request karta hai.
+
+Ex -> Rahul ne request kiya -> "DB Access"
+
+-> System object create करता है (AccessRequest / provisioning plan)
+
+Step 3 :- jo access manga jayega usme eventually Group/Entitlement होता है।
+
+-> DB Access == DB group/DB role
+
+Step 3:- Group -> jab user request करता है, mujhe DB access chahiye. internally system iiq check karta hai, ki ye access kaunse application का है।
+
+Image 6 (Page 76)
+-> (AD/DB/SAP).
+
+-> ye Group/Entitlement hi naam (scribble) है।
+
+-> phir ye mapping hoti hai.
+
+Friendly name -> Actual Entitlement
+
+Ex -> "DB Access" -> DB_READ_ROLE
+
+-> ye sab provisioning plan me convert होता है।
+
+76
+
+Ex -> internal XML :-
+
+<ProvisioningPlan> <AccountRequest application="DatabaseApp">
+
+<AttributeRequest name="role" value="DB_READ_ROLE" op="Add"/>
+
+</AccountRequest>
+
+</ProvisioningPlan>
+
+policy check (Risk/SOD Analysis)
+
+-> Ab system check karega ki request safe hai ya nahi. (SOD / Risk score).
+
+Workgroup -> Ab decide hota hai kaun approve karega.
+
+-> internally workgroup check karega
+
+Image 7 (Page 77)
+-> जब कोई access Request करता है, (user/manager) तो wo access request Workgroup को assign होता है। workgroup के members decide करते है कि Approve/reject modify करे या अब access request जो user/manager ने किया।
+
+77
+
+-> जब-तक workgroup action नहीं लेगा Flow Ruka jata hai. Jaise hi approve flow next step pe chala jata hai (provisioning).
+
+-> workgroup का काम है कि access request को सही Team के पास भेजे।
+
+Ex -> DB access -> DB Admin workgroup
+
+HR access -> HR Admin workgroup
+
+-> अगर कोई उस access request को Approve/reject नहीं करता तो वह Request escalate हो जाता है।
+
+Image 8 (Page 78)
+और जैसे ही workgroup में access request assign करता है iiq system में workitem create हो जाता है।
+
+Types of workgroup :-
+
+a. Approval workgroup :-
+
+Access request Approve करता है।
+
+78
+
+b. certification workgroup :-
+
+Access review करता है।
+
+c. owner workgroup :-
+
+Application / Role का owner होता है।
+
+Real example :-
+
+-> user Rahul ने DB Access का request किया ।
+
+-> Request create hui
+
+-> policy check hui
+
+-> workgroup :- DB Admin select hui.
+
+-> Ravi (member) के workgroup में ये access request आया ।
+
+-> ACCESS mil gaya.
+
+Image 9 (Page 79)
+internally kaise kaam karta hai workgroup :-
+
+workgroup = identity object (type = group)
+
+-> iiq में workgroup bhi ek identity type hi hota hai, iske andar members hote hai.
+
+workitem create होता है जैसे ही Access का koi request assign हुई system एक workgroup में और task बनाता है।
+
+Ex -> Id="wq123"
+
+<workItem> <owner> IT_Admin </owner> <type> Approval </type> </workItem>
+
+79
+
+Members ko assign hota है ये task :-
+
+-> workgroup के members Ravi, Suresh.
+
+-> in dono में से koi bhi Approve / Reject कर सकता हैं।
+
+जैसे ही कोई approve / Reject करता workitem next step पे चला जाता है।
+
+Image 10 (Page 80)
+Step 4 -> Fir workflow Execution होता है :-
+
+-> ye decide karta hai ab aage kya karna hai.
+
+-> internally: workflow Engine check करता है कि Approval ho gaya? koi pending step hai? fir next step trigger karta hai -> provisioning
+
+80
+
+Step 5 -> provisioning :- ye actual changes या updates create करता है Target systems में ।
+
+Step 6 -> connector call :- Bridge between iiq and Target system.
+
+-> iiq directly AD/DB/SAP को touch नहीं करता, connector के through ही बात होती है।
+
+connector ही Data create/update/Delete करता है Target system में जाके. (provisioning) और Data get करता है (Aggregation).
+
+और sync / Reconcilication :-
+
+Real system aur iiq को Sync me रखता है।
+
+Image 1 (Page 81)
+-> Aggregation:- Kya hai kya karta hai? (verification) :-
+
+Ye data wapas lene ka process hai, system check karta hai ki jo bola tha wo hua ya nahi.
+
+target system se fresh data fetch karta hai, compare करता है ।
+
+expected vs actual.
+
+Ex -> check:-
+
+Rahul ke pass DB access aya ya nahi.
+
+Result :-
+
+-> match -> sab sahi
+
+-> mismatch -> issue
+
+-> jo kiya wo sach me apply hua ya nahi.
+
+Step -> identity cube update :-
+
+-> iiq का internal user database profile.
+
+-> Kya karta hai?
+
+-> user ki latest info update karta hai.
+
+-> Ex -> Rahul:
+
+DB_READ_ROLE
+
+AD Group
+
+और iiq को अपनी memory update करता रहता है।
+
+Image 2 (Page 82)
+Step (9) :- Audit + ui reflect ?
+
+-> Audit kya karta hai?
+
+-> Sab record store करता है :-
+
+-> kishne request kiya
+
+-> kisne approve kiya
+
+-> kab access mila
+
+-> compiliance ke liye important.
+
+-> ui Reflect kya karta hai?
+
+-> iiq screen pe dikhata hai :-
+
+82 -> user ke entitlements,
+
+-> Reports the data,
+
+Ex -> ui me dikhega:-
+
+Rahul -> DB Access.
+
+Reconciliation kya hai?
+
+-> mismatch ko identify aur fix karna (iiq vs real system).
+
+-> jo iiq me hai aur jo real system में है, agar alag hai, to usko detect & correct करना ही Reconciliation है।
+
+Reconciliation करता kya hai?
+
+-> mismatch detect करता है?
+
+-> iiq vs target system compare करता है।
+
+Image 3 (Page 83)
+Q. Difference identify karta hai?
+
+Ex -> extra access hai
+
+-> missing access hai
+
+Decision leta hai (config pe depend)
+
+Option A:- iiq ko update करो ।
+
+Option B:- target system ko update करो ।
+
+Sync kar deta hai :-
+
+-> dono same ho jaate hai.
+
+Types of Reconciliation:-
+
+Authoritative Reconciliation :-
+
+source system (truth)
+
+-> HR system
+
+-> Ex -> HR system में user delete हो गया तो iiq भी delete करेगा।
+
+NON-Authoritative Reconciliation:-
+
+-> iiq sirf data sync करता है, (control nahi).
+
+Ex -> AD system
+
+-> iiq sirf update karega apna data.
+
+83
+
+Image 4 (Page 84)
+Full Reconciliation kya hai?
+
+-> poore system ka complete data compare karna.
+
+-> sab users, sab accounts, Sab Entitlement
+
+Har cheez dubara check Hota hai.
+
+84
+
+isme connector se full data fetch होता है, iiq ke data se compare Hota hai.
+
+Jo bhi mismatch -> Fix/update.
+
+Delta Reconciliation क्या है?
+
+-> sirf changes (kata hua) hue identities को check करता है।
+
+-> New users, updated users, Delete users
+
+-> kaise kaam karta hai :-
+
+System track karta hai:-
+
+'last run time',
+
+-> sirf uske baad ke changes fetch karta hai.
+
+और फिर करता है उन identities की सिन्क Target system update हुआ है।
+
+Image 5 (Page 85)
+setup -> groups -> create New group
+
+-> Group Attribute में location नहीं है तो कैसे लाएंगे location तो Global setting -> identity Mapping -> location -> Group Factory -> save -> setup -> groups -> create New group -> Group Attribute में location आ जाएगा । select it -> name -> Location Based group -> Enabled -> [Tick mark] -> save ->
+
+-> फिर Tasks -> refresh identity cube -> फिर control + F -> Group लिखो -> Refresh the group scorecards -> [Tick mark] -> save and execute.
+
+-> लेकिन ये refresh identity is not mandatory and sometimes it not required fore refresh identity cube.
+
+-> तो इसे uncheck [ ] करदे क्योंकि sailpoint एक और Task provide करता है, तो Tasks -> Refresh group -> फिर Refresh the group scorecards -> save an execute.
+
+-> Refresh identity cube -> Refresh the group scorecards -> [Tick mark] -> [ ] uncheck ही रहने दे ।
+
+85
+
+Image 6 (Page 86)
+Refresh identity cube kya karta hai?
+
+-> user ke accounts (Applications) update karta hai.
+
+Entitlements / roles calculate करता है।
+
+policy violations check karta hai.
+
+manager, department, Attributes update karta Hai. provisioning changes reflects karta hai
+
+identity cube ko rebuild/Refresh karta hai.
+
+86
+
+Image 7 (Page 87)
+Populations (Group definition):-
+
+Yeh dynamic groups hote hain Jo kisi identity ke attributes pe based par (based hote है)
+
+-> kya use hota hai?
+
+-> Agar aapko sailpoint में rule lagana hai Ya report nikalni hai sirf un users ki Jinka Department = IT है और location="UK" hai, toh app ek population create कर सकते है, ye automatically un sabhi users ko group me leta hai jo yeh condition meet करते है।
+
+Workgroups (Governance group):-
+
+-> Yeh Sailpoint ke andar ke internal groups hote hain Jisme alag-alag identities (users) ko add kiya jata hai.
+
+mostly Task assign करने के लिए use hoti है
+
+Ex -> Certifications Reviewers team
+
+-> access Approvals teams.
+
+87
+
+Image 8 (Page 88)
+88
+
+Ex -> Agar koi policy violation hota Hai Ya kisi high-risk application ka access Request aati hai, toh app assign aap chahenge ki approval manager के पास ना जाके poori security team ke pas Jaye. Aise me security team ka ek workgroup banaya Jata hai. Us group me sirf koi bhi ek member action ले सकता है।
+
+Target system Group (Entitlement / Role Account Groups) :-
+
+-> ye wo groups hote hai jo aapke External Applications (Jaise AD, LDAP, Ya custom Database) me Exist karte हैं।
+
+-> Jab hum in groups ko Sailpoint ke andar laate है, Toh unke alag terminology से bulaya Jata hai.
+
+-> Sailpoint in external groups को apne database में Entitlements Ya Managed Attributes ke roop mein store karta hai.
+
+-> Application ki configuration (schema) mein, in groups ko usually "Group Ya AccountGroup Object Type ke under define kiya Jata hai.
+
+Image 9 (Page 89)
+-> Group Aggregation :- Sailpoint khud yeh groups nahi banata.
+
+Directory में Group Add
+
+तुम्हारे पास sailpoint का list है, उसमे पास एक list होता है। जो list को sailpoint ki bhasha mein Entitlements kehte hain.
+
+-> Account Aggregation & correlation :-
+
+Jab aap "Account Aggregation" run karte hai, toh sailpoint target system के users ko pull karta hai. Tab vo sailpoint dekhta hai ki user jo pull hua hai Sailpoint में us user के account में kis group ka reference hai Aur Phir us Sailpoint un sabhi Groups ko list bana leta hai aur in sabhi Groups me se us user ko link कर देता है identity में ।
+
+और यही Application में members का Attribute में सारे groups होते है जो user है।
+
+Image 10 (Page 90)
+
+Refresh Groups Kya hai?
+
+-> Ye ek task / process hai Jo Target systems (AD, LDAP, DB etc) se groups ka data sync करता है identity iq में iska main kaam groups को updated रखना है। ie andar
+
+internally kya karta है?
+
+Group Aggregation :- Target System se groups fetch karta hai.
+
+Group create/update/Delete :-
+
+-> Naya group mila -> create
+
+-> Existing group -> update
+
+-> System se hata -> delete/inactive
+
+provisioning (Access Dena/Hatana) :-
+
+-> Jab app Kisi user ko naya ACCESS assign karte है (via Access Request ya Role assignment), toh Sailpoint ek provisioning plan generate karta hai.
+
+Connector us plan ko target system ki bhasha mein translate करता है) aur usko external group में add kar deta hai.
+
+AD groups
+
+LDAP groups / Application roles
+
+Image 1 (Page 91)
+(Is page par bada circle/cross bana hua hai)
+
+-> Membership Sync :-
+
+Group ke andar kaun kaun user hai,
+
+-> members add karega
+
+-> members remove karega
+
+-> Group ka Entitlement store karta hai.
+
+-> Har group = ek entitlement है।
+
+-> Managed Attribute update:-
+
+identityiq में groups ke managed Attributes ke form में store hua hota है।
+
+Refresh identity cube kya hai?
+
+-> Ye ek processing Task है । har user ki identity profile update karta है।
+
+Image 2 (Page 92)
+Task initialization :- Jab Tu Refresh identity cube run karta है, Deep Flow:-
+
+-> Refresh identity cube internal
+
+-> system check karta hai ki kaun kaun identity process karni hain (All/Filtered/Single identity)
+
+-> config flags read karta है:-
+
+Re-evaluate roles?, provisioning enable?, Disable optimization?
+
+-> yahi decide hota hai ki kitna heavy processing hone wala है।
+
+92
+
+identity Object Load :- internally:-
+
+-> DB fetch -> system query chalata hai
+
+-> SELECT * FROM spt_identity WHERE id=? ; load hote है:-
+
+-> id -> name -> display_name -> email -> manager_id -> attributes (XML/JSON form)
+
+Image 3 (Page 93)
+identity object Load:-
+
+-> ye step hai jahan identity ko database se runtime memory में utha ke ek "working model" banata है। yehi object baad me modify hota hai (roles, entitlements, policies sab isi pe lagengi).
+
+-> Internal working :- Task decide karta hai kaunsi identity load karni hai (single/multiple/filtered)
+
+-> Ex -> Filter: department = IT AND status = Active
+
+93
+
+-> System query chalata hai:-
+
+SQL: SELECT * FROM spt_identity WHERE id=?
+
+-> Data aata hai :-
+
+identity_id
+
+name
+
+display_name
+
+email
+
+manager_id
+
+attributes (XML/JSON blob)
+
+Image 4 (Page No Not Visible, approx 94)
+-> DB row -> convert hota hal Java identity object में । (internal structure:-
+
+identity ?
+
+id, name, displayName, attributes (Map<String, Object>), links (lazy reference), entitlements (lazy reference), roles (lazy reference) = ?
+
+isko bolte hai Object Hydration.
+
+-> identity ke attributes ek Map structure में store hote है।
+
+-> attributes = { department: "IT", location: "India", title: "Engineer" }
+
+Ye map baad me rules, policies, role assignment में use hota है!
+
+-> Lazy loading architecture :- System performance ke liye ek hi baar me sab kuch load nahi karta.
+
+Links -> tab load hote Jab need ho.
+
+Entitlements -> tab load hote Jab need ho.
+
+Roles -> tab load hote Jab need ho.
+
+Image 5 (Page 95)
+-> Core Attributes : First Name, Last Name, Email, manager.
+
+-> Links (Accounts) :- Active directory, LDAP, SAP, naiqara lie 10-15 accounts.
+
+-> Entitlements/Exceptions :- Hazaron permissions Ya groups.
+
+-> Role Assignments :- Dozens of IT aur Business Roles.
+
+95
+
+-> Agar Sailpoint database se kisi user ka poora kaccha chittha (Sab-Kuch) memory (RAM) में load kar de to System Out of memory error deke crash ho jayega isiliye sailpoint lazy loading ka use karta है।
+
+-> Lazy loading ke Sath (Smart tarika):- (Map hold Context.getObject identifier, class), Amit);
+
+Image 6 (Page No Not Visible, approx 96)
+-> Jab aage bola -> identity object = context.getObjectByName(Identity.class, 'Amit kumar');
+
+-> Tab Sailpoint database se identity ki sirf basic attributes (name, Email, Dept) laata hai uske accounts (Links) aur Entitlements abhi database में hi hain. Memory (RAM) में Accounts aur Entitlements ki jagah ek proxy rakha hota hai, Jo ki khali dabba hota है।
+
+-> The Trigger(Hook) :- Ab achanak aapne identity object.getLinks() RAM में se run kiya, to proxy alert hoga "Oye mere paas toh data nahi hai!" Ab proxy data lene database me jayega aur tab lazy loading hota hai.
+
+-> Hamesha lazy loading database ki adad(help) se hota है।
+
+Image 7 (Page 97)
+-> Cache layer :- Agar identity cache में hai, to DB hit nahi hota!
+
+-> State initialization wo process hai jahan DB ka kachha data memory me aakar ek Smart, trackable Java object banta hai (XML parsing, lazy load proxies set karna aur Context lock lagana).
+
+-> Chaliye chaar steps mein samajhte है:-
+
+97
+
+The core data load (Basic):-
+
+Hibernate sabse pehle Spt_identity table se basic columns ko memory mein lata hai.
+
+-> Jaise :- id, name, firstname, lastname, type.
+
+-> Object abhi aage-aadhura hai, sirf zaroori cheeze memory me aayi hai.
+
+Image 8 (Page No Not Visible, approx 98)
+-> The Extended Attributes Parsing :-
+
+Sailpoint mein cost center, jobtitle, location, Jaise custom attributes, ye sab ek single column (Jiska naam attributes hai) mein XML format me ek sath compressed hote है!
+
+-> Initialization ke time Sailpoint is XML ko ek Java Map (Key-value) format me unpackage karta hai.
+
+-> Ex -> <Map><entry key="location" value="India"></Map> -> identity.getAttributes("location") mein badal deta है।
+
+-> Proxy placement (Lazy loading) :-
+
+Jaise humne pichle lazy loading mein dekha tha ki Sailpoint Manager ko turant entitlements Hibernate yahan par nahi lata. Hibernate yahan par asli data ki jagah kuch khali dabba (proxies) rakhte hai) Taki system ko pata chalta hai ki "Zaroorat padega tab DB se data laenge" Tab bhar dunga." yahi lazy loading ka hook है।
+
+Image 9 (Page 99)
+-> Hibernate session attachment (clean state lock) :- Aakhiri aur sabse crucial step:- object bankar taiyar hone ke baad, wo SailpointContext (Hibernate Session) se attach hota hai (attach ho Jaye).
+
+-> Is waqt object ki state ko 'persistent' aur 'clean' kaha Jata है।
+
+-> Clean = Iska memory (RAM) aur DB_wale data # me farq (difference) nahi hai (dono same hai).
+
+Pre-Refresh Hooks :-
+
+MS word Analogy :-
+
+Object load (File Kholna) :- Aapke Hard Drive (DB) se Amit_Profile.docx naam ki ek file MS-word mein kholi. Usme likha hai: Department = Sales.
+
+Dirty State (unsaved changes):- Aapne MS word mein 'Sales' ko delete karke 'IT' type kar diya.
+lekin dhyan dijiye apne abhi ctrl+s nahi kiya toh aapko naya data abhi sirf ms-word ke screen par hai.db me purana data(sales) hai toh,
+
+Object Refresh (Revert karna): Maan lijiye aapka lagta hai, "Maine galat type kar diya",
+aur aap (revert to saved) (Ya reload) ka button daba dete hain.
+Ishka matlab hai aap MS word ko bol rahe hain:- screen wale data ko hatao aur Hard drive (DB) se data lao nayi fresh laa kardo.
+
+The pre-Refresh Hook (The warning popup):- Jaise hi aap 'Reload' dabate hain, kya file turant naya aa Jati hai?
+Nahi! MS word ek popup dikhata hai:- Sun lijiye warning aapne kuch changes kiya hain Jo save nahi hue.
+Agar aap Reload karenge toh ye changes delete ho jayenge. Kya reload se pehle aapko inka kuch karna hai?
+
+Bhai sailpoint ke andar yahi warning popup aapka PRE-REFRESH Hook hai.
+
+Image 2 (Page 101)
+(A) Pre Refresh Hooks in Sailpoint (identity object load) :-
+
+-> Jab memory mein kisi identity object mein aapne code ke through changes kiye hon (jo saved nahi hue hain) aur achanak Sailpoint us object ko DB se reload karne ki koshish karta hai, toh purane data overwrite hone se theek ek second pehle system ek internal alarm bajata hai. Is alarm ko sunne ka kaam "pre-refresh hook" karta hai.
+
+-> Developer is alarm ka kya karta hai?
+
+-> Developer in warning wale waqt par apna custom code chala sakta hai. Jaise:-
+
+"Achha, object reload ho raha hai? Pehle purane unsaved changes ko kisi log file mein print kar do" taaki baad me pata chale ki humne kya khoya hai."
+
+Image 3 (Page 102)
+(B) Post Refresh :- ye flow mein aati hai.
+
+-> Jab aap identity Refresh task run karte hai, aur system ek-ek karke identity objects ko DB se load karta hai (process karne ke liye) tab Sailpoint aapke un objects ke data me custom code inject karne ki permission deta hai (inhi injections ko hooks kahte hai).
+
+(Niche ek line MS Word analogy se related buri tarah kaati/scribble ki hui hai)
+
+Image 4 (Page 103)
+(3) Links (Accounts) Fetch -> core Step:
+
+System user ke saare accounts (links) fetch karta hai. Table:- Spt_link.
+
+Example:- Har account ek link object hota hai!
+
+USER : Rahul
+
+ACCOUNTS:-
+
+AD -> rahul123
+
+DB -> rahul_db
+
+SAP -> rahul_sap
+
+(4) Correlation validation :- check karta hai:- koi account galat identity se linked toh nahi? Agar issue mila:-
+
+-> Re-correlation ho sakta hai
+
+Ex-> AD account : rahul123 linked to : Aman -> correct identity : Rahul.
+
+(5) Attribute Promotion (Data Sync) :-
+
+-> Application attributes -> identity attributes
+
+Ex:- AD.department -> identity.department
+
+-> AD.title -> identity.title
+
+-> AD.FirstName -> identity.Firstname
+
+Image 5 (Page 104)
+-> Ye mapping application schema me define hota hai.
+
+Important:-
+
+-> Multiple app me conflict ho toh priority decide hoti hai!
+
+(6) Entitlement Extraction :-
+
+-> Har account se entitlement nikale jaate hain.
+
+Ex-> AD Groups:-
+
+-Developers
+
+-Admin
+
+DB Roles:-
+
+ReadAccess
+
+-> Source:-
+
+Spt_links -> Spt_managed_attribute
+
+(7) Spt_managed_attribute kya hai?
+
+-> Ye Sailpoint identity ki DB table hai, isme store hota hai:-
+
+-> Entitlements (Groups / Roles / Permissions)
+
+Image 6 (Page 105)
+(7) identity Entitlement Build :-
+
+yaha DB me store ho jata hai. Kya Spt_managed_attribute me sab live store hota hai? -> Direct live nahi hota jab data aata hai Tabhi aggregation ke through managed connector system se data laata hai aur identity me store karta hai. Sab account ke entitlements combine karke identity me ek bada table:- Spt_identity_entitlement.
+
+(8) Role Assignment Rules :-
+
+Ab System rules run karta hai:-
+
+Ex:- if Department = IT AND location = India -> Assign Role = Developer
+
+-> Ye dynamic assignment hoti (rule-based)
+
+(9) Role Expansion:-
+
+Yaha System roles ke andar chupe hue access (entitlements) nikalta hai.
+
+Role = bundle of access / Expansion = us bundle ko todna.
+
+Internally kya hota hai?
+
+-> Role fetch -> identity se assigned roles uthata hai.
+
+Image 7 (Page 106)
+-> Table:- Spt_role_assignment
+
+(10) Role Definition Read:-
+
+Har role ka structure read karta hai.
+
+-> Table -> Spt_Bundle
+
+-> Role: Developer, Type: IT Role
+
+(11) Role Composition Analysis:-
+
+-> Role ke andar ho sakta hai:-
+
+-> Entitlements
+
+-> profiles
+
+-> Nested Roles
+
+-> Table:- Spt_profile -> Spt_profile_constraint
+
+(12) Expansion algorithm Run:-
+
+-> System internally kuch aisa rasta banata hai:-
+
+-> for each role: get entitlements add to identity.
+
+-> hamesha user ke paas jitne roles hai, Har role se nikalta hai ki kisko kya dena hai.
+
+Image 8 (Page 107)
+(A) Entitlement Extraction :- Ek role se users ko assign kar do entitlement.
+
+Entitlement nikalo, sab Entitlement ko assign karo.
+
+Ex-> Role: Developer contains: AD group -> Dev, DB Role -> ReadAccess, Jira ACCESS
+
+(8) identity Entitlement injection kya hai?
+
+-> Jo Access nikala (Extraction), wo user ke account me inject karna.
+
+Aur store hota hai identity ke DB Spt_identity_entitlement me!
+
+(9) Source tracking kya hota hai?
+
+-> Har entitlement ke Sath system metadata Attach karta hai:-
+
+-> Type = INDIRECT
+
+-> Source = Role
+
+-> Role = Developer
+
+Image 9 (Page 108)
+-> Type = INDIRECT :- ye entitlement user ko directly nahi diya gaya. ye kisi Role ke through aaya hai.
+
+-> Source = ROLE :- ye access ka source "Role" hai. Matlab system bol raha hai ye access role ki wajah se mila hai.
+
+-> Role = Developer:- Exactly kaunsa role se mila?
+
+-> Answer = Developer role.
+
+(11) Duplicate & conflict Handling:-
+
+-> Same entitlement multiple baar na aaye.
+
+Ex-> Rahul ke paas:-
+
+-> Direct -> DevGroup
+
+-> Role (Developer) -> DevGroup
+
+System kya karega?
+
+-> 2 entries nahi banayega.
+
+-> Ek hi entitlement rakhega.
+
+Image 10 (Page 109)
+Priority logic:- System internally Priority follow karta hai:-
+
+-> Direct -> Highest Priority
+
+-> Role (indirect) -> lower Priority
+
+-> Agar role hata diya:-
+
+-> Direct hai -> access rahega
+
+-> Sirf role tha -> access remove.
+
+-> Duplicate ko merge karta hai, repeat nahi hone deta!
+
+(Ek bada hissa pen se kata/gol kiya hua hai): Expected Access Modeling kya hota hai? -> System calculate karta hai:- Aapke paas kya access hona chahiye. Ex -> Rahul -> Role: Developer. Expected:-
+
+(F) Direct vs indirect Access:-
+
+(1) Direct ACCESS :- user ko manually ya directly diya gaya.
+
+Ex -> Rahul -> Dev Group (direct)
+
+-> Source:-
+
+-> type=Direct
+
+-> Source=Request/Manual
+
+Image Transcription (Page 110)
+(2) Indirect Access :-
+-> Role ke through mila access.
+Ex -> Rahul -> Developer Role -> Dev Group
+
+-> Source : (ek word kata hua hai)
+type = INDIRECT
+Source = ROLE
+role = Developer
+
+(Star/Asterisk mark) -> Expected Access Modeling Kya hai?
+110
+-> System internally calculate Karta hai :-
+-> user ke pass kya access hona chahiye.
+
+-> Expected = ideal access (role/policy ke hisab se).
+
+-> ye banta Kaise hai?
+
+-> Based on:-
+-> Roles (Developer, Admin, etc).
+-> policies
+-> Business rules
+
+10) Policy Evaluation (Security Check)
+Policies run hoti hain
+Example:
+User ke paas:
+Admin
+Auditor ❌ (SoD violation)
+Result:
+→ Violation object create hota hai
+Table:
+→ spt_policy_violation
+11) Risk Score Calculation
+System calculate karta hai ki user kitna risky hai
+Factors:
+Sensitive access
+Violations
+Role criticality
+12) Provisioning Comparison
+System check karta hai:
+Expected
+
+→ System ke hisaab se kya hona chahiye
+
+Actual
+
+→ Real me user ke paas kya hai
+
+Difference
+
+→ Kya add/remove karna hai
+
+Example:
+User: Rahul
+Role: Developer
+Expected Access:
+Dev Group
+Git Access
+Jira Access
+Actual Access:
+Dev Group
+Admin Group ❌
+Result:
+Missing → Git, Jira (ADD)
+Extra → Admin (REMOVE)
+13) Identity Cube Rebuild
+Ye final stage hai
+Yahan system naya identity cube dobara banata hai
+Sab calculations ke baad final snapshot banta hai
+Internal:
+Identity Context Initialization
+System ek naya IdentityContext/SailPointContext banata hai
+Internal Engine Working
+1) Stale Data
+Purana / outdated data
+Jab application me update ho jaye lekin IdentityIQ me na aaye
+→ mismatch hota hai → isi ko stale data bolte hain
+2) Working Identity Object
+Rebuild start hota hai
+Ek working identity object banta hai jisme sab calculate hota hai
+Isme kya hota hai:
+Attributes (promoted)
+Links (accounts)
+Entitlements (direct + indirect)
+Roles
+Violations
+
+→ Ye sab previous steps (role expansion, policy) se aata hai
+
+3) Transaction Start
+Saare operations ek transaction me hote hain
+Agar error → rollback
+Agar success → commit
+Rollback Kya Hota Hai?
+Agar provisioning me error aa jaye
+→ jo kaam ho chuka hai usko reverse kar dena
+Example:
+Step 1: AD me access de diya ✅
+Step 2: DB me access dena tha ❌ (fail ho gaya)
+Rollback:
+
+→ AD wala access bhi hata diya jayega
+
+Full Example Code (Simplified Hinglish)
+import sailpoint.api.SailPointFactory;
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.ManagedAttribute;
+
+public class RollbackExample {
+
+    public static void main(String[] args) {
+
+        SailPointContext context = null;
+
+        try {
+            context = SailPointFactory.createContext();
+
+            Identity identity = context.getObjectByName(Identity.class, "Rahul");
+
+            ManagedAttribute attr = context.getObjectByName(
+                ManagedAttribute.class, "Dev Group"
+            );
+
+            identity.addAttribute("memberOf", attr.getValue());
+
+            context.saveObject(identity);
+            context.commitTransaction();
+
+            System.out.println("Success: Access added");
+
+        } catch (Exception e) {
+            System.out.println("Error aaya: " + e.getMessage());
+
+            if (context != null) {
+                context.rollbackTransaction();
+                System.out.println("Rollback ho gaya");
+            }
+			finally{
+			if(context!=null)
+			{
+			context.close();
+			}
+        }
+    }
+}
+4. Cleanup phase (Hard Reset of calculated Data) :-
+
+=> purana data Kyu bolte Hai?
+
+-> Yaha purana ka matlab time nahi hota x
+-> Matlab hota hai ->
+"ab reliable nahi hai. / stale ho sakta hai."
+
+Ex -> Ye data 1 second pehle hi bana ho Tab bhi delete ho sakta hai.
+
+-> Role abhi change hua
+-> 1 sec pehle expected access bana tha
+-> wo bhi "purana" ban gaya.
+
+Image 1
+
+-> Derived/Calculated data kya hota hai?
+-> Jo data directly system me store nahi hota, balki calculate hota hai.
+
+Ex -> Source data:-
+Role = Developer
+
+-> Derived data:-
+Dev Group
+DB Read
+Jira Access
+-> Ye Derived Data system ne nikala hai Direct Store nahi Hota Hai.
+
+1. Source data Kya hota hai?
+-> Source = asli (original) data jo system se aata hai.
+
+Ex -> AD / DB / HR System
+-> Accounts
+-> Users
+-> Direct entitlements
+
+-> Rahul (Identity)
+AD Account
+DB Account
+ye sab = Source DATA
+
+Image 2
+
+2. Derived data Kya hota Hai?
+-> Derived = system re calculate karke banaya hua Data Derived data hai.
+
+Ex -> Role expansion
+-> Indirect entitlements
+-> Expected access
+-> Risk Score
+
+-> Dev Group (From Developer Role)
+-> DB read (From role)
+
+-> ye sab = Derived Data hai.
+
+Cleanup phase:-
+-> identity cube rebuild ke time purana calculated data hata diya jata hai = cleanup phase.
+
+Kya delete nahi hota?
+-> Identity basic data
+-> Accounts (links)
+-> Aggregated data
+-> Direct entitlements
+matlab source data safe rehta hai.
+
+Image 3
+
+Kya Kya delete karta hai?
+-> Sab calculated data delete:-
+-> indirect entitlements (role se aate hai)
+-> Role expansion result
+-> policy violations
+-> RISK scores
+-> Expected access data
+
+-> Ye sab :- 100% wipe (hard reset)
+
+Ex -> Rahul:
+Role: Developer (1 saal purana)
+Indirect: Dev Group
+
+Cleanup phase:-
+Role-based data x delete
+Indirect entitlements x delete
+-> chahe kabhi bhi assign hua ho.
+
+Link Rebinding (ACCOUNTS Attach)
+-> List<Link> links = context.getLinks(identity)
+identity.setLinks(links)
+
+-> identity ke saare accounts (links) ko dubara identity ke sath attach karna = Link Rebinding.
+
+Image 4
+
+Rebinding kya karta hai?
+-> Rebuild ke time:-
+-> Purane calculated data delete ho chuka hota Hai.
+
+-> Ab System ko fir se samajhna padta hai:
+"Kaun sa account kis identity ka hai?"
+
+Internally kya hota hai?
+
+System:-
+-> spt_link table scan karta hai.
+-> Account -> Identity match karta Hai.
+-> correlation rules apply karta hai.
+-> Links re-attach karta hai.
+
+Attribute Finalization:-
+-> promoted attributes apply hote hain:
+-> identity.setAttribute("department", "IT");
+
+Page 121
+
+Calculated Data kya hota hai?
+-> Calculated data = wo data joh system ne khud rules, roles aur policies se compute karta hai (direct source se nahi aata).
+system ne jo apne aap banaya wahi calculated data hai.
+
+-> easy Example :- Rahul Ka source data :-
+-> Role = Developer
+
+-> System Calculate Karega :-
+-> Dev Group
+-> DB Read Access
+-> Jira Access
+-> ye sab = CALCULATED DATA Hai.
+
+Kaise banta hai calculated data?
+-> Based On :-
+-> Roles expansion
+-> policies (SOD, rules)
+-> Access requests
+-> Identity cube logic
+
+Types of calculated Data?
+
+Role-based entitlements
+-> Developer role -> Dev Group, Jira Access, DB read Access
+
+Page 122
+
+-> indirect access -> Role se mila access.
+
+-> Expected access ->
+SailPoint system ke hone ke anusar access ki kis user ke paas kaun access hona chahiye.
+-> Risk score
+-> Policy violations
+
+Source vs Calculated/Derived :-
+Type
+-> Source Data :- Real target system se aaya data.
+-> Calculated/Derived Data :- System ne generate kiya Data.
+
+Note: -> Calculated == Derived
+
+Attribute Finalization (identity cube rebuild) :-
+-> Attribute Finalization = last step jahan calculated identity attributes ko finally stable identity record me
+
+Page 123
+
+commit(lock) - kiya jata hai.
+-> Simple one line -> sab calculated ho gaya -> ab identity ko final form me set kardo.
+
+internally kya hota hai?
+-> System :- Calculated attributes read karta hai.
+-> identity object me merge karta Hai.
+-> old values overwrite karta hai.
+-> Final snapshot save karta hai?
+
+Kya finalize hota hai?
+-> Roles, Entitlements, Risk score, policy result, Identity attributes.
+
+Flow position :-
+-> Cleanup phase
+↓
+Link Rebinding
+↓
+Role Expansion
+↓
+Entitlement Calculation
+↓
+Attribute Finalization
+↓
+Identity cube ready.
+
+Page 124
+
+One line : Attribute Finalization is the process of committing all recalculated identity attributes into the final identity cube state rebuild processing.
+
+Direct Entitlement injection :-
+-> Account(Link) se jo direct entitlements aate hain unko identity ke sath attach karna.
+-> Account ke andar jo access hai -> usko identity me inject kar do.
+
+Step by step samjh :-
+Step 1 -> Link = user ka account
+Ex -> Rahul -> AD Account -> DB Account
+
+Step 2 -> Entitlements nikale jate hai :-
+Ex -> AD Account -> Dev Group
+-> DB Account -> Read Access
+
+Step 3 -> Managed Attribute Mapping :-
+Ex -> System check karta hai :-
+-> Dev Group exist karta hai kya?
+-> DB ReadAccess valid hai kya?
+
+Page 125
+
+Table :- Spt_managed_attribute
+
+Step 4 -> Identity Entitlement create hota hai :-
+-> Identity : Rahul
+-> Entitlement : Dev Group
+-> Type : DIRECT
+-> Source : LINK
+
+Step 5 -> Identity me attach :-
+-> Ab Rahul ke profile me aa gaya
+-> Dev Group, Read Access.
+
+Role-Based Entitlement :-
+-> Role ke through jo entitlements aate hain unko identity me attach karna = Role Based (Indirect) injection.
+~~-> user ko direct~~
+
+Idea Flow :-
+-> Identity -> Role assigned
+↓
+-> Role Expansion
+-> Entitlements extracted
+↓
+-> Role - Based injection (indirect)
+↓
+-> Identity Entitlement attach
+
+Page 126
+
+Identity Entitlement List Finalize (Identity Cube) :-
+-> is step me identity ke sare entitlement ko final clean list me lock kiya jata hai.
+
+What happens here?
+-> System does :-
+• Direct entitlements (from accounts)
+• Indirect entitlements (from roles)
+• Duplicate remove
+• conflicts resolve
+• Final list prepare.
+
+Final output kya hota hai?
+-> Ek complete identity Entitlement set :-
+-> Dev Group (DIRECT)
+-> DB ReadAccess (INDIRECT)
+-> Jira user (INDIRECT)
+
+Step-by-step process :-
+-> Step 1 : collect all entitlements
+-> From Links -> Direct
+-> From Roles -> Indirect
+
+Page 127
+
+Step 2 -> Merge :- Sab entitlements ko ek list me merge/combine :-
+-> Dev Group
+-> DB ReadAccess
+-> Jira user
+
+Step 3 -> Duplicate handling :-
+-> Agar same entitlement aaye :-
+-> Dev Group (DIRECT + INDIRECT)
+-> merge kardo inko.
+
+Step 4 -> conflict resolution :-
+-> Priority rules :- Direct > Indirect
+-> Latest Role mapping wins (if conflicts)
+
+Step 5 -> Final Freeze :-
+-> Ab system bolta hai.
+-> ye hai final entitlement list identity ki.
+
+Real Example :-
+-> Rahul-> 
+
+Direct :-> 
+-> Dev Group-> 
+-----
+Indirect :->DB read / Access,
+ Jira user
+ 
+Page 128
+
+Final list :-
+-> Dev Group (DIRECT)
+-> DB ReadAccess (INDIRECT)
+-> Jira user (INDIRECT)
+
+Role Assignment Rebuild :-
+-> is step me identity ke andar roles ko dubara calculate karke assign kiya jata hai.
+
+-> user ko kaun-kaun se roles milne chahiye system ye calculate karke set karta hai.
+
+-> system bolta hai :- ki ish identity ke paas koun roles valid hain.
+
+Ex -> Before Rebuild :-
+-> Rahul
+-> Roles : Developer (old data)
+
+-> System recalculates :-
+-> Calculated Roles :-
+-> Developer
+-> QA Tester
+
+Page 129
+
+After assignment :-
+identity.setRoles([Developer, QA Tester])
+
+spt_role_assignment kya hai?
+-> ye Table store karta hai :
+-> Identity -> Role mapping
+-> Active role assignments
+-> Recalculated Results
+
+Table structure idea :-
+-> Spt_role_assignment
+identity_id
+role_id
+assignment_type (calculated/direct)
+source (Rule / request)
+
+Role Assignment Rebuild kya karta hai.
+-> Old roles clear/replace :-
+purane calculated roles hata deta hai.
+
+-> new roles calculate :- Rules + policies ke basis pe.
+
+Page 130
+
+-> Assign roles again :-
+Identity ke andar set karta hai.
+
+1. Direct vs calculated roles :-
+
+a. Direct Role kya hai?
+-> user ko manually / request se assign kiya gaya role.
+Ex -> Rahul ko admin ne Role diya, tab Rahul ne Request kiya Role ka.
+
+b. Calculated Role kya hai?
+-> System ne Rules/policies/attributes ke basis pe khud assign kiya Role, hi Calculated Role kehlata hai.
+
+Ex -> Rahul :-
+-> Department = IT
+-> Job = Engineer
+-> System Calculate Karega.
+
+-> Role : Developer (calculated)
+-> source : Rule / policy
+
+Page 131
+
+Role kaise purana ho jata hai?
+-> 1. Attribute change :-
+-> Rahul
+-> Dept = IT
+-> Role = Developer
+fir baad me Dept = HR
+-> Now Developer role old and not valid and outdated.
+
+7. Policy violation injection :-
+-> System jo policy violations detect karta hai, unko identity cube me attach karta Hai, user ne koi rule break kiya toh uss violation ko system se identity cube me attach kar diya.
+
+Ex -> Rahul :-
+-> Role: Developer
+-> But also has = Finance DB Access
+
+-> SOD policy
+-> Developer + Finance DB = VIOLATION
+
+-> Injection result :- policy Violation
+-> SOD conflict
+-> Finance Access not allowed for developer.
+
+Page 132
+
+Internally kya hota hai?
+-> System -> for each identity:
+check policies:
+if violation found:
+create policy violation object
+attach to identity cube
+
+-> Where stored ?
+-> Mostly -> spt_policy_violation identity cube object
+
+Risk score calculation Attach kya hota hai?
+-> Identity ka overall risk calculate karke identity cube me attach karna.
+-> user kitna dangerous hai / risky hai score me convert karna.
+
+Ex -> Rahul :-
+Finance access
+Admin rights
+Multiple violations
+
+Page 133
+
+-> Risk Score kaise banta hai.
+-> Based on :-
+-> policy violations
+-> Sensitive Entitlements
+-> Role critically
+-> Access type (admin > user)
+
+8. Consistency engine :-
+-> System verify karta hai ki identity cube ka data internally consistent hai ya nahi.
+
+-> Consistency engine ek internal validation / correction layer jo identity cube rebuild ke end me ensure karta hai ki poora identity data logically sahi, aligned aur conflict free ho.
+
+-> Jo abhi calculate hua hai -> wo sach me valid hai ya nahi, system verify karta hai.
+
+-> inter ------->
+
+Page 134
+
+Internal working (Engine level logic)
+-> For each Identity:
+Validate Links (accounts)
+Validate Direct Entitlements
+Validate Indirect Entitlements
+Validate Role assignments
+Compare Expected vs Actual
+Check duplicates
+Check orphan data
+Fix inconsistencies
+mark identity as consistent
+
+Expected vs Actual validation :-
+-> System ka sabse pehla sawal :-
+-> "user ke paas jo hona chahiye (Expected) vs jo actually hai (Actual) - match kar raha hai ?"
+
+-> cases to check * :-
+
+-> case 1 : Match :-
+-> Expected: Dev Group ✓
+-> Actual : Dev Group ✓
+-> All good
+
+Page 135
+
+-> case 2 : Missing :-
+Expected : Dev Group ✓
+Actual : X
+-> problem :- Role hai IIQ me but access nahi in Account Application me.
+toh provisioning trigger ya Flag.
+
+case 3: Extra :-
+Expected : X
+Actual : Finance DB ✓
+-> problem :- unauthorized access
+Toh deprovision ya violation trigger.
+
+Core logic :- Expected != Actual = inconsistency
+
+Role Entitlement Dependency check :-
+-> system check karta hai :-
+-> Agar role hai toh uske entitlements bhi hone chahiye.
+Ex -> Role : Developer
+Expected Entitlement : Dev Group
+
+Page 136
+
+-> X case :- Role: Developer ✓
+Dev Group X
+-> Problem -> role incomplete ho gaya, Action Recalculate ya inject.
+
+8. Duplicate Handling :-
+-> system check karta hai :-
+-> same entitlement multiple sources se aa raha hai kya?
+
+Ex -> Dev Group (Direct)
+Dev Group (Indirect)
+
+System kya karta hai ?
+-> Duplicate remove nahi karta blindly, merge karta hai + source track karta hai.
+-> Direct > Indirect
+
+core logic :- Duplicate allowed nahi but source info lost nahi hona chahiye.
+
+Page 137
+
+source integrity check :-
+-> system har entitlement se poochta hai :-
+-> "Tu kaha se aaya ?"
+
+-> Metadata check :-
+-> type = INDIRECT
+-> source = Role
+-> Role = Developer
+
+X Problem case :- Role hi exist nahi karta :-
+-> Role = Developer X (deleted)
+-> Entitlement still present
+-> Action :- invalid source -> remove/Fix.
+
+Orphan Data detection :-
+-> system check karta hai ki koi aesa access Toh nahi jo kisi source se linked hi nahi hai ?"
+-> Ex -> Entitlement: AdminPanelAccess
+Source : X unknown
+
+-> Na hi role se aaya, Na hi account se, -> orphan. toh action hoga ki Remove/Flag.
+
+Page 138
+
+Link consistency (Account check) Deep :-
+-> system verify karta hai :-
+-> identity ke accounts (links) valid hain ya broken?
+
+Ex -> Rahul :- AD Account ✓
+-> Rahul :- DB Account X deleted
+-> Problem :- link Broken
+-> Action trigger -> Fix mapping ya detach account.
+
+Policy & Risk Alignment :-
+-> system check karta hai :-
+violations aur risk score sahi reflect ho rahe hain ?
+
+-> Ex -> Finance + Developer = Violation ✓
+-> But risk score low hai :-
+-> Risk = 20 X
+
+-> Problem :- Risk mismatch
+-> Action -> Risk score Recalculate.
+
+-> core logic:- violation high = risk high hona chahiye
+
+Page 139
+
+identity object Freeze :-
+-> Jab poora rebuild complete ho jata hai, tab identity ko final stable aur consistent state me lock kar diya jata hai. matlab abb sab sahi hai, ab identity ko freeze kardo.
+
+-> 1. identity.markClean() :-
+-> identity me koi pending change nahi sab calculations complete, object ab clean state me hai.
+
+-> 2. identity.setDirty(false) :-
+-> Dirty = changes pending X
+-> False = no changes left.
+
+Ex -> Rahul :
+-> Roles : Developer ✓
+-> Entitlements : Dev Group ✓
+-> Risk : medium ✓
+-> Violations : none ✓
+
+-> Ab system kya karega toh upar ke dono methods perform karega.
+-> freeze ke baad system dobara calculate nahi karta, jab tak next refresh / Rebuild na ho.
+
+Page 140
+
+15. Persistence Layer :-
+-> identity cube me jo final data bana hai, usko database tables me store karna hi = persistence Layer hai.
+
+identity update :-
+UPDATE spt_identity SET...
+WHERE id = ?
+
+-> kya update hota hai ?
+-> identity attributes
+-> risk score
+-> Flags (dirty = false)
+-> metadata
+
+Ex -> Rahul :
+-> Risk score = 85
+-> Dirty = false
+-> ye sab spt_identity me update hota hai.
+
+Entitlement insert :-
+INSERT INTO spt_identity_entitlement(...)
+
+-> kya insert hota hai ?
+-> Direct entitlements
+-> Indirect entitlements
+-> source tracking
+
+Ex -> Rahul -> Dev Group (DIRECT)
+-> Rahul -> DB Read (INDIRECT)
+-> Har entitlement ek row banata hai.
+
+Page 141
+
+11. Role Assignment :-
+-> INSERT INTO spt_role_assignment (...)
+-> kya insert hota hai?
+-> Identity -> role mapping
+-> Direct roles
+-> Calculated roles
+
+Ex -> Rahul -> Developer role
+Rahul -> IT Access role
+
+12. Policy violations insert :-
+-> INSERT INTO spt_policy_violation (...)
+-> kya insert hota hai?
+-> SOD violations
+-> policy conflicts.
+
+Ex -> Rahul :
+-> Developer + Finance = Violation
+
+Page 142
+
+13. commit Transaction :-
+-> context.commitTransaction()
+-> Agar error :-
+-> context.rollbackTransaction()
+
+14. Indexing Engine Trigger :-
+-> Identity ka updated data fast search ke liye index system me push karna.
+-> indexService.update(identity);
+
+Matlab :- identity ka latest data utho aur ushko indexing engine (Lucene/Elastic type) me update karo.
+
+* Kaun-Kaun se Fields index hote hai?
+-> mostly :-
+-> Name, Entitlements
+-> Email, Manager
+-> Roles, Risk-Score
+
+Ex -> Rahul :
+-> Name : Rahul
+-> Role : Developer
+-> Entitlements : Dev Group
+-> Risk : Medium
+
+Page 143
+
+Q. Real use case :-
+-> Jab tu UI me search karta hai
+-> identity search
+-> role search
+-> access search
+-> sab indexing pe depend karta hai.
+-> Agar indexing na ho toh search slow, aur New data reflect nahi hoga, UI outdated dikhega.
+
+15. Event / Workflow Trigger :-
+-> post-rebuild Events :-
+-> Certification, workflow, Alert
+
+Q. Flow of identity cube Rebuild :-
+-> Working Identity Object
+-> Start Transaction
+-> Delete Old data
+-> Attach Links
+-> Inject Direct Entitlements
+-> Inject Role Entitlement
+-> Attach Roles + Violations
+-> Validate (Consistency Engine)
+-> Freeze Identity
+-> persist to DB
+-> commit Transaction
+-> Index + Events
+
+Page 144
+
+14. Database update :-
+-> Sab kuch DB me save hota hai :-
+-> Spt_identity
+-> Spt_identity_entitlement
+-> Spt_role_assignment
+-> Spt_policy_violation
+
+15. UI Reflection + Audit :-
+-> UI me updated data dikhega.
+-> Audit logs store honge.
+
+1. Identity Cube ek central object Jisme ek user ki poori duniya stored hoti hai.
+-> user attributes (name, dept, manager)
+-> Accounts (AD, DB, SAP...)
+-> Entitlements (Groups, Permissions)
+-> Roles (Business + IT)
+-> policy violations
+-> Risk score
+
+Page 145
+
+* Flow of refresh identity Cube :-
+-> Identity load
+↓
+-> Accounts (Link) Fetch
+↓
+-> Correlation check
+↓
+-> Attribute promotion
+↓
+-> Entitlement Extraction
+↓
+-> Identity Entitlement Build
+↓
+-> Role Assignment
+↓
+-> Role Expansion
+↓
+-> Policy Evaluation
+↓
+-> Risk Calculation
+↓
+-> Provisioning compare
+↓
+-> Identity cube rebuild
+↓
+-> DB save + UI update.
+
+Page 150
+
+* How to configure group population / group / workgroup :-
+-> Setup -> group -> Create New group
+-> group attribute ->
+-> isme location nahi to. ->
+-> Global settings -> identity mapping -> Location -> group Factory -> [checkbox] -> fir
+save -> setup -> group -> create New group -> Group Attribute -> Location -> Name -> Location Based Group -> Enabled -> [checkbox]
+-> Group owne rule -> kuch nahi
+-> Save -> and How it will trigger the group -> setup -> tasks -> refresh Identity cube -> ctrl + f ->
+-> group -> yaha Refresh the group scorecards -> [empty checkbox] khali chhod do kyonki -> Sailpoint ek aur ye hi Task alag se provide karta hai.
+-> tasks -> search -> Refresh group
+-> scroll down ->
+Refresh the group scorecards -> [checked box] -> save and execute.
+unsave aur tasks -> refresh identity cube -> scroll -> refresh the group scorecards -> [unchecked box] -> kyonki refresh identity cube me bahut saara data hai identity ka.
+
+Page 151
+
+Note -> Refresh group scorecards Kya karta hai?
+-> Group scorecards basically summary / analytics data hote hain jo batate hain :-
+
+-> Kitne users kisi group me hain,
+-> Risk score kya hai,
+-> Policy violations kitne hain.
+-> sensitive access hai ya nahi.
+-> certification status kya hai.
+
+Matlab Group kitna Risky hai ka overall snapshot.
+
+* "Refresh group Scorecards" kya karta hai?
+
+-> Refresh the group scorecards ek background task hota hai. Jab tum ye task run karte ho, toh identityiq ->
+-> identityiq sab groups ko scan karta hai,
+Ex -> Roles, workgroups, Entitlement groups.
+
+Aur identityiq Har group ke liye Data recalculate karta hai.
+kaise karta hai line by line samjhao.
+
+Page 152
+
+Step 2.1 :- Group Fetch :-
+-> engine DB se ek group uthata hai,
+example :- Role/workgroup/Entitlement group
+
+Step 2.2 :- Group Metadata loads :-
+-> Group ka basic data load karta hai.
+-> ex -> groupid, type, owner, create_date.
+
+Step 2.3 :- System check karta hai kaun user is Group mein hai,
+-> includes :-
+-> Direct members
+-> Role assigned users
+-> nested role members.
+
+Step 2.4 -> identityiq sab me sab members ke identity_id ko collect karta hai.
+
+Step 2.5 -> Agar ek system multiple path se aa raha hai toh system hata dega.
+
+Step 2.6 -> total unique users ko count karta hai.
+
+Step 2.7 -> Har user ke entitlement nikale jaate hain.
+Tables :-
+-> identity_entitlement
+-> role_entitlement
+
+Page 153
+
+Step 2.8 -> System merge / combine karta hai ye access in group :-
+-> Direct access, inherited access, Role-based access.
+
+Step 2.9 -> Har member ka risk uthata / calculate karta hai,
+Ex -> group_risk = sum(member_risk / total_members)
+
+-> group_risk =
+-> to calculate the average premium risk for a group of 5 members, where individual risks are 10, 20, 30, 40, and 50.
+-> group_risk = (10+20+30+40+50) / 5 = 150 / 5 = 30
+
+Step 2.10 -> policy-violation check
+-> SOD, policy breaches check karta hai iiq.
+
+3. latest identify data use karta hai iiq :-
+
+Page 154
+
+Step 3.1 -> identity cube read karta hai, identity cube ka fresh data uthata hai.
+
+Step 3.2 -> role expansion apply karta hai, saare chhipe hue entitlements nikalta hai.
+
+Step 3.3 -> ek user ke multiple access apps ke access, merge hote hai,
+Ex -> AD + SAP + DB -> ek hi identity me merge.
+
+Step 3.4 -> identity state check -> identity Active, disable, inactive hai.
+
+4. scorecard table update karta hai.
+
+Step 4.1 -> scorecard object Build
+-> memory me ek object banata hai.
+-> GroupScorecard
+{
+-> group_id
+-> member_count
+-> risk_score
+-> violations_count
+}
+
+Step 4.2 -> check karta hai ki group ka scorecard exist karta hai toh scorecard object update agar.
+
+Page 155
+
+nahi karta exist toh scorecards
+INSERT toh table mein update ya
+INSERT karta hai.
+
+Step 4.3 -> Indexing Trigger -> search fast karne ke liye ->
+-> indexService.update(group);
+
+Step 4.4 -> System log karta hai ki kis group ka score update hua kab hua. aur UI/dashboard ke liye latest scorecard push karta hai.
+
+-> toh Tasks -> refresh identity cube -> scroll -> refresh the source group scorecards -> [checked box] -> -> identity ye refresh identity jyada Data ka layega. Refresh group ko chhod do.
+
+a) -> refresh identity cube ek user ka full access + profile rebuild kiya tha.
+
+B) -> refresh group -> multiple identities ke cube ka aggregation karta hai.
+
+c) -> refresh identity cube ka output updated identity cube aur data source -> DB + Application hai.
+
+Page 156
+
+B) Refresh groups ka output aggregated group analytics aur
+Data source -> identity cube hai.
+
+-> tasks -> refresh group -> Refresh the group scorecards -> [checked box] -> save and execute. -> task result ->
+-> refresh groups -> setup -> group ->
+-> location based group -> see
+-> identity iiq automatic group bana dega. un identities ka jinka application tumhare identity iiq mein pehle se exist karta hai.
+
+-> Agar condition based group banana hai toh population group banayenge. ->
+-> setup -> groups -> populations ->
+-> Group -> search location based group -> yaha jo group owner rule hai wo owner of the group decide karne ka rule hai. -> setup -> groups -> populations -> create ka button nahi toh hum intelligence -> Advanced analytics -> search type -> Identity -> isinactive -> false -> Department -> accounting ->
+-> Location -> SanJose -> Run search -> fir saare identities aa gaye ab ->
+-> result options -> save identities as population -> Name -> All Active SanJose Accounting group -> save ->
+-> setup -> groups -> population -> see.
+
+Page 157
+
+-> Aur hum sirf in identities ke liye hi refresh identity cube chalayenge toh -> setup -> tasks -> refresh identity cube ->
+-> scroll -> refresh identity cube options ke bagal mein -> v -> click -> select -> All Active SanJose Accounting Group -> save ->
+toh ye identity cube chalega sirf is populated Group ke liye. -> see setup -> population -> see. [crossed out text] fir populated group ko hatayein identity cube se !
+
+-> setup -> groups -> workgroups -> fir -> intelligence -> Advanced analytics ->
+-> search type -> identity -> kyonki identity khojenge by attribute aur agar search type denge advanced search click -> toh aap filter lagake identity khoj sakte ho.
+-> advanced search -> Add Filter ->
+-> Field -> Application -> Search Type -> equals -> value -> Financial Application
+-> Add Filter -> Field -> inactive -> value -> false -> Add Filter ->
+-> Field -> Application -> search type -> is not equal to -> value -> contractor Feed File -> Add Filter
+-> choose fields to display -> Applications
+-> Display name -> username ->
+-> Run search aur see identity.
+
+-> Aur filter source mein Direct code likh ke bhi kaam kar sakte hain. Search kar sakte hai.
+
+Page 158
+
+-> setup -> groups -> workgroup ->
+-> Create New workgroup -> Name -> workitem_Admin
+-> owner -> the Administrator -> Group email
+-> admin@demoexample.com -> Notification ->
+setting -> Notify members only and group email -> -> Adams.Kennedy -> Add member
+-> Aaron.Nichols -> Add member -> save -> OK
+
+-> How to Create identity object?
+-> String name = "Alice.Ford";
+-> Identity identity = context.getObjectByName(Identity.class, name);
+-> String id = "402880e77d698bc5017dbee";
+-> Identity identity = context.getObjectById(Identity.class, id);
+
+-> localhost:8080/identityiq/debug/debug.jsf
+-> Debug pages -> object Browser
+-> identity -> 2nd Box -> Alice.Ford ->
+-> click see code. -> <Identity>
+</Identity> tak sara code Identity object hai.
+
+-> How to create any object from name :-
+-> String name = "JDBC";
+-> Application app = context.getObjectByName(Application.class, name);
+-> String name = "000000033";
+-> Workflow app = context.getObjectByName(Workflow.class, name);
+
+Page 159
+
+1. total links count :-
+
+-> import sailpoint.object.Identity;
+-> import sailpoint.object.Link;
+-> import java.util.List;
+
+-> Identity identity = context.getObjectByName(Identity.class, "Susan.Martin");
+
+-> List<Link> links = identity.getLinks();
+
+-> int count = 0;
+
+-> for(int i=0; i<links.size(); i++) {
+Link link = links.get(i);
+count++;
+}
+-> System.out.println("total Links: " + count);

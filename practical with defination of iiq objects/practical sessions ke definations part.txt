@@ -1,0 +1,3767 @@
+()identity cube->it contains identity'attribute,entitlements,applications,application account,policy,risk,event,userright.
+()provissioning->any changes from identity iiq to target system.
+()account provissioning->create account,enable,disable,update account,unlock,change-password,delete,account.
+()group provisioning->create group,update group.
+()quicklinks->tab/button/link in iiq is called quicklinks.
+()identity iqq application hai jo database se hibernate file ke through connect hota hai,aur identity iq application connector ke through 
+application/apps se connect hota hai.
+
+()Authoritative application kya hota hai?
+-> Authoritative Application = Source of truth (main data source)
+-> ye wo System hota hai jahan se identity ka original data aata hai.
+Ex -> HRSystem (SAP, workday) -> Employee database
+
+Ex -> अगर HR System में Employee add hua :-
+-> Sailpoint usko detect karega.
+-> identity create karega.
+-> Baaki System pe account banayega.
+
+-> iska kaam :-
+-> identity create / update karna.
+-> joiner / mover / leaver process chalana.
+
+()Authoritative Application Ke important classes :-
+
+identity -> sailpoint.object.Identity
+-> ये class represent करती है user को (Employee).
+
+identityService -> sailpoint.api.IdentityService
+
+Aggregation Task -> sailpoint.task.AggregationTask
+-> Ye HR system se data pull karta hai.
+-------------------------------------------------------------------------------------------
+()NON-Authoritative Application kya hota hai?
+-> NON-Authoritative = Target System (Jahan Account banega)
+-> ye system identity ka source nahi hota. Sirf account store karta hai.
+Ex -> Active Directory -> Database -> Salesforce
+
+-> iska kaam :-
+-> Account create / update / delete karna
+-> Access manage करना ।
+
+Non-Authoritative ke important classes :-
+link (Account) -> sailpoint.object.Link
+ye represent करता है user का account किसी application me.
+
+Application -> sailpoint.object.Application
+-> Application configuration store karta hai.
+
+ProvisioningPlan -> sailpoint.object.ProvisioningPlan
+-> Ye decide karta hai :- kya create/update/delete करना है ।
+
+Provisioner -> sailpoint.api.Provisioner
+-------------------------------------------------------------------------------------------------------------------------------------------
+-> FTP vs SCP ->
+FTP :- Purana File transfer protocol
+(Star) Features :-
+-> Port :- 21
+-> unsecure (data plain text me jata hai)
+-> username/password bhi encrypt nahi hota.
+-> separate control & data connection use karta hai.
+-> Firewall issues aa sakta hai.
+
+(Star) use :-
+-> Public File Sharing
+-> Old systems
+
+SCP:- (Secure Copy Protocol)
+() Feature :-
+-> port : 22 (SSH)
+-> Fully secure (encrypted)
+-> simple command based transfer
+-> Ek hi connection use karta hai.
+
+()use :-
+-> server to server transfer
+-> secure environments (production)
+
+()Common terms (FTP & SCP dono me same concept) :-
+Host (Server Address) -> Jis system pe tu file bhejna ya lena chahta Hai.
+-> ip address ya domain name hota hai.
+-> Ex -> 192.168.1.10
+-> example.com / https://www.google.com/search?q=myindustry.com
+
+user (username) :-> server pe login karne wala account.
+-> linux server ka user hota hai.
+-> Ex -> root, ubuntu, Kishan मतलब server पे बना हुआ account.
+
+Password -> user ka login password, same password jo server pe login के लिए use hota है।
+
+2a.-> user ----- Access
+-> root ----- Full control
+-> ubuntu ----- limited
+-> Kishan ----- custom
+------------------------------------------------------------logger------------------------------------------------------------------------
+()log4j kya hai in iiq?
+--log4j ek logging framework/system hai jo application ke andar hone wale events,errors,aur activity ko record karta hai.
+
+()log4j ke main kaam:-
+->errors ko log karna(exception)
+->debug information dena(developer ko)
+->system actvity track karna
+->troubleshooting me help karna
+
+()log levels:-
+--debug:-developer ke liye detailed info.
+--info:-normal system activity
+--warn:-warning
+--error:-exception me
+--FATAL:-system crash type issue
+
+()sailpoint me log4j ka use:-
+🔹 1. Log Levels in SailPoint (Log4j)
+👉 1. DEBUG (sabse detailed)
+
+👉 Developer ke liye deep internal info
+
+log.debug("Entering provisioning rule for user: " + identity.getName());
+
+✔ Use kab:
+
+Rule debugging
+Workflow trace
+Variable values check
+
+👉 2. INFO (normal activity)
+
+👉 System kya kar raha hai (normal flow)
+
+log.info("User created successfully: " + identity.getName());
+
+✔ Use kab:
+
+Successful operations
+Important steps (aggregation start/end)
+
+👉 3. WARN (warning)
+
+👉 Kuch galat ho sakta hai, but system chal raha hai
+
+log.warn("Manager not found for user: " + identity.getName());
+
+✔ Use kab:
+
+Missing data
+Optional field null
+
+👉 4. ERROR (serious problem)
+
+👉 Operation fail ho gaya
+
+log.error("Provisioning failed for user: " + identity.getName());
+
+✔ Use kab:
+
+Exception
+Provisioning failure
+DB connection issue
+
+👉 5. FATAL (system crash type)
+
+👉 Bahut critical error (rare use)
+
+log.fatal("System is down! Unable to connect to database");
+
+✔ Use kab:
+
+Server crash
+Critical system failure
+🔹 🔥 Combined Example (Real SailPoint Rule)
+import sailpoint.object.Identity;
+
+Identity identity = context.getObjectByName(Identity.class, "Raj");
+
+log.debug("Step 1: Fetching identity");
+
+if(identity != null){
+
+    log.info("User found: " + identity.getName());
+
+    if(identity.getManager() == null){
+        log.warn("Manager not assigned for user: " + identity.getName());
+    }
+
+    try{
+        // Provisioning logic
+        log.debug("Starting provisioning");
+
+        // assume success
+        log.info("Provisioning successful for user: " + identity.getName());
+
+    }catch(Exception e){
+        log.error("Provisioning failed: " + e.getMessage());
+    }
+
+}else{
+    log.fatal("Identity not found in system!");
+}
+----------------------------------------------------------
+()log4j.appender.file.File=G:/Training/Asha Training Notes/Hemanth_Ruthie/Sailpoint.log=ye txt file hai aur sare sailpoint ke logs yahi save honge live.
+()#log4j.rootLogger=warn, stdout
+👉 # ka matlab:-
+Ye line ignore hogi (disabled)
+stdout = console pe print
+📌 Important Concept:-
+Log4j me inheritance hota hai
+Agar kisi class ka logger define nahi hai → rootLogger use hoga.
+
+--------------------------------------------------------------------------
+()log4j.rootLogger=warn, file, stdout
+🔷 1. rootLogger=warn kya hota hai?
+👉 rootLogger = main boss logger
+👉 warn = minimum level (threshold)
+🔥 Matlab:-
+Sirf ye logs allow honge:-
+WARN
+ERROR
+FATAL
+
+❌ Ye logs ignore honge:-
+TRACE
+DEBUG
+INFO
+
+🔹 file:-
+Ek appender (logs file me jayenge)
+🔹 stdout:-
+Ek appender (logs console pe dikhenge)
+
+🔷 3. Appender kya hota hai?
+👉 Appender = “logs kaha bhejne hai”
+
+🔥 Types:-
+FileAppender → file me
+ConsoleAppender → console me
+RollingFileAppender → file rotate hoti hai
+----------------------------------------------------------------------------
+()log4j.appender.file=org.apache.log4j.FileAppender
+Type = FileAppender
+📌 Internally:-
+Ye ek Java class hai jo file handling karta hai
+Ye logs ko disk pe write karta hai.
+
+🔷 4. log4j.appender.file:-
+log4j.appender.file=org.apache.log4j.FileAppender
+
+👉 Matlab:-
+file naam ka appender define hua
+Type = FileAppender
+📌 Ye logs ko file me likhega.
+
+
+------------------------------------------------------------------------------
+🔷 5. log4j.appender.file.layout
+log4j.appender.file.layout=org.apache.log4j.PatternLayout
+
+👉 Layout = log ka design / format
+
+🔥 Matlab:
+Logs kaise dikhenge (structure)
+
+🔷 6. PatternLayout kya karta hai?
+👉 Ye define karta hai:-
+Date dikhe ya nahi
+Class name dikhe ya nahi
+Line number dikhe ya nahi
+
+🔷 7.Line:
+log4j.appender.file.layout=org.apache.log4j.PatternLayout
+🔥 Iska exact matlab:-
+👉 Ye line custom pattern nahi likh rahi,
+👉 Ye sirf bol rahi hai ki “PatternLayout use karo”.
+
+⚡ Simple samajh:-
+PatternLayout = ek tool / engine hai
+ConversionPattern = actual custom format
+🔥 Dono ka relation
+1️⃣ Ye line:-
+log4j.appender.file.layout=org.apache.log4j.PatternLayout
+👉 “Main PatternLayout use karunga”
+
+2️⃣ Ye line:-
+log4j.appender.file.layout.ConversionPattern=%d{ISO8601} %5p %c{4}:%L - %m%n
+👉 “Aur mera custom pattern ye hoga”
+-------------------------------------------------------------------------------
+🔹 Conversion Pattern:-
+log4j.appender.file.layout.ConversionPattern=%d{ISO8601} %5p %c{4}:%L - %m%n
+👉 Ye pura log ka structure define karta hai
+
+🔥 Deep Breakdown:-
+🕒 %d{ISO8601}
+
+👉 Date & time
+2026-04-24 12:30:45
+
+⚡ %5p
+👉 Log level (fixed width 5)
+INFO
+WARN
+ERROR
+
+📦 %c{4}
+👉 Class name (last 4 package parts)
+Example:-
+sailpoint.connector.LDAPConnector
+→ output: connector.LDAPConnector
+
+📍 %L
+👉 Line number jahan log likha hai
+
+💬 %m
+👉 Actual message
+
+🔚 %n
+👉 New line
+
+🔥 Final Output Example
+2026-04-24 12:30:45 WARN LDAPConnector:120 - Connection failed
+------------------------------------------------------------------------------------------------------------
+🔷 4. Specific Logger (Class Level Control):-
+log4j.logger.sailpoint.connector.LDAPConnector=trace
+
+👉 Ye sabse powerful line hai 🔥
+👉 Meaning:-
+Sirf is class ke liye logging override ho rahi hai
+
+🔥 Log Levels (Hierarchy):-
+TRACE (lowest, most detailed)
+DEBUG
+INFO
+WARN
+ERROR
+FATAL (highest)
+👉 Yaha trace set hai:-
+📌 Matlab:-
+Har ek chhoti se chhoti detail log hogi
+Even internal method calls bhi
+
+🔥 Priority Rule:-
+Logger Type	     Level
+RootLogger-------WARN
+LDAPConnector----TRACE
+👉 Result:-
+Baaki sab classes → WARN+
+LDAPConnector → TRACE (full detail)
+-------------------------------------------
+()what is provissioning?
+->update/changes from iiq to target systems called provissioning.
+()there are two types of provissioning:-
+(a)account provissioning
+(b)group provisining
+-----------------------------------------------
+()perform identity request maintence task->this task change the status(Execution and completion) of access request. 
+----------------------------------------------------------------------------------------------------------------------------
+()what is role?
+->Bundle of entitlements(groups/permission).
+
+()iiq has four types of rule:-
+-->IT
+-->Business
+->organization
+->Entitlements
+-----------------------------
+---------------------------------------------------------------------
+()🧠 1️⃣ Role Type kya hota hai?
+👉 Role ka type decide karta hai ki role ka kaam kya hai
+Kya wo sirf grouping karega
+Ya direct system access dega
+
+🔥 2️⃣ Main Role Types:-
+SailPoint me 2 hi core role types hote hain:-
+🔹 1. Business Role
+✔️ Kya hai?
+
+👉 Ye ek high-level role hai jo job ya department ko represent karta hai
+
+✔️ Kaam kya hai?
+
+👉 Ye direct access nahi deta
+👉 Ye IT Roles ko group karta hai
+
+✔️ Structure
+Business Role
+   ↓
+   IT Roles
+      ↓
+      Entitlements
+✔️ Real Example
+Business Role: Manager
+
+Includes:
+   - IT Role: Email Access
+   - IT Role: HR System Access
+   - IT Role: Report View Access
+
+✔️ Flow:-
+👉 User ko Business Role mila
+➡️ Automatically uske andar ke saare IT Roles mil gaye
+➡️ Final me access mil gaya
+
+✔️ Use kahan hota hai?
+HR onboarding
+Department access
+Bulk assignment
+
+✔️ Key Points:-
+❌ Direct access nahi
+✅ Easy to understand
+✅ Non-technical log use karte hain
+
+()👉 “Business Role group ke sath sath kya saare IT Roles ka access bhi le leta hai?”
+✅ Correct Answer (Short)
+👉 Haan ✔️
+-----------------------------------------------------------------------------------------------
+🔹 2. IT Role 
+✔️ Kya hai?
+
+👉 Ye ek technical role hai jo actual permissions deta hai
+
+✔️ Kaam kya hai?
+
+👉 Ye direct system access deta hai
+
+✔️ Structure
+IT Role
+   ↓
+   Entitlements (permissions)
+✔️ Real Example
+IT Role: Database_Read
+
+Permissions:
+   - SELECT access
+   - Read tables
+✔️ Flow
+
+👉 IT Role assign hua
+➡️ Direct provisioning ho gaya
+➡️ User ko system access mil gaya
+
+✔️ Use kahan hota hai?
+Database access
+Application access
+Technical permissions
+
+✔️ Key Points:-
+✅ Direct access
+❌ Complex (non-technical ke liye)
+✅ IT/Admin manage karta hai
+-----------------------------------------------------------------------------------------
+()Business Role direct access deta hai:-------❌ Nahi
+Business Role IT Roles ko include karta hai:---✅ Haan  
+ka matlab kya?
+
+🧠 Iska matlab kya hai?
+🔹 1. “Direct access nahi deta” ❌
+👉 Business Role ke andar:-
+koi actual permission nahi hoti
+koi system access directly defined nahi hota
+
+📌 Example:-
+Business Role: Developer
+
+👉 Isme khud se:-
+na DB access hai
+na Git access hai
+❌ Kuch bhi direct nahi.
+
+🔹 2. “IT Roles ko include karta hai” ✅
+👉 Business Role ke andar:-
+multiple IT Roles add hote hain
+
+📌 Example:-
+Business Role: Developer
+
+Includes:
+   - IT Role: Git Access
+   - IT Role: Jira Access
+   - IT Role: DB Read
+🔥 Ab actual magic yaha hota hai
+👉 Jab user ko Business Role assign hota hai:-
+User/developer → Business Role → IT Roles → Entitlements
+
+👉 Result:-
+User ko Git access mil gaya
+User ko Jira access mil gaya
+User ko DB access mil gaya
+---------------------------------------------------------------------------------------------------------------------------------------------------
+()IT Roles kya hai?
+--1️⃣ IT Roles kya hai?
+Definition: Ye wo roles hote hain jo IT systems, networks, aur applications ke management ke liye diye jaate hain.
+Purpose:-
+System aur network ko manage karna
+Security aur compliance maintain karna
+Access aur permissions control karna
+Ek line me:-
+“IT Role = system aur technology access + responsibilities ka role”
+
+2️⃣ Examples of IT Roles:-
+IT Role	                          Responsibility	                   Permissions / Access
+IT Admin------------------Servers, Network, System Config------Full admin access to servers & network devices
+System Operator------------Daily operations of IT systems------Start/Stop servers, monitor performance
+Database Admin--------------Manage databases-------------------Read/Write DB, Backup/Restore DB
+Helpdesk------------------Support & troubleshooting----------Limited access to user accounts, reset passwords
+Security Analyst----------Monitor & enforce security----------View logs, configure firewall, alert monitoring
+
+3️⃣ Relation with Technical Role & Business Role:-
+Technical Role: IT Roles ke under aate hain aur system/application specific permissions assign karte hain.
+Business Role: IT Roles Business Role ke through employees ke job functions ke liye assign hote hain.
+
+4️⃣ Code Conceptual Example (SailPoint Style):-
+Identity ravi = getIdentity("EMP67890");
+
+// Define Technical Role for IT
+TechnicalRole itAdmin = new TechnicalRole("IT Admin");
+itAdmin.setApplication("Server");
+itAdmin.addPermission("Server Admin");
+itAdmin.addPermission("Network Config");
+
+// Define Business Role
+BusinessRole itManager = new BusinessRole("IT Manager");
+itManager.addTechnicalRole(itAdmin);
+
+// Assign Business Role to user
+ravi.assignBusinessRole(itManager);
+
+// Ravi automatically gets IT Admin permissions
+System.out.println("Ravi ke permissions: " + ravi.getPermissions());
+----------------------------------------------------------------------------------------------------------------------------
+()hemanth->join the oganization toh following organization ke anushar hemanth ko role milega:-
+
+()IT role:-
+--Basic -> Skype(Full Access),outlook(Full Access),AD Servers(Read-Only)
+--Developer->github(Read-only,write-only),jira()
+--Client Communicator->Salesforce
+--performance->workday
+
+()business role:-
+--Software Developer->Basic+developer+performance
+--Support Engineer->Basic+client communicator+performance
+--manager->Basic+Developer+client communication+performance
+
+()organization->hieararchy/nested role.
+🔹 1. Organization Hierarchy kya hota hai?
+Organization hierarchy ka matlab hai company ka structure (tree form me)
+Example:-
+Company
+ ├── IT Department
+ │    ├── Developer
+ │    └── Tester
+ └── HR Department
+      ├── Recruiter
+      └── Manager
+
+👉 IIQ me:-
+Ye structure identities (users) ko group karne ke liye use hota hai.
+Mostly use hota hai:-
+Reporting
+Access control
+Policy assignment
+
+👉 Simple line:-
+➡️ Hierarchy = kaun kis department ke under hai.
+-----------
+🔹 2. Nested Role kya hota hai?
+Nested Role = Role ke andar role
+Example:-
+Role: Employee
+   ├── Role: Email Access
+   ├── Role: VPN Access
+   └── Role: Portal Access
+👉 Yaha:-
+“Employee” role ek parent role hai
+Baaki sab uske child roles hai
+👉 Agar kisi user ko "Employee" role mile:-
+➡️ Automatically usko sab child roles ka access mil jayega.
+-------------------------------------------------------------------------------------------------------------------------
+()Entitlement role->
+👉 Entitlement = chhota access (permission)
+👉 Role = un entitlements ka group
+➡️ Jab tum bolte ho “Entitlement-Role”, iska matlab hota hai:-
+Aisa Role jisme multiple entitlements add kiye gaye ho.
+------------------------------------------------------------------------
+🔹 1. Birthright Role kya hota hai?
+Birthright Role = default role jo automatically milta hai
+👉 Jab koi naya user (identity) create hota hai
+➡️ Usko bina request ke kuch roles mil jate hain
+Example:-
+New Employee Join
+   ├── Email Access
+   ├── VPN Access
+   └── HR Portal Access
+➡️ Ye sab automatically assign honge
+➡️ User ko request karne ki zarurat nahi
+👉 Is type ke role ko bolte hain:-
+✅ Birthright Role
+---------------------------------------------------------------
+🔹 2. Birthright Provisioning kya hota hai?
+Birthright Provisioning = un roles ke through access ka automatic creation
+👉 Matlab:-
+Role assign hua (Birthright Role)
+System automatically:-
+Account create karega
+Entitlements assign karega
+➡️ Ye pura process = Birthright Provisioning.
+----
+🔹 3. Flow samjho (step by step):-
+Identity Create (HR system se)
+        ↓
+Birthright Role assign
+        ↓
+Provisioning Plan generate
+        ↓
+Accounts + Entitlements create (Apps me)
+
+()rbac+joiner life cycle event==Birthright provissioning.
+-------------
+🔹 1. Joiner kya hota hai?
+Joiner = event / process
+👉 Jab koi naya employee system me aata hai (HR se)
+➡️ usko system me onboard karna = Joiner process
+Isme kya hota hai:-
+Identity create hoti hai
+Birthright roles assign hote hain
+Accounts create hote hain (AD, Email, etc.)
+👉 Simple:-
+➡️ Joiner = “user aaya → system ne setup kiya”
+
+🔹 2. RBAC kya hota hai?
+RBAC (Role-Based Access Control) = access dene ka model
+👉 Isme:-
+Direct access nahi dete
+Roles ke through access dete hain
+Example:-
+Role: Developer
+   ├── Git Access
+   ├── Jira Access
+   └── DB Read
+➡️ User ko role diya → sab access mil gaya
+👉 Simple:-
+➡️ RBAC = “role ke through access control”
+-------------------------------------------------------
+()Optimistic Provisioning ka matlab hota hai: "Bina final confirmation ka wait kiye, pehle hi maan lena ki kaam ho gaya hai."
+Ise ek simple real-life example se samajhte hain:-
+Maan lijiye aapne Zomato/Swiggy se khana order kiya. Jaise hi aap payment karte hain,
+app aapko turant dikha deta hai ki "Order Confirmed!" bhale hi restaurant ne abhi tak order accept karke banana shuru na kiya ho.
+App ek optimistic (sakaaratmak) approach leta hai ki order ho hi jayega. Agar baad mein restaurant order cancel karta hai,
+tab jake app aapko update karta hai.
+Bas yahi same logic SailPoint mein lagta hai!
+
+()SailPoint mein yeh kaise kaam karta hai?
+Jab SailPoint kisi target system (jaise Active Directory, Workday, ya Salesforce) mein koi naya account banane ya access dene ki
+request bhejta hai, toh normal process mein usko wait karna padta hai ki target system se "Success" ka message aaye. 
+Lekin Optimistic Provisioning on hone par:-
+
+--Request Bhejna: SailPoint target application ko provisioning ki request bhejta hai.
+
+--Turant Update (Optimistic step): Target system se confirmation aane ka wait kiye bina hi,
+SailPoint apne database (Identity Cube) ko turant update kar deta hai.
+
+--UI Display: SailPoint ke UI mein dikhne lagta hai ki user ko access/account mil gaya hai.
+
+--Reality Check (Aggregation): Kuch time baad jab SailPoint ka Aggregation task run hota hai,
+tab SailPoint actual mein check karta hai ki us target system mein account sach mein bana tha ya nahi.
+
+Agar ban gaya tha: Toh sab badhiya hai, status waisa hi rehta hai.
+
+Agar fail ho gaya tha: (Jaise target server down tha ya koi error aa gayi thi),
+toh SailPoint us access ko apne UI se hata deta hai (revert kar deta hai) kyunki actual mein user ko wo nahi mila tha.
+
+Iska Fayda (Advantage) Kya Hai?
+Faster User Experience: Users ko UI bahut fast aur responsive lagta hai.
+Unhe turant dikh jata hai ki unka request process ho gaya hai aur dashboard jaldi update ho jata hai.
+----------------------------------------------------------------------------------------------------------------------------
+()SailPoint IIQ workflows(Business Processes) mein jab ek se zyada logon se approval chahiye hota hai(jaise Manager,App Owner,aur Security Team),
+toh hum in Approval Modes ka use karte hain.Yeh modes system ko batate hain ki approvals kis sequence mein lene hain aur rejection aane par kya karna hai.
+
+1. Serial (Ek ke baad ek):-
+Kaise kaam karta hai: Isme request bilkul line se (sequence mein) chalti hai. Pehle request Approver A ke paas jayegi.
+Jab A approve karega, tabhi request Approver B ke paas jayegi, aur fir C ke paas.
+Rejection par kya hoga: Agar beech mein kisi ne bhi (maan lijiye A ne) reject kar diya,
+toh process wahin turant ruk jayega. B aur C ko request kabhi jayegi hi nahi.
+Fayda: Time aur effort bachta hai, kyunki pehla approver reject kar de toh baaki logon ko disturb nahi karna padta.
+
+2. SerialPoll (Ek ke baad ek, par sabse poocho):-
+Kaise kaam karta hai: Isme bhi request sequence mein hi aati hai (A -> B -> C).
+Rejection par kya hoga: Isme bada farq yeh hai ki agar A ne request reject bhi kar di,
+tab bhi request aage B aur C ke paas jayegi. System process ko rokta nahi hai.
+Fayda (Use Case): Yeh wahan kaam aata hai jahan organization ko "Audit Trail" ke liye sabka decision (vote) record karna hota hai,
+chahe request final mein reject hi kyun na ho rahi ho.
+
+3. Parallel (Sabko ek saath):-
+Kaise kaam karta hai: Isme approval request ek hi time par sabhi approvers (A, B, aur C) ko ek saath bhej di jati hai.
+Sab apna-apna inbox check kar sakte hain.
+Rejection par kya hoga: Agar koi ek bhi approver request ko reject kar deta hai,
+toh SailPoint request ko turant reject maan leta hai. Jo baaki approvers hain,
+unke inbox se bhi wo request automatically gayab (cancel) ho jati hai.
+Fayda: Process bahut fast ho jata hai kyunki logon ko ek dusre ka wait nahi karna padta.
+
+4. ParallelPoll (Sabko ek saath, par sabka vote chahiye):-
+Kaise kaam karta hai: Isme bhi request sabko ek saath (Parallel) bheji jati hai.
+Rejection par kya hoga: Lekin yahan system sabke response aane ka wait karta hai.
+Agar A ne reject kar diya, toh B aur C ke inbox se request cancel nahi hogi.Woh dono bhi apna approval ya rejection de sakte hain.
+
+Fayda (Use Case): Yeh ek tarah ke "Voting System" jaisa hai.
+Jab kisi badi access ke liye panel ke sabhi members ka opinion system mein darj karna zaroori ho (irrespective of final result),
+tab iska use hota hai.
+--------------------------------------------------------------------------------------------------------------------------
+()approvalSchema kya hai?
+--SailPoint IIQ workflows mein ApprovalSchema ek tarah ka map ya blueprint hota hai,
+jo yeh define karta hai ki approvals kis raaste se aur kis order mein jayenge.
+Pichle sawal mein jo humne modes (Serial, Parallel, etc.) discuss kiye,
+un sabko mila kar ek complex aur nested (ek ke andar ek) approval process banane ke liye ApprovalSchema ka istemaal kiya jata hai.
+Iska sabse zyada use LCM (Lifecycle Manager) workflows, jaise ki 'LCM Provisioning' workflow mein hota hai.
+
+--ApprovalSchema ki Zaroorat Kyun Padti Hai?
+Agar approval simple hai (jaise sirf Manager se approval lena hai),
+toh hum workflow mein sidha ek step bana kar approver ka naam daal sakte hain.
+Lekin real-world scenarios bahut complex hote hain. Maan lijiye aapki requirement aisi hai:-
+Sabse pehle Manager approve kare.
+Agar Manager approve kar de, toh request Security Team aur Application Owner dono ke paas ek saath (Parallel) jaye.
+Jab dono approve kar dein, tab jaake kaam pura ho.
+Is tarah ke complex logic ko hardcode karne ke bajaye,SailPoint mein 
+ek ApprovalSchema(jo basically ek structured data ya XML object hota hai)banaya jata hai.
+Yeh schema dynamically workflow engine ko pass kiya jata hai.
+
+--Yeh Kaise Kaam Karta Hai?
+ApprovalSchema ek 'Tree' jaisa structure banata hai jisme blocks hote hain. In blocks ko ApprovalSet kaha jata hai.
+Aap isme rules define kar sakte hain:-
+Root Level (Serial): Pehle 'Block 1' chale, fir 'Block 2' chale.
+Block 1 (Single Approver): Isme sirf Manager hai.
+Block 2 (Parallel): Iske andar Security Team aur App Owner dono hain, aur iska mode 'Parallel' set hai.
+
+()approvingIdentities kya hai?
+--SailPoint IIQ workflows mein approvingIdentities ek variable (ya list) hota hai jo yeh tay karta hai ki "Kaun (Who)" approval dega.
+Aasan bhasha mein: Yeh un logon (Identities) ya Workgroups ki ek List hoti hai, jinke paas system approval ka Work Item (task) bhejega.
+Lekin final task jinke inbox mein jayega, unke naam is approvingIdentities list mein store hote hain.
+
+()Pichle answers mein humne 'Approval Modes' (kaise bhejna hai) aur 'ApprovalSchema' (kis raste se bhejna hai) ki baat ki thi.
+Lekin final task jinke inbox mein jayega, unke naam is approvingIdentities list mein store hote hain.
+
+--Iske Baare Mein Mukhya (Main) Baatein:-
+1. Isme Kya Hota Hai?
+Yeh aam taur par ek List (jaise Java ki List<String>) hoti hai. Iske andar Identity ke "name" (jaise "john.doe", "spadmin") ya fir SailPoint ke "Workgroup" ke naam hote hain.
+
+2. Modes Ke Saath Connection:
+Jo modes humne pehle samjhe the, wo actual mein is list par hi kaam karte hain:-
+Agar mode Serial hai aur approvingIdentities = ["UserA", "UserB", "UserC"] hai, toh pehle UserA ko request jayegi,
+uske approve karne ke baad UserB ko, aur fir UserC ko.
+Agar mode Parallel hai, toh UserA, UserB, aur UserC teeno ko ek hi time par approval request chali jayegi.
+
+()Logical Application kya hota hai?
+Maan lijiye aapki company mein ek "HR Portal" hai. Lekin backend mein wo portal 2 alag applications se mil kar chalta hai—ek 
+'Active Directory' aur ek 'Oracle Database'. SailPoint mein hum in dono ko jod kar ek virtual "Logical App" (HR Portal) bana dete hain.
+Aur iske andar jo asli applications (AD aur Oracle) hain, unhe "Tier Applications" kaha jata hai.
+
+--------------------------------------------------------------------------------------------------------------------------
+note:-we wil not crete user directly on the user but we will create users from the identity iqq through provisioning.
+note:-do tab me same application definition kabhi na khole warna application corrupt kar jata hai iiq me.
+note:-jo role ke bina entitlements mile hai entitlement request ke through un entitlements ko hum kahte hai "additional entitlements".
+note:-Aapke project ke liye ek Tip:
+Jab aap apna policy violation wala environment setup kar rahe hain, toh "Mitigate" wale process ko properly test zaroor kijiyega. 
+Business scenarios mein har koi direct "Remediate" nahi karta, log 30-60 days ka mitigation zyada use karte hain. 
+Iska testing lifecycle (mitigation dena, fir time travel/debug page se date aage badhana, 
+aur fir expiration check karna) kaafi interesting hota hai!
+note:-account policy ki jagah companies advance policy ko use karte hai.
+note:-iiq me Authoritative Application aek hi hona chahiye.
+
+()note:-Kise Notification Jata Hai?
+Role Expiration Notification: Yeh aksar User ko (taki unhe pata ho access ja raha hai) ya unke Manager ko jata hai.
+Role Create/Update Workflow: Yeh Role Owners ya Security Admins ko approval ke liye bheja jata hai.
+
+note:-()note:- Jin Application में Attribute change नहीं कर सकते :-
+Ex -> HRMS
+-> Workday
+-> SAP HR
+-> ye sare system source of truth hote hain aur identity ka data yahi se aata Hai, (name, email, department) etc. 
+Agar identityiq में Attribute change करना है इन Applications का Toh Original System में change करना पडेगा।
+
+note:-SailPoint default roop se "Identity Name" ko hi Username maanta hai.ishliye login me kaam ayega.
+
+Note: Creation rule हमेशा Authoritative application के लिए बनेगा,Non-authoritative के लिए नहीं बनेगा।
+note:-prune identity cubes ->//ye sare orphan accounts ko delete karta hai.
+Note:- जब भी Application बनाओगे तो Application field में Attribute value यहाँ से match होना चाहिए । spelling csv
+note:-
+3.correllation rule Kab Chalta Hai?
+Aggregation ke waqt, SailPoint har ek account ke liye is rule ko run karega. Rule jo identityAttributeValue return karega, 
+SailPoint usi value wali Identity se account ko link kar dega.
+
+note:-sects.setType("text"); galat hai:-Form.Section ka type "text" nahi hota.
+Section ka kaam sirf fields ko hold karna hota hai. Type hamesha Field ka set kiya jata hai (jaise string, secret, boolean).
+
+note:-ObjectOperation.Set/ObjectOperation.Add/ObjectOperation.Remove ye Enum Objects hai, 
+yeh koi string variable nahi hai. Aap Enum class ke upar direct .equalsIgnoreCase() nahi chala sakte.
+
+note:-ApprovalSet jishme sare approvals/items bante hai wo ApprovalSet ke approver ko send hone ke baad hi WorkItem bante hai.
+
+note:-Java aur SailPoint (BeanShell) me yeh ek bohot bada niyam (rule) hai: Aap kisi poore Object(jaise ApprovalSet) ko 
+ek simple text (String jaise "Approve") se seedhe compare nahi kar sakte.
+Agar aap aisa karenge, toh dono ka data type alag hone ki wajah se result hamesha false aayega ya fir code crash ho jayega.
+Java aur BeanShell me NullPointerException se bachne ka ek universal rule hai—hamesha fixed text("Approved") ko pehle likho, 
+aur variable ko .equals() ke andar daalo.
+Aap isse badalkar aise likhiye:-
+XML
+when="Script: &quot;Approved&quot;.equals(item.getApprovalState())"
+
+note:-Beanshell mein private static final jaise modifiers kaam nahi karte.
+note:-Agar variable identity null hai, toh uske upar koi bhi method chalana (jaise .getName(), .getAttribute(), etc.)  toh system NullPointerException dega bhai.
+Java/Beanshell ka seedha niyam hai: "No Object, No Method." Agar object/variable null hai, 
+toh object/variable pe koi bhi action perform karne par system turant haath khade kar dega aur NullPointerException (NPE) fekh ke maarega.
+---------------------------------------------------------------------------------------------------------------------------------
+--if ke rules:-
+note:-1. Java ka "Single Line" Rule:-Java mein agar tum if ke baad { } nahi lagate, 
+toh if condition sirf aur sirf uske theek neeche wali EK LINE par apply hoti hai. 
+Uske baad ki saari lines aam code ki tarah chalti hain, chahe if sahi ho ya galat.
+agar agla code line ka variable null hai aur chali toh NullPointerException milega.
+
+note:-if(idn != null):-
+String identityName = idn.getName(); // 💥 SYNTAX ERROR!
+Java ka ek bohot strict rule hai: Aap bina curly braces { } ke kisi if statement ke theek baad naya variable declare (create) nahi kar sakte. Aisa kyun?
+Java sochta hai ki agar tumne naya variable banaya hai, toh tum use aage kahin use karoge. Lekin bina braces ke, 
+us variable ka janam us ek akele line ke baad hi turant khatam ho jata hai.Toh aisi declaration ka koi fayda nahi hota, 
+isliye Java ise illegal maanta hai.
+
+note:-koi bhi variable me default null jaroor dale Variable declare karte samay.
+
+note:-Java/Beanshell ka rule hai ki agar code kisi block ke andar jata hai, 
+toh use har raste se kuch na kuch return milna chahiye. Agar idn null ho gaya, 
+toh tumhara code bina kuch return kiye if block se bahar nikal jayega. 
+SailPoint aise adhoore raste wale code par "Missing Return Statement" ka error de dega.
+
+note:-
+()String Comparison (==): Java/Beanshell mein strings compare karne ke liye == nahi, balki .equals() use hota hai.
+
+()Object == Object (Complex Objects / SailPoint Objects)
+Yahan par sabse bada khatra hota hai. Jab aap do Objects (jaise Identity, Bundle, Link, ya String) ke beech == lagate ho, 
+toh Beanshell unke andar ka data check nahi karta. 
+Yeh check karta hai ki kya dono variables memory ke ek hi exact address (reference) ko point kar rahe hain ya nahi.
+
+()Null Checking (jab aapko dekhna ho ki object khali hai ya nahi).
+Java
+Identity idn = context.getObjectByName(Identity.class, identityName);
+if (idn == null)
+
+()Variable == Variable (Primitive Data Types):-
+Agar aap Primitives (jaise int, boolean, double, char) ko compare kar rahe ho, toh == lagana 100% sahi hai. Yeh un variables ke andar ki actual value ko directly check karta hai.
+
+()Risk kya hai? (status.equals("InActive"))
+Agar status ki value null hai, aur aap likhte hain status.equals(...),toh aap aakhirkar null.equals(...) call karne ki koshish kar rahe hain.
+Java mein kisi bhi null object par koi method call karne se turant NullPointerException (NPE) aata hai aur aapka rule/workflow wahin crash ho jata hai.
+solution="InActive".equals(status);
+()idn.getStatus().equals("Active") (Khatra ⚠️): Agar status null hua, 
+toh aap ek null object par .equals() method call karne ki koshish kar rahe ho. 
+Isse aapka poora SailPoint code crash ho jayega aur NullPointerException (NPE) ka error aayega.
+solution="Active".equals(idn.getStatus());
+matlab Identity/map object attributes pe bhi apply hoga ye.
+
+()Safe tareeka kyun hai? ("InActive".equals(status))
+Yahan par "InActive" ek String Literal hai (yaani ek pakka object jo kabhi null nahi ho sakta).
+Jab aap "InActive".equals(status) likhte hain, toh .equals() method check karta hai ki andar bheja gaya variable (status) null hai ya nahi.
+Agar status null hota hai, toh ye bina crash kiye chupchaap false return kar deta hai.
+-------------------------------------------------------------------------------------------------------------------------
+/////////*provissioning:-
+
+()Aapne constructor mein department likha hai bina quotes ke.
+Beanshell ise ek variable samjhega aur "Variable not found" ka error dega.
+Kyunki ye attribute ka naam hai, isliye ye String hona chahiye: "department".
+Attribute hamesha string hoga kyuki ye variable nahi hota hai.
+kyuki attribute key string aur attributevalue object toh ye attribute map object hai.
+
+()Agar SAP Application mein "department" ya "roles" ek multi-valued attribute hai 
+(yaani ek user ek se zyada departments ya roles ka hissa ho sakta hai), 
+toh aap AttributeRequest ke andar value ki jagah poori Java List pass kar sakte hain,lekin same attributename ki.
+
+()new ProvisioningProject() Syntax Error: Java mein ProvisioningProject ek complex object hai jo pro.compile(plan) se automatic
+generate hota hai. Aapne line ProvisioningProject project = new ProvisioningProject(); nahi likhna 
+sirf ye likhe:-ProvisioningProject pro=provisioner.compile(plan);
+
+//////////*
+()"Kya sach mein variables ko if-conditions ke andar hi daalna chahiye, aur isse memory management par kya asar padta hai?"
+-->Jab Variables bahar hote hain (Aapka purana tareeka):-
+Agar aap code ke shuru mein hi bina check kiye ye lines likh dete hain:-
+Java
+ProvisioningPlan plan = new ProvisioningPlan();
+Provisioner provisioner = new Provisioner(context);
+Toh jaise hi rule run hoga, SailPoint memory (JVM Heap) mein ye dono bade objects turant ban jayenge.
+Maan lijiye, iske agla hi step if(identityName == null) par fail ho jata hai aur code wahin se return null; ho jata hai, 
+toh kya hua?
+Aapka code toh 1 hi millisecond mein band ho gaya...
+Lekin memory mein ProvisioningPlan aur Provisioner ke objects faltu mein ban kar baith gaye.
+Ab jab tak Java ka Garbage Collector (GC) aakar unhe saaf nahi karega, wo memory block blocked rahegi.
+
+()sirf Provisioner ke constructor mein context dena padta hai.jaise=Provisioner project=new Provisioner(context);
+*/////////
+*////////
+////////////*Link:-
+///////////////*
+1. Loop Type Conflict (for(Link link:links))
+Aapne loop likha hai: for(Link link:links) aur uske andar kiya hai linkk=(Link)link;.
+Galti: Java/Beanshell mein idn.getLinks() hamesha ek raw List return karta hai jisme elements generic Object type ke hote hain. 
+Agar aap direct Link link likhoge toh casting conflict ki wajah se error aa sakta hai.
+Fix: Loop ko for(Object link : links) likhna sabse safe aur best practice hai, 
+kyunki aap loop ke andar use waise bhi (Link) mein cast kar hi rahe ho.
+*//////////////
+
+/////////////*
+()AttributeRequest Constructor Parameters ka order:-
+SailPoint me AttributeRequest ka standard constructor order hota hai: (String name, Operation op, Object value).
+Aapne likha hai: new AttributeRequest(ProvisioningPlan.Operation.Add, "memberOf", "VPN_GROUP"). 
+Ye galat order hai, SailPoint format ke mutabiq name pehle aayega.
+*//////////////
+
+()identityName vs Link Name: context.getObjectByName() kisi object ko uske Unique Name se dhoondta hai.
+Identity ka name uska username/employee ID hota hai (jaise john.doe), isliye Identity.class ke saath identityName pass karna ekdum sahi hai.
+Lekin SailPoint ke database mein Link (Account) ka name identityName nahi hota! 
+Link ka name aamtaur par target system ka unique identifier hota hai (jaise AD ka Distinguished Name: CN=John Doe,OU=Users,DC=domain,DC=com) ya fir ek random hex ID. 
+Isliye identityName se search karne par SailPoint ko koi Link nahi milega, aur link variable hamesha null rahega.
+Multiple Links ka Confusion: Ek user ke paas kai saare links ho sakte hain (AD, HR, SAP, GitHub, etc.). 
+Agar aap seedha Link.class dhoondoge, toh SailPoint ko kaise pata chalega ki aapko sirf AD ka hi link chahiye?
+
+()for loop ke andar jo bhi variable define hai wo for loop ke bracket ke bahar access nahi ho sakta hai.
+
+()forloop ke andar ka variable bahar define nahi ho sakta jo  forloop ke ()small bracket me define hota hai.
+isshe do baar Variable define ka error dega duplication.
+
+()foreach loop me ()small bracket ke andar jo bhi variable value assign hogi wo loop ke termination ke baad bhi rahegi,
+aur value match hogi tabhi rahe warna value remove kar dijiye termination ke pehle(unmatch me).
+
+🚨 if(idn.isActive() && idn!=null):-
+Isme Kya Gadbad Hai? (Short-Circuit Evaluation Bug)
+Java hamesha conditions ko left to right (baayein se daayein) check karta hai.
+Agar idn ki value null hui, toh Java pehle idn.isActive() ko chalayega.
+Kyunki idn khud null hai, null.isActive() hote hi code NPE throw karke crash ho jayega, 
+aur wo agli condition (idn != null) tak pahunch hi nahi payega.
+
+()< ban jata hai &lt; (Less Than)
+()> ban jata hai &gt; (Greater Than)
+()& ban jata hai &amp; (Ampersand)
+
+///////////*
+()2. linkks List Initialized Nahi Hai (NullPointerException)
+Aapne likha List linkks=null; aur loop ke andar direct linkks.add(linkk); kar diya.
+ Agar koi List null hai, toh usme data add nahi ho sakta, Beanshell wahi crash ho jayega. 
+ Isey initialize karna padega: List linkks = new ArrayList();
+
+()3. lin=(Link)linkks;:-
+linkks ek poori List hai, aap poori list ko ek single Link mein cast nahi kar sakte. 
+List se ek-ek karke item nikalne ke liye linkks.get(i) karna padega.
+
+()AttributeRequest Constructor Parameters ka order:-
+SailPoint me AttributeRequest ka standard constructor order hota hai: (String name, Operation op, Object value).
+Aapne likha hai: new AttributeRequest(ProvisioningPlan.Operation.Add, "memberOf", "VPN_GROUP"). 
+Ye galat order hai, SailPoint format ke mutabiq name pehle aayega.
+
+()sAMAccountName (Sam Account Name) Active Directory (AD) ka ek bahut hi important unique attribute hota hai. 
+Aasan bhasha me samjhein toh ye user ka Login ID / Username hota hai.
+Iska full form Security Account Manager Account Name hai.
+Chalo isko simple points me samajhte hain ki ye kya hai aur iski zaroorat kyu padti hai:-
+1. sAMAccountName Kya Hai?
+Jab bhi aap kisi company ke laptop me login karte ho, 
+ya kisi portal par apna username daalte ho (jaise: rahul.sharma ya rkumar), 
+toh piche Active Directory me wo username actually sAMAccountName hi hota hai.
+-----------------------------------------------------------------------------------------
+note:kyu nahi likhe generic List<Object>,List<Map<"String","Object">>:-
+Wajah B: Beanshell Engine Ka Confusion (Strict Typing Bug)
+Beanshell ek loosely-typed scripting language hai. 
+Kabhi-kabhi jab aap complex rules mein complex generic types (jaise List<Map<String, Object>>) likhte ho, 
+toh Beanshell ka compiler confuse ho jata hai aur Parse Error ya Signature Not Found Error de deta hai.
+
+💡 SailPoint Mein Best Practice Kya Hai?
+
+🚫 Yeh Chalega (Par mat likho):-
+Java
+List<Object> linkks = new ArrayList<Object>();
+
+🚫 Agar strict type likhna hi hai (Toh sahi class likho):
+Agar aapko batana hi hai ki list mein kya jayega, toh Object ke bajay actual class (Link) likho:
+Java
+List<Link> linkks = new ArrayList<Link>();
+*//////////
+
+---------------------------------------------------------------------------------------------------------------------
+*//////////
+//////////////*note with code:-
+
+()user leaving and remove access and delete account 30 ago user account?
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="resigner_add" type="Custom" >
+<Source>
+import sailpoint.api.SailpointContext;
+import sailpoint.api.Provisioner;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import java.util.List;
+import java.util.ArrayList;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.object.Link;
+import sailpoint.object.Entitlement;
+
+Logger log=Logger.getLogger("sailpoint.Rules.resigner.add");
+if(identityName!=null){
+List links=new ArrayList();
+Link linkk=null;
+Identity idn2nd=null;
+List entitlements=null;
+Entitlement entitle=null;
+boolean dobabaprovision=false;
+
+Identity idn=context.getObjectByName(Identity.class,identityName);
+
+Calendar cal=Calendar.getInstance();
+cal.add(Calendar.DAY_OF_MONTH,-30);
+Date thirtyDaysAgo=cal.getTime();
+
+QueryOptions qo=new QueryOptions();
+qo.add(Filter.le("modified",thirtyDaysAgo));
+qo.add(Filter.eq("InActive",true));
+
+List idn2=context.getObjects(Identity.class,qo);
+for(Object idna:idn2){
+idn2nd=(Identity)idna;
+if(idn2nd==idn)
+break;
+idn2nd=null;
+}
+
+if(idn!=null &amp;&amp; !idn.isActive() &amp;&amp; idn2nd!=null){
+
+ProvisioningPlan plan=new ProvisioningPlan();
+plan.setIdentity(idn2nd);
+Provisioner pro=new Provisioner(context);
+ProvisioningProject project=null;
+
+links=idn2nd.getLinks();
+if(links!=null){
+for(Object link:links){
+linkk=(Link)link;
+if(linkk!=null){
+AccountRequest aqqq=new AccountRequest(AccountRequest.Operation.Disable,linkk.getApplicationName(),null,linkk.getNativeIdentity());
+
+entitlements=linkk.getEntitlements();
+
+if(entitlements!=null){
+for(Object entit:entitlements){
+entitle=(Entitlement)entit;
+if(entitle!=null){
+aqqq.add(new AttributeRequest(entitle.getAttributeName(),ProvisioningPlan.Operation.Remove,entitle.getValue()));
+
+// FIXED: Groups milne par bhi flag true kar diya
+                                dobabaprovision = true;
+
+if("AD".equals(linkk.getApplicationName())){
+aqqq.add(new AttributeRequest("sAMAccountName",ProvisioningPlan.Operation.Set,idn2nd.getName()));
+aqqq.add(new AttributeRequest("password",ProvisioningPlan.Operation.Set,"Welcome@123"));
+}
+
+}else{
+log.error("entitle is null");
+return null;
+}
+}
+
+}else{
+log.error("entitlements are not found");
+log.info("No entitlements found for " + linkk.getApplicationName() + ". Direct account disable action hoga.");
+                        dobabaprovision = true; // Flag true kiya kyunki disable toh karna hi hai
+}
+
+plan.add(aqqq);
+
+}else{
+log.error("linkk not found");
+return null;
+}
+}
+
+if(dobabaprovision){
+project=pro.compile(plan);
+pro.execute(project);
+}else{
+log.error("doprovisioning false");
+return null;
+}
+
+}else{
+log.error("idn2nd not found links");
+return null;
+}
+}else{
+log.error("idn not found");
+return null;
+}
+}
+return null;
+</Source>
+</Rule>
+//////////////*
+Maan lijiye user ke paas 2 Applications hain:-
+App A (Active Directory) — Isme user ke paas 2 Groups hain (VPN_Group, HR_Group).
+
+App B (Salesforce) — Isme user ke paas Koi Group Nahi Hai (Null/Empty).
+
+Aapke pichle code ka logic yeh tha:-
+Aapne entitlements variable ko loop ke bilkul BAAHAR top par hi declare kar diya tha, kuch aise:-
+
+List entitlements = null; // Memory mein ek hi dabba (variable) bana
+
+for (Object link : links) { // Loop shuru hua
+    linkk = (Link) link;
+    
+    if (linkk != null)
+        entitlements = linkk.getEntitlements(); // Single-line IF check
+        
+    if (entitlements != null) {
+        // Groups remove karne ka loop...
+    }
+}
+
+Niche table mein dekhiye ki har ek pheray (iteration) mein Beanshell ke andar backend mein kya ho raha tha:-
+Loop Iteration	       Processing App	     linkk.getEntitlements() ne kya return kiya?	entitlements variable ki current state	       Result / Action
+Pehla Phera (Loop 1)-----App A(AD------------[VPN_Group, HR_Group]-------------------------------[VPN_Group, HR_Group]-----------------Sahi chalega. AD ke dono groups remove karne ka plan ban jayega.
+Dusra Phera (Loop 2)-----App B(Salesforce)-----null (Kyunki koi group nahi hai)------------------[VPN_Group, HR_Group]-----------------(Purana data bacha reh gaya)Yahan bug aaya! Salesforce ke liye bhi AD ke groups dobara chal gaye!
+
+Aakhir yeh kyun hua?
+Aapne loop ke andar bina curly brackets {} ke single-line if statement likha tha:
+Java
+if (linkk != null)
+    entitlements = linkk.getEntitlements(); 
+Java aur Beanshell mein agar aap curly brackets {} nahi lagate hain, 
+toh compiler sirf uske turant baad wali ek line ko hi if ka hissa maanta hai. 
+Uske niche aapne jo bhi likha, vo us conditional block se baahar chala jata hai.
+Kyunki pure logic ka scope upar-niche block ho raha tha, 
+toh jab code dusre application (Salesforce) par pahuncha aur use wahan null mila, 
+toh Beanshell ke interpreter ne pichle application ki list ko memory se completely wipe/flush nahi kiya.
+Natija ye hua ki niche wala if (entitlements != null) abhi bhi true ho gaya 
+(kyunki memory wale dabbe mein abhi bhi AD ke groups pade hue the). 
+Code ko laga ki ye Salesforce ke hi groups hain, 
+aur usne Salesforce ke account request ke andar Active Directory ke groups ko remove karne ka galat request add kar diya! 
+Isse aapka SailPoint plan fail ho jata.
+-----------------------------------------()mera pehla buggy code:-
+for (Object link : links) { // Loop shuru hua
+    linkk = (Link) link;
+    
+    if (linkk != null)
+        entitlements = linkk.getEntitlements(); // Single-line IF check
+        
+    if (entitlements != null) {
+        // Groups remove karne ka loop...
+    }
+}
+----------------------------------------()Solution ne isko kaise theek kiya?
+Maine aapko jo upar functional code diya hai, usme maine entitlements variable ko loop ke ANDAR rakha hai:
+
+Java
+for (Object link : links) {
+    Link linkk = (Link) link;
+    if (linkk != null) {
+        List entitlements = linkk.getEntitlements(); 
+        
+        if (entitlements != null && !entitlements.isEmpty()) {
+            // Processing...
+        }
+    }
+} // Yahan pahunchte hi 'entitlements' variable automatically hamesha ke liye khatam (Flush)
+---------------------------------------------------------------------------------------------------------------------
+*/////////////
+////////////////*
+❌ Galti 1: Cross-Contamination (Data ka Kichdi Banna)
+Tumhare Galat Code Ka Tarika:
+Tumne kya kiya, saare links ke loop mein ghuste hi atts.add(...) karke saare groups ek hi list mein bhar diye:-
+Java
+// Tumhara Loop 1 (Saare Apps ke liye)
+for(Object link:links){
+    entitlements = linkk.getEntitlements();
+    for(Object entit:entitlements){
+        // YAHAN GAlTI HUI: AD ka group ho ya SAP ka, sab 'atts' ki balti mein gir raha hai
+        atts.add(new AttributeRequest(entitle.getAttributeName(), ..., entitle.getValue()));
+    }
+}
+
+()Iske baad tumne neeche unhe merge karne ke liye yeh loop chalaya:-
+Java
+for(Object aqqi:aqqs){
+    aqq=(AccountRequest)aqqi;
+    for(Object atti:atts){ // 💥 BOOM! Yeh balti poori mix hai
+        aqq.add(att); 
+    }
+}
+Code Ke Sath Dekho Kya Hua:-
+Maan lo user ke paas AD aur SAP do apps the. atts balti mein do items aaye: [memberOf: AD_Group, roles: SAP_Role].
+Neeche jab tumhara loop chala, toh usne AD ke AccountRequest ke andar .add() kar diya:-
+memberOf: AD_Group (Yeh sahi tha)
+roles: SAP_Role (❌ Blunder! AD application ke andar roles aur SAP_Role naam ka koi attribute nahi hota).
+Nuksaan: Jab SailPoint AD par yeh request bhejega, toh Active Directory crash ho jayegi aur error aayega:-"Attribute 'roles' is undefined for Active Directory".
+
+❌ Galti 2: Cross-Multiplication (Loops ka Dhamaka):-
+Tumhare Galat Code Ka Tarika:
+Tumne entitlements ke loop ke andar new AccountRequest likha tha:-
+Java
+for(Object entit:entitlements){ // Maan lo total 6 groups mile saare apps milakar
+    // HAR CHAKKAR MEIN NAYA REQUEST!
+    aqqs.add(new AccountRequest(AccountRequest.Operation.Disable, ...)); 
+    atts.add(new AttributeRequest(...));
+}
+Is wajah se aqqs list ka size ho gaya 6 aur atts list ka size bhi ho gaya 6.
+
+Phir tumne neeche unka multiplication loop chala diya:-
+Java
+for(Object aqqi:aqqs){       // 6 baar chalega
+    aqq=(AccountRequest)aqqi;
+    for(Object atti:atts){   // 6 baar chalega
+        aqq.add(att);        // 💥 Total 6 x 6 = 36 baar chal gaya!
+    }
+}
+----------->solution :-----------
+// 1. Ek Master Plan dabba banaya loop ke baahar
+ProvisioningPlan plan = new ProvisioningPlan();
+
+for (Object link : links) { // LOOP 1: Ek Application (Maan lo pehle sirf AD aaya)
+    Link linkk = (Link) link;
+    String appName = linkk.getApplicationName();
+
+    // 2. AD ke liye EKlHI AccountRequest ka khali dabba banaya
+    AccountRequest aqq = new AccountRequest(AccountRequest.Operation.Disable, appName, null, linkk.getNativeIdentity());
+
+    List entitlements = linkk.getEntitlements(); 
+    if (entitlements != null) {
+        for (Object entit : entitlements) { // LOOP 2: Sirf aur sirf AD ke groups niklenge
+            Entitlement entitle = (Entitlement) entit;
+            
+            // 3. Bina kisi balti ke, seedha AD ke dabba (aqq) mein group ko daal diya
+            aqq.add(new AttributeRequest(entitle.getAttributeName(), ProvisioningPlan.Operation.Remove, entitle.getValue()));
+        }
+    }
+
+    // 4. AD ka poora kaam khatam! Ab is packed dabbe ko Master Plan mein add kar do
+    plan.add(aqq); 
+} 
+// Ab jab doosra phera chalega (SAP ke liye), toh pichla 'aqq' flush ho chuka hoga aur SAP ka fresh dabba banega!
+--------------------------------------------------------------------------------------------------------------------------
+*////////////////
+////////////
+Nuksan: Java/Beanshell mein ek hi block ya method ke andar ek hi naam ka variable do baar alag-alag type ya re-declare nahi kiya ja sakta. Ye "Duplicate local variable" ka error dega.
+*//////////
+
+////////*
+3. return null On Empty Apps (Code Execution Break)
+Aapne lagaya hai:
+
+Java
+}else{
+    log.error("entitlements are not found");
+    return null; // ❌ HARD STOP!
+}
+Nuksan: Agar kisi user ke paas kisi application (jaise Linux) ka account toh hai, 
+lekin usme koi group assigned nahi hai, toh linkk.getEntitlements() humein null dega. 
+Aapka code wahin se return null karke poore program ko adha-adhura chhod kar exit kar jayega. 
+Uske aage ke applications process hi nahi ho payenge.toh hume dobabaprovision=true karna chahiye;
+
+*/////////
+//////////////*
+❌ Galti Kahan Ho Rahi Thi? (The Duplicate Request Entry Bug)
+Aapke pichle code ka logic kuch is tarah chal raha tha:
+
+Java
+for (Object link : links) { // Loop 1: Application (Maan lo AD chal raha hai)
+    AccountRequest aqqq = new AccountRequest(...); // AD ka dabba bana
+
+    for (Object entit : entitlements) { // Loop 2: Groups (Maan lo user ke paas 3 groups hain: G1, G2, G3)
+        aqqq.add(new AttributeRequest(...)); // Request mein group add hua
+        
+        // ❌ BLUNDER: Yeh line abhi bhi isi inner loop ke andar band hai!
+        plan.add(aqqq); 
+    }
+}
+
+Maan lo user ke paas Active Directory (AD) mein 3 Groups hain: VPN, Email, aur SAP_Access.
+Chakkar 1 (Group 1 - VPN): Code ne aqqq request mein VPN group remove karne ka command daala. Aur turant plan.add(aqqq) chal gaya. Master plan ke andar AD ki Pehli Request chali gayi (Isme VPN hai).
+Chakkar 2 (Group 2 - Email): Usi aqqq request mein niche Email group remove karne ka command juda. Aur phir se plan.add(aqqq) chal gaya! Ab master plan ke andar AD ki Doosri Request chali gayi (Isme VPN aur Email dono hain).
+Chakkar 3 (Group 3 - SAP_Access): Usi request mein SAP_Access juda. Aur phir se plan.add(aqqq) chal gaya! Master plan ke andar AD ki Teesri Request chali gayi (Isme VPN, Email, aur SAP_Access teeno hain).
+
+Sahi Approach Kya Hai? (The Single Entry Rule)
+SailPoint ka rule ekdum simple hai: Har application ke liye sirf ek AccountRequest dabba banna chahiye, 
+usme chupchaap saare groups bharne chahiye, aur jab saare groups bhar jayein (loop khatam ho jaye), 
+tab use poore package ko ek hi baar plan.add(aqqq) karna chahiye.
+
+()buggy mera code bug error ka;->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+for(Object link:links){
+linkk=(Link)link;
+if(linkk!=null){
+AccountRequest aqqq=new AccountRequest(AccountRequest.Operation.Disable,linkk.getApplicationName(),null,linkk.getNativeIdentity());
+
+entitlements=linkk.getEntitlements();
+
+if(entitlements!=null){
+for(Object entit:entitlements){
+entitle=(Entitlement)entit;
+if(entitle!=null){
+
+aqqq.add(new AttributeRequest(entitle.getAttributeName(),ProvisioningPlan.Operation.Remove,entitle.getValue()));
+
+if("AD".equals(linkk.getApplicationName())){
+aqqq.add(new AttributeRequest("sAMAccountName",ProvisioningPlan.Operation.Set,idn2nd.getName()));
+aqqq.add(new AttributeRequest("password",ProvisioningPlan.Operation.Set,"Welcome@123"));
+}
+
+}else{
+log.error("entitle is null");
+return null;
+}
+plan.add(aqq);
+}
+
+}else{
+log.error("entitlements are not found");
+}
+}else{
+log.error("linkk not found");
+return null;
+}
+}
+
+------------>>>>>>>>>>>>>>>>>>>solution code:-
+for (Object link : links) {
+AccountRequest aqqq = new AccountRequest(AccountRequest.Operation.Disable, linkk.getApplicationName(), null, linkk.getNativeIdentity());
+for (Object entit : entitlements) { 
+        aqqq.add(new AttributeRequest(entitle.getAttributeName(), ProvisioningPlan.Operation.Remove, entitle.getValue()));
+    } // 🛑 Groups ka loop khatam!
+// 3. FIX: Jab saare groups pack ho gaye, tab pure package ko ek hi baar plan mein daala!
+    plan.add(aqqq);
+}
+-----------------------------------------------
+*////////////////
+//////////////////*
+if((plan != null) ? true : false){
+    project = pro.compile(plan);
+    pro.execute(project);
+}
+Dikkaat kya hai: Aapne top par ek boolean variable banaya tha: boolean dobabaprovision = false;. 
+Lekin is naye code mein aapne us variable ko kahin bhi true nahi kiya.
+Nuksaan: Aapne condition lagayi plan != null. Kyunki plan = new ProvisioningPlan(); 
+loop se pehle hi ban chuka hai, toh yeh condition hamesha true rahegi. 
+Agar kisi user ke paas koi application account (Link) na bhi ho, 
+tab bhi SailPoint ek khali blank plan ko zabardasti compile aur execute karne ki koshish karega, 
+jisse system logs mein faltu ke warnings aayenge.
+
+solution:-
+log.info("No entitlements found for " + appName + ". Direct account disable action hoga.");
+                        dobabaprovision = true; // Flag true kiya kyunki disable toh karna hi hai
+
+->>>>>>>>>>>>>>>>>>>>>>>>>>>>>sirf aek jagah nahi aur bhi jaga flag true hota hai:-	
+()aur aek jagah aur karenge:-
+if (entitlements != null &amp;&amp; !entitlements.isEmpty()) {
+                        for (Object entit : entitlements) {
+                            entitle = (Entitlement) entit;
+                            if (entitle != null) {
+                                aqqq.add(new AttributeRequest(entitle.getAttributeName(), ProvisioningPlan.Operation.Remove, entitle.getValue()));
+                                // FIXED: Groups milne par bhi flag true kar diya
+                                dobabaprovision = true; 
+                            } else {
+                                log.error("entitle is null");
+                                return null;
+                            }
+                        }
+                    } else {
+                        // FIXED: Glitchy white-spaces aur undefined variable logs ko clean kiya
+                        log.info("No entitlements found for " + linkk.getApplicationName() + ". Direct account disable action hoga.");
+                        plan.add(aqq);
+						dobabaprovision = true; 
+                    }
+*///////////
+----------------------------------------------------------------------------------------------------------------------
+////////////*note:-
+()Performance Issue (Sabse Bada Buk):-
+Aapne for loop ke andar Provisioner pro = new Provisioner(context); pro.compile(plan); pro.execute(project); likha tha.
+Iska matlab agar aapke IIQ mein 50 apps hain, toh aap 50 baar plan compile aur execute kar rahe the, 
+jisse server hang ho sakta hai. Sahi tarika yeh hai ki loop ke andar saare AccountRequest ko plan mein add karte jao, 
+aur loop ke baahar sirf ek baar compile aur execute karo.
+
+()SailPoint IdentityIQ mein jab kisi Identity ke paas koi account/link nahi hota, 
+toh idn.getLinks() aksar ek empty list (size = 0) return karta hai, na ki null.
+
+()1. NullPointerException ka khatra (links.size()):-
+Code me aapne likha hai:
+
+Java
+links = idn.getLinks();
+if (links.size() != 0) {
+Gadbadi: Agar kisi user ke paas ek bhi link nahi hai, toh SailPoint idn.getLinks() par null return kar sakta hai. 
+Agar links null hua, toh links.size() bolte hi code mein NullPointerException (NPE) aa jayegi aur rule vahin ruk jayega.
+Fix: Pehle null check karein, fir size check karein: if (links != null && links.size() != 0)
+*////////////
+-------------------------------------------------------------------------------------------------------------------------------
+*///////////
+()ishme kyu humne linkk me null lagaya for loop me?
+if(idn!=null &amp;&amp; idn.isActive()){
+links=idn.getLinks();
+if(links!=null){
+for(Object link:links){
+linkk=(Link)link;
+if(linkk!=null &amp;&amp;"AD".equals(linkk.getApplicationName()))
+break;
+linkk=null;
+}
+if(linkk!=null)
+{
+ProvisioningPlan plan=new ProvisioningPlan();
+Provisioner pro=new Provisioner(context);
+ProvisioningProject project;
+AccountRequest aqq=new AccountRequest(AccountRequest.Operation.Create,"AD",null,linkk.getNativeIdentity());
+AttributeRequest att1=new AttributeRequest(ProvisioningPlan.Operation.Add,"memberOf","VPN_GROUP");
+AttributeRequest att2=new AttributeRequest(ProvisioningPlan.Operation.Add,"memberOf","KKR_GROUP");
+AttributeRequest att3=new AttributeRequest(ProvisioningPlan.Operation.Add,"memberOf","AKS_GROUP");
+aqq.add(att1);
+aqq.add(att2);
+aqq.add(att3);
+plan.add(aqq);
+project=pro.compile(plan);
+pro.execute(project);
+}else{
+log.error("AD account not found");
+}
+}else{
+log.error("links not found");
+return null;
+}
+}else{
+log.error("user not found inactive");
+return null;
+}
+}
+return null;
+
+()yaha ad application nahi mila toh linkk me SAP/other Application ka link reh jayega ishliye humne linkk=null kiya break; ke baad,
+kyuki linkk me SAP Application ka link rahega toh SAP ka plan banjayega,jo galat hai.
+*//////////////
+--------------------------------------------------------------------------------------------------------------------------
+-------
+//////////*
+()💡 Correction: Link class ke paas ek method hota hai jisme context pass karna padta hai:-
+List<Entitlement> entitlements = linkk.getEntitlements(context); 
+Agar tum bina context diye sirf linkk.getEntitlements() likhoge, toh code crash ho jayega.aur ye list return karta hai.
+
+()Entitlement namak class me koi getEntitlements na hone ke karan hum following 2 use karenge nikalne ke liye Entitlements:-
+
+-->Link ke andar jo groups hote hain, unhe SailPoint standard terminology me ManagedAttribute kehta hai, 
+ya fir simple Attributes (Map) ke andar key-value pairs me rakhta hai.
+
+// 1. Link ke saare attributes ka map nikalna
+java.util.Map attrMap = linkk.getAttributes();
+
+if (attrMap != null) {
+    // 2. Apne entitlement attribute (e.g., memberOf, groups, roles) ka naam pass karein
+    Object entObj = attrMap.get("memberOf"); 
+
+    if (entObj != null) {
+        List assignedEntitlements = new java.util.ArrayList();
+
+        // SailPoint me agar single entitlement hai toh String aayega, zyada hain toh List
+        if (entObj instanceof List) {
+            assignedEntitlements.addAll((List) entObj);
+        } else if (entObj instanceof String) {
+            assignedEntitlements.add((String) entObj);
+        }
+
+        // Ab aap is list par loop chala sakte hain
+        for (Object entName : assignedEntitlements) {
+            log.info("Found Entitlement Name: " + entName.toString());
+        }
+    }
+}
+--------------------------------------------------------------------------------
+import sailpoint.object.Identity;
+import sailpoint.object.Application;
+import sailpoint.object.ManagedAttribute;
+import sailpoint.object.QueryOptions;
+import sailpoint.object.Filter;
+import java.util.List;
+
+// Link se application aur nativeIdentity nikalna
+Application app = linkk.getApplication();
+String nativeIdentity = linkk.getNativeIdentity();
+
+QueryOptions qo = new QueryOptions();
+// Query lagana ki is App aur Account se jude saare ManagedAttributes nikal aayein
+qo.addFilter(Filter.eq("application.name", app.getName()));
+
+List managedAttributes = context.getObjects(ManagedAttribute.class, qo);
+
+if (managedAttributes != null) {
+    for (Object maObj : managedAttributes) {
+        ManagedAttribute ma = (ManagedAttribute) maObj;
+        
+        // Yeh aapko entitlement ki technical value aur display name dono de dega
+        String entValue = ma.getValue(); 
+        String entDisplay = ma.getDisplayName();
+        
+        log.info("Entitlement Value: " + entValue + " (Display: " + entDisplay + ")");
+    }
+}
+*//////////
+/////////////*
+()4. return dobabaprovision=true; (Syntax/Logical Error)
+Aapne else block mein likha hai: return dobabaprovision=true;
+Gadbadi: Pehli baat, ek custom rule se boolean assignment return karna thoda ajeeb hai. 
+Doosri baat, agar kisi link par entitlement nahi milti, toh aap wahi se return kar de rahe ho. 
+Iska matlab niche jo pro.compile(plan) aur pro.execute(project) ka execution block hai, 
+wahan tak code kabhi pahunchega hi nahi, aur baaki links process nahi ho payenge.
+
+solution return hatado.
+*///////////
+///////////*
+()for(Object entit:entitlements){:-
+entitle=(Entitlement)entit;
+entitlements=null;
+}:-
+Gadbadi:for loop abhi chal hi raha hai aur aapne pehle hi iteration(pehle group) ke khatam hote hi poori list variable(entitlements) 
+ko null kar diya. Jab Java agle group par jane ke liye list ko read karega, 
+toh use null milega aur system NullPointerException dekar poore code execution ko vahin block kar dega.
+
+()plan.add(aqq);aur AccountRequest ko for(Object link:links){ ke andar aur for(Objects entit:entitlements){ }} ke bar rakhe.
+*//////////
+---------------------------------------------------------------------------------------------------------------------------
+--------->
+/////////////*note:-
+()apps=context.getObjects(Application.class);
+for(Application app:apps){
+QueryOptions qo=new QueryOptions();
+qo.addFilter(filter.eq("application.name",app.getName()));
+links=context.getObjects(Link.class,qo);
+}:-
+Aapne upar loop chalaya for(Application app:apps), lekin har loop par aap links = context.getObjects(Link.class,qo) 
+kar rahe ho. Isse pichli application ke links overwrite ho jayenge aur sirf aakhiri app ke links variable mein bachenge.
+
+solution:-
+//links=context.getObjects(Link.class); ishko likhne se kaam banega lekin. dusra tarika.
+apps=context.getObjects(Application.class);
+for(Application app:apps){
+QueryOptions qo=new QueryOptions();
+qo.addFilter(Filter.eq("application.name",app.getName()));
+linki=context.getObjects(Link.class,qo);
+
+for(Link linku:linki){
+
+links.add(linku);
+}
+}
+--------->>>>>>
+Dikkat: Is query ke andar kisi specific user (identity.name) ka koi filter nahi hai. Iska matlab jab loop "AD" application par pahunchega, toh database pure organization ke saare 10,000 ya 50,000 employees ke AD links memory mein load kar lega. Phir SAP par saare users ke SAP links load karega.
+Natija: Lakhon links ka data ek sath JVM Heap Memory (RAM) mein load hote hi aapka SailPoint Application Server java.lang.OutOfMemoryError: Java heap space dekar turant crash ho jayega.
+--------->>>>>solved:-
+questionnahi sirf aek tarah ka app link dalna hai mujhe in links me tab kya kare????
+->>>>>
+-------------------------------------------------------------------------------------------------------------------------
+()1. SailPointException (Too Many Results Found):-
+context.getObject(Link.class, qo) tabhi kaam karta hai jab database query se sirf aur sirf 1 single record match ho.
+Aapne filter lagaya hai: Filter.eq("application.name", app.getName()).
+Iska matlab jab loop AD application par chalega, toh database pooray organization ke saare employees ke hazaron AD links utha layega.
+Jaise hi database se ek se zyada (multiple) records milenge, context.getObject() turant haath khade kar dega aur sailpoint.tools.GeneralException: Too many rows found ka error dekar code ko crash kar dega.
+
+-->
+List links = new ArrayList();
+List apps = context.getObjects(Application.class);
+
+if (identityName != null && apps != null) {
+    for (Object appObj : apps) {
+        Application app = (Application) appObj;
+        
+        QueryOptions qo = new QueryOptions();
+        
+        // 🌟 FIX 1: Identity filter joda taaki sirf isi user ka link mile
+        Filter userFilter = Filter.eq("identity.name", identityName);
+        // 🌟 FIX 2: Capital 'Filter.eq' use kiya app name ke liye
+        Filter appFilter = Filter.eq("application.name", app.getName());
+        
+        // Dono filters ko AND se combine kiya (This User AND This App)
+        qo.addFilter(Filter.and(userFilter, appFilter));
+        
+        // Ab database se strictly sirf 1 shot me is user ka single account link milega
+        Link linki = (Link) context.getObject(Link.class, qo);
+        
+        if (linki != null) {
+            links.add(linki); // Sahi Link list me add ho gaya bina crash ke
+        }
+    }
+}
+*//////////
+
+///////////*
+🚨 Gadbad Wala Code (Dry Run Example):-
+Maan lijiye hamare paas 2 AD links hain. Dekhiye jab loop chalega toh kya hoga:
+
+Java
+AccountRequest aqq1 = null; // Memory mein ek single "Box" bana jiska naam aqq1 hai
+
+// LOOP START (Maan lijiye do AD links mile: Link_A aur Link_B)
+for (int i = 1; i <= 2; i++) {                         //-------->
+    
+    if (i == 1) { // Iteration 1: Link_A ke liye
+        aqq1 = new AccountRequest("AD_Link_A"); // Box mein "AD_Link_A" chala gaya
+    }
+    if (i == 2) { // Iteration 2: Link_B ke liye
+        aqq1 = new AccountRequest("AD_Link_B"); // Box ka purana data mit gaya, ab "AD_Link_B" aa gaya
+    }
+
+    // --- LOOP KA END JAHAN AAPNE ADD KIYA THA ---
+    if (aqq1 != null) {
+        plan.add(aqq1); // 👈 GADBAD YAHAN HAI!
+    }
+}
+
+🚨 Normal Shabdon Mein: Gadbad Kya Hai?
+Aapne aqq1, aqq2, aqq3, aqq4 variables ko loop ke baahar banaya hai (AccountRequest aqq1=null;). 
+Iska matlab ye chaaro variables poore loop ke dauran memory mein zinda rehte hain.
+
+Ab maan lijiye aapke loop mein 3 alag-alag accounts (links) check hone ke liye aaye:-
+
+Baari 1: Pehla Link aaya (Maan lo AD ka hai)
+Code ne dekha AD ka link hai, toh usne aqq1 ke andar AD ki request daal di.
+Baaki aqq2, aqq3, aqq4 abhi kya hain? null (khali) hain.
+Loop ke end mein aapka block chala:-
+if(aqq1!=null) plan.add(aqq1); ➔ AD Plan mein chala gaya. (Pehli baari bilkul sahi chali).
+
+Baari 2: Dusra Link aaya (Maan lo SAP ka hai)
+Code ne dekha SAP ka link hai, toh usne aqq2 ke andar SAP ki request daal di.
+⚠️ ASLI GADBAD YAHAN HUI: Is baari AD ka code nahi chala, lekin aqq1 variable ke andar pichli baari ka AD data abhi bhi bacha hua hai! Use kisi ne saaf (clear) nahi kiya.
+Loop ke end mein jab aapka check dobara chala:-
+if(aqq1!=null) plan.add(aqq1); ➔ Kyunki aqq1 khali nahi tha, isne pichle round wale AD ko DOBARA plan mein daal diya (Duplicate)!
+if(aqq2!=null) plan.add(aqq2); ➔ Fir SAP ko bhi daal diya.
+
+Baari 3: Tisra Link aaya (Maan lo LDAP ka hai)
+Is baari aqq3 mein LDAP ka data aaya.
+Lekin pichle rounds ki wajah se aqq1 (AD) aur aqq2 (SAP) dono ke andar purana data abhi bhi bhara hua hai!
+Loop ke end mein check chala:-
+if(aqq1!=null) plan.add(aqq1); ➔ AD T तीसरी (3rd) baar plan mein chala gaya!
+if(aqq2!=null) plan.add(aqq2); ➔ SAP DOOSRI (2nd) baar plan mein chala gaya!
+if(aqq3!=null) plan.add(aqq3); ➔ LDAP pehli baar gaya.
+
+solution:-
+AccountRequest aqq1 = null; 
+
+for (int i = 1; i <= 2; i++) {                                                    //->>
+    
+    if (i == 1) { 
+        aqq1 = new AccountRequest("AD_Link_A"); 
+    }
+    // ⚠️ i == 2 ke waqt ye IF block skip ho jayega kyunki condition match nahi karegi!
+    if (i == 2) { 
+        // Maan lijiye ye SAP ka link tha, toh AD wala block chalega hi nahi
+    }
+
+    // --- LOOP KA END ---
+    if (aqq1 != null) {
+        plan.add(aqq1); 
+        aqq1 = null; // ✅ FIXED: Kaam khatam hote hi box ko khali (null) kar diya!
+    }
+	if(aqq2!=null) {
+    plan.add(aqq2);
+    aqq2 = null; // ◄--- Pichla data saaf!
+}
+
+if(aqq3!=null) {
+    plan.add(aqq3);
+    aqq3 = null; // ◄--- Pichla data saaf!
+}
+
+if(aqq4!=null) {
+    plan.add(aqq4);
+    aqq4 = null; // ◄--- Pichla data saaf!
+}
+	
+}
+*/////////////
+
+//////////*>-----------------------------------------------------------------------------------------------------------------
+()Aaiye pure code ke flow se step-by-step samajhte hain ki kaise aapke purane code mein 500 links hone ke baad bhi baaki ke 
+499 links hawa mein gayab ho rahe the aur sirf 1 hi link kyun bach raha tha.
+
+()Aapke Purane Code Ka Flow (Jahan Data Loss Ho Raha Tha):-
+AccountRequest aqq1 = null; // 1. Loop ke baahar single box banaya
+
+for(Object link : links) { // 2. Maan lijiye is loop mein 3 AD links aaye (Link-1, Link-2, Link-3)
+    linkk = (Link) link;
+    
+    if("AD".equals(linkk.getApplication().getName())) {
+        // 3.🚨 HAR BAAR NAYA OBJECT BANEGA AUR AQQ1 MEIN OVERWRITE HO JAYEGA
+        aqq1 = new AccountRequest(AccountRequest.Operation.Create, "AD", null, linkk.getNativeIdentity());
+        
+        // Entitlements add karne ka logic...
+    }
+} //---> Loop Yahan Khatam Ho Gaya
+
+// 4. 🚨 LOOP KE BAAHAR PLAN MEIN ADD KIYA
+if(aqq1 != null) {
+    plan.add(aqq1); 
+}
+
+🔄 Parde Ke Peeche Kya Ho Raha Tha? (Dry Run)
+Iteration 1 (Link-1): aqq1 ke andar Link-1 ka data (Account Request) gaya.
+
+Iteration 2 (Link-2): Loop dobara chala. Jaise hi line chali aqq1 = new AccountRequest(...), aqq1 ka purana connection Link-1 se toot gaya, aur ab wo Link-2 ko point karne laga. Link-1 memory se gayab!
+
+Iteration 3 (Link-3): Loop fir chala. Ab Link-2 ka connection bhi toot gaya, aur aqq1 mein Link-3 ka data aa gaya.
+
+Loop Khatam: Ab code loop ke baahar aaya aur chaldiya plan.add(aqq1);. Is waqt aqq1 ke paas sirf aur sirf sabse aakhri (Link-3) ka data bacha tha.
+
+Natija? Link-1 aur Link-2 ke liye provisioning plan kabhi bana hi nahi, unka data loss ho gaya!
+
+
+--------------------->>>>>>>>>>>>>>>>>>>>>>>>>()Aapke Purane Code buggy code :-
+
+if(idn.getLinks()!=null &amp;&amp; idn.getLinks().size()!=0){
+log.error("links found and user have already links");
+return null;
+}else{
+ProvisioningPlan plan=new ProvisioningPlan();
+ProvisioningProject project=null;
+Provisioner pro=new Provisioner(context);
+AccountRequest aqq1=null;
+AccountRequest aqq2=null;
+AccountRequest aqq3=null;
+AccountRequest aqq4=null;
+
+for(Object link:links){
+linkk=(Link)link;
+
+if("AD".equals(linkk.getApplication().getName())){
+aqq1=new AccountRequest(AccountRequest.Operation.Create,"AD",null,linkk.getNativeIdentity());
+
+entitles=linkk.getEntitlements(context);
+if(entitles!=null &amp;&amp; entitles.size()!=0){
+for(Entitlement entit:entitles){
+entitle=entit;
+if(entitle!=null){
+aqq1.add(new AttributeRequest(entitle.getAttributeName(),ProvisioningPlan.Operation.Add,entitle.getAttributeValue()));
+
+}else{
+log.error("entitle is null");
+dobabaprovision=true;
+}
+}
+
+}else{
+log.error("not found linkk.getEntitlements are null");
+return null;
+}
+
+}else if("SAP".equals(linkk.getApplication().getName())){
+aqq2=new AccountRequest(AccountRequest.Operation.Create,"SAP",null,linkk.getNativeIdentity());
+
+entitles=linkk.getEntitlements(context);
+if(entitles!=null &amp;&amp; entitles.size()!=0){
+for(Entitlement entit:entitles){
+entitle=entit;
+if(entitle!=null){
+aqq2.add(new AttributeRequest(entitle.getAttributeName(),ProvisioningPlan.Operation.Add,entitle.getAttributeValue()));
+
+}else{
+log.error("entitle is null");
+dobabaprovision=true;
+}
+}
+
+}else{
+log.error("not found linkk.getEntitlements are null");
+return null;
+}
+
+}else if("LDAP".equals(linkk.getApplication().getName())){
+aqq3=new AccountRequest(AccountRequest.Operation.Create,"LDAP",null,linkk.getNativeIdentity());
+
+entitles=linkk.getEntitlements(context);
+if(entitles!=null &amp;&amp; entitles.size()!=0){
+for(Entitlement entit:entitles){
+entitle=entit;
+if(entitle!=null){
+aqq3.add(new AttributeRequest(entitle.getAttributeName(),ProvisioningPlan.Operation.Add,entitle.getAttributeValue()));
+
+}else{
+log.error("entitle is null");
+dobabaprovision=true;
+}
+}
+
+}else{
+log.error("not found linkk.getEntitlements are null");
+return null;
+}
+
+}else{
+aqq4=new AccountRequest(AccountRequest.Operation.Create,linkk.getApplicationName(),null,linkk.getNativeIdentity());
+
+entitles=linkk.getEntitlements(context);
+if(entitles!=null &amp;&amp; entitles.size()!=0){
+for(Entitlement entit:entitles){
+entitle=entit;
+if(entitle!=null){
+aqq4.add(new AttributeRequest(entitle.getAttributeName(),ProvisioningPlan.Operation.Add,entitle.getAttributeValue()));
+
+}else{
+log.error("entitle is null");
+dobabaprovision=true;
+}
+}
+
+}else{
+log.error("not found linkk.getEntitlements are null");
+return null;
+}
+
+}
+}//for link ka bracket close
+
+if(aqq1!=null)                
+plan.add(aqq1);     // 4. 🚨 LOOP KE BAAHAR PLAN MEIN ADD KIYA
+
+if(aqq2!=null)
+plan.add(aqq2);     // 4. 🚨 LOOP KE BAAHAR PLAN MEIN ADD KIYA
+
+if(aqq3!=null)
+plan.add(aqq3);     // 4. 🚨 LOOP KE BAAHAR PLAN MEIN ADD KIYA
+
+if(aqq4!=null)
+plan.add(aqq4);     // 4. 🚨 LOOP KE BAAHAR PLAN MEIN ADD KIYA
+
+
+}//else ka bracket close
+
+->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>solution:-
+if(idn.getLinks()!=null && idn.getLinks().size()!=0){
+    log.error("links found and user have already links");
+    return null;
+}else{
+    ProvisioningPlan plan=new ProvisioningPlan();
+    ProvisioningProject project=null;
+    Provisioner pro=new Provisioner(context);
+    AccountRequest aqq1=null;
+    AccountRequest aqq2=null;
+    AccountRequest aqq3=null;
+    AccountRequest aqq4=null;
+
+    for(Object link:links){
+        linkk=(Link)link;
+
+        if("AD".equals(linkk.getApplication().getName())){
+            aqq1=new AccountRequest(AccountRequest.Operation.Create,"AD",null,linkk.getNativeIdentity());
+
+            entitles=linkk.getEntitlements(context);
+            if(entitles!=null && entitles.size()!=0){
+                for(Entitlement entit:entitles){
+                    entitle=entit;
+                    if(entitle!=null){
+                        aqq1.add(new AttributeRequest(entitle.getAttributeName(),ProvisioningPlan.Operation.Add,entitle.getAttributeValue()));
+                    }else{
+                        log.error("entitle is null");
+                        dobabaprovision=true;
+                    }
+                }
+            }else{
+                log.error("not found linkk.getEntitlements are null");
+                return null;
+            }
+
+            // ✅ FIX 1: AD ka object aur uske saare entitlements pack hote hi, 
+            // use LOOP KE ANDAR hi plan mein add kiya aur reference clear (null) kiya.
+            if(aqq1 != null) {
+                plan.add(aqq1);
+                aqq1 = null; 
+            }
+
+        }else if("SAP".equals(linkk.getApplication().getName())){
+            aqq2=new AccountRequest(AccountRequest.Operation.Create,"SAP",null,linkk.getNativeIdentity());
+
+            entitles=linkk.getEntitlements(context);
+            if(entitles!=null && entitles.size()!=0){
+                for(Entitlement entit:entitles){
+                    entitle=entit;
+                    if(entitle!=null){
+                        aqq2.add(new AttributeRequest(entitle.getAttributeName(),ProvisioningPlan.Operation.Add,entitle.getAttributeValue()));
+                    }else{
+                        log.error("entitle is null");
+                        dobabaprovision=true;
+                    }
+                }
+            }else{
+                log.error("not found linkk.getEntitlements are null");
+                return null;
+            }
+
+            // ✅ FIX 2: SAP ke liye bhi same loop ke andar hi add aur clear.
+            if(aqq2 != null) {
+                plan.add(aqq2);
+                aqq2 = null;
+            }
+
+        }else if("LDAP".equals(linkk.getApplication().getName())){
+            aqq3=new AccountRequest(AccountRequest.Operation.Create,"LDAP",null,linkk.getNativeIdentity());
+
+            entitles=linkk.getEntitlements(context);
+            if(entitles!=null && entitles.size()!=0){
+                for(Entitlement entit:entitles){
+                    entitle=entit;
+                    if(entitle!=null){
+                        aqq3.add(new AttributeRequest(entitle.getAttributeName(),ProvisioningPlan.Operation.Add,entitle.getAttributeValue()));
+                    }else{
+                        log.error("entitle is null");
+                        dobabaprovision=true;
+                    }
+                }
+            }else{
+                log.error("not found linkk.getEntitlements are null");
+                return null;
+            }
+
+            // ✅ FIX 3: LDAP ke liye bhi loop ke andar safe insertion aur clear.
+            if(aqq3 != null) {
+                plan.add(aqq3);
+                aqq3 = null;
+            }
+
+        }else{
+            aqq4=new AccountRequest(AccountRequest.Operation.Create,linkk.getApplicationName(),null,linkk.getNativeIdentity());
+
+            entitles=linkk.getEntitlements(context);
+            if(entitles!=null && entitles.size()!=0){
+                for(Entitlement entit:entitles){
+                    entitle=entit;
+                    if(entitle!=null){
+                        aqq4.add(new AttributeRequest(entitle.getAttributeName(),ProvisioningPlan.Operation.Add,entitle.getAttributeValue()));
+                    }else{
+                        log.error("entitle is null");
+                        dobabaprovision=true;
+                    }
+                }
+            }else{
+                log.error("not found linkk.getEntitlements are null");
+                return null;
+            }
+
+            // ✅ FIX 4: Baaki bachi generic apps ke liye bhi loop ke andar save aur clear.
+            if(aqq4 != null) {
+                plan.add(aqq4);
+                aqq4 = null;
+            }
+        }
+    }//for link ka bracket close
+
+    // ✅ FINAL FIX 5: Plan ready hone ke baad use actual compile aur execute karna taaki account create ho.
+    if (plan.getAccountRequests() != null && !plan.getAccountRequests().isEmpty()) {
+        log.info("Executing provisioning plan for: " + identityName);
+        project = pro.compile(plan);
+        pro.execute(project);
+    }
+
+}//else ka bracket close
+*//////////
+---------------------------------------------------------------------------------------------------------------------------
+//////////*note:-buggy code():-
+for(Object linkk:links){
+link=(Link)linkk;
+app=link.getApplication();
+if(link!=null &amp;&amp; app!=null &amp;&amp; "AD".equals(app.getName()))
+break;
+link=null;
+}
+()for(Object linkk:links){:-कंप्यूटर लिस्ट में से पहला अकाउंट (Link) उठाता है।
+
+()link=(Link)linkk;:-
+कंप्यूटर उस अकाउंट को link नाम के वेरिएबल में डाल देता है। मान लेते हैं कि किसी वजह से यह link खाली (null) है।
+
+()app=link.getApplication();:-
+यहाँ कंप्यूटर link के अंदर जाकर एप्लिकेशन ढूंढने की कोशिश करता है। चूंकि link पहले से ही खाली (null) था, कंप्यूटर जैसे ही उसके अंदर घुसने की कोशिश करेगा, उसे झटका लगेगा और वह तुरंत NullPointerException का एरर फेंक कर पूरे प्रोग्राम को क्रैश (बंद) कर देगा।
+
+if(link!=null && app!=null && ...):-
+आपकी यह सेफ चेक वाली लाइन नंबर 4 पर है। लेकिन कंप्यूटर तो लाइन नंबर 3 पर ही क्रैश हो चुका है! वह इस लाइन तक कभी पहुंच ही नहीं पाएगा।
+
+->>>>>>>>solution:-
+for(Object linkk:links){
+link=(Link)linkk;
+if(link!=null){
+app=link.getApplication();
+if(app!=null &amp;&amp; "AD".equals(app.getName()))
+break;
+link=null;
+}
+}
+*//////////
+///////////*
+entitlements=link.getEntitlements(context);
+for(Object entit:entitlements){
+entitle=(Entitlement)entit;
+if(entitle!=null &amp;&amp; "IT".equalsIgnoreCase(entitle.getAttributeValue())){
+aqq.add(att1);
+}else if(entitle!=null &amp;&amp; "Finance".equalsIgnoreCase(entitle.getAttributeValue())){
+aqq.add(att2);
+}else{
+log.error("not found entitlement");
+dobabaprovision=true;
+}}
+क्या असर होगा: मान लीजिए किसी यूजर के पास AD में "IT" से जुड़े 3 अलग-अलग Entitlements हैं। 
+यह लूप 3 बार चलेगा और aqq.add(att1) को तीन बार रिक्वेस्ट में जोड़ देगा। इससे आपकी ProvisioningPlan में एक ही ग्रुप जोड़ने की डुप्लिकेट रिक्वेस्ट चली जाएगी।
+
+सुधार: ग्रुप जोड़ने से पहले हमें चेक कर लेना चाहिए कि क्या वह रिक्वेस्ट पहले से तो नहीं जुड़ चुकी है, या फिर मैच होते ही एक फ्लैग सेट कर देना चाहिए।
+->>>>>>>>>>solution:-
+
+entitlements=link.getEntitlements(context);
+List<String> entitlevalue=new ArrayList<>();
+for(Object entit:entitlements){
+entitle=(Entitlement)entit;
+if(entitle!=null &amp;&amp; "IT".equalsIgnoreCase(entitle.getAttributeValue())){
+
+if(entitle.getAttributeValue()!=null){
+if(!entitlevalue.contains(entitle.getAttributeValue())){
+aqq.add(att1);
+entitlevalue.add(entitle.getAttributeValue());
+}}
+
+}else if(entitle!=null &amp;&amp; "Finance".equalsIgnoreCase(entitle.getAttributeValue())){
+
+if(entitle.getAttributeValue()!=null){
+if(!entitlevalue.contains(entitle.getAttributeValue())){
+aqq.add(att2);
+entitlevalue.add(entitle.getAttributeValue());
+}}
+
+}else{
+log.error("not found entitlement");
+dobabaprovision=true;
+}}
+*//////////
+/////////////*
+Gadbadi kya hai: Jab aap koi list loop ke andar banate hain,toh loop jitni baar ghumega (chahe 5 baar ya 10 baar), 
+list har baar mitti mein milkar bilkul nayi aur khali(empty) ban jayegi. Purana data usme kabhi save hi nahi hoga.
+List<String> entitlevalue=new ArrayList<>(); ko for(Object entit:entitlements){} ke bahar likho.
+*/////////
+-----------------------------------------------------------------------------------------------------------------------------
+/////////*file handling:-
+()loc Variable Static Nahi Hai:-
+Aapne String loc ko main method ke bahar likha hai, lekin main method static hota hai. 
+Ek static method ke andar aap non-static variable ko direct use nahi kar sakte 
+(halaanki aapne ise main ke andar use kiya bhi nahi hai).
+
+()main method ke andar static variable bana diya: Java mein aap kisi bhi method (jaise main method) ke andar static variable 
+nahi bana sakte. static hamesha method ke bahar (class ke andar) banta hai.
+
+()Char ravan=null:--char ek primitive type hai, isme aap null assign nahi kar sakte.
+
+()1. Main Method ke ANDAR Object Banana (Local Object):-
+Jab aap object ko main method ke andar banate hain, toh wo sirf us main method tak hi seemit (local) rehta hai. 
+Koi doosra method use direct istemal nahi kar sakta.
+
+()2. Main Method ke BAHAR Object Banana (Instance ya Static Field):-
+Jab aap object ko main method ke bahar (yani Class ke andar) banate hain,
+toh use pooray class ke alag-alag methods share kar sakte hain.
+ 
+()int ravan kyun? fileReader.read() jab file ke aakhiri mein pahunchta hai toh wo -1 return karta hai.
+ -1 ek integer hai, isliye hum ravan variable ko int banate hain na ki char. 
+ Print karte waqt hum use (char) ravan karke wapas letter mein badal lete hain.
+
+()Double Brackets ((ravan = fileReader.read()) != -1): Ye lagana zaroori hai taaki Java pehle file se data read karke ravan mein daale, 
+aur phir check kare ki wo -1 ke barabar hai ya nahi
+ 
+ 
+()A) static keyword ke sath (Direct Use ke liye):
+Agar aap bahar object bana rahe hain aur use main (jo ki static hai) mein direct use karna hai, toh object ke aage static lagana padega.
+
+Java
+import java.io.FileWriter;
+
+public class practice {
+    // Object main ke BAHAR bana hai (Static hai)
+    static FileWriter fileWriter; 
+
+    public static void main(String[] args) {
+        try {
+            // Yahan humne direct use kiya kyunki wo static hai
+            fileWriter = new FileWriter("F:/employee.csv");
+            fileWriter.write("hello");
+            fileWriter.close();
+        } catch(Exception e) {
+            System.out.println(e);
+        }
+    }
+}
+
+()Jab hum main ke bahar bina static ke koi object ya variable banate hain, toh use Instance Variable kehte hain.
+Kyunk main method khud static hota hai, isliye wo bina static wali cheezon ko direct touch nahi kar sakta. 
+Agar touch karega toh Java Non-static variable cannot be referenced from a static context ki error de dega.
+Ise access karne ke liye hume main ke andar pehle apni hi class ka ek object banana padta hai. 
+
+package org.SailPoint_IIQ.Utils;
+
+import java.io.FileWriter;
+
+public class practice {
+
+    // 1. Main ke BAHAR bina static ke object banaya (Non-Static / Instance Variable)
+    FileWriter fileWriter; 
+
+    public void myFileWriteMethod() {
+        try {
+            // Hum yahan fileWriter ko use kar rahe hain
+            fileWriter = new FileWriter("F:/employee.csv");
+            fileWriter.write("Hello Java! Non-static tarike se data likha gaya.");
+            fileWriter.close();
+            System.out.println("Data successfully likh diya!");
+        } catch(Exception e) {
+            System.out.println("Error: " + e);
+        }
+    }
+
+    public static void main(String[] args) {
+        // fileWriter.write("hello"); // ❌ AGAR AISA KIYA TOH ERROR AAYEGI! (Direct touch nahi kar sakte)
+
+        // 2. Asli Tarika: Pehle apni hi class ('practice') ka object banaya
+        practice pObj = new practice();
+
+        // 3. Ab us object ke sahare hum non-static method ya variable ko call karenge
+        pObj.myFileWriteMethod(); 
+    }
+}
+*//////////
+///////*filehandling:-
+()main ke bahar Exception Handle nahi ki (Sabse Bada Issue):-
+Aapne main ke bahar static FileReader=new FileReader("F:/employeem.csv");likha hai. Java me jab bhi aap kisi file ka object banate hain, 
+toh use try-catch ke andar rakhna zaroori hai kyunki file na milne par FileNotFoundException aati hai.
+
+()Java ka ek bohot strict rule hai: Koi bhi executable code (jaise try-catch, loops, if-else, method calls)
+hamesha kisi na kisi method ke ANDAR hi hona chahiye. Aap use class ke andar khula nahi chhod sakte.
+ 
+()1. try ke upar illegal start of type (Aapka Point 1):-
+Java ko lagta hai ki Class ke andar sirf do hi cheezein aa sakti hain: Variables (fields) ya Methods.
+Jab use direct try-catch milta hai, toh wo sochta hai: "Arey, ye try naam ka kaun sa naya data type aa gaya?
+Maine toh sirf int, String, void wagera suna tha!" * Kyunki use koi valid data type nahi milta, 
+isliye wo bolta hai: Illegal start of type (yani galat type se shuruat hui hai).
+
+()2. static File ke upar illegal start of expression (Aapka Point 2):-
+matlab static sirf class ke andar aur kahi bhi kishi bhi block me nahi likhe.
+static ka matlab hota hai "Class ke level ka". Java ka rule hai ki static hamesha khule me (Class ke andar direct) hona chahiye.
+Jab aap use try {} ya kisi method ke andar daal dete hain, toh Java kehta hai:-
+"Bhai, tum toh block ke andar band ho (local ho), toh tum pooray class ke liye static kaise ho sakte ho?"
+
+()3. class, interface, enum expected:-
+Ye error tab aati hai jab compiler ka dimaag poori tarah ghum jata hai brackets {} ke her-pher se.
+Jab aapka try-catch main method ke bahar hi band ho gaya, toh Java ne socha ki Class ka kaam khatam ho chuka hai.
+Uske baad jab use public static void main dikha, toh wo sochne laga: "Class toh khatam ho gayi, 
+ab ye naya code bina kisi class ke bahar kya kar raha hai? Kya ye koi nayi class shuru ho rahi hai?"
+Kyunki wahan class keyword nahi hota, isliye wo aapse poochta hai: "Bhai, yahan koi class, interface, ya enum likhna bhool gaye kya?"
+
+()Method calling kisi bhi method ya kisi bhi block se ho sakti hai, sirf main method se ho aisa bilkul zaroori nahi hai.
+main method sirf aapke program ka Starting Point (Entry Gate) hai. Ek baar jab Java main method ke andar ghus jata hai,
+toh uske baad aap ek method se doosre method ko, doosre se teesre method ko, chain ki tarah kahin se bhi call kar sakte hain.
+
+()1. Main Method ke andar BLOCK likh sakte hain? ➔ HAAN (Yes):-
+Aap main ke andar ye saare blocks likh sakte hain:-
+Conditional Blocks: if-else blocks.
+Loop Blocks: while, for, do-while loops.
+Exception Blocks: try-catch-finally blocks.
+Local Blocks (Anonymous Blocks): Aap bina kisi naam ke bhi sirf {} lagakar ek temporary block bana sakte hain (isey local scope kehte hain).
+
+()lekin main method ke andar dusra method declare/likh nahi sakte.ye following galat hai.
+ex:-public class Practice {
+    public static void main(String[] args) {
+        
+        // ❌ ERROR! Main ke andar naya method nahi ban sakta
+        public void myNewMethod() { 
+            System.out.println("Hello");
+        }
+        
+    }
+}
+
+
+()BufferedReader:-Asli Wajah: BufferedReader bohot zyada powerful hota hai, par wo itna ameer hai ki khud neeche utar kar hard disk se File 
+direct nahi uthata. Use beech me ek helper chahiye hota hai jise FileReader kehte hain.
+Fix: BufferedReader ke andar pehle new FileReader() daalna padega.
+
+()Java mein readLine() chalate waqt IOException aane ka chance hota hai 
+(maan lijiye beech mein hi file corrupt ho jaye ya delete ho jaye). Isliye Java me try catch use karte hai readLine chalate waqt.
+
+()code:-
+while((hey=br.readLine())!=null){
+			 System.out.println(hey);	
+             bw.write(hey);			 
+		 }
+matlab same file me likhne se overrite ho gaya.FileReader aur BufferedReader ne file ko khola taaki wo data padh sakein.
+Lekin agle hi pal, aapne new FileWriter(...) chala diya. 
+Jaisa ki humne pehle seekha tha, FileWriter ka default behavior hota hai Overwrite karna. 
+Yani, jaise hi ye line chalti hai, wo file ke saare data ko mita kar file ko bilkul khali (0 KB) kar deta hai!
+
+-->solution:-fw = new FileWriter("F:/practice/employeem.csv", true);
+ya fir bw.write(hey); loop ke bahar dusre loop me likho.
+Sahi Sequence (Isko Kaise Theek Karein):-
+Java mein agar aapko ek hi file se read karke usi me write karna hai, toh sequence ye hona chahiye:-
+Pehle sirf Read karo (BufferedReader chalao, data list me daalo).
+Reader ko Close karo (Taaki file free ho jaye).
+Ab Write karo (FileWriter ko ab chalao taaki jab file overwrite ho, toh hamare paas data list me pehle se save ho).
+Writer ko Close karo (Data save karne ke liye).
+
+()2. fw.close(); aur bw.close(); ka aage-piche hona (Line 34-36):-
+Aapne pehle fw.close(); (andar wale/pichle channel) ko close kiya, aur uske baad bw.close(); aur bw.flush(); kiya hai.
+Rule: Hamesha sabse bahar wale wrapper (outer stream) ko pehle close karte hain. Agar aap pehle fw (FileWriter) ko close kar denge, toh jab bw.close() chalega, toh use piche ka rasta band milega aur wo gussa hokar Stream closed ki error de dega.
+Saath hi, close() karne ke BAAD flush() nahi kiya jata, kyunki close hote hi stream khatam ho jati hai.
+
+
+*/////
+/////////*
+()Employee other = (Employee) obj; kyu kiye?
+-->Java mein do alag-alag level hote hain:-
+Parent Level (Sabse bada dada-par-dada, yaani Object class)
+Child Level (Aapki apni banayi hui class, yaani Employee)
+
+Asli dikkat kya hai?
+equals method ka jo signature (rule) hai, woh Java ne pehle se hi aisa banaya hai:
+Java
+public boolean equals(Object obj)
+
+Yahan bracket ke andar Object obj likha hai. Iska matlab hai ki is obj variable ke paas abhi sirf Object class ki power hai.
+Lekin aapne Employee class ke andar apne khud ke variables banaye hain, jaise id aur name. 
+Ab dikkat yeh hai ki parent (Object) ko nahi pata hota ki uske child (Employee) ke paas kya-kya naye variables hain.
+
+Agar aap direct likhoge:-
+Java
+if (this.id == obj.id) // ❌ Galat! Compile Error aayega.
+Toh Java kahega: "Mujhe nahi pata id kya hota hai, kyunki obj mere liye abhi sirf ek normal Object hai."
+
+Isliye humne typecast kiya:-
+Hum Java ko bolte hain ki: "Bhai, mujhe pata hai ki yeh abhi ek normal Object ki tarah dikh raha hai, 
+par asal mein yeh ek Employee hi hai. Isliye tum ise temporary Employee ki tarah treat karo."
+Java
+Employee other = (Employee) obj;
+Jaise hi aapne bracket mein (Employee) likh kar use other naam ke variable mein daala, ab compiler samajh gaya ki haan, yeh ek Employee hai!
+Ab aap aaram se other.id aur other.name likh kar uske andar ka data nikal sakte ho, kyunki other ke paas ab Employee class ki saari powers aa chuki hain.
+-----------------------------------------------------------------------------------------------------------------------------*/
+*/////////
+//str ko shuruat mein null ki jagah khali string "" se initialize karenge. kyuki str=null ke badd hum isEmpty ya koi aur method nahi chala sakte.
+
+/*1. Baahar wali class (Top-level Class) static kyun nahi ho sakti?
+static keyword ka matlab hota hai—"Kisi class ka hissa (member)". Jaise static variables ya static methods kisi class ke andar hote hain.
+Jab aap ek class ko bilkul baahar (practiceb ke neeche) banate hain, toh wo kisi aur class ke andar nahi hai.
+Jab wo kisi ke andar hai hi nahi, toh wo kisi ka "member" kaise ho sakti hai? Isiliye top-level class ke aage static lagana Java me allowed nahi hai.
+
+2. Baahar wali class ke aage public kyun nahi lagaya?
+Java ka ek bohot sakht niyam (rule) hai:-
+Ek Java file (.java) ke andar sirf EK hi public top-level class ho sakti hai. Aur file ka naam bhi bilkul usi public class ke naam par hona chahiye.
+
+3.Dikkat Kahan Hai?
+Hero class ke details method ko dhyan se dekhiye:-
+Java
+void details(String str, String str1) { // ◄── 1. str aur str1 yahan pehle hi declare ho gaye (Parameters)
+    System.out.println("hello");
+    String str = "dog";   // ERROR: str ko dobara declare kar rahe hain
+    String str1 = "DOg";  // ERROR: str1 ko bhi dobara declare kar rahe hain
+    ...
+}
+*/
+/*
+()Main Method ke bahar logic likh diya: Java mein koi bhi executive code 
+(jaise .transform(), loop chalana, methods call karna) kisi method ke andar hona chahiye. 
+Aapne str.transform(...) ko direct class ke andar likh diya hai, jo Java allow nahi karta.
+
+()Method ke andar se return missing hai: Aapka hello() method bol raha hai ki main ArrayList<String> return karunga, 
+lekin aapne method ke aakhiri mein kuch return hi nahi kiya (return ar; likhna bhool gaye). 
+transform ke andar wala return sirf transform ke liye hai, pure method ke liye nahi.
+
+()parent method hello() ke andar child method transform() koi variable return kare toh ush variable ko 
+parent method ke variable me intialize kare aur return kare parent method ka return.
+ex:-static String str="hello bay,java could be,you known me,just say,java wassap";
+static public ArrayList<String> hello(){
+	ar=str.transform(new Function<String,ArrayList<String>>(){
+		
+		@Override
+		public ArrayList<String> apply(String str2)
+		{
+			String[] strm=str2.split(",");
+			for(String strm2:strm){
+				if(strm2.contains("java"))
+				{
+					System.out.println("ya contains");
+					ar.add(strm2);
+				}	
+			}
+    return ar;	//ye return type child ka, value jayega:-ar=str.transform();
+		}
+	});
+	return ar;  //ye return type parent ka,  value jayega:-jisne call kiya class.hello();
+	}
+	
+()primitive:-Aapne loop ke andar int jbr declare kiya hai. Java mein primitive types (int, char, etc.) hamesha koi na koi 
+number hold karte hain, wo kabhi null nahi ho sakte. null sirf objects (String, Integer) ho sakte hain. 
+Isliye jbr != null likhne par compiler error de dega.	
+
+*/
+/*
+(1)super.clone();:-
+Jab aap super.clone() call karte ho, toh Java ka JVM parde ke peeche check karta hai: 
+"Kya is Student class ke paas cloning ki permission hai?"
+Agar implements Cloneable likha hai: JVM samajh jata hai ki permission granted hai. 
+Wo chupchaap object ki ek duplicate copy (Xerox) banakar de deta hai.
+Agar implements Cloneable NAHI likha hai: Toh bhale hi aapne clone() method sahi se likha ho,
+jaise hi code run hoga, JVM gussa ho jayega aur CloneNotSupportedException ka error phenk dega.
+
+
+(2)Generics mein Primitive Types (int) use nahi ho sakte:-
+Java mein ArrayList<int> likhna bilkul mana hai. ArrayList hamesha Objects ke saath kaam karta hai, 
+primitive types ke saath nahi. Aapko int ki jagah uski Wrapper class Integer use karni padegi (yaani ArrayList<Integer>).
+
+(3)Class level par direct assignment (Line 11):-
+Java
+asr = Arrays.asList("12", "45", "abc", null, "89", "xyz");
+Java mein class body ke andar aap direct statement ya assignment nahi likh sakte. 
+Woh kisi method ya constructor ke andar hona chahiye, ya fir declaration ke time hi assignment hona chahiye.
+Sahi Tareeka: static List<String> asr = Arrays.asList("12", "45", "abc", null, "89", "xyz");
+
+(4)asr variable ka double declaration aur class body mein statement (Lines 10-11):-
+Java
+static List<String> asr = new ArrayList<>();
+List<String> asr = Arrays.asList("12", "45", "abc", null, "89", "xyz");
+Aapne asr ko do baar declare kar diya hai,
+Sahi Tareeka: In dono lines ko hata kar sirf ek line likho:-
+static List<String> asr = Arrays.asList("12", "45", "abc", null, "89", "xyz");
+*/---------------------------------------------------------------------------------------------------------------------------
+//////////*
+3. Return Statement ke Rules (Functions ke andar):-
+​Agar aap if block ko kisi aise method/function ke andar likh rahe hain jiska koi Return Type hai (jaise String, int, etc.), 
+toh yeh rules apply hote hain:Unreachable Code/Missing Return: Agar aapne sirf if ke andar return likha hai, 
+toh compiler error dega. Aapko if ke bahar ek default return ya else block dena hi hoga, 
+taaki agar condition false ho jaye, toh program ko pata ho kya return karna hai.
+
+// GALAT (Missing Return Error)
+public int checkNumber(int num) {
+    if (num > 0) return 1; 
+}
+
+// SAHI
+public int checkNumber(int num) {
+    if (num > 0) return 1;
+    return 0; // Backup return zaroori hai
+}
+*///////////
+//////////////*
+Nahi, constructor static nahi ho sakta.
+Reason:
+Constructor ka kaam object create hone par initialize karna hota hai.
+static members class se belong karte hain, object se nahi.
+Constructor tab call hota hai jab object banta hai (new keyword se).
+Agar constructor static hota, to usse object creation se pehle hi call kiya ja sakta tha, 
+jo constructor ke purpose ke against hai.
+*/////////////
+
+/*question:-
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
+
+public class practiceb {
+    static String arr[] = {"Rahul", "Aman", "Ravi", "Kishan"};
+    
+    // 1. Memory mein SIRF EK permanent daba banaya (Size 10 ka)
+    static char[] ch = new char[10]; 
+    static List<char[]> lcr = new ArrayList<>();
+
+    public static void main(String args[]) {
+        
+        for (String ark : arr) {
+            if (ark != null) {
+                
+                // 2. `.toCharArray()` NAHI use kiya. 
+                // Purane dabe ke andar ke characters ko manually ek-ek karke badal rahe hain
+                for (int i = 0; i < ark.length(); i++) {
+                    ch[i] = ark.charAt(i);
+                }
+                
+                // Agar naam chhota hai (jaise Ravi), toh aage ke bache purane letters ko clear karne ke liye
+                for (int i = ark.length(); i < ch.length; i++) {
+                    ch[i] = ' '; 
+                }
+
+                // 3. List mein har baar WAHI EK dabe ka address add ho raha hai
+                lcr.add(ch); 
+            }
+        }
+        
+        // --- AB DEKHO ASLI TAMASHA (BUG) ---
+        System.out.println("--- Loop ke bahar List ka data ---");
+        for (char[] cArray : lcr) {
+            // Ab chahe tum Arrays.toString() use karo ya kuch bhi, 
+            // Saari jagah sirf aur sirf "Kishan" hi dikhega!
+            System.out.println(Arrays.toString(cArray));
+        }
+    }
+}:-
+
+()Jab aap static char[] ch; ko loop ke bahar banate hain, toh computer ki memory (Heap Memory) mein sirf ek hi daba (array) 
+banta hai. Aapka variable ch us dabe ka address (pointer) yaad rakhta hai.
+Step 1: Pehli baar loop chala ("Rahul"):-
+ch = ark.toCharArray(); ne memory ke us dabe mein likh diya: ['R', 'a', 'h', 'u', 'l'].
+Aapne lcr.add(ch); kiya. List ne data copy nahi kiya! List ne sirf ch ka address apne andar save kar liya (Maano Address #101).
+List ki halat: [ Address #101 ] (Jo abhi "Rahul" dikha raha hai).
+
+Step 2: Dusri baar loop chala ("Aman"):-
+Kyunki ch ek hi static variable hai, toh usne koi naya daba nahi banaya. Usne usi Address #101 wale dabe ke andar ka data badal kar ['A', 'm', 'a', 'n'] kar diya.
+Aapne fir lcr.add(ch); kiya. List ne fir se wahi Address #101 apne andar daal liya.
+List ki halat: [ Address #101, Address #101 ]
+Ab agar aap list check karoge, toh dono jagah "Aman" dikhega, kyunki dono ek hi dabe ko dekh rahe hain!
+
+Step 3: Aakhri loop ("Kishan"):-
+Wahi purane dabe (Address #101) ka data fir badal gaya aur ho gaya: ['K', 'i', 's', 'h', 'a', 'n'].
+List mein aakhri baar wahi address add hua.
+List ki halat: [ Address #101, Address #101, Address #101, Address #101 ]
+Kyunki saare addresses ek hi dabe ko point kar rahe hain, aur us dabe mein aakhri naam "Kishan" bacha tha, isliye aapko list mein har jagah sirf "Kishan" hi dikhai deta hai.
+
+solution:-
+Loop ke andar char[] ch banane se kya badalta hai?
+Jab aap loop ke andar char[] ch = ark.toCharArray(); likhte hain, toh Java ko majboor hona padta hai ki har loop mein ek naya memory daba (New Address) banaye.
+Loop 1: Naya daba bana (Address #101) -> Usme "Rahul" gaya -> List mein Address #101 gaya.
+Loop 2: Ek aur naya daba bana (Address #202) -> Usme "Aman" gaya -> List mein Address #202 gaya.
+
+()Haan, String[] (String Array) ke saath bilkul wahi problem hogi jo char[] ke saath ho rahi ti! Isme saare names overwrite hokar aakhiri naam (Kishan) ban jayenge.
+soution loop ke andar likho String[] ko bhi,taki variable ke values ka address alag alag ho.
+
+()Aapke code mein data overwrite nahi ho raha tha, kyunki .toCharArray() har baar naya daba bana raha tha.
+
+()Ab tumne ekdum sahi nas pakdi hai—"Agar toCharArray() NAHI raha toh kya hoga?"
+Agar code mein toCharArray() na ho, aur hum khud ek hi dabe (array) ke andar loop chala kar data badlein, tab wahi "Kishan-Kishan" wala overwrite bug aayega jo tumne upar bataya tha!
+*/
+////////*
+////////*
+Nahi, Java me ek class ko final aur abstract dono saath nahi bana sakte.
+Kyu?
+abstract
+Kehta hai:
+"Mujhe inherit karo aur mere abstract methods ko implement karo."
+final
+Kehta hai:
+"Mujhe inherit mat karo."
+Dono ek dusre ke opposite hain.
+abstract → subclass banana zaroori.
+final → subclass banana mana hai.
+Isliye Java allow nahi karta.
+*////////
+/////*
+Nahi, Java me static constructor nahi hota. ❌
+*///////
+///////////*
+///////////*
+()abstract class me abstract method,concrete method,instance variable,constructor sirf.
+Abstract Class me Kaun-Kaun Se Variables aur Methods Ho Sakte Hain?
+Variables
+Java id="r8e7ui"
+Copy code
+int a;                  // instance variable
+static int b;           // static variable
+final int c = 10;       // final variable
+private int d;
+protected int e;
+public int f;
+✅ Sab tarah ke variables allowed hain.
+Methods
+Java id="1h1m3c"
+Copy code
+abstract void m1();     // abstract
+
+void m2() { }           // concrete
+
+static void m3() { }    // static
+
+final void m4() { }     // final
+
+private void m5() { }   // private
+
+protected void m6() { } // protected
+
+public void m7() { }    // public
+✅ Ye sab allowed hain.
+Constructor
+Java id="d2r7g3"
+Copy code
+abstract class Test {
+
+    Test() {
+        System.out.println("Constructor");
+    }
+}
+✅ Constructor allowed hai.
+----------------------------------------
+1. Method Declare करना (Abstract Methods):-
+जब आप चाहते हैं कि आपकी class सिर्फ एक नियम या डिज़ाइन बनाए, और उसका असली काम (Implementation) उसकी Child Class (Subclass) तय करे, 
+तब आप method को declare करते हैं।
+
+इसके आगे abstract keyword लगता है।
+
+इसकी कोई body { } नहीं होती, यह सिर्फ ; पर खत्म हो जाता है।
+
+2. Method Call करना और Define करना (Normal/Concrete Methods)
+Abstract class में आप नॉर्मल methods भी बना सकते हैं जिनकी अपनी body { } होती है। 
+आप इन methods के अंदर दूसरे methods को call भी कर सकते हैं (यहाँ तक कि abstract methods को भी call कर सकते हैं)।
+
+// Abstract Class
+abstract class Laptop {
+
+    // 1. Method DECLARE किया (Abstract Method - इसकी कोई body नहीं है)
+    abstract void bootOS();
+
+    // 2. Normal Method (यहाँ logic लिखा है और दूसरे method को CALL किया है)
+    void powerOn() {
+        System.out.println("Power button pressed.");
+        
+        // Abstract class के अंदर ही हमने abstract method को CALL कर लिया!
+        bootOS(); 
+        
+        System.out.println("Laptop is ready to use.");
+    }
+}
+
+// Child Class (इसकी ज़िम्मेदारी है कि ये declared method को पूरा करे)
+class Dell extends Laptop {
+    // Declared method को यहाँ define किया
+    void bootOS() {
+        System.out.println("Loading Windows 11...");
+    }
+}
+
+// Main Class चलाने के लिए
+public class Main {
+    public static void main(String[] args) {
+        // Laptop obj = new Laptop(); // Error! Abstract class का object नहीं बन सकता.
+        
+        Laptop myLaptop = new Dell(); // Child class का object बनाया
+        myLaptop.powerOn(); // Normal method को call किया
+    }
+}
+output:-
+Power button pressed.
+Loading Windows 11...
+Laptop is ready to use.
+--------------------------------------
+))interface me abstract method,concreate method,multiple inhartance hoga sirf.
+Interface me bhi concrete methods ho sakte hain, lekin wo default, static, ya private hone chahiye.
+
+Interface me Kaun-Kaun Se Variables aur Methods Ho Sakte Hain?
+Variables
+Java id="2r9z2r"
+Copy code
+interface Test {
+
+    int A = 10;
+}
+Compiler internally:
+Java id="8vrg4x"
+Copy code
+public static final int A = 10;
+
+✅ Interface me sirf public static final variables (constants) hote hain.
+❌ Instance variable allowed nahi.
+Methods
+-->Abstract Method
+Java id="4e4m5r"
+Copy code
+void m1();
+--Compiler internally:
+Java id="h2q1cx"
+Copy code
+public abstract void m1();
+
+-->Default Method (Java 8+)
+Java id="m8j80z"
+Copy code
+default void m2() {
+
+}
+
+-->Static Method (Java 8+)
+Java id="bjlwmv"
+Copy code
+static void m3() {
+
+}
+
+-->Private Method (Java 9+)
+Java id="mq49lp"
+Copy code
+private void m4() {
+
+}
+
+-->Private Static Method (Java 9+)
+Java id="x7wj6o"
+Copy code
+private static void m5() {
+
+}
+*////////
+------------------------------------------------------------------------------------
+तरीका 1: Method Overriding के ज़रिए (Polymorphism)
+अगर कोई method Parent class में पहले से मौजूद (Declare) है, और Child class ने उसे Override (अपने तरीके से बदलाव) किया है, तो Parent class का reference अपने आप Child के method को call कर लेता है।
+
+Java Example:
+Java
+class Parent {
+    void show() {
+        System.out.println("Parent ka method");
+    }
+    
+    void callChild() {
+        // यहाँ ये 'show' को call कर रहा है
+        show(); 
+    }
+}
+
+class Child extends Parent {
+    @Override
+    void show() {
+        System.out.println("Child ka overridden method");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Parent obj = new Child(); // Parent reference, Child object
+        obj.callChild(); 
+    }
+}
+Output:
+
+Plaintext
+Child ka overridden method
+-------------------------------------------------------------------------------
+तरीका 2: Downcasting के ज़रिए (Explicitly)
+अगर Child class में कोई बिल्कुल नया method है (जो Parent class में है ही नहीं), और Parent class को उसे call करना ही है, तो आपको Parent के reference को जबरदस्ती Child में बदलना पड़ेगा। इसे Downcasting कहते हैं।
+
+Java Example:
+Java
+class Parent {
+    void parentMethod() {
+        System.out.println("I am Parent");
+    }
+}
+
+class Child extends Parent {
+    void childSpecialMethod() {
+        System.out.println("I am Child's Special Method!");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Parent p = new Child(); // Upcasting
+        
+        // p.childSpecialMethod(); // ERROR! Parent सीधे इसे नहीं देख सकता।
+        
+        // Downcasting: Parent को बताया कि तुम असल में Child हो
+        if (p instanceof Child) {
+            Child c = (Child) p; 
+            c.childSpecialMethod(); // अब Call हो जाएगा!
+        }
+    }
+}
+निष्कर्ष (Summary):-
+()Direct Calling (No): Parent class के अंदर बैठे-बैठे आप Child के किसी नए method को सीधा नाम लेकर call नहीं कर सकते।
+
+()Via Overriding (Yes): अगर method दोनों में है (Overridden है), तो Parent के ज़रिए Child का method call हो जाता है।
+
+()Via Downcasting (Yes): Typecast करके आप Parent reference से भी Child के unique method को access कर सकते हैं।
+
+()नियम: जब child class किसी abstract method को override (implement) करती है, तो वहाँ से abstract keyword हटाना पड़ता है।
+
+()static block ke andar non static variables/methods ko direct use nahi karte balki ush class ka obj banake use karte hai.
+static{
+obj.variable;
+obj.callnonstaticmethod();
+}
+
+---------------------------------------------------------------------------------
+/////////*
+String s1 =" ja";
+String s2= s1+ "va";
+String s3 = "java";
+s2== s3
+false dega output kyuki reference s2 aur s3 same nahi par value same hai.
+*///////
+/*
+()main() method ke andar method declare nahi kar sakte.
+
+()Rule:-
+Class body me declaration hoti hai:-
+Variable declaration ✅
+Method declaration ✅
+Constructor declaration ✅
+Block declaration ✅
+
+Lekin execution statements nahi:-
+System.out.println() 
+if 
+for 
+while 
+show()//method call nahi kar sakte.
+*/
+----------------------------------------------------------------------------------------------------
+////////////*if return; rule:-
+()Is code ko step-by-step dekh:-
+if (admin == null) {
+    throw new RuntimeException("Admin not found");
+}
+🔍 Kya hota hai yaha?
+👉 Case 1: admin == null (Condition TRUE)
+throw new RuntimeException(...) execute hoga
+Exception turant throw ho jayega
+Us line ke baad ka code execute nahi hoga
+Control current method se bahar chala jayega
+
+👉 Matlab:-
+Current method yahi ruk jayega
+Aage ka code skip ho jayega.
+
+--------------------------------------------
+()Is code ko step-by-step dekh:-
+if (admin == null) {
+    return;
+}
+yaha bhi return ke baad code execute nahi hoga.
+-------------------------------------------------------
+🔹 Code:-
+if (identity == null) {
+    return false;
+}
+🧠 Kya hoga?
+👉 return false; aate hi method wahi pe ruk jayega ❌➡️ STOP
+
+🔥 Detail me samajh:-
+Agar identity == null hai
+👉 return false; execute hoga
+👉 method turant exit ho jayega
+Uske baad ka code:-
+❌ run nahi hoga.
+---------------------------------------------------------
+Haan bhai, agar if condition true ho jaye aur uske andar return; likha ho, to method wahi par ruk jata hai.
+Uske baad ka code execute nahi hota.
+Ye dekho:-
+if (identityObj == null) {
+    return null;
+}
+Agar condition true ho gayi:-
+identityObj == null
+matlab identity mili hi nahi.
+Tab:-
+return null;
+execute hoga.
+Aur method/script wahi pe khatam ho jayega.
+Uske niche ka code run nahi hoga.
+
+
+*////////////
+////////*
+Static variable:-
+Static Variable ko badla ja sakta hai? -> HAAN (YES)
+​Static variables ko bilkul badla (modify kiya) ja sakta hai.
+​Reason: static ka matlab 'unchangeable' nahi hota, balki 'class-level' hota hai. 
+Yaani wo variable kisi ek object ka nahi, balki puri class ka hota hai.
+
+2. Static Method ko Overload kiya ja sakta hai? -> HAAN (YES)
+
+3. Static Method ko Override kiya ja sakta hai? -> NAHI (NO)
+
+4. Static Class ko Inherit kiya ja sakta hai? -> HAAN (YES), lekin ek shart par
+​Java mein aap kisi top-level class (main class) ko static nahi bana sakte. 
+Java mein sirf Nested Class (jo kisi doosri class ke andar ho) hi static ho sakti hai.
+
+Method Hiding Java ka ek aisa concept hai jo tab hota hai jab ek Child Class apne Parent Class ke bilkul same (same name aur same parameters waale) static method ko phir se define karti hai.
+class Parent {
+    static void display() {
+        System.out.println("Parent ka static method");
+    }
+}
+
+class Child extends Parent {
+    // Parent ke static method ko hide kar raha hai
+    static void display() {
+        System.out.println("Child ka static method");
+    }
+}
+public class Main {
+    public static void main(String[] args) {
+        Parent obj1 = new Parent();
+        Parent obj2 = new Child(); // Reference Parent ka, Object Child ka
+        Child obj3 = new Child();
+
+        obj1.display(); // Output: Parent ka static method
+        obj2.display(); // Output: Parent ka static method (Yahan twist hai!)
+        obj3.display(); // Output: Child ka static method
+    }
+}
+
+1. Left Side vs Right Side (Dono alag hain)
+​Parent obj2 (Reference Type): Ye compiler ko batata hai ki obj2 naam ka ek remote control hai, 
+jo sirf Parent class ke buttons (methods) ko jaanta hai.
+​new Child() (Actual Object): Ye memory (Heap) mein banna waala asli insaan (object) hai.
+​2. Runtime vs Compile-time ka Asar
+​Agar display() ek normal (non-static) method hota, toh Java ka rule kehta hai: "Remote bhale hi Parent ka ho, 
+chalega wahi jo Child ke andar define hai (Runtime Polymorphism)".
+​Lekin yahan display() ek static method hai! Aur static methods par runtime ka koi rule lagu nahi hota.
+
+Static variables aur static methods kahan store hote hain?
+➡️ JVM ke Method Area (Class Area) me store hote hain, aur inki ek hi copy hoti hai jo sab objects share karte hain.
+Instance variables kahan store hote hain?
+➡️ Object ke andar Heap Memory me store hote hain.
+Local variables kahan store hote hain?
+➡️ Stack Memory me store hote hain.
+
+class Parent {
+    void show() { System.out.println("Parent ka Normal"); }
+}
+class Child extends Parent {
+    @Override
+    void show() { System.out.println("Child ka Normal"); } // Override kiya
+}
+class Parent {
+    static void hideMe() { System.out.println("Parent ka Static"); }
+}
+class Child extends Parent {
+    static void hideMe() { System.out.println("Child ka Static"); } // Hide kiya
+}
+public class Test {
+    public static void main(String[] args) {
+        
+        // Remote (Reference) Parent ka hai, lekin Asli Maal (Object) Child ka hai
+        Parent obj = new Child();
+
+        // 1. Overriding ka Kamaal (Normal Method)
+        obj.show();   
+        // OUTPUT: Child ka Normal 
+        // Kyunki JVM ne dekha ki asli object to CHILD ka hai!
+
+        // 2. Method Hiding ka Kamaal (Static Method)
+        obj.hideMe(); 
+        // OUTPUT: Parent ka Static
+        // Kyunki Compiler ne object ko bhaav hi nahi diya, sirf REFERENCE (Parent) ko dekha!
+    }
+}
+
+---------------------------------------------------------------------------------------------------------
+()kishi bhi method ke andar se object ya variable ko call nahi kar sakte hai.
+
+Rule 1: Local Variables (Sirf apne ghar mein chalenge)
+Agar koi variable ya object kisi method ke andar bana hai, toh woh sirf usi method tak simit hai. Use aap kisi doosre method se directly call nahi kar sakte.
+
+Java
+void methodA() {
+    int x = 10; // Yeh local variable hai
+}
+
+void methodB() {
+    // System.out.println(x); <-- ERROR! methodB ko nahi pata 'x' kya hai.
+}
+
+Rule 3: Object Pass Karke (Parameters ke zariye)
+Agar methodA ke paas koi object hai aur methodB use use karna chahta hai, toh methodA us object ko methodB ke andar pass (bhej) sakta hai.
+
+Java
+public class Main {
+    
+    void methodB(Car myCar) { // Isne object ko receive kiya
+        System.out.println(myCar.color); // Bilkul chalega!
+    }
+
+    void methodA() {
+        Car c = new Car(); // Object yahan bana
+        c.color = "Red";
+        
+        methodB(c); // c ko methodB me bhej diya
+    }
+}
+--------------------------------------------------------------------------------------------------
+()static warning ➡️ Aapne static excep ex; banaya hai. 
+Static variables ke sath this.ex use nahi karna chahiye, unhe seedhe practiceb.ex = ex1; likha jata hai.
+static excep ex;
+	public practiceb(excep ex1){
+		this.ex=ex1;
+		}
+
+()throws keyword exception ko caller (jo us method ko call kar raha hai) ko saunp deta hai, na ki compiler ko.
+
+()Manually (throw se): Jab koi galti technical nahi hoti, balki business logic ke hisab se galat hoti hai.
+Maan lijiye aap ek Voting App bana rahe hain. Kisi ne age -5 ya 15 daal di. 
+Java ke liye toh -5 ek normal number hai, woh koi error nahi dega. 
+Lekin aapke logic ke hisab se yeh galat hai! Aisi jagah par aap khud throw ka use karte hain:-
+public class Test {
+
+    // Is method ne galti phenki (throw ki) par khud catch nahi ki
+    static void checkAge(int age) {
+        if (age < 18) {
+            throw new ArithmeticException("Underage Error!"); 
+        }
+    }
+
+    public static void main(String args[]) {
+        try {
+            checkAge(15); // <-- 'main' yahan CALLER hai
+        } catch (ArithmeticException e) {
+            // main method ne us phenki hui galti ko catch kiya!
+            System.out.println("Main method ne pakda: " + e.getMessage());
+        }
+    }
+}
+--------------------------------------------------------------------------------------------------------
+code:-
+import java.util.Scanner;
+abstract class spider{
+
+abstract void hey();
+
+void rampage(){
+	System.out.println("hello default abstract method");
+	hey();
+}}
+class namex extends spider{
+
+boolean success=false;
+
+    public void hey(){
+	namex nmr=new namex();
+	try{
+	System.out.println("hello override abstract method");
+	namex.hell();
+	}catch(Exception ex){
+		System.out.println("error are:-"+ex.getMessage());
+	}
+}
+
+public void result(boolean resu){
+	if(resu!=false)
+	System.out.println("program success");
+    else
+	System.out.println("program not success");
+}
+
+static namex namobj=new namex();
+static void hell()throws Exception{
+	System.out.println("enter your age for do sex:-");
+	Scanner sc=new Scanner(System.in);
+	int age=sc.nextInt();
+	if(age<18)
+		throw new Exception("not eligible for do sex in oyo with gf");
+	else{
+		System.out.println("do buddy sex with your partner anytime forever");
+	namobj.success=true;
+	}
+}
+
+static spider sp=new namex();
+public void maxy(){
+if(sp instanceof namex){
+namex na=(namex)sp;
+
+if(success!=false)
+	na.result(success);
+}}
+
+}
+
+public class practiceb{
+	
+public static void main(String args[]){
+
+spider sp=new namex();
+sp.rampage();
+
+}}
+
+()यहाँ पर कंपाइलर साफ कह रहा है कि namobj एक non-static variable (या ऑब्जेक्ट) है, और आप उसे किसी static जगह (जैसे static void hell() मेथड) के अंदर सीधे इस्तेमाल करने की कोशिश कर रहे हैं।
+Java का सीधा नियम है: Static ब्लॉक या मेथड को नहीं पता होता कि बाहर कौन से non-static ऑब्जेक्ट्स (namobj) घूम रहे हैं।
+
+()6. Exception Handling की गड़बड़ी
+hell() method के अंदर आपने throw new Exception(...) किया है। Java में Exception एक Checked Exception है। 
+अगर आप इसे throw कर रहे हैं, तो method के signature में throws Exception लिखना ज़रूरी है।
+method ke methodmaxy()throws Exception likhna hoga.
+-----------------------------------------------------------------
+1. sp.success = true; (Line 36 में Error):-
+hell() method के अंदर आपने लिखा है sp.success = true;। इसमें दो गड़बड़ियाँ हैं:
+
+पहला: hell() एक static method है, और sp एक non-static (instance) variable है। Static के अंदर non-static का इस्तेमाल नहीं हो सकता।
+
+दूसरा: sp का reference type spider class है, और spider class के अंदर success नाम का कोई variable ही नहीं है! 
+इसलिए कंपाइलर को success मिलेगा ही नहीं।
+--------------------------------------------------------------------------------------------------------------------------
+()नियम: तो फिर सही तरीका क्या है?
+अगर आपको Child Class (namex) के मेथड्स को इस्तेमाल करना है, तो उसका ऑब्जेक्ट हमेशा क्लास के बाहर (जैसे main मेथड के अंदर) बनाना चाहिए, क्लास के अंदर नहीं।s
+गलत तरीका ❌ (जो आप कर रहे थे)
+Java
+class namex extends spider {
+    namex obj = new namex(); // ❌ खुद के अंदर खुद का ऑब्जेक्ट! (Infinite Loop)
+}
+
+2. कब Same Class में Object बनाना गलत है? (Not Allowed / Infinite Loop)
+गड़बड़ तब होती है जब आप object को किसी method के अंदर न रखकर, सीधे Class के अंदर (Instance Variable की तरह) खुला छोड़ देते हैं।
+
+Example (जो आपके पिछले कोड में था):
+Java
+class Student {
+    // ❌ यह गलत है! Class के अंदर ही सीधे खुद का object बनाना
+    Student s = new Student(); 
+
+    String name = "Rahul";
+}
+
+()अगर हम आपकी namex क्लास के अंदर ऑब्जेक्ट को static बना दें, तो कोड बिना किसी एरर के कंपाइल और रन होगा:-
+class namex extends spider {
+
+    // ✅ अब यह बिल्कुल सही है! static लगाने से यह सिर्फ 1 बार बनेगा।
+    // कोई Infinite Loop नहीं होगा।
+    static spider sp = new namex(); 
+
+    boolean success = false;
+
+    @Override
+    void hey() {
+        System.out.println("hello override abstract method");
+    }
+}
+
+()जब आप अपनी ही क्लास के किसी मेथड के अंदर अपनी ही क्लास का ऑब्जेक्ट बनाते हैं, 
+तो वह बिल्कुल सुरक्षित (Safe) होता है। वहाँ कोई Infinite Loop या StackOverflowError नहीं आता।
+code:-
+class Car {
+    String model = "Thar";
+
+    void showModel() {
+        System.out.println("Car model is: " + model);
+    }
+
+    // 1. यह उसी क्लास का एक नॉर्मल मेथड है
+    void testMethod() {
+        System.out.println("Inside testMethod...");
+        
+        // ✅ यह बिल्कुल सही है! सेम क्लास के मेथड के अंदर सेम क्लास का ऑब्जेक्ट
+        Car c2 = new Car(); 
+        c2.showModel(); 
+    }
+
+    // 2. यह main मेथड है
+    public static void main(String[] args) {
+        Car c1 = new Car();
+        c1.testMethod(); // यहाँ से मेथड कॉल होगा
+    }
+}
+
+
+-------------------------------------------------------------------------------------------------------------------
+()Nahi, bilkul nahi! Java mein aap kisi bhi Non-Primitive data type (jaise Object, String, Class, Array) ko directly kisi Primitive data type (jaise int, double, boolean, char) mein typecast nahi kar sakte.
+
+()Niyam yeh hai: Class ke andar khule mein (open space mein) aap sirf variables ko declare kar sakte hain, par unpar koi action (jaise naye sire se value assign karna) nahi kar sakte.
+
+()Error 1 (public inside method): Java में किसी भी मेथड के अंदर वेरिएबल बनाते समय public, private, या protected का इस्तेमाल नहीं किया जा सकता। वे सिर्फ लोकल वेरिएबल होते हैं।
+
+()Java का नियम है: जैसे ही try ब्लॉक की किसी लाइन में एरर आती है, 
+कंप्यूटर उसी वक्त try ब्लॉक को छोड़कर सीधे catch की तरफ भाग जाता है। 
+उसके नीचे लिखी हुई बाकी की लाइनें कभी चलती ही नहीं हैं!
+आपके कोड की कहानी (Execution Flow):-
+Java
+try {
+    pcr.sexygirl(); // 1. यहाँ उम्र/नंबर मांगा और k/0 करते ही एरर आ गई!
+    pcr.heymaxy();  // 2. कंप्यूटर इस लाइन तक कभी पहुँचा ही नहीं! ❌
+}
+solution:-
+dono exception ke liye alag alag try catch baanaye.
+
+()नियम: Overriding का मतलब है कि जैसा मेथड पैरेंट में घोषित हुआ है, बिल्कुल वैसा ही (सेम नाम, सेम पैरामीटर) चाइल्ड में होना चाहिए। 
+अगर पैरेंट का मेथड कोई पैरामीटर नहीं ले रहा, तो आप उसे कॉल करते समय या चाइल्ड में ओवरराइड करते समय जबरदस्ती String val नहीं दे सकते।
+
+()नियम: Java में Object सबसे बड़ी क्लास (पैरेंट) है। आप किसी पैरेंट टाइप की वैल्यू को सीधे चाइल्ड टाइप (String) के वेरिएबल में बिना downटाइपकास्ट किए नहीं डाल सकते।
+
+()method return kare kuch na kuch,matlab return type void nahi hai,toh:-
+else {
+    return "not able baby,do with me,i am 18"; // ❌ यहाँ से प्रोग्राम लौट गया!
+    throw new Exception("no you are not able to do sex with any guy"); // ❌ Unreachable Code!
+}
+Java का नियम (Rule): जैसे ही कंपाइलर किसी ब्लॉक में return स्टेटमेंट देखता है, 
+वह समझ जाता है कि मेथड का काम यहीं खत्म हो गया और प्रोग्राम वापस लौट जाएगा।
+
+चूंकि आपने return पहले लिख दिया, इसलिए उसके ठीक नीचे लिखी हुई लाइन throw new Exception(...) तक कंप्यूटर कभी पहुँच ही नहीं पाएगा। 
+Java में ऐसे कोड को "Unreachable Code" (जहाँ पहुँचा न जा सके) कहा जाता है, और Java इसे एरर मानता है।
+-------------------------------------------------------------------------------------------------------
+()String valueval()throws Exception{
+System.out.println("enter your age girl");
+Scanner sc=new Scanner(System.in);
+int val=sc.nextInt();
+//ye line:- old 'Enter' ko memory se saf kardega.
+    sc.nextLine();
+if(val>=18){
+	
+	try{
+System.out.println("enter your daddy's sentence who say you what about sex");
+String words=sc.nextLine();
+if(words!=null && !words.contains("kill")){
+System.out.println("okay do sex with your partner");
+return "able";
+}else
+ throw new Exception("no you are not able to do sex with any guy");
+	}catch(Exception ex){
+System.out.println("you are not a adult:-"+ex.getMessage());
+return "not able baby";
+	}
+}else{
+throw new Exception("no you don't do sex with any muthal guy you don't");
+}}	
+} method valueval me return hona chahiye lekin yaha sirf exception throw kar diy,
+(throw new Exception("no you don't do sex with any muthal guy you don't");),return "not able" kyu nahi kiya?
+
+-->सीधा जवाब यह है कि जब कोई मेथड throw new Exception() करता है, तो उसे किसी भी प्रकार के return स्टेटमेंट की ज़रूरत नहीं होती। 
+कंपाइलर इसे पूरी तरह सही मानता है और "Missing Return Statement" का एरर नहीं देता।
+---------------------------------------------------------------------------------
+()toh fir inner if else ke return ko try catch me kyu likhwaya:-
+अगर एरर सीधे थ्रो (Throw) हो रही है (No Catch): कंप्यूटर मेथड से तुरंत बाहर भाग जाता है। इसलिए return की जरूरत नहीं है।
+
+अगर एरर रास्ते में ही कैच (Catch) हो गई(method ke andar hi catch ho gayi): इमरजेंसी खत्म हो जाती है और मेथड फिर से नॉर्मल चलने लगता है। 
+चूंकि मेथड का रिटर्न टाइप String है, इसलिए कैच ब्लॉक के अंदर या उसके ठीक नीचे return लिखना अनिवार्य (Compulsory) हो जाता है।
+ex:-
+import java.util.Scanner;
+abstract class Sexornot{
+
+abstract void wow();
+
+public Sexornot(){
+	wow();
+}}
+class Buddy extends Sexornot{
+void wow(){
+System.out.println("don't chase pussy");
+}
+
+public void heybuddy(){
+Sexornot sx=new Buddy();
+Buddy br=(Buddy)sx; 
+try{
+String str=br.valueval();
+System.out.println("hey girl:-"+str);
+
+}catch(Exception ex){
+System.out.println("you are underage:-"+ex.getMessage());
+}
+}
+
+String valueval()throws Exception{
+System.out.println("enter your age girl");
+Scanner sc=new Scanner(System.in);
+int val=sc.nextInt();
+//ye line:- old 'Enter' ko memory se saf kardega.
+    sc.nextLine();
+if(val>=18){
+	
+	try{
+System.out.println("enter your daddy's sentence who say you what about sex");
+String words=sc.nextLine();
+if(words!=null && !words.contains("kill")){
+System.out.println("okay do sex with your partner");
+return "able";
+}else
+ throw new Exception("no you are not able to do sex with any guy");
+	}catch(Exception ex){
+System.out.println("you are not a adult:-"+ex.getMessage());
+return "not able baby";
+	}
+}else{
+throw new Exception("no you don't do sex with any muthal guy you don't");
+}}	
+}
+
+public class practiceb{
+
+public static void main(String args[]){
+System.out.println("hello buddy");
+
+Buddy br=new Buddy();
+br.heybuddy();
+}}
+-------------------------------------------------------------------------------------------------------------------------
+()same class me same method call kar sakte hain in outside main and method inside any method,
+हाँ, बिल्कुल कर सकते हैं! सेम क्लास के अंदर एक मेथड से दूसरे मेथड को कॉल करना जावा (या किसी भी प्रोग्रामिंग लैंग्वेज) का एक बहुत ही बेसिक और ज़रूरी नियम है। इसे Method Invocation कहते हैं।
+ex:-
+class Calculation {
+
+    // 1. पहला नॉर्मल मेथड
+    void showMessage() {
+        System.out.println("Hello! Calculation is starting...");
+    }
+
+    // 2. दूसरा नॉर्मल मेथड (इसके अंदर से पहले वाले को कॉल करेंगे)
+    void doSum(int a, int b) {
+        // ✅ सीधे नाम लिखकर कॉल कर दिया!
+        showMessage(); 
+        
+        int result = a + b;
+        System.out.println("Sum is: " + result);
+    }
+
+    // 3. यह main मेथड है (जो कि क्लास के बाहर से या नीचे होता है)
+    public static void main(String args[]) {
+        Calculation obj = new Calculation();
+        
+        // main के अंदर ऑब्जेक्ट की ज़रूरत पड़ती है क्योंकि main 'static' है
+        obj.doSum(10, 20); 
+    }
+}
+---------------------------------------------------------------------------------------------------------------------
+()void hey() {
+    try {
+        FileReader fr = new FileReader(...); // <-- 'fr' sirf is try block ke andar zinda hai
+        BufferedReader br = new BufferedReader(...); 
+    } 
+    finally {
+        if (br != null) br.close(); // <-- ERROR: finally block ko nahi pata 'br' kya hai!
+    }
+}
+-------------------------------------------------------------------------------------------------
+()hamesha file read ya write karte samay try catch jarur lagaye for handle ioexception.
+try{	    
+while((pcr.str=br.readLine())!=null){
+System.out.println(pcr.str);
+}}catch(IOException e){
+System.out.println("error is:-"+e.getMessage());
+}
+----------------------------------------------------------------------------------------------
+public class practiceb{
+public static void main(String args[]){
+ravan rr=new ravan();
+	rr.maxfury();
+}}
+class ravan{
+String url="jdbc:mysql://localhost:3306/my_database";	
+String user="root";
+String password="root";
+
+void maxfury(){
+	Statement smtp=null;
+	Connection con=null;
+try{
+	
+	try{
+// 1. Java ko batao ki hum MySQL use kar rahe hain aur uski driver class yeh hai
+    Class.forName("com.mysql.cj.jdbc.Driver");
+	}catch(ClassNotFoundException cx){
+		System.out.println("classnotfound exception is:-"+cx.getMessage());
+	}
+con=DriverManager.getConnection(url,user,password);
+String sqlquery="INSERT INTO employett(id,name,salary) VALUES(1,"kishan",8998)";	
+smtp=con.createStatement();
+
+smtp.executeUpdate(sqlquery);
+
+}catch(SQLException ex){
+	System.out.println("error is:-"+ex.getMessage());
+}finally{
+	try{
+	if(smtp!=null)
+		smtp.close();
+	if(con!=null)
+		con.close();
+	}catch(SQLException ex){
+		System.out.println("SQLException finally is:-"+ex.getMessage());
+	}
+}
+}}
+()nested try catch problem:-
+🔍 Is Loophole Ka Matlab Kya Hai? (The Problem)
+Aapne jo code likha tha, usme do try-catch blocks the—ek bada wala aur uske andar ek chota (nested) wala.
+
+Java mein code top to bottom (upar se neeche) line by line chalta hai. Jab aapka purana code chala, 
+toh background mein yeh hua:
+
+Step 1: Code chota try block ke andar gaya aur Class.forName("com.mysql.cj.jdbc.Driver"); ko chalaya.
+
+Step 2: Maan lijiye JAR file nahi mili, toh yahan ClassNotFoundException aa gayi.
+
+Step 3: Java ne turant chote wale catch(ClassNotFoundException cx) block ko pakda aur print kar diya: 
+"classnotfound exception...".
+
+Step 4 (Yahan Gadbad Hui): Chote wale catch block ka kaam wahin khatam ho gaya! Java ko laga ki galti handle ho gayi hai. 
+Isliye woh ruka nahi, aur chote catch block se baahar nikal kar seedhe agli line par chala gaya, jo ki thi:
+
+Java
+con = DriverManager.getConnection(url, user, password);
+Step 5: Kyunki driver toh load hua hi nahi tha, 
+toh DriverManager gusse mein aa gaya aur usne bada wala catch(SQLException ex) block trigger kar diya aur print kiya: 
+"No suitable driver found".
+
+solution:-
+Tarika 1: Class.forName() ko bade try block mein hi rkhna (Sabse Simple)
+Chote wale try-catch ko poori tarah hata dijiye aur Class.forName() ko seedhe bade try ke andar top par rakhiye.
+
+try {
+    // 1. Agar yahan galti aayi, toh niche waali lines chalengi hi nahi!
+    Class.forName("com.mysql.cj.jdbc.Driver"); 
+    
+    // 2. Yeh tabhi chalega jab upar waali line bina kisi error ke pass ho jaye
+    con = DriverManager.getConnection(url, user, password);
+    smtp = con.createStatement();
+    smtp.executeUpdate(sqlquery);
+
+} catch (ClassNotFoundException cx) {
+    System.out.println("Driver nahi mila, isiliye connection ka try hi nahi kiya!");
+} catch (SQLException ex) {
+    System.out.println("Driver toh mil gaya tha, par DB credentials galat hain!");
+}
+
+Tarika 2: Nested try-catch ke andar return; laga dena:-
+Agar aapko nested try-catch hi use karna hai, toh catch block ke andar return; likh dijiye. 
+Isse agar driver nahi mila, toh method wahin stop ho jayega aur aage ka code nahi chalega:
+Java
+try {
+    Class.forName("com.mysql.cj.jdbc.Driver");
+} catch (ClassNotFoundException cx) {
+    System.out.println("Driver nahi mila! Program ko yahi rok rahe hain.");
+    return; // <-- YEH LINE PROGRAM KO AAGE BADHNE SE ROK DEGI
+}
+
+// Ab yeh safely chalega, kyunki agar upar error hoti toh hum yahan tak pahunche hi na hote
+con = DriverManager.getConnection(url, user, password);
+------------------------------------------------------------------------------------------------------------
+()code:-
+import java.sql.SQLException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+interface condb{
+public static final ResultSet str=null;
+
+static ResultSet maxy(){
+System.out.println("it is iterface method");
+return str;
+}}
+class jambo implements condb{
+PreparedStatement pmtp=null;
+Connection con=null;
+static String sqlq="SELECT * FROM employee";
+static String url="jdbc:mysql://localhost:3306/my_database";
+static String user="root";
+static String password="root";
+static ResultSet rs=null;
+static ResultSet maxy(){
+jambo jr=new jambo();
+try{
+try{	
+Class.forName("com.mysql.cj.jdbc.Driver");
+}catch(ClassNotFoundException cx){
+System.out.println(cx.getMessage()+"-your classnotfound exception hai toh:-java className ke baad ye likho:-java -cp .;mysql-connector-j-9.0.0.jar practiceb");	
+}
+jr.con=DriverManager.getConnection(url,user,password);
+jr.pmtp=jr.con.prepareStatement(sqlq);
+rs=jr.pmtp.executeQuery(sqlq);
+return rs;
+}catch(SQLException ex){
+System.out.println("sql exception is:-"+ex.getMessage());
+return null;
+}
+}
+
+void hello(){
+jambo jr=new jambo();
+condb cb=new jambo();
+if(cb instanceof jambo)
+jr=(jambo)cb;
+rs=jr.maxy();
+try{
+if(rs!=null){
+while(rs.next())
+System.out.println("id:-"+rs.getInt("id")+" name:-"+rs.getString("name")+" salary:-"+rs.getLong("salary"));
+}
+else
+return;
+}catch(SQLException sl){
+System.out.println("sql exception:-"+sl.getMessage());
+}finally{
+	try{
+		if(jr.pmtp!=null)
+			jr.pmtp.close();
+		if(jr.con!=null)
+			jr.con.close();
+	}catch(SQLException sl){
+System.out.println("your sl error is:-"+sl.getMessage());
+	}
+}
+}
+}
+public class practiceb{
+public static void main(String args[]){
+jambo jr=new jambo();
+jr.hello();	
+}}
+
+
+/////////*
+()Connection jaldi band hona: maxy() method mein finally block chalte hi connection (con) band ho ja raha tha. 
+Jab connection band ho jayega, toh hello() method ke paas ResultSet pahunchne par bhi data read nahi ho payega 
+(Error: Operation not allowed after ResultSet closed).
+
+solution:-Agar aapko ResultSet ko dusre method (caller) mein lejakar use karna hai, toh connection ko caller ke paas hi band karna padega.
+*///////////
+/////////////*
+()List<char> (Primitives in Collections): Java Collections (jaise ArrayList) me aap primitive data types (char, int, boolean) 
+direct nahi daal sakte. Unki jagah unki Wrapper classes use karni padti hain. Toh List<char> ki jagah List<Character> likhna hoga.
+
+()int sm=0; int bg=0; Loop ke andar hain: Tumne in dono variables ko loop ke andar daal diya hai. 
+Iska matlab har baar jab loop chalega, sm aur bg wapas 0 ho jayenge. 
+Inhe loop ke bahar upar declare karna chahiye taaki ye count kar sakein.
+
+()Java me jab aap kisi method (jaise call()) ke andar koi variable banate ho (jise Local Variable kehte hain), 
+toh Java use koi default value (jaise 0 ya null) nahi deta. Agar aapne variable banate waqt usme koi value nahi daali, 
+aur direct use print ya use karne chale gaye, toh compiler error de dega.
+
+()Java me aap koi bhi executable action (jaise Map me value daalna, loop chalana, ya print karna)
+direct class ki body me nahi kar sakte. Wo humesha kisi Method (jaise call()) ya Constructor ke andar ही hona chahiye.
+kyuki java class me sirf inner class,method,variables aur object ke alawa kuch nahi samjhta hai.
+
+()agar collection ko use karna hai toh object me hamesha <>generic lagana chahiye.
+*///////
+//////////*
+Asli Wajah: Tokens vs Lines:-
+Scanner class ke paas do tarah ke methods hote hain:-
+Token-based methods: nextInt(), nextLong(), next(), nextDouble().
+Line-based methods: nextLine().
+
+1. Jab aap Salary (Long) ya ID (Int) dalte ho:-
+Maan lo console par aaya Enter Salary: aur aapne type kiya 25000 aur fir dabaya Enter.
+Java ke paas console se ye data pahunchta hai:
+25000\n (Yahan \n ka matlab hai wo Enter Key jo aapne dabayi).
+sc.nextLong() sirf us 25000 ko uthata hai aur use salary variable me daal deta hai.
+Lekin wo jo \n (Enter Key) hai, use console ke buffer (memory) me hi chhod deta hai. nextLong() us Enter key ko haath bhi nahi lagata!
+
+2. Jab aapka code Name (sc.nextLine()) par pahunchta hai:-
+sc.nextLine() ka rule hota hai: "Mujhe jahan bhi \n (Enter Key) dikhegi, main wahan tak ka poora text utha loonga aur ruk jaunga."
+Jaise hi name lene ke liye sc.nextLine() chalta hai, use console ke buffer me pehle se hi pichla bacha hua \n (Enter Key) baitha hua mil jata hai. use lagta hai ki user ne enter daba diya!
+Wo aapse naya naam poochne ke bajay, usi bache hue \n ko apna input samajhkar utha leta hai aur aapka name khali ("") save ho jata hai. Isiliye aapka name wala part bina input liye skip ho jata hai.
+
+ishliye har number ke lene ke baad hum sc.nextLine() ke pehle aek aur sc.nextLine() likhte hai.
+*//////////
+////////////*
+if (sc.hasNextInt()) {
+    hm.get(i).put("id", sc.nextInt());
+}
+else if (sc.hasNextLong()) {
+    hm.get(i).put("salary", sc.nextLong());
+}
+
+sc.nextLine();  // <-- GALAT: Is line ne upar wale 'if' aur niche wale 'else' ka rishta tod diya! lekin if me nahi ayega ye error.
+
+else {          // <-- COMPILER ERROR: Is else ko apna 'if' nahi mil raha
+    hm.get(i).put("name", sc.nextLine());
+}
+
+solution:-
+else {          // <-- COMPILER ERROR: Is else ko apna 'if' nahi mil raha
+sc.nextLine()
+    hm.get(i).put("name", sc.nextLine());
+}
+*/////////
+////////////////*
+​1. nextInt() ya nextLong() kitne bhi chala lo, enter ek hi bachega!
+​Maan lo aapne back-to-back do cheezein input ki:
+​Enter ID: Aapne likha 101 aur dabaya Enter. (Memory me aaya: 101\n)
+​sc.nextInt() ne 101 uthaya. Memory me bacha: \n (1 enter).
+​Ab agla input aaya:
+​Enter Salary: Aapne likha 50000 aur dabaya Enter.
+​Pata hai kya hoga? sc.nextLong() jab chalega, toh wo memory me pehle se baithe hue \n (purane enter) ko apne aap skip kar dega, aur naya number 50000 utha lega.
+​Lekin is baar bhi, wo naya wala Enter (\n) memory me chhod dega.
+​Yaani aap 10 baar bhi nextInt() ya nextLong() chala lo, memory me aakhiri me sirf ek hi enter (\n) bachega, 10 enter jama nahi honge!
+​2. Toh sc.nextLine() kab aur kitni baar likhna hai?
+​Aapko sirf ek baar sc.nextLine() likhna hai, aur uski timing sabse zaroori hai:
+​Golden Rule: Pure program me jahan par bhi aapke saare numbers (nextInt, nextLong, nextDouble) khatam ho rahe hon, aur uske theek baad aapko pehli baar koi text (nextLine) shuru karna ho... bas un dono ke BEECH me sirf ek baar sc.nextLine() daal kar memory saaf karni hai.
+
+*///////////
+////////////*
+()ArrayList<Queue<T>> या ArrayList<LinkedList<T>>:-ArrayList ke andar queue ya linkedlist ho tab 2 loop.
+()ArrayList<Set<T>> (jaise HashSet, TreeSet):-ArrayList ke andar set/tree Set ho tab 2 loop.
+()ArrayList<List<T>> ya ArrayList<ArrayList<T>>:-ArrayList ke andar List ho tab 2 loop,Array list ke andar ArrayList ho tab 2 loop.
+()ArrayList ke andar hashmap ho tab one loop.
+*////////////
+////////*
+()QueryOptions qo = new QueryOptions();
+// Yaha check karo ki identity attribute match ho raha hai ya nahi
+qo.addFilter(Filter.eq("identity.name", idn)); 
+List<Link> links = context.getObjects(Link.class, qo);
+*/////////
+//////////*
+()Identity identity = context.getObject(Identity.class, idn);
+if (identity != null) {
+    // Ye aapko us identity ke saare links ki List dega
+    List<Link> links = identity.getLinks(); 
+}*////////
+/////////////*
+()Data Type Casting Error (int vs String): SailPoint ke Provisioning Plan se jab bhi data nikalta hai, 
+wo hamesha String ya List format me hota hai. Tumne likha hai id = (int) attreq.getValue();. 
+Ye line compile nahi hogi kyunki Object ko direct primitive type int me cast nahi kiya ja sakta. 
+Pehle use String me nikalna padega, phir integer me convert karna padega.
+ex:-if("employeeId".equals(attrname))
+id=(String)attreq.getValue();
+
+()Sabse Zaroori: finally block me con.close() MAT karna. SailPoint me jo Connection con pass hota hai, 
+wo SailPoint khud manage karta hai. Agar tumne rule ke andar use close kar diya, 
+toh poora provisioning process crash ho jayega. Sirf pstmt.close() karo.
+
+()return statement ki position (Unreachable Code / Missing Return):
+Tumne try block ke andar return rs; likh diya hai. Agar code me koi exception aati hai, 
+toh code catch block me chala jayega. Lekin catch block ke baad method ke end me koi return statement nahi hai! 
+Java bolega: "This method must return a result of type int". 
+Return statement hamesha pure try-catch-finally ke bahar method ke end me hona chahiye.
+
+()attreq.getOperation() enum return karta hai:-
+SailPoint me attreq.getOperation() ek ProvisioningPlan.Operation (Enum) return karta hai, 
+String nahi. Isliye direct "Add".equals(...) karne ki jagah hume use string me badalna padega ya 
+fir SailPoint ke internal Enums (ProvisioningPlan.Operation.Add) se compare karna padega.
+ProvisioningPlan.Operation.Add par direct .toString() chalta hai, use (String) cast karne ki zaroorat nahi hai.
+/////////*
+()Aapne groupList ko for loop ke upar initialize kiya hai. 
+Agar ek hi plan me Add aur Remove dono operation saath me aaye, 
+toh Add wali roles groupList me hi reh jayengi aur Remove block me dubara use ho jayengi. 
+Isliye har operation block ke andar naya groupList banana safe hota hai.
+List<String> groupList=new ArrayList<>();
+matlab hamesha for loop le andar dale taki value change hota rahe,stuck na ho.
+
+Scenario 1: Agar groupList LOOP KE BAHAR (Upar) hai ❌
+Agar tumne variable loop ke upar banaya hai, toh pooray method me sirf EK hi single groupList ka dibba (Object) banta hai.
+
+Pehla Chakkar (Add Block):
+
+Code ne dekha ki operation Add hai aur role "Manager" hai.
+
+groupList.add("Manager") hua. Ab list me hai: ["Manager"].
+
+Database me "Manager" role add ho gaya. Kaam khatam.
+
+Doosra Chakkar (Remove Block):
+
+Ab loop aage badha aur use operation mila Remove aur role "Intern".
+
+Code is line par gaya: groupList.add(attreq.getValue().toString()).
+
+Kyunki dibba (list) wahi purana wala hai, toh "Intern" usme jaakar jud gaya! Ab list me ho gaya: ["Manager", "Intern"].
+
+Ab jab niche for(String roleName : groupList) chalega, toh wo "Intern" ko toh remove karega hi, sath me "Manager" ko bhi dubara remove karne ki koshish karega! Result? Galat database operations chalenge aur SailPoint me error aa jayegi.
+
+Scenario 2: Agar groupList LOOP KE ANDAR hai ✅
+Jab hum List<String> groupList = new ArrayList<>(); ko loop ke andar daal dete hain, toh har chakkar (iteration) me ek naya, bilkul saaf aur khali dibba (New Object) banta hai.
+
+Pehla Chakkar (Add Block):
+
+Naya khali dibba bana: [].
+
+"Manager" add hua -> ["Manager"]. DB me entry hui.
+
+Jaise hi ye chakkar khatam hua, ye groupList ka dibba destroy (khatam) ho gaya.
+
+Doosra Chakkar (Remove Block):
+
+Loop ka doosra round shuru hote hi phir se ek naya, fresh aur khali dibba bana: []. Isme purana koi data nahi hai.
+
+"Intern" add hua -> ["Intern"].
+
+DB se sirf "Intern" remove hua. Kisi aur role par koi galat asar nahi pada!
+
+ex:-
+if (attreqs != null) {
+        for (AttributeRequest attreq : attreqs) {
+            if (attreq != null) {
+                String attrName = attreq.getName();
+                String op = attreq.getOperation() != null ? attreq.getOperation().toString() : "";
+
+                // CORRECTION 4: groupList ko har attribute ke liye fresh initialize kiya-------------------------------------
+                List<String> groupList = new ArrayList<String>();
+
+                if ("roles".equals(attrName) && ("Add".equals(op) || "Set".equals(op))) {
+                    
+                    if (attreq.getValue() instanceof String) {
+                        groupList.add(attreq.getValue().toString());
+                    } else if (attreq.getValue() instanceof List) {
+                        groupList = (List<String>) attreq.getValue();
+                    }
+
+                    for (String roleName : groupList) {
+                        roleId = roleIdByName(con, roleName);
+                        if (roleId != null) {
+                            res = addrole(con, id, roleId);
+                            if (res > 0) {
+                                result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+                            } else {
+                                result.setStatus(ProvisioningResult.STATUS_FAILED);
+                            }
+                        } else {
+                            result.setStatus(ProvisioningResult.STATUS_FAILED);
+                        }
+                    }
+
+                } else if ("roles".equals(attrName) && "Remove".equals(op)) {
+
+                    if (attreq.getValue() instanceof String) {
+                        groupList.add(attreq.getValue().toString());
+                    } else if (attreq.getValue() instanceof List) {
+                        groupList = (List<String>) attreq.getValue();
+                    }
+
+                    for (String roleName : groupList) {
+                        roleId = roleIdByName(con, roleName);
+                        if (roleId != null) {
+                            res = removeRole(con, id, roleId);
+                            if (res > 0) {
+                                result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+                            } else {
+                                result.setStatus(ProvisioningResult.STATUS_FAILED);
+                            }
+                        } else {
+                            result.setStatus(ProvisioningResult.STATUS_FAILED);
+                        }
+                    }
+                }
+            }
+        } // for loop close
+    }
+*////////////
+<!--------------------------------------------------------------------------------------------------------------------------
+()Variable Initialization Missing (Local Variable Might Not Have Been Initialized):
+String name, department, employeeType; ko agar if-condition ke andar set kar rahe ho aur if match nahi hua, 
+toh SQL query me name use karte hi compile-time error aayega. Inhe shuru me null ya "" se initialize karna zaroori hai.
+
+()getValue().toString() Par NullPointerException ka Khatra:-
+Agar attributeRequestname toh null nahi hai, par account request me uski value empty/null aayi, 
+toh .getValue() null return karega. Us par .toString() call karte hi code crash (NullPointerException) ho jayega. 
+Hame (String) attr.getValue() cast karna chahiye.
+
+()code:-
+List<String> groupList = new ArrayList<>(); 
+for (AttributeRequest attr : attrs) { // LOOP 1: Har attribute par ghumega (name, department, roles)
+    
+    if ("roles".equalsIgnoreCase(attr.getName()) && ...) { 
+        // Agar attribute 'roles' hai, toh groupList me roles bharo
+        if (attr.getValue() instanceof String) groupList.add(attr.getValue());
+    } // IF BLOCK YAHAN BAND HO GAYA!
+
+    // LAFDA YAHAN HAI: Ye loop IF ke bahar hai, par FOR ke andar hai!
+    for (String attrvalue : groupList) { // LOOP 2: Roles process karne wala loop
+        fr.addRole(con, roleId, identity);
+    }
+} 
+Is Galat Code ka Dry Run (Line-by-Line Breakdown):-
+Round 1: Jab attr hai name:-
+Loop 1 chalega, attr me name aayega.
+if ("roles".equalsIgnoreCase(attr.getName())) check hoga. Kyunki name roles nahi hai, condition False ho jayegi.
+Code if ke andar nahi gaya, toh groupList me kuch add nahi hua (abhi list khali [] hai).
+Lafda Line: Ab code if se bahar nikal kar seedhe for (String attrvalue : groupList) par aayega. Kyunki groupList khali hai, toh ye loop 0 baar chalega (yaani nahi chalega). Yahan tak bachat ho gayi.
+
+Round 2: Jab attr hai roles:-
+Loop 1 ke agle round me attr me roles aayega.
+if condition check hogi: "roles".equalsIgnoreCase("roles") -> True!
+Code if ke andar gaya aur groupList.add(attr.getValue()) execute hua. Ab groupList me aa gaya: ["Admin"].
+if block band ho gaya.
+Lafda Line: Code niche wale for (String attrvalue : groupList) loop par aaya. Ab list me "Admin" hai, toh ye loop chalega aur fr.addRole(...) call karke user ko Admin role de dega. (Yahan tak kaam sahi hua).
+
+Round 3: Jab attr hai department (Sabse bada bug yahan chalega):-
+Loop 1 ke teesre round me attr me department aayega.
+if condition check hogi: "roles".equalsIgnoreCase("department") -> False.
+Code if ke andar nahi jayega. Iska matlab groupList me department ki value add nahi hogi. Lekin pichle round wala "Admin" abhi bhi list me baitha hua hai!
+if block skip hua, aur code seedhe pahunch gaya niche wale loop par: for (String attrvalue : groupList).
+Kyunki groupList me abhi bhi "Admin" pada hua hai, ye loop bina kisi wajah ke DOBARA chal jayega! Aur code fir se fr.addRole(...) call karke database me dubara Admin role push karne ki koshish karega.
+
+---------------------><!-->>>>>>>>>>>>>>>>>>>>>>>solution code:-
+for (AttributeRequest attr : attrs) {
+    
+    if ("roles".equalsIgnoreCase(attr.getName())) { // <-- IF SHURU
+        
+        // 1. List ko HAMESHA if ke andar rakha taaki har baar nayi list bane
+        List<String> groupList = new ArrayList<>(); 
+        
+        // 2. Value nikali...
+        
+        // 3. Roles ka loop bhi isi IF ke pet (brackets) ke andar daal diya!
+        for (String attrvalue : groupList) {
+            fr.addRole(con, roleId, nativeIdentity);
+        }
+        
+    } // <-- IF KHATAM
+}
+------------------------><!-->>>>>>>>>>???????
+Scenario 1: Agar groupList ko Loop ke BAHAR banaya (Galat Tarika)
+Maan lo provisioning plan me do alag-alag accounts ki requests ya do alag-alag roles ke attributes hain jo loop me chal rahe hain.
+
+Java
+List<String> groupList = new ArrayList<>(); // -- LOOP KE BAHAR
+
+for (AttributeRequest attr : attrs) {
+    if ("roles".equalsIgnoreCase(attr.getName())) {
+        if (attr.getValue() instanceof String) {
+            groupList.add((String)attr.getValue());
+        }
+        
+        for (String attrvalue : groupList) {
+            fr.addRole(con, roleId, identity);
+        }
+    }
+}
+Isme Dikkat Kya Hogi?
+--Pehle Round me (roles aaya, value = "Admin"): groupList me "Admin" add hua. Loop chala aur user ko "Admin" role mil gayi. (Yahan tak theek hai).
+--Agle Round me (Koi doosra role attribute aaya, ya koi aur request aayi jisme value = "Manager"): Kyunki list loop ke bahar bani thi, isiliye purani list saaf nahi hui. groupList.add("Manager") karne par ab list me ["Admin", "Manager"] dono ho gaye!
+--Lafda: Jab andar wala loop chalega, toh wo "Manager" ke saath-saath "Admin" role ko bhi dubara database me daalne ki koshish karega, jo ki ekdam galat hai kyunki "Admin" toh hum pehle hi de chuke hain!
+
+<!--------------solution code:->>>>>>>>>>
+Scenario 2: Agar groupList ko if ke ANDAR banaya (Sahi Tarika)
+Jo code humne fix kiya tha, usme list ko loop aur if ke andar rakha gaya:
+
+Java
+for (AttributeRequest attr : attrs) {
+    if ("roles".equalsIgnoreCase(attr.getName())) {
+        
+        List<String> groupList = new ArrayList<>(); // -- IF KE ANDAR (FRESH START)
+        
+        if (attr.getValue() instanceof String) {
+            groupList.add((String)attr.getValue());
+        }
+        
+        for (String attrvalue : groupList) {
+            fr.addRole(con, roleId, identity);
+        }
+    } // -- Yahan pahunchte hi groupList memory se khatam (Destroy) ho jayegi
+}
+----------------------------------------------------------------------------------------------------------------------
+<!--groupList=(List)attr.getValue();:-
+Dikkat: BeanShell/Java me groupList ko aapne upar List<String> declare kiya hai.
+Jab aap direct (List) cast karte ho, toh compilation warning aa sakti hai, 
+ya fir pure Object type data ki wajah se loop me issue aa sakta hai. 
+Isko proper generic type structure (List<String>) attr.getValue() dena safety ke liye best hota hai.
+------------------------------------------------------------------------------------------------------------
+()String SQL_query="SELECT roleId FROM financial_planning_and_forecasting.employee_roles WHERE roleName=?";
+roleIdByName mein query hai: WHERE attrvalueRoleName=?. Database mein column ka naam variable name nahi, balki roleName ya role_name hoga.
+
+()typecast:-
+List<String> groupList = new ArrayList<>();
+if (attr.getValue() instanceof String) {
+    groupList.add((String) attr.getValue());
+} else if (attr.getValue() instanceof List) {
+    List<?> rawList = (List<?>) attr.getValue();
+    for (Object obj : rawList) {
+        if (obj != null) {
+            groupList.add(obj.toString()); // Safe conversion without direct casting risk
+        }
+    }
+}
+----------------------------
+
+()String attrvalueRoleName="hhhuccccgc";
+// ❌ GALAT (Isme Java variable ka naam column ki jagah likha tha)
+String SQL_query = "SELECT roleId FROM financial_planning_and_forecasting.employee_roles WHERE attrvalueRoleName=?";
+()Dikkat Kya Thi?
+Database kabhi bhi Java ke variable name (attrvalueRoleName) ko nahi pehchanta. WHERE clause ke turant baad database table ka actual column name hona chahiye. Agar query aisi hi chali jati, toh database direct error throw karta: SQLException: Column 'attrvalueRoleName' not found.
+
+Sahi Code (The Exact Fix)
+Database schema ke mutabik query mein column ka naam rolename hona chahiye (ya jo bhi aapke database table mein column ka naam hai, jaise role_name):
+
+Java
+//  SAHI (Database column name 'rolename' use kiya)
+String SQL_query = "SELECT roleId FROM financial_planning_and_forecasting.employee_roles WHERE rolename=?"
+-->
+
+------------------------------------------------------------------------------------------------------------------------------
+()Enum:-enum ko (String) me direct type-cast nahi kar sakte! Java ClassCastException dega.
+lekin Enum me .toString() bilkul use ho sakta hai aur Java ise completely allow karta hai, lekin SailPoint ya core Java programming me ise conditions check karne ke liye use karna ek bada risk (trap) hota hai.
+()ResultSet object hai! Use (String) cast karne par code crash ho jayega.

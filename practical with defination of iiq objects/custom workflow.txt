@@ -1,0 +1,135 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE sailpoint PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<sailpoint>
+<Workflow explicitTransitions="true" name="Pure Custom Approve and Provision Workflow" type="Standard">
+
+  <!-- 1. Custom Core Variables -->
+  <Variable input="true" name="identityName"/>
+  <Variable input="true" name="plan"/>
+  <Variable name="managerName"/>
+  <Variable name="ticketId"/>
+  <Variable name="approvalDecision"/>
+  <Variable name="project"/>
+
+  <!-- STEP 1: START -->
+  <Step icon="Start" name="Start" posX="20" posY="20">
+    <Transition to="Custom Fetch Manager"/>
+  </Step>
+
+  <!-- STEP 2: CUSTOM SCRIPT TO FETCH MANAGER (Bina OOTB Libraries ke) -->
+  <Step icon="Task" name="Custom Fetch Manager" posX="150" posY="20">
+    <Script>
+      <Source>
+        import sailpoint.object.Identity;
+        Identity identity = context.getObjectByName(Identity.class, identityName);
+        if (identity != null &amp;&amp; identity.getManager() != null) {
+            workflow.put("managerName", identity.getManager().getName());
+        } else {
+            workflow.put("managerName", "spadmin"); // Fallback
+        }
+      </Source>
+    </Script>
+    <Transition to="Custom Create ServiceNow Ticket"/>
+  </Step>
+
+  <!-- STEP 3: CUSTOM SERVICENOW INTEGRATION (Pre-Approval Ticket Open) -->
+  <Step icon="Message" name="Custom Create ServiceNow Ticket" posX="300" posY="20">
+    <Script>
+      <Source>
+        // Yahan developer khud apna custom Java/REST API code likhta hai ServiceNow se baat karne ke liye
+        String generatedId = "CHG-" + System.currentTimeMillis(); 
+        workflow.put("ticketId", generatedId);
+        System.out.println("Custom Ticket Created in ServiceNow: " + generatedId);
+      </Source>
+    </Script>
+    <Transition to="Custom Manager Approval Form"/>
+  </Step>
+
+  <!-- STEP 4: CUSTOM APPROVAL WORK ITEM (Pure Custom Screen) -->
+  <Step approvalOwner="ref:managerName" icon="Approval" name="Custom Manager Approval Form" posX="450" posY="20">
+    <Form title="Custom Access Approval Request">
+      <Attributes>
+        <Map>
+          <entry key="pageTitle" value="Access Request Form"/>
+        </Map>
+      </Attributes>
+      <Section title="Request Details">
+        <Field displayName="Employee Name" name="empName" readOnly="true" type="string" value="ref:identityName"/>
+        <Field displayName="ServiceNow Ticket ID" name="tId" readOnly="true" type="string" value="ref:ticketId"/>
+        <Field displayName="Do you approve this access?" name="approvalDecision" required="true" type="string">
+          <AllowedValues>
+            <String>Approve</String>
+            <String>Reject</String>
+          </AllowedValues>
+        </Field>
+      </Section>
+      <Button action="next" label="Submit Decision"/>
+    </Form>
+    <Transition to="Custom Update Ticket Post Approval"/>
+  </Step>
+
+  <!-- STEP 5: CUSTOM UPDATE TICKET (Post-Approval status) -->
+  <Step icon="Message" name="Custom Update Ticket Post Approval" posX="600" posY="20">
+    <Script>
+      <Source>
+        System.out.println("Updating ServiceNow Ticket " + ticketId + " with status: " + approvalDecision);
+      </Source>
+    </Script>
+    <Transition to="Custom Provisioning Logic" condition="script:&quot;Approve&quot;.equals(approvalDecision)"/>
+    <Transition to="Stop" condition="script:&quot;Reject&quot;.equals(approvalDecision)"/>
+  </Step>
+
+  <!-- STEP 6: CUSTOM PROVISIONING ENGINE (Bina standard subprocess ke direct call) -->
+  <Step icon="Provision" name="Custom Provisioning Logic" posX="750" posY="20">
+    <Script>
+      <Source>
+        import sailpoint.api.Provisioner;
+        import sailpoint.object.ProvisioningProject;
+        
+        // Custom Project Compile aur Provisioner direct API call
+        Provisioner provisioner = new Provisioner(context);
+        ProvisioningProject compiledProject = provisioner.compile(plan);
+        provisioner.execute(compiledProject);
+        
+        System.out.println("Custom Provisioning Executed Successfully for: " + identityName);
+      </Source>
+    </Script>
+    <Transition to="Custom Close Ticket"/>
+  </Step>
+
+  <!-- STEP 7: CUSTOM CLOSE TICKET (Post Provisioning) -->
+  <Step icon="Message" name="Custom Close Ticket" posX="900" posY="20">
+    <Script>
+      <Source>
+        System.out.println("Closing ServiceNow Ticket " + ticketId + " as COMPLETED.");
+      </Source>
+    </Script>
+    <Transition to="Stop"/>
+  </Step>
+
+  <!-- STEP 8: STOP -->
+  <Step icon="Stop" name="Stop" posX="1050" posY="20"/>
+
+</Workflow>
+</sailpoint>
+/////////////*
+()1. Workflow Kya Hai? (Asli Matlab)SailPoint mein Workflow ek automatic "Flowchart" ya "Safar" hai 
+jo yeh tay karta hai ki koi bhi request shuru hone se lekar khatam hone tak kis-kis raste se guzregi.
+Aasan Example: Jaise office mein leave (chutti) lene ka ek fixed niyam hota hai:-
+Aapne apply kiya -> Manager ke paas mail gaya -> Manager ne haan bola -> HR system mein entry
+hui -> Aapko notification aaya.SailPoint ke andar isi poore niyam (business process) ko auto-pilot par chalane ke liye
+hum XML code mein ek Workflow likh dete hain. Yeh automatic ek step se dusre step par request ko lekar jata hai.
+
+()2. <Step approvalOwner="ref:managerName" icon="Approval" name="Custom Manager Approval Form" posX="450" posY="20">:-
+approvalOwner: Iska matlab hai ki jab tak is step par koi insaan "Approve" ya "Reject" nahi karega, workflow aage nahi badhega. Yeh ek security check-post hai.
+ref:managerName: Yahan ref: ka matlab hai Reference (ishara). Yeh variable pichle step se employee ke manager ka naam (jaise john.doe) dhoodh kar laya hai.
+Asli Kaam: SailPoint is line ko padhte hi us manager ke dashboard par ek action item bhej dega. Manager jab subah apna SailPoint kholega, toh use samne ek ticket dikhega kyunki woh us ticket ka approvalOwner hai.
+
+()3.  ke andar Approve aur Reject:-
+Yeh manager ko dikhne wale custom form ke andar ka ek Dropdown Menu (Drop-down Options) hai.
+Asli Kaam: Jab manager ke samne approval ka screen (Form) khulega, toh wahan ek field hogi: "Do you approve this access?" Manager uspar click karega toh use sirf do hi options dikhein iske liye humne  (allowed choices) set kar di hain:
+Approve (Haan)
+Reject (Naa)
+Iske alawa manager wahan apni marzi se kuch aur ulta-seedha text type nahi kar sakta. Jo option woh select karega, wahi value approvalDecision naam ke variable mein save ho jayegi.
+
+*////////////

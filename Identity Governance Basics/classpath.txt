@@ -1,0 +1,37 @@
+()Classpath kya hota hai?
+👉 Classpath = Java ko batane wala path jahan se wo classes (.class files) aur JAR files dhoondta hai.
+
+🔹 Classpath me kya hota hai?
+Classpath me ye sab include hota hai:-
+.class files
+.jar files
+folders (jahan classes stored hain)
+
+🔹 Classpath ka kaam:-
+👉 Java ko ye batata hai:-
+classes kaha search karni hai
+dependencies kaha se load karni hai
+------------------------------------------dikti kaisi hai:-
+🔹 3️⃣ IDE me (Eclipse / IntelliJ):-
+🔸 Eclipse me:
+Right click project → Build Path
+→ Configure Build Path
+→ Libraries tab
+
+👉 Wahan tumhe:-
+JAR files
+external libraries
+project dependencies
+dikh jaati hain (ye hi classpath hota hai)
+--------------------------------------------------------
+🔹 2️⃣ Environment variable me (system level):-
+Windows:-
+CLASSPATH=C:\myproject\classes;C:\myproject\lib\*
+---------------------------------------------------------
+🔹 1️⃣ Command line me (visible format):-
+java -cp .;lib/* MyClass
+👉 Yahan classpath clearly dikh raha hai:-
+. → current folder
+lib/* → saare JAR files
+👉 Ye command ke andar directly likha hota hai, isliye visible hota hai.
+-------------------------------------------------------------------------------------

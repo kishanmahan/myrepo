@@ -1,0 +1,111 @@
+()Role Hierarchy kya hai?
+Definition: Ye roles ko ek hierarchy (parent-child relationship) me organize karna hai,
+jisse higher-level role automatically lower-level roles ke permissions inherit kar sake.
+Purpose:-
+Access management simplify karna
+Reuse aur consistency maintain karna
+Audit aur compliance easy karna
+
+2️⃣ Example of Role Hierarchy:-
+Business Role: Senior Manager
+   ├── Role: Manager
+   │      ├── Role: Team Lead
+   │      │      └── Role: Employee
+   
+4️⃣ Code Example (Conceptual):-
+Identity rahul = getIdentity("EMP12345");
+
+------------------------
+example code:-
+Full Java Code (Role Hierarchy + Permission Inheritance):-
+---
+import java.util.ArrayList;
+import java.util.List;
+
+class Role {
+
+    String roleName;
+    List<String> permissions = new ArrayList<String>();
+    List<Role> childRoles = new ArrayList<Role>();
+
+    Role(String roleName) {
+        this.roleName = roleName;
+    }
+
+    void addPermission(String permission) {
+        permissions.add(permission);
+    }
+
+    void addChildRole(Role role) {
+        childRoles.add(role);
+    }
+
+    List<String> getAllPermissions() {
+
+        List<String> allPermissions = new ArrayList<String>();
+
+        allPermissions.addAll(permissions);
+
+        for (Role child : childRoles) {
+            allPermissions.addAll(child.getAllPermissions());
+        }
+
+        return allPermissions;
+    }
+}
+
+class Identity {
+
+    String name;
+    List<Role> roles = new ArrayList<Role>();
+
+    Identity(String name) {
+        this.name = name;
+    }
+
+    void assignRole(Role role) {
+        roles.add(role);
+    }
+
+    List<String> getPermissions() {
+
+        List<String> allPermissions = new ArrayList<String>();
+
+        for (Role role : roles) {
+            allPermissions.addAll(role.getAllPermissions());
+        }
+
+        return allPermissions;
+    }
+}
+
+public class RoleHierarchyExample {
+
+    public static void main(String[] args) {
+
+        Identity rahul = new Identity("Rahul");
+
+        Role employee = new Role("Employee");
+        employee.addPermission("Email Access");
+        employee.addPermission("Leave Portal");
+
+        Role teamLead = new Role("Team Lead");
+        teamLead.addChildRole(employee);
+        teamLead.addPermission("Approve Team Leave");
+
+        Role manager = new Role("Manager");
+        manager.addChildRole(teamLead);
+        manager.addPermission("Finance Report Access");
+
+        Role seniorManager = new Role("Senior Manager");
+        seniorManager.addChildRole(manager);
+        seniorManager.addPermission("Payroll Approval");
+
+        rahul.assignRole(seniorManager);
+
+        System.out.println("Rahul ke permissions: " + rahul.getPermissions());
+    }
+}
+Output
+Rahul ke permissions: 
+[Payroll Approval, Finance Report Access, Approve Team Leave, Email Access, Leave Portal]

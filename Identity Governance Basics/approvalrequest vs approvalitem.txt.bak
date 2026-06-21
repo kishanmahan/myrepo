@@ -1,0 +1,726 @@
+🔹 ❓ ApprovalItem ko kaun approve karta hai?
+👉 Approver(s) approve karte hain,
+Ye ho sakte hain:-
+👨Manager (identity ka manager)
+🛡️Application Owner
+👨Admin / Security Team
+👥Custom approver (workflow me define hota hai)
+👉 Ye sab tu setApprovers() me define karta hai ya workflow decide karta hai.
+-------------------------------------------------------------------------------
+🔹 ❓ Ek baar me approve hota hai ya ek-ek karke?
+
+👉 ⚠️ Answer: Dono possible hai (workflow pe depend karta hai)
+
+🔸 Case 1: Single Approver
+PENDING → Manager approve → DONE
+
+👉 Sirf ek banda approve karega
+
+🔸 Case 2: Multiple Approvers (ANY / OR logic)
+Manager OR Admin me se koi ek approve kare → DONE
+
+👉 Ek ne approve kiya → kaam ho gaya
+
+🔸 Case 3: Multi-Level Approval (Sequential 🔥)
+Step 1: Manager approve
+Step 2: Admin approve
+Step 3: Security approve
+
+👉 Ek-ek karke approve hota hai
+
+🔸 Case 4: Parallel Approval (ALL required)
+Manager ✔️
+Admin ✔️
+Security ✔️
+
+👉 Sabko approve karna padega.
+-------------------------------------------------------------------------
+🔥 Real Flow Example:-
+ApprovalRequest
+   ├── ApprovalItem 1 → Role assign
+   ├── ApprovalItem 2 → Email update
+   ├── ApprovalItem 3 → Access grant
+👉 Ab:-
+Har item ka alag approval ho sakta hai
+Ya ek hi approver sabko approve kar sakta hai
+-----------------------------------------------------------------------------------
+🔥 Short Answer (yaad rakhna):-
+👉 Approve actually ApprovalItem hota hai
+👉 ApprovalRequest bas container / wrapper hota hai
+
+🔹 Detail me samajh:-
+🧱 Structure kya hai?
+ApprovalRequest
+   ├── ApprovalItem 1
+   ├── ApprovalItem 2
+   ├── ApprovalItem 3
+
+👉 Matlab:-
+ApprovalRequest = poora request
+ApprovalItem = individual kaam (real approval yahi hota hai)
+
+🔹 Approval kaun hota hai?
+👉 ✅ Approver ApprovalItem ko approve karta hai,
+item.approve();
+👉 Ye actual approval hai
+
+🔹 Fir ApprovalRequest ka kya role hai?
+👉 Ye bas:-
+multiple items ko hold karta hai
+overall status track karta hai
+
+🔥 Example Flow:-
+Step 1: Request create
+ApprovalRequest (PENDING)
+   ├── Item 1 (PENDING)
+   ├── Item 2 (PENDING)
+Step 2: Approver action
+item1.approve();
+item2.approve();
+Step 3: Final Result
+ApprovalRequest → APPROVED (jab sab items approve ho jaye)
+
+🔥 Important Logic:-
+Situation	            Result
+Sab items APPROVED----Request APPROVED
+Koi ek REJECTED-------Request REJECTED
+Kuch pending----------Request PENDING
+--------------------------------------------------------------------------------
+🔹 ApprovalRequest kya hai?
+👉 ApprovalRequest ek container hai jo multiple ApprovalItems ko hold karta hai.
+🔥 Real Structure:-
+ApprovalRequest
+   ├── ApprovalItem 1 (Role assign)
+   ├── ApprovalItem 2 (Email update)
+   ├── ApprovalItem 3 (Access grant)
+
+👉 Matlab:-
+Request = full package
+Item = individual kaam
+
+🔹 ApprovalRequest kya karta hai?
+1️⃣ Multiple ApprovalItems ko group karta hai,
+👉 Ek hi request me multiple changes ho sakte hain.
+
+2️⃣ Overall status track karta hai:-
+PENDING
+APPROVED
+REJECTED
+👉 Ye status depend karta hai items ke status pe.
+
+3️⃣ Approval workflow ko control karta hai:-
+👉 Workflow decide karta hai:-
+Kaun approve karega
+Kis order me approve hoga
+Kab next step aayega
+
+4️⃣ Approvers manage karta hai (request level):-
+👉 Kabhi kabhi:-
+Ek hi approver sab items approve kare
+Ya item-wise alag approver ho.
+
+5️⃣ Audit & tracking karta hai:-
+👉 Ye track karta hai:-
+Request kab create hua
+Kisne create kiya
+Kisne approve/reject kiya.
+
+6️⃣ Final decision trigger karta hai.
+👉 Jab:-
+Sab items approve ho jaye
+→ Tab:-
+ProvisioningPlan trigger hota hai
+Actual system update hota hai.
+----------------------------------------------------------------------------------------------------------
+🔹 🔥 ApprovalRequest ke andar kya hota hai?
+ApprovalRequest
+ ├── Basic Info
+ ├── ApprovalItems (List)
+ ├── Approvers
+ ├── Status
+ ├── Workflow Info
+ ├── Request Context
+ ├── Metadata (Audit)
+ ├── Comments
+------------------------------------------
+🔹 1️⃣ Basic Info (Request ki identity):-
+👉 Ye request ko identify karta hai
+id → unique request ID
+name → request name (e.g. "Role Assignment Request")
+type → request type (ACCESS, ROLE, etc.)
+-------------------------------------------
+🔹 2️⃣ ApprovalItems (🔥 sabse important):-
+👉 Ye actual kaam hai jo approve hona hai
+List<ApprovalItem>
+
+Har item ke andar hota hai:-
+Target Object (Identity / Role / Account)
+Action (ADD / UPDATE / REMOVE)
+Status (PENDING / APPROVED / REJECTED)
+Approvers
+Comments
+👉 Ye hi real approval hota hai 💯
+--------------------------
+🔹 3️⃣ Approvers (Request level):-
+👉 Kaun log poora request approve karenge
+Manager
+Admin
+Security team
+
+👉 Note:-
+Ye request level pe hota hai
+Item level pe bhi alag ho sakta hai
+---------------------------
+🔹 4️⃣ Status (Overall):-
+👉 Poora request ka current state
+PENDING
+APPROVED
+REJECTED
+👉 Logic:-
+Sab items APPROVED → Request APPROVED
+Koi ek REJECTED → Request REJECTED
+---------------------------
+🔹 5️⃣ Workflow Info:-
+👉 Ye control karta hai ki approval kaise chalega
+Kaun approve karega
+Kitne steps me approval hoga
+Sequential ya parallel
+👉 Ye Workflow XML/Rule se aata hai
+---------------------------------------------------------------------------------------------------------------------------------------------
+🔹 6️⃣ Request Context (🔥 real data):-
+👉 Request Context = wo data jo batata hai ki request kis liye, kis pe, kisne aur kaise ki hai.
+-------------------------------------------------------------
+6(1)Target Identity = wo user (identity) jiske upar change apply hoga
+
+6.2️⃣ Requested By (kisne request kiya)
+👉 Request kisne initiate ki
+Requested By: manager1 / self / admin
+
+6.3️⃣ Request Type
+👉 Kis type ka request hai
+ACCESS_REQUEST
+ROLE_REQUEST
+ACCOUNT_REQUEST
+PASSWORD_RESET
+
+6.4️⃣ Target Object / Resource
+👉 Kis object pe action ho raha hai
+Role: IT Admin
+Application: Salesforce
+Entitlement: Read Access
+
+6.5️⃣ Action Details
+👉 Kya change hona hai
+ADD
+REMOVE
+UPDATE
+ENABLE
+DISABLE
+
+6.6️⃣ Application / System Context
+👉 Kis system me change ho raha hai
+Application: SAP / Salesforce / AD
+
+6.7️⃣ Business Justification (🔥 important)
+👉 Kyun request kiya gaya
+"User ko project ke liye access chahiye"
+👉 Audit me bahut important hota hai
+
+6.8️⃣ Priority / Urgency
+👉 Kitna urgent hai
+LOW / MEDIUM / HIGH
+
+6.9️⃣ Time / Schedule Info
+👉 Kab apply hoga
+Immediate
+Scheduled (future date)
+
+6.🔟 Additional Attributes (Custom data):
+👉 Extra info jo developer add kare
+projectName: "BankingApp"
+location: "India"
+--------------------------------------------------------------------------------------
+🔹 7️⃣ Metadata (Audit tracking):-
+👉 Ye sab audit ke liye hota hai.
+created → kab bana
+modified → kab update hua
+createdBy → kisne banaya
+modifiedBy → kisne update kiya
+-----------------
+🔹 8️⃣ Comments:-
+👉 Approvers ke remarks
+
+"Approved by manager"
+"Rejected due to policy"
+------------------------------------
+🔥 Real Example (Full):-
+ApprovalRequest:
+   ID: REQ123
+   Name: Access Change Request
+   Status: PENDING
+   CreatedBy: kishan
+
+   Approvers:
+      - manager1
+      - admin1
+
+   Items:
+      1. ApprovalItem:
+            Target: Kishan
+            Action: UPDATE (email)
+            Status: PENDING
+
+      2. ApprovalItem:
+            Target: IT Role
+            Action: ASSIGN
+            Status: PENDING
+----------------------------------------------------------------------------------------------------
+🔹 🔥 ApprovalRequest Types (with Description):-
+👉 Ye batata hai kis type ka request hai / kya kaam ho raha hai.
+
+1️⃣ ACCESS_REQUEST:-
+👉 User ko kisi system/application ka access dena
+
+2️⃣ ROLE_REQUEST:-
+👉 Kisi user ko role assign ya remove karna
+
+3️⃣ ACCOUNT_REQUEST:-
+👉 Kisi application me user account create / modify / delete karna
+
+4️⃣ ENTITLEMENT_REQUEST:-
+👉 Specific permission/entitlement (jaise read/write access) dena
+
+5️⃣ APPLICATION_REQUEST:-
+👉 Kisi application ko assign ya remove karna
+
+6️⃣ PASSWORD_RESET:-
+👉 User ka password reset karna
+
+7️⃣ UNLOCK_ACCOUNT:-
+👉 Locked account ko unlock karna
+
+8️⃣ ENABLE_ACCOUNT:-
+👉 Disabled account ko enable karna
+
+9️⃣ DISABLE_ACCOUNT:-
+👉 User account ko disable karna
+
+🔟 CREATE_IDENTITY:-
+👉 Naya user (identity) create karna
+
+1️⃣1️⃣ UPDATE_IDENTITY:-
+👉 Existing user ke details update karna (email, manager, etc.)
+
+1️⃣2️⃣ DELETE_IDENTITY:-
+👉 User ko system se delete karna
+
+1️⃣3️⃣ CERTIFICATION_REQUEST:-
+👉 Access certification (review/approval process) ke liye request
+
+1️⃣4️⃣ POLICY_VIOLATION:-
+👉 Jab koi policy break hoti hai aur usko resolve karna hota hai
+
+1️⃣5️⃣ PROVISIONING_REQUEST:-
+👉 System me actual changes apply karne ke liye request
+
+1️⃣6️⃣ DEPROVISIONING_REQUEST:-
+👉 Access ya account remove karne ke liye request
+----------------------------------------------------------------------------------------------------
+🔹 🔥 ApprovalRequest Status (with Description):-
+👉 Ye batata hai request ki current condition kya hai.
+
+1️⃣ PENDING:-
+👉 Approval ka wait ho raha hai
+
+2️⃣ APPROVED:-
+👉 Request approve ho chuka hai
+
+3️⃣ REJECTED:-
+👉 Request reject ho gaya hai
+
+4️⃣ IN_PROGRESS:-
+👉 Approval process chal raha hai (partially approved / workflow me hai)
+
+5️⃣ COMPLETED:-
+👉 Approval + provisioning dono complete ho chuke hain
+
+6️⃣ CANCELED:-
+👉 Request manually cancel kar diya gaya hai
+
+7️⃣ EXPIRED:-
+👉 Time limit khatam ho gayi, request expire ho gaya
+
+8️⃣ FAILED:-
+👉 Request ya provisioning process fail ho gaya
+
+9️⃣ QUEUED:-
+👉 Request queue me hai, abhi process start nahi hua.
+----------------------------------------------------------------------------------------------------
+🔹 ApprovalRequest Methods List (Complete):-
+🔸 Basic Info:-
+getId()
+setId(String id)
+getName()
+setName(String name)
+getType()
+setType(String type)
+
+🔸 Status:-
+getStatus()
+setStatus(String status)
+isApproved()
+isRejected()
+
+🔸 Target / Context:-
+getTargetIdentity()
+setTargetIdentity(Identity identity)
+getRequestedBy()
+setRequestedBy(String user)
+getRequestObject()
+setRequestObject(SailPointObject obj)
+
+🔸 Approval Items:-
+getApprovalItems()
+setApprovalItems(List<ApprovalItem> items)
+addApprovalItem(ApprovalItem item)
+removeApprovalItem(ApprovalItem item)
+
+🔸 Approvers:-
+getApprovers()
+setApprovers(List<String> approvers)
+
+🔸 Comments:-
+getComments()
+setComments(List<String> comments)
+
+🔸 Attributes / Context Map:-
+getAttributes()
+setAttributes(Map<String, Object> attributes)
+
+🔸 Workflow / Execution:-
+approve()
+reject()
+cancel()
+
+🔸 Metadata (Audit):-
+getCreated()
+setCreated(Date date)
+getModified()
+setModified(Date date)
+getCreatedBy()
+setCreatedBy(String user)
+getModifiedBy()
+setModifiedBy(String user)
+
+🔸 Utility / Object Methods:-
+clone()
+equals(Object obj)
+hashCode()
+toString()
+----------------------------------------------------------------------------------------------------------------------------------------------------
+1️⃣ getId() & setId(String id):-
+👉 Request ka unique ID set/get karta hai
+ApprovalRequest request = new ApprovalRequest();
+request.setId("REQ001");
+System.out.println(request.getId());
+Output:-
+REQ001
+---------
+2️⃣ getName() & setName(String name):-
+👉 Request ka naam (label) set/get karta hai
+request.setName("Access Request");
+System.out.println(request.getName());
+Output:-
+Access Request
+---------
+3️⃣ getType() & setType(String type):-
+👉 Request ka type set/get karta hai.
+request.setType("ACCESS_REQUEST");
+System.out.println(request.getType());
+Output:-
+ACCESS_REQUEST
+---------
+4️⃣ getStatus() & setStatus(String status):-
+👉 Request ka current status set/get karta hai
+request.setStatus("PENDING");
+System.out.println(request.getStatus());
+Output:-
+PENDING
+---------------
+5️⃣ isApproved():-
+👉 Check karta hai request approved hai ya nahi.
+request.setStatus("APPROVED");
+System.out.println(request.isApproved());
+Output:-
+true
+---------------
+6️⃣ isRejected():-
+👉 Check karta hai request rejected hai ya nahi
+request.setStatus("REJECTED");
+System.out.println(request.isRejected());
+Output:-
+true
+----------------
+🔹 1️⃣ getTargetIdentity() & setTargetIdentity(Identity identity)
+✔️ Kaam:-
+👉 Kis user ke liye request hai (jispe change apply hoga)
+
+Example:-
+ApprovalRequest request = new ApprovalRequest();
+
+Identity user = new Identity();
+user.setName("kishan");
+
+// set target identity
+request.setTargetIdentity(user);
+
+// get target identity
+System.out.println(request.getTargetIdentity().getName());
+Output:-
+kishan
+🔥 Samajh:-
+👉 Ye batata hai:-
+"Change kis user ke upar apply hoga"
+-----------
+🔹 2️⃣ getRequestedBy() & setRequestedBy(String user)
+✔️ Kaam:-
+👉 Kisne request create ki hai
+Example:-
+request.setRequestedBy("manager1");
+System.out.println(request.getRequestedBy());
+Output:-
+manager1
+--------------
+🔹 3️⃣ getRequestObject() & setRequestObject(SailPointObject obj):-
+✔️ Kaam:-
+👉 Kaunsa actual object request me involve hai
+Role
+Application
+Account
+Entitlement
+Example:
+Role role = new Role();
+role.setName("IT_Admin");
+
+// set request object
+request.setRequestObject(role);
+
+// get request object
+Role r = (Role) request.getRequestObject();
+System.out.println(r.getName());
+Output:-
+IT_Admin
+🔥 Samajh:-
+👉 Ye batata hai:-
+"Kis object pe action perform hoga"
+-------------------------------------
+1️⃣ getApprovalItems():-
+✔️ Kaam:-
+👉 Request ke andar saare ApprovalItems ki list deta hai
+Example:-
+List<ApprovalItem> items = request.getApprovalItems();
+----------------
+🔹 2️⃣ setApprovalItems(List<ApprovalItem> items):-
+✔️ Kaam:-
+👉 Ek baar me poori items list set karta hai.
+
+Example:-
+List<ApprovalItem> list = new ArrayList<>();
+
+ApprovalItem item1 = new ApprovalItem();
+ApprovalItem item2 = new ApprovalItem();
+
+list.add(item1);
+list.add(item2);
+
+request.setApprovalItems(list);
+Output:-
+(Internal list set ho gayi)
+-----------------
+🔹 3️⃣ addApprovalItem(ApprovalItem item):-
+✔️ Kaam:
+
+👉 Request me ek naya item add karta hai
+
+Example:
+ApprovalItem item = new ApprovalItem();
+item.setAction("ADD");
+
+request.addApprovalItem(item);
+
+System.out.println(request.getApprovalItems().size());
+Output:
+1
+--------------------
+🔹 4️⃣ removeApprovalItem(ApprovalItem item):-
+✔️ Kaam:-
+👉 Request se specific item remove karta hai
+
+Example:-
+ApprovalItem item = new ApprovalItem();
+request.addApprovalItem(item);
+
+request.removeApprovalItem(item);
+
+System.out.println(request.getApprovalItems().size());
+Output:-
+0
+---------------------
+1️⃣ getComments() & setComments(List<String> comments):-
+✔️ Kaam:-
+👉 ApprovalRequest me approvers ke remarks / notes store karta hai
+
+Approval reason
+Reject reason
+Audit comments
+Example:-
+ApprovalRequest request = new ApprovalRequest();
+
+List<String> comments = new ArrayList<>();
+comments.add("Approved by manager");
+comments.add("Looks fine");
+
+request.setComments(comments);
+
+// get comments
+System.out.println(request.getComments());
+Output:-
+[Approved by manager, Looks fine]
+-----------------
+2️⃣ getAttributes() & setAttributes(Map<String, Object> attributes)
+✔️ Kaam:
+
+👉 Dynamic extra data store karta hai (key-value form me)
+
+👉 Ye hi real Request Context ka flexible part hai
+
+Example:
+Map<String, Object> attrs = new HashMap<>();
+
+attrs.put("application", "Salesforce");
+attrs.put("role", "Admin");
+attrs.put("justification", "Project requirement");
+
+request.setAttributes(attrs);
+
+// get attributes
+System.out.println(request.getAttributes());
+Output:
+{application=Salesforce, role=Admin, justification=Project requirement}
+
+🔥 Real Use:-
+👉 Ye store karta hai:-
+Application name
+Role
+Entitlement
+Justification
+Custom fields
+------------------------
+🔥 Short Answer (yaad rakh 💯):-
+👉 approve(), reject(), cancel()
+✅ mainly ApprovalRequest pe call hote hain
+❗ But trigger kaun karta hai? → Approver (human / workflow):-
+
+🔹 Real Breakdown:-
+1️⃣ Sabse pehle kya hota hai?
+👉 ApprovalItem level pe approval hota hai,
+item.approve();
+item.reject();
+👉 Ye real decision hai ✅
+
+2️⃣ Fir kya hota hai?
+👉 System check karta hai:-
+Saare items approve hue?
+Ya koi reject hua?
+
+3️⃣ Uske baad kya hota hai?
+👉 Tab ApprovalRequest pe final method call hota hai.
+request.approve();   // agar sab approve
+request.reject();    // agar koi reject
+request.cancel();    // agar manually stop
+
+🔥 Kaun call karta hai?
+👉 Direct tum nahi likhte normally
+👉 Ye call hota hai:-
+Workflow engine
+SailPoint system
+Approval process logic
+----------------------------------
+🔥 Full Flow (Step by Step):-
+1. ApprovalRequest create
+2. Multiple ApprovalItem create
+3. Status = PENDING
+
+4. Approver action leta hai:-
+   → item1.approve()
+   → item2.approve()
+
+5. System check:-
+   → sab approved ✔️
+
+6. System internally:
+   → request.approve()
+
+7. Final:-
+   → Provisioning start
+----------------------------------------------------------------------------
+1️⃣ getCreated() & setCreated(Date date):-
+👉 Request kab create hua
+request.setCreated(new Date());
+System.out.println(request.getCreated());
+Output:-
+Sat Mar 21 15:00:00 IST 2026
+
+2️⃣ getModified() & setModified(Date date):-
+👉 Last kab update hua
+request.setModified(new Date());
+System.out.println(request.getModified());
+Output:-
+Sat Mar 21 15:05:00 IST 2026
+
+3️⃣ getCreatedBy() & setCreatedBy(String user):-
+👉 Kisne request banaya
+request.setCreatedBy("kishan");
+System.out.println(request.getCreatedBy());
+Output:-
+kishan
+
+4️⃣ getModifiedBy() & setModifiedBy(String user):-
+👉 Kisne last change kiya
+request.setModifiedBy("admin1");
+System.out.println(request.getModifiedBy());
+Output:-
+admin1
+
+🔥 Real Use:-
+👉 Ye sab kaam aata hai:-
+Audit logs
+Security tracking
+Compliance (who did what)
+----------------------------------------------------------------
+5️⃣ clone():-
+👉 Object ka duplicate copy banata hai,
+ApprovalRequest copy = request.clone();
+System.out.println(copy.getId());
+Output:-
+REQ001
+
+6️⃣ equals(Object obj):-
+👉 Check karta hai dono objects same hain ya nahi
+ApprovalRequest r2 = request.clone();
+System.out.println(request.equals(r2));
+Output:-
+true
+
+7️⃣ hashCode():-
+👉 Object ka unique hash number deta hai
+System.out.println(request.hashCode());
+Output (example):-
+12345678
+
+8️⃣ toString():-
+👉 Object ko readable string format me convert karta hai
+System.out.println(request.toString());
+Output:-
+ApprovalRequest[id=REQ001, status=PENDING]
+-----------------------------------------------------------------

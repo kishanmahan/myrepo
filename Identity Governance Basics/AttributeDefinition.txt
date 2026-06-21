@@ -1,0 +1,196 @@
+()1️⃣ AttributeDefinition ka matlab?
+AttributeDefinition basically identity ya object ke ek property ka blueprint hai.
+agar kisi Identity (user) ka firstName, lastName, email, employeeId hai, toh in sab ke liye metadata / rules AttributeDefinition me store hote hain.
+Ye define karta hai:
+Attribute ka type (String, Integer, Boolean, Date)
+Attribute ka format (agar koi format restriction hai, jaise date format)
+Attribute ki length ya size limit
+Attribute ka visibility aur editability
+Attribute ka default value.
+
+2️⃣ AttributeDefinition ke andar kya hota hai (properties / methods):-
+()getPopulation() / setPopulation(Filter population):--------------Agar ye attribute filtered population ke liye hai (optional)
+getName() / setName(String name):-------------------------------------Attribute ka naam (jaise firstName)
+getType() / setType(Class type):--------------------------------------Data type (String, Integer, Date)
+getFormat() / setFormat(String format):-------------------------------Format rules, jaise date ka yyyy-MM-dd
+isRequired() / setRequired(boolean):-------------------------------------Ye attribute mandatory hai ya nahi
+isReadOnly() / setReadOnly(boolean):-----------------------------------User edit kar sakta hai ya nahi
+isHidden() / setHidden(boolean):---------------------------------------UI me attribute dikhega ya hidden hoga
+getDefaultValue() / setDefaultValue(Object):---------------------------Default value agar user ne nahi di
+getOrder() / setOrder(int):--------------------------------------------UI me display order
+getWidth() / setWidth(int):-----------------------------------------------UI me width
+getLabel() / setLabel(String):----------------------------------------Friendly label jo UI me dikhe
+
+3️⃣ AttributeDefinition ka kaam:-
+()Validation:-
+Ye define karta hai ki attribute ka data valid hai ya nahi.
+Example: Email attribute me format xyz@domain.com hona chahiye.
+
+()UI Control:-
+Ye decide karta hai ki attribute UI me dikhega, editable hoga ya hidden hoga.
+
+()Default Values & Required Rules:-
+Agar user value nahi deta toh default value set karega.
+Agar required hai aur value nahi hai, toh error throw karega.
+
+()Integration / Provisioning:
+Jab ye attribute kisi application ya system ke sath sync hota hai,
+Toh AttributeDefinition ke rules ke according hi data pass hota hai.
+
+4️⃣ DB me kya save hota hai?
+--1️⃣ AttributeDefinition DB me
+DB me jo AttributeDefinition table me store hota hai (Table: spt_attribute/spt_attributedefinition):-
+Sirf metadata / rules / key store hoti hai.
+Example: name = firstName, type = String, required = true, defaultValue = Unknown
+Matlab ye table sirf batata hai ki attribute ka structure kaisa hai.
+Isme actual user ki value nahi hoti.
+
+2️⃣ User ki value kahan store hoti hai?
+Actual value identity object ke table me store hoti hai, jaise: spt_identity/spt_identity_attribute table.
+Example:-
+identityId	attributeName	        value
+101	         firstName	            John
+101	         lastName	            Singh
+102	         firstName	            Priya
+Matlab: DB me key-value pair ke form me identity-specific value store hoti hai,
+aur metadata (AttributeDefinition) alag table me hota hai.
+
+()methods list:-
+getName()
+setName(String name)
+getType()
+setType(Class type)
+getFormat()
+setFormat(String format)
+isRequired()
+setRequired(boolean required)
+isReadOnly()
+setReadOnly(boolean readOnly)
+isHidden()
+setHidden(boolean hidden)
+getDefaultValue()
+setDefaultValue(Object value)
+getOrder()
+setOrder(int order)
+getWidth()
+setWidth(int width)
+getLabel()
+setLabel(String label)
+getPopulation()
+setPopulation(Filter population)
+equals(Object obj)
+hashCode()
+toString()
+clone()
+-------------------------------------------------------------------------------------------------------------------------------
+1️⃣ Setup Example:-
+AttributeDefinition attr = new AttributeDefinition();
+attr.setName("firstName");
+attr.setType(String.class);
+attr.setFormat("text");
+attr.setRequired(true);
+attr.setReadOnly(false);
+attr.setHidden(false);
+attr.setDefaultValue("Unknown");
+attr.setOrder(1);
+attr.setWidth(100);
+attr.setLabel("First Name");
+
+2️⃣ Methods with Description & Output:-
+
+1. getName() / setName(String name):-
+Description: Attribute ka naam get/set karta hai.
+System.out.println(attr.getName());  // Output: firstName
+attr.setName("lastName");
+System.out.println(attr.getName());  // Output: lastName
+
+2. getType() / setType(Class type):-
+Description: Attribute ka data type set/get karta hai.
+System.out.println(attr.getType());  // Output: class java.lang.String
+attr.setType(Integer.class);
+System.out.println(attr.getType());  // Output: class java.lang.Integer
+
+3. getFormat() / setFormat(String format):-
+Description: Attribute ke liye format rules set/get karta hai (jaise text, email, date).
+System.out.println(attr.getFormat());  // Output: text
+attr.setFormat("email");
+System.out.println(attr.getFormat());  // Output: email
+
+4. isRequired() / setRequired(boolean required):-
+Description: Attribute mandatory hai ya optional ye check karta hai.
+System.out.println(attr.isRequired());  // Output: true
+attr.setRequired(false);
+System.out.println(attr.isRequired());  // Output: false
+
+5. isReadOnly() / setReadOnly(boolean readOnly):-
+Description: Attribute editable hai ya read-only ye check karta hai.
+System.out.println(attr.isReadOnly());  // Output: false
+attr.setReadOnly(true);
+System.out.println(attr.isReadOnly());  // Output: true
+
+6. isHidden() / setHidden(boolean hidden):-
+Description: UI me attribute visible hai ya hidden ye check karta hai.
+System.out.println(attr.isHidden());  // Output: false
+attr.setHidden(true);
+System.out.println(attr.isHidden());  // Output: true
+
+7. getDefaultValue() / setDefaultValue(Object value):-
+Description: Agar user value nahi deta, toh default value set/get karta hai.
+System.out.println(attr.getDefaultValue());  // Output: Unknown
+attr.setDefaultValue("N/A");
+System.out.println(attr.getDefaultValue());  // Output: N/A
+
+8. getOrder() / setOrder(int order):-
+Description: UI me attribute ka display order set/get karta hai.
+System.out.println(attr.getOrder());  // Output: 1
+attr.setOrder(2);
+System.out.println(attr.getOrder());  // Output: 2
+
+9. getWidth() / setWidth(int width):-
+Description: UI me attribute ka width set/get karta hai.
+System.out.println(attr.getWidth());  // Output: 100
+attr.setWidth(200);
+System.out.println(attr.getWidth());  // Output: 200
+
+10. getLabel() / setLabel(String label):-
+Description: UI me user-friendly label set/get karta hai.
+System.out.println(attr.getLabel());  // Output: First Name
+attr.setLabel("Last Name");
+System.out.println(attr.getLabel());  // Output: Last Name
+
+11. getPopulation() / setPopulation(Filter population):-
+Description: Filter population ke liye attribute assign/set karta hai.
+Filter filter = new Filter("active=true");
+attr.setPopulation(filter);
+System.out.println(attr.getPopulation());  // Output: Filter object with condition active=true
+
+12. equals(Object obj):-
+Description: Check karta hai ki do AttributeDefinition objects same hain ya nahi.
+AttributeDefinition attr2 = new AttributeDefinition();
+attr2.setName("lastName");
+System.out.println(attr.equals(attr2));  // Output: false
+attr2.setName("lastName");
+System.out.println(attr.equals(attr2));  // Output: true (agar equals override properly hua hai)
+
+13. hashCode():-
+Description: Object ka unique integer representation return karta hai.
+System.out.println(attr.hashCode());  // Output: ek integer jaise 12345678
+
+14. toString():-
+Description: Object ka string representation return karta hai.
+System.out.println(attr.toString());  
+// Output example: AttributeDefinition{name='lastName', type=class java.lang.Integer, required=false, ...}
+
+15. clone():-
+Description: Object ka exact copy banata hai.
+AttributeDefinition attrClone = attr.clone();
+System.out.println(attrClone.getName());  // Output: lastName
+System.out.println(attrClone.equals(attr)); // Output: true (agar values same hain)
+------------------------------------------------------------------------------------------------------------------------------------
+()8️⃣ getOrder() / setOrder(int order):-
+Description: Ye method UI me attribute ka display order define karta hai.
+Example: Agar multiple attributes hai, toh order decide karta hai kaunsa pehle dikhe.
+
+()11️⃣ getPopulation() / setPopulation(Filter population):-
+Description: Ye method attribute ke liye population filter define karta hai.
+Matlab agar attribute sirf certain users/identities pe apply hona hai, toh filter set karte hain.

@@ -1,0 +1,102 @@
+()🔹 1️⃣ IdentityEntitlement kya hai?
+👉 IdentityEntitlement = user ke paas actual permission / access
+Matlab:-
+Role ek bundle hota hai
+Entitlement = actual permission (real access)
+✅ Example:-
+User: Rahul
+Access:-
+SAP → WRITE access
+AD → Admin group
+➡ Ye sab IdentityEntitlement hain.
+
+🔹 2️⃣ Ye kya karta hai?
+👉 Ye represent karta hai:-
+user ke paas kya access hai
+kis application me hai
+kis type ka permission hai.
+
+🔹 3️⃣ Kya ye DB me store hota hai?
+✅ Haan bhai, DB me store hota hai.
+📦 Structure:-
+Identity (Rahul)
+   ↓
+IdentityAccount (SAP)
+   ↓
+IdentityEntitlement (WRITE)
+
+🔹 4️⃣ Iske andar kya hota hai?
+Field	       Meaning
+name:---------entitlement ka naam
+value:--------actual value (WRITE, ADMIN)
+application:-kis system ka hai
+type:--------role/permission/group
+status:------active/inactive
+
+🔹 5️⃣ Important Methods:-
+🔸 Basic:-
+getName() → entitlement ka naam deta hai
+setName(String name) → naam set karta hai
+getValue() → actual permission value deta hai
+setValue(String value) → value set karta hai
+🔸 Application:-
+getApplication() → kis system ka entitlement hai
+setApplication(String app) → application set karta hai
+🔸 Type:-
+getType() → entitlement type deta hai
+setType(String type) → type set karta hai
+🔸 Status:-
+getStatus() → active / inactive
+setStatus(String status) → status set karta hai
+🔸 Utility:-
+toString() → readable string
+equals(Object obj) → compare karta hai
+hashCode() → hash generate karta hai
+
+🚀 🔥 Full Code (SailPointContext ke saath):-
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointFactory;
+import sailpoint.object.IdentityEntitlement;
+
+public class EntitlementExample {
+
+    public static void main(String[] args) throws Exception {
+
+        SailPointContext context = SailPointFactory.getCurrentContext();
+
+        IdentityEntitlement ent = new IdentityEntitlement();
+
+        // Basic
+        ent.setName("SAP Access");
+        ent.setValue("WRITE");
+
+        // Application
+        ent.setApplication("SAP");
+
+        // Type
+        ent.setType("Permission");
+
+        // Status
+        ent.setStatus("Active");
+
+        // Print
+        System.out.println(ent.getName());
+        System.out.println(ent.getValue());
+        System.out.println(ent.getApplication());
+        System.out.println(ent.getType());
+        System.out.println(ent.getStatus());
+
+        // Save
+        context.saveObject(ent);
+        context.commitTransaction();
+
+        System.out.println("✅ Entitlement Saved");
+    }
+}
+📤 Output:-
+SAP Access
+WRITE
+SAP
+Permission
+Active
+✅ Entitlement Saved

@@ -1,0 +1,1014 @@
+----------------------------------------------------------------
+🏢 1️⃣4️⃣ Governance Framework:-
+Governance Framework ek structure hai jo ye decide karta hai ki organization me 
+kaun kya karega, kaise rules follow honge, aur responsibilities kaun lega. 
+Ye basically ek guideline system hai jo risk ko control karta hai aur 
+ensure karta hai ki sab kaam compliant aur efficient tarike se ho.
+
+1️⃣ Purpose (Maksad):-
+Governance framework ka main goal hota hai control, compliance aur accountability maintain karna.
+Ye ensure karta hai ki policies, laws, regulations aur best practices follow ho rahe hain.
+
+2️⃣ Components (Hissa):-
+Ek governance framework me aam taur par ye cheezein hoti hain:
+Policies & Standards – Organization ke rules aur standards jo follow karne hai.
+Roles & Responsibilities – Kaun decision lega, kaun implement karega.
+Processes & Procedures – Kaam ko step by step kaise karna hai.
+Monitoring & Reporting – Kaam sahi ho raha hai ya nahi, iska track rakhna.
+Risk & Compliance Management – Risks aur laws ka dhyan rakhna.
+
+3️⃣ Example (SailPoint ya IT Governance me):-
+Identity Governance me framework define karta hai:
+Kaun users ko access de sakta hai
+Kaun accounts ko review karega
+Kaun approvals lega
+Password aur privileged account policies kaise enforce hongi.
+----------------------------------------------------------------------
+()ye charo cheezein alag-alag frameworks Governance ke hai:-
+()Access request lifecycle
+()Approval matrix
+()Control framework
+()Regulatory alignment
+---------------------------
+()1️⃣ Access Request Lifecycle:-
+Ye ek process framework hai jo define karta hai ki user ka access request kaise create, approve aur provision hota hai.
+Steps usually:-
+Step	                                 Description	                                                                          Example
+Request Submission:--------User ya system access request submit karta hai:--------------------------------Employee ko Salesforce ka access chahiye, request form fill karega
+Validation:----------------System ya IAM connector check karta hai ki request valid hai ya nahi:----------Check ki user already access to nahi rakhta
+Approval:------------------Defined approvers (Approval Matrix) access approve ya reject karte hain:-------Manager approve kare, aur agar privileged access hai to Security Officer bhi approve kare
+Provisioning:--------------Access system me allocate hota hai:--------------------------------------------Salesforce account create + role assign
+Notification:--------------User ko access grant hone ki info send hoti hai:-------------------------------Email: “Your access is approved”
+Review / Recertification:--Periodically check ki access valid hai ya nahi:--------------------------------Quarterly review by manager
+Focus:-
+Efficient process
+Compliance with policies
+Audit trail maintain karna
+
+()2️⃣ Approval Matrix:-
+Ye decision-making framework hai jo define karta hai ki kaun approvals de sakta hai,
+kis level ka access aur kitne approvers chahiye.
+Key Points:-
+Segregation of Duties (SoD): High-risk access multiple approvals me divide hota hai
+Role-based Approval: Low-risk approvals team lead se, high-risk approvals manager + security officer se
+Hierarchy / Escalation: Agar primary approver available nahi, to automatic escalate ho
+
+Example Table:-
+Access Type	       Approver 1	Approver 2	                       Notes
+Standard App:------Team Lead:-------------------------------------Low-risk
+HR/Finance App:----Manager:-----Security Officer:-----------------High-risk
+Admin/Privileged:--Manager:-----Security Officer + IAM Admin:----Extra control
+
+Focus:-
+Accountability ensure karna
+Risk reduction via multi-layer approvals
+
+()3️⃣ Control Framework:-
+Ye risk & control framework hai jo ensure karta hai ki 
+organization ke policies aur regulations follow ho rahe hain.
+Components:-
+Preventive Controls: Access wrong jagah na mile (password policy, SoD)
+Detective Controls: Access misuse detect karna (audit logs, anomaly detection)
+Corrective Controls: Issue fix karna (access revoke, alert generation)
+
+Example Controls in IAM:-
+Password Complexity & Rotation
+Privileged Account Monitoring
+Access Review / Recertification
+Policy Violations Alerts
+
+Focus:-
+Risk management
+Operational efficiency
+Compliance maintenance
+
+()4️⃣ Regulatory Alignment:-
+Ye compliance framework hai jo ensure karta hai ki organization ke processes aur controls 
+local/international regulations ke saath align ho.
+Examples:-
+Regulation	       IAM Impact	                                   Example
+GDPR	:-------Personal data protection:------------User access audit, data minimization
+SOX	Financial:--system audit trails:-----------------Access logs, quarterly reviews
+HIPAA:----------Health data access control:----------Medical records only authorized users
+
+()Summary: Developer ye frameworks code me implement karta hai,
+lekin ye khud me methods nahi hote, balki frameworks ka logic implement karne ke liye 
+multiple classes/methods use hote hain.
+
+📌 Detailed View (Classes ke andar aur methods):-
+1️⃣ Access Request Lifecycle:-
+RequestManager → submit(), cancel(), getRequests(), getRequestById()
+ProvisioningPlan → add(), remove(), execute(), getStatus()
+IdentityRequest → create(), updateState(), complete(), getStatus()
+
+2️⃣ Approval Matrix:-
+ApprovalRule → evaluate(), getApprovers(), applyRule()
+ManagerNotificationRule → notifyManager(), buildApprovalSet()
+
+3️⃣ Control Framework:-
+Policy → getRules(), isViolated(), evaluate()
+Rule → run(), validate(), execute()
+PolicyEvaluator → evaluatePolicy(), checkViolations(), getResults()
+
+4️⃣ Regulatory Alignment:-
+ComplianceReport → generate(), getSummary(), getViolations()
+AuditLogManager → logEvent(), getLogs(), queryLogs()
+-------------------------------------------------------------------
+()1️⃣ Access Request Lifecycle:-
+1️⃣ RequestManager:-
+Ye class basically Access Requests ko manage karne ke liye hoti hai.
+Iska kaam hai requests ko submit, cancel aur retrieve karna.
+
+()submit():-
+Ek naya access request create aur submit karta hai system me. Ye workflow start karta hai.
+Jab koi employee “Salesforce access chahiye” ka request karta hai.
+
+()cancel():-
+Existing request ko cancel karta hai. Ye request workflow ko stop kar deta hai aur approvals ko invalidate kar deta hai.
+Agar employee ne galat request kiya hai ya ab access chahiye nahi.
+
+()getRequests():-
+Sabhi requests ka list return karta hai, ya filters ke saath.
+Manager dekhna chahta hai “kaunse access requests pending hain”.
+
+()getRequestById():-Kisi specific request ko ID ke basis pe retrieve karta hai.
+Workflow ya admin ko ek particular request ke status check karna ho.
+
+2️⃣ ProvisioningPlan:-
+Ye class provisioning actions ko manage karti hai, matlab actual access assign/revoke karna.
+
+()add():-Provisioning plan me ek new item add karta hai — jaise ek role ya entitlement.
+Employee ke liye “Salesforce: Read” add karna.
+
+()remove():-Provisioning plan me existing item ko remove karta hai.Agar kisi ka access revoke karna hai.
+
+()execute():-Jo bhi actions plan me add hue hain, unhe apply kar deta hai system me.
+Final step: Role/entitlement assign ho jaye.
+
+()getStatus():-Provisioning plan ke current execution status ko return karta hai.
+“Pending”, “Executed”, “Failed” ka status check karna.
+
+3️⃣ IdentityRequest:-
+Ye class ek specific identity ke access request ko represent karti hai.
+Ye basically ek object model hai jo workflow ke har request ko track karta hai.
+
+()create():-Naya IdentityRequest object create karta hai.Jab employee ne “HR App access” ke liye request kiya.
+()updateState():-Request ke state ko change karta hai.State: “Pending” → “Approved” → “Provisioned”.
+()complete():-Request ko final state me mark karta hai aur workflow finish kar deta hai.
+Jab provisioning successfully complete ho jaye.
+()getStatus():-Current request ka status return karta hai.
+Check karna ki request abhi “Pending”, “Approved”, “Completed” ya “Cancelled” hai.
+------------------------------------------------------------------------------------------------------
+()1️⃣ ApprovalRule:-
+Ye class approval logic ko define karne ke liye use hoti hai. 
+Matlab, kaun approve karega, kaise approve hoga, aur rule ke hisaab se workflow kaise move karega,
+ye decide karta hai.
+-----------------------------------methods:--->>>>>>>>>>>>>
+2️⃣ evaluate() kaam kya karta hai?
+Request inspect karta hai:-
+Kaunse user ne access request kiya, kaunse role/entitlement request hai.
+
+Risk assess karta hai:-
+Agar access type “High Risk” hai, to multi-level approval required ho sakta hai.
+Low risk access ke liye single approval sufficient ho sakta hai.
+
+Decision return karta hai:-
+true / false ya eligible / not eligible type result deta hai.
+Ye result workflow ko guide karta hai ki approval process start karna hai ya nahi.
+
+4️⃣ Example (Pseudo / Java-like):-
+AccessRequest request = context.getObjectByName(AccessRequest.class, "Finance Role Request");
+Rule highRiskRule = new HighRiskAccessRule();
+boolean eligible = highRiskRule.evaluate(request);
+if(eligible) {
+    System.out.println("Request requires approval");
+} else {
+    System.out.println("Request auto-approved or rejected");
+}
+Output Example:-
+Request requires approval
+-------------------------------------------------
+()getApprovers():-
+Rule ke hisaab se list of approvers return karta hai.
+“Finance app” ke liye manager aur security officer dono approvers honge,
+ye method ye list return karega.
+
+4️⃣ Example (Pseudo / Java-like):-
+AccessRequest request = context.getObjectByName(AccessRequest.class, "Finance Role Request");
+Rule financeRule = new FinanceApprovalRule();
+
+List<Identity> approvers = financeRule.getApprovers(request);
+
+System.out.println("Approvers for this request:");
+for(Identity approver : approvers) {
+    System.out.println("- " + approver.getName());
+}
+Output Example:-
+Approvers for this request:
+- Manager John
+- Security Officer Alice
+-------------------------------------------------------------
+1️⃣ applyRule() kya hai
+
+Matlab: Ye rule ko actually execute karta hai taaki request ke liye decision aur actions perform ho sake.
+
+Ye evaluate() aur getApprovers() ke baad use hota hai.
+
+Purpose:
+
+Rule ke hisaab se request ko process karna
+
+Approval, assignment, ya notifications trigger karna
+
+✅ Simple definition:
+
+“applyRule() = evaluate + take action according to rule”
+
+2️⃣ applyRule() kaam kya karta hai?
+Rule evaluate karta hai:-
+Access request high risk hai ya low risk, multi-level approval required hai ya nahi.
+
+Approvers assign karta hai:-
+getApprovers() se jo list return hui, usko workflow me set karta hai
+
+Request actions perform karta hai:-
+Notifications send karna
+Approval routing set karna
+Policy exceptions / compromise apply karna (agar needed).
+
+4️⃣ Example (Pseudo / Java-like):-
+AccessRequest request = context.getObjectByName(AccessRequest.class, "Finance Role Request");
+
+Rule financeRule = new FinanceApprovalRule();
+
+// Rule ko apply karna
+financeRule.applyRule(request);
+
+System.out.println("Rule applied, request routed to approvers");
+--------------------------------------------------------------------------------------
+()2️⃣ ManagerNotificationRule:-
+Ye class managers ko notify karne aur approval sets banane ke liye hoti hai.
+Basically ye human approval workflow ke liye helper hai.
+
+()notifyManager():-----Manager ko notification bhejna (email ya system alert)	
+Example Use:--Jab kisi employee ka access request pending hai, ye method manager ko notify karta hai.
+
+()buildApprovalSet():--Approval ke liye set of approvers prepare karta hai workflow ke liye.	
+Example Use:--Agar request multiple approvers ke liye hai, ye method automatically approval chain create karega.
+
+🔹 Approval Matrix Flow Example:-
+// Approval rule evaluate karna
+ApprovalRule rule = new ApprovalRule();
+boolean eligible = rule.evaluate(request);
+
+if (eligible) {
+    List<User> approvers = rule.getApprovers();
+    rule.applyRule(request); // Workflow me approval steps set kar de
+
+    // Notify managers
+    ManagerNotificationRule.notifyManager(request.getIdentity(), approvers);
+    
+    // Build approval chain
+    ManagerNotificationRule.buildApprovalSet(request, approvers);
+}
+--------------------------------------------------------------------------------------------------------
+()Policy:-
+Ye class ek group of rules ko represent karti hai. Har policy ke andar multiple rules ho sakte hain.
+
+()getRules():-
+Policy me defined sabhi rules ko return karta hai.
+example:-Password Policy” me 3 rules ho sakte hain:-minimum length,complexity,expiry.
+Ye method ye rules return karega.
+
+()isViolated():-
+Check karta hai ki policy ka koi rule violate hua hai ya nahi.
+example:-Agar user ne weak password set kiya, to ye method return karega true.
+--------------------------------------------------------------------------
+()1️⃣ Policy ka evaluate() kya hai?
+Matlab: Ye method policy ko check karta hai ki koi identity, role, ya access request policy ke rules ko violate kar raha hai ya nahi.
+SailPoint me mostly Access Governance aur Compliance me use hota hai.
+Purpose:-
+Ensure karna ki SOD (Segregation of Duties), high-risk access, ya other compliance policies violate na ho.
+
+✅ Simple definition:-
+Policy ka evaluate() = check karna ki policy ke rules follow ho rahe hain ya koi violation hai
+
+2️⃣ Policy evaluate() kaam kya karta hai:-
+Identity ya Access check karta hai:-
+Kaunse user ke paas kaunse roles/entitlements hai
+Policy rules apply karta hai:-
+SoD conflict check
+High-risk access check
+Duplicate role assignments, restricted access, etc.
+Violation identify karta hai:-
+Agar policy violate hoti hai → violation object generate hota hai
+Agar policy follow ho rahi hai → no violation
+
+4️⃣ Example (Pseudo / Java-like)
+Identity user = context.getObjectByName(Identity.class, "John Doe");
+Policy sodPolicy = context.getObjectByName(Policy.class, "Finance SoD Policy");
+
+// Policy evaluate karo
+List<PolicyViolation> violations = sodPolicy.evaluate(user);
+
+if(violations.isEmpty()) {
+    System.out.println("No policy violations, user compliant");
+} else {
+    System.out.println("Policy violations found:");
+    for(PolicyViolation v : violations) {
+        System.out.println("- " + v.getDescription());
+    }
+}
+
+Output Example:
+
+Policy violations found:
+- User has both Payment Approver and Payment Requester roles (SoD Conflict)
+----------------------------------------------------------------------------------------
+(b)Rule:-
+Ye class specific control logic ko implement karti hai. Policy ke andar rules run hote hain.
+-----------------------
+()run()
+Rule ko execute karta hai aur check karta hai ki rule compliant hai ya nahi.
+Ye method rule ko actually execute karta hai workflow ke context me,matlab action perform karne ke liye.
+
+2️⃣ Rule run() kaam kya karta hai?
+Rule logic execute karta hai:-
+evaluate() internally call ho sakta hai, taaki eligibility check ho jaye
+
+Approvers assign karta hai:-
+getApprovers() internally call ho sakta hai, taaki approval list mil jaye
+
+Actions perform karta hai:-
+Notifications send karna
+Approval workflow start karna
+Compromise / exception apply karna agar required.
+
+example use:-
+Password length check karna: run() method call hoga aur boolean return karega.
+
+4️⃣ Example (Pseudo / Java-like):-
+AccessRequest request = context.getObjectByName(AccessRequest.class, "Finance Role Request");
+
+Rule financeRule = new FinanceApprovalRule();
+
+// Rule ko run karna
+financeRule.run(request);
+System.out.println("Rule executed, request workflow triggered");
+---------------------------------------------------------------------------------------
+()1️⃣ Rule ka validate() kya hai?
+Matlab: Ye method check karta hai ki rule correctly configured hai ya nahi.
+Ye execution se pehle errors detect karne ke liye use hota hai.
+Purpose:-
+Ensure karna ki rule me syntax, logic, aur required inputs sahi hain
+Workflow me execution ke time pe errors na aaye.
+
+✅ Simple definition:-
+validate() = rule configuration aur logic ki correctness check karna.
+
+2️⃣ Rule validate() kaam kya karta hai?
+Inputs check karta hai:-
+Required parameters, objects, aur context properly set hain ya nahi
+
+Rule logic verify karta hai:-
+Syntax errors ya invalid references detect karta hai
+
+Validation result return karta hai:-
+True / False
+Ya list of errors / warnings
+
+4️⃣ Example (Pseudo / Java-like):-
+Rule financeRule = new FinanceApprovalRule();
+
+// Rule validate karo
+boolean isValid = financeRule.validate();
+
+if(isValid) {
+    System.out.println("Rule is valid and ready to run");
+} else {
+    System.out.println("Rule has errors, please fix configuration");
+}
+--------------------------------------------------------------------------------------------
+1️⃣ Rule ka execute() kya hai?
+Matlab: Ye method rule ko run karne ka core function hai, jo actual logic execute karta hai.
+Ye mostly workflow me run, apply, aur decisions perform karne ke liye use hota hai.
+Purpose:-
+Rule logic ko perform karna
+Approvers assign karna, notifications send karna, aur approvals route karna.
+
+2️⃣ Rule execute() kaam kya karta hai?
+Rule logic execute karta hai:-
+Internal logic check hota hai, jaise evaluate() aur validate()
+
+Approvers assign karta hai:-
+getApprovers() ko internally call karke approval list fetch karta hai
+
+Actions perform karta hai:-
+Notifications send karna
+Approval workflow start karna
+Compromise / exception apply karna agar required
+
+Result workflow me reflect hota hai:-
+Request routed ho jata hai
+Status update ho jata hai.
+
+Rule execute() ke andar kya logic hai:-
+Logic:-
+Call validate() → rule sahi configured hai ya nahi
+Call evaluate() → request eligible hai ya nahi
+Call getApprovers() → approvers list fetch
+Call applyRule() → actions execute
+
+4️⃣ Example (Pseudo / Java-like):-
+AccessRequest request = context.getObjectByName(AccessRequest.class, "Finance Role Request");
+
+Rule financeRule = new FinanceApprovalRule();
+
+// Rule execute karo
+financeRule.execute(request);
+System.out.println("Rule executed, workflow actions performed");
+----------------------------------------------------------------------------------------------------
+()evaluate():-method SailPoint me rule ya policy ki condition ko check karta hai 
+aur boolean result (true/false) return karta hai jisse decide hota hai ki rule apply hoga ya nahi.
+----------------------------------------------------------------------------------------------------
+()c) PolicyEvaluator:-
+Ye class policies aur rules ko evaluate karne ke liye helper hai.
+
+()evaluatePolicy():-
+Ek specific policy ko evaluate karta hai aur result return karta hai.
+1️⃣ PolicyEvaluator.evaluatePolicy() kya hai?
+Ye method ek particular policy ko check karta hai kisi user (Identity) ke against.
+Ye check karta hai ki user ke roles / entitlements us policy ko violate kar rahe hain ya nahi.
+Simple definition:-
+evaluatePolicy() = ek specific policy ko evaluate karke violation result return karna.
+
+2️⃣ Ye method kya karta hai?
+1️⃣ Identity check karta hai?
+User ke paas kaun-kaun se:-
+Roles
+Entitlements
+Application access
+hain, ye sab read karta hai.
+
+2️⃣ Policy rules apply karta hai?
+Example policy rule:-
+Payment Creator
+AND
+Payment Approver
+User ke paas dono role nahi hone chahiye.
+
+3️⃣ Violation detect karta hai?
+Agar conflict milta hai:-
+PolicyViolation create hota hai
+
+Agar conflict nahi hai:-
+No violation
+
+3️⃣ Inputs:-
+evaluatePolicy() normally ye inputs leta hai:
+Identity → user
+
+Policy → kaunsi policy evaluate karni hai
+Example:-
+Identity → John
+Policy → Finance SoD Policy
+
+4️⃣ Example Code (Simple Java Style)
+PolicyEvaluator evaluator = new PolicyEvaluator(context);
+
+Identity user = context.getObjectByName(Identity.class, "John");
+
+Policy policy = context.getObjectByName(Policy.class, "Finance SoD Policy");
+
+List<PolicyViolation> violations = evaluator.evaluatePolicy(user, policy);
+
+if(violations.isEmpty()){
+    System.out.println("Policy passed");
+}
+else{
+    System.out.println("Policy violation detected");
+}
+5️⃣ Output Example:-
+Case 1 (Violation)
+Policy violation detected
+User has both roles:-
+Payment Creator
+Payment Approver
+------------------------------------------------------------------------------------
+()1️⃣ checkViolations() kya hai?
+checkViolations() ek method hai jo user ke access ko check karta hai 
+aur batata hai ki koi policy violation hai ya nahi.
+Simple definition:-
+checkViolations() = user ke roles / entitlements ko check karke policy violations detect karna
+Ye method multiple policies ko bhi check kar sakta hai.
+
+2️⃣ Ye method kya karta hai?
+1️⃣ Identity ka access check karta hai?
+User ke paas kaun-kaun se:-
+Roles
+Entitlements
+Application access
+hain, ye sab read karta hai.
+
+2️⃣ Policies apply karta hai?
+System sab relevant policies check karta hai, jaise:
+SoD Policy
+High Risk Access Policy
+Compliance Policy
+
+3️⃣ Violations detect karta hai?
+Agar koi policy break ho rahi hai:-
+PolicyViolation object create hota hai
+
+Agar sab sahi hai:-
+No violations
+
+3️⃣ Inputs:-
+checkViolations() normally ye input leta hai:-
+Identity (user)
+Roles / Entitlements
+Policies
+
+Example:-
+User → John
+Roles → Payment Creator, Payment Approver
+
+4️⃣ Example Code (Java Style)
+PolicyEvaluator evaluator = new PolicyEvaluator(context);
+
+Identity user = context.getObjectByName(Identity.class, "John");
+
+List<PolicyViolation> violations = evaluator.checkViolations(user);
+
+if(violations.isEmpty()){
+    System.out.println("No violations found");
+}
+else{
+    System.out.println("Policy violations detected");
+}
+5️⃣ Output Example:-
+
+Case 1 (Violation)
+Policy violations detected
+User has conflicting roles
+Payment Creator
+Payment Approver
+Ye SoD violation hai.
+
+Case 2 (No Violation)
+No violations found
+User compliant
+--------------------------------------------------------------------------------------------------------
+()1️⃣ getResults() kya hai?
+getResults() ek method hai jo policy evaluation ke baad jo results aaye hain unko return karta hai.
+
+Simple definition:-
+getResults() = policy evaluation ke baad jo violations ya results mile hain unki list dena
+Ye method normally evaluatePolicy() ya checkViolations() ke baad use hota hai.
+
+2️⃣ getResults() kya karta hai?
+1️⃣ Evaluation results collect karta hai?
+Kaunse policies check hui
+Kaunse violations mile
+
+2️⃣ PolicyViolation objects return karta hai?
+Agar violation hai → list me milega
+Agar violation nahi hai → empty list
+
+3️⃣ Reporting / workflow ke liye data deta hai?
+Access review
+Compliance report
+Risk analysis
+
+4️⃣ Example Code (Java Style):-
+PolicyEvaluator evaluator = new PolicyEvaluator(context);
+
+Identity user = context.getObjectByName(Identity.class, "John");
+
+// policies evaluate karo
+evaluator.checkViolations(user);
+
+// results lo
+List<PolicyViolation> results = evaluator.getResults();
+
+if(results.isEmpty()){
+    System.out.println("No policy violations");
+}
+else{
+    System.out.println("Violations found: " + results.size());
+}
+5️⃣ Output Example:-
+Case 1 (Violation)
+Violations found: 1
+Finance SoD Conflict
+
+Example conflict:-
+Payment Creator
+Payment Approver
+------------------------------------------------------------------------------------------------------------
+()1️⃣ ComplianceReport kya karta hai?
+ComplianceReport ka main kaam:-
+Policy violations detect karna
+Access review results collect karna
+👉 ComplianceReport ka kaam hai policies, rules aur access violations ko check karke audit report banana.
+Ye report companies ko help karti hai regulations follow karne me, jaise:
+SOX (Sarbanes‑Oxley Act)
+GDPR (General Data Protection Regulation)
+HIPAA (Health Insurance Portability and Accountability Act)
+
+()2️⃣ generate() kya karta hai?
+--1️⃣ Identities check karta hai?
+System sab users ko read karta hai.
+Example:-
+User1
+User2
+User3
+
+2️⃣ Policies evaluate karta hai?
+Ye policies check hoti hain:-
+SoD Policy
+Security Policy
+Compliance Policy
+
+3️⃣ Violations detect karta hai?
+Agar koi rule break ho raha hai:-
+PolicyViolation create hota hai
+
+4️⃣ Report data prepare karta hai?
+Report me data store hota hai:-
+Total users checked
+Total policies evaluated
+Violations list
+
+ComplianceReport with generate() – Full Example
+import java.util.ArrayList;
+import java.util.List;
+
+// Simple PolicyViolation class
+class PolicyViolation {
+
+    private String description;
+
+    public PolicyViolation(String description) {
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+}
+
+
+// Simple Identity class
+class Identity {
+
+    private String name;
+    private List<String> roles;
+
+    public Identity(String name, List<String> roles) {
+        this.name = name;
+        this.roles = roles;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public List<String> getRoles() {
+        return roles;
+    }
+}
+
+
+// ComplianceReport class
+class ComplianceReport {
+
+    private List<Identity> identities;
+    private List<PolicyViolation> violations;
+
+    public ComplianceReport(List<Identity> identities) {
+        this.identities = identities;
+        this.violations = new ArrayList<PolicyViolation>();
+    }
+
+    // 🔹 generate() method
+    public void generate() {
+
+        System.out.println("Starting Compliance Report Generation...");
+
+        for (Identity identity : identities) {
+
+            List<String> roles = identity.getRoles();
+
+            // Example SoD Policy
+            if (roles.contains("Payment Creator") && roles.contains("Payment Approver")) {
+
+                PolicyViolation violation = new PolicyViolation(
+                        identity.getName() + " has SoD violation: Payment Creator + Payment Approver");
+
+                violations.add(violation);
+            }
+        }
+
+        System.out.println("Compliance Report Generation Completed.");
+    }
+
+    public List<PolicyViolation> getViolations() {
+        return violations;
+    }
+}
+
+
+// Main class
+public class Main {
+
+    public static void main(String[] args) {
+
+        List<String> roles1 = new ArrayList<String>();
+        roles1.add("Payment Creator");
+        roles1.add("Payment Approver");
+
+        List<String> roles2 = new ArrayList<String>();
+        roles2.add("Employee");
+
+        Identity user1 = new Identity("John", roles1);
+        Identity user2 = new Identity("David", roles2);
+
+        List<Identity> identities = new ArrayList<Identity>();
+        identities.add(user1);
+        identities.add(user2);
+
+        ComplianceReport report = new ComplianceReport(identities);
+
+        // Generate report
+        report.generate();
+
+        // Print violations
+        List<PolicyViolation> violations = report.getViolations();
+
+        for (PolicyViolation v : violations) {
+            System.out.println(v.getDescription());
+        }
+    }
+}
+Output Example
+Starting Compliance Report Generation...
+Compliance Report Generation Completed.
+John has SoD violation: Payment Creator + Payment Approver
+----------------------------------------------------------------------------------------------------
+()getViolations():-
+getViolations() report me detect hui policy violations ki list return karta hai.
+Matlab:-
+Ye method batata hai ki kaun-kaun se users ne policies break ki hain.
+---------------------------------------------------------------------------------------------------
+2️⃣ getSummary() method Kya hai?
+getSummary() compliance report ka short overview deta hai.
+Matlab:-
+Ye method batata hai ki kitne users check hue aur kitni violations mili.
+public String getSummary() {
+
+    int totalUsers = identities.size();
+    int totalViolations = violations.size();
+
+    String summary = "Total Users Checked: " + totalUsers +
+                     "\nTotal Violations Found: " + totalViolations;
+
+    return summary;
+}
+Output Example:-
+Total Users Checked: 2
+Total Violations Found: 1
+----------------------------------------------------------------------------------------------------
+()AuditLogManager IAM / SailPoint governance system me ek class / component hota hai 
+jo system ke saare important events ko record (log) karta hai.
+Simple words me:-
+👉 AuditLogManager ka kaam hai system me kya-kya hua uska history store karna.
+Ye logs security team aur auditors check karte hain.
+Example events:-
+User ne access request ki
+Manager ne approval diya
+Kisi rule ne violation detect kiya
+Account create ya delete hua
+Ye sab audit log me save hota hai.
+
+1️⃣ AuditLogManager kya karta hai?
+Main kaam:-
+System events record karna
+Audit trail maintain karna
+Compliance requirements fulfill karna
+Security investigation me help karna
+Companies ko compliance follow karna padta hai jaise
+SOX (Sarbanes-Oxley Act), GDPR (General Data Protection Regulation),
+aur HIPAA (Health Insurance Portability and Accountability Act) — in sab ke liye audit logs zaroori hote hain.
+
+2️⃣ AuditLogManager ke Important Methods:-
+1️⃣ logEvent():-
+System me jo event hua usko log karta hai.
+
+2️⃣ getLogs():-
+Saare logs ko return karta hai.
+Output:-
+User created
+Access approved
+Role assigned
+
+3️⃣ queryLogs():-
+Specific log search karta hai.
+
+3️⃣ Simple IAM Example:-
+public class AuditLogManager {
+
+    public void logEvent(String event) {
+        System.out.println("Audit Log: " + event);
+    }
+
+    public void getLogs() {
+        System.out.println("User created");
+        System.out.println("Access approved");
+        System.out.println("Role assigned");
+    }
+
+    public void queryLogs(String keyword) {
+
+        String[] logs = {
+            "User created",
+            "Access approved",
+            "Finance role assigned"
+        };
+
+        for(String log : logs) {
+
+            if(log.contains(keyword)) {
+                System.out.println("Matched Log: " + log);
+            }
+
+        }
+    }
+
+    public static void main(String[] args) {
+
+        AuditLogManager audit = new AuditLogManager();
+
+        audit.logEvent("User requested Finance access");
+
+        audit.getLogs();
+
+        audit.queryLogs("Finance");
+    }
+}
+
+Output:-
+Audit Log: User requested Finance access
+User created
+Access approved
+Role assigned
+Matched Log: Finance role assigned
+--------------------------------------------------------------------------------------------------
+1️⃣ Access Request Lifecycle (SailPoint Real Code)
+IdentityRequest create aur submit
+import sailpoint.object.Identity;
+import sailpoint.object.IdentityRequest;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.api.RequestManager;
+
+// identity fetch
+Identity identity = context.getObjectByName(Identity.class, "emp123");
+
+// provisioning plan
+ProvisioningPlan plan = new ProvisioningPlan();
+plan.setIdentity(identity);
+
+// identity request
+IdentityRequest request = new IdentityRequest();
+request.setIdentity(identity);
+request.setPlan(plan);
+
+// submit request
+RequestManager requestManager = new RequestManager(context);
+requestManager.submit(request);
+
+// request status
+String status = request.getState();
+log.info("Request Status: " + status);
+Request cancel
+RequestManager requestManager = new RequestManager(context);
+requestManager.cancel(request);
+Request fetch by ID
+IdentityRequest req = context.getObjectById(
+    IdentityRequest.class,
+    "0a123456789"
+);
+2️⃣ ProvisioningPlan (Real SailPoint Provisioning)
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+
+ProvisioningPlan plan = new ProvisioningPlan();
+plan.setIdentity(identity);
+
+// account request
+AccountRequest accReq = new AccountRequest();
+accReq.setApplication("FinanceApp");
+accReq.setOperation(AccountRequest.Operation.Create);
+
+// attribute request
+AttributeRequest attrReq =
+  new AttributeRequest("role",
+                       ProvisioningPlan.Operation.Add,
+                       "Finance_Read");
+
+accReq.add(attrReq);
+plan.add(accReq);
+
+// provisioning execute
+Provisioner provisioner = new Provisioner(context);
+provisioner.execute(plan);
+
+👉 Ye SailPoint me actual provisioning engine call hai.
+
+3️⃣ Approval Matrix (Real SailPoint Workflow)
+
+SailPoint me approvals usually workflow + approval step se handle hote hain.
+
+Example workflow approval rule call:
+
+import sailpoint.object.Identity;
+import sailpoint.workflow.Approval;
+
+Identity manager = identity.getManager();
+
+Approval approval = new Approval();
+approval.setOwner(manager);
+approval.setDescription("Access approval for FinanceApp");
+
+workflowContext.addApproval(approval);
+
+Manager notification rule:
+
+import sailpoint.api.Emailer;
+import sailpoint.object.EmailTemplate;
+
+EmailTemplate template =
+ context.getObjectByName(
+     EmailTemplate.class,
+     "Access Request Notification"
+ );
+
+Emailer emailer = new Emailer(context);
+emailer.sendEmailNotification(
+        template,
+        manager,
+        args
+);
+
+4️⃣ Control Framework (Policy Check):-
+SailPoint policy evaluation:-
+
+import sailpoint.api.PolicyEvaluator;
+import sailpoint.object.PolicyViolation;
+
+PolicyEvaluator evaluator = new PolicyEvaluator(context);
+
+List violations =
+ evaluator.evaluate(identity);
+
+if(violations != null && !violations.isEmpty()){
+
+    for(Object v : violations){
+
+        PolicyViolation violation =
+          (PolicyViolation)v;
+
+        log.info("Violation: "
+          + violation.getPolicyName());
+    }
+
+}
+👉 Ye SoD policy violation detection ke liye use hota hai.
+
+5️⃣ Regulatory Alignment (Audit Logging):-
+--Audit log record karna:-
+
+import sailpoint.server.Auditor;
+
+Auditor.logAs(
+    "AccessRequest",
+    identity.getName(),
+    "FinanceApp access requested"
+);
+
+--Audit logs retrieve:-
+import sailpoint.object.AuditEvent;
+
+QueryOptions qo = new QueryOptions();
+
+qo.addFilter(
+    Filter.eq("action", "AccessRequest")
+);
+
+List logs =
+ context.getObjects(
+     AuditEvent.class,
+     qo
+);
+-----------------------------------------------------------------------------------------------------

@@ -1,0 +1,299 @@
+()ResourceObject:-
+ResourceObject क्या है और क्या करता है?
+जब SailPoint IIQ किसी बाहरी एप्लीकेशन (जैसे Active Directory, Database, SAP आदि) से डेटा को खींचता है 
+(जिन्हें हम Aggregation कहते हैं), तो उस बाहरी सिस्टम का डेटा सीधे IIQ में नहीं आ जाता।
+कनेक्टर सबसे पहले उस बाहरी डेटा को एक न्यूट्रल (Neutral) जावा ऑब्जेक्ट में बदलता है, जिसे ResourceObject कहते हैं।
+आसान शब्दों में: यह एक कच्चा माल (Raw Data Container) है। मान लो Active Directory में एक यूज़र है "अमित"। जब AD कनेक्टर अमित का डेटा लाएगा, 
+तो वह उसे ResourceObject के अंदर पैक कर देगा।
+इसका काम: यह बाहरी एप्लीकेशन के अकाउंट की जानकारी (जैसे SamAccountName, Email, Status) को की-वैल्यू पेयर (Key-Value Pair) में अपने अंदर रखता है। 
+बाद में IIQ इस ResourceObject को पढ़कर IIQ का असली Link (Account) या Identity (User Cube) बनाता है।
+
+स्थिति A: जब आप Customization Rule में हैं (एक स्पेसिफिक यूज़र)
+ex:-// यह कोड केवल उस एक स्पेसिफिक यूज़र के लिए चलेगा जो अभी प्रोसेस हो रहा है
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="KKR_Customization_SingleUser_Rule" type="Customization">
+  <Description>यह रूल एग्रीगेशन के समय हर एक स्पेसिफिक यूज़र के रिसोर्स ऑब्जेक्ट को कस्टमाइज़ करने के लिए चलता है।</Description>
+  <Source>
+  import sailpoint.object.ResourceObject;
+  import org.apache.log4j.Logger;
+
+  // सही तरीके से रूल के नाम का लॉगर बनाना
+  Logger customLog = Logger.getLogger("identityiq.rule.KKR_Customization_SingleUser_Rule");
+
+  try {
+      // जांचें कि ऑब्जेक्ट मौजूद है या नहीं
+      if (object != null) {
+          
+          // 1. इस समय प्रोसेस हो रहे स्पेसिफिक यूज़र की यूनिक आईडी (Native Identity) निकालना
+          String currentNativeIdentity = object.getIdentity(); 
+          
+          // 2. उस यूज़र का ईमेल निकालना
+          String currentEmail = object.getStringAttribute("email");
+          String status = object.getStringAttribute("status");
+
+          if (customLog.isDebugEnabled()) {
+              customLog.debug("=== [SINGLE USER PROCESS] ===");
+              customLog.debug("अभी इस यूज़र का अकाउंट प्रोसेस हो रहा है: " + currentNativeIdentity);
+              customLog.debug("यूज़र का ईमेल है: " + currentEmail);
+          }
+
+          // लॉजिक उदाहरण: अगर टारगेट सिस्टम में स्टेटस 'Terminated' है, तो IIQ में डिसेबल मार्क करें
+          if ("Terminated".equalsIgnoreCase(status)) {
+              object.setAttribute("IIQDisabled", true);
+              if (customLog.isDebugEnabled()) {
+                  customLog.debug("यूज़र " + currentNativeIdentity + " टर्मिनेटेड है, इसलिए IIQDisabled=true सेट किया गया।");
+              }
+          }
+      }
+  } catch (Exception e) {
+      customLog.error("Customization Rule में एरर आया: " + e.getMessage(), e);
+  }
+
+  // इस स्पेसिफिक यूज़र के बदले हुए ऑब्जेक्ट को वापस SailPoint को सौंपना
+  return object;
+  </Source>
+</Rule>
+
+
+2. सारे यूज़र्स के लिए ResourceObject कैसे काम करता है?
+जब आप SailPoint IIQ में पूरा Account Aggregation Task चलाते हैं (ताकि बाहरी ऐप के सारे यूज़र्स IIQ में आ जाएं), तब कनेक्टर बैकग्राउंड में एक लूप (Loop) चलाता है।
+यह लूप टारगेट सिस्टम से एक-एक करके सारे यूज़र्स को उठाता है।
+हर एक यूज़र के लिए अलग से एक नया ResourceObject बनता है।
+यानी, अगर आपके टारगेट ऐप में 500 यूज़र्स हैं, तो एग्रीगेशन टास्क के दौरान 500 अलग-अलग ResourceObject बारी-बारी से (One by One) बनेंगे और प्रोसेस होंगे।
+ex:-// मान लो डेटाबेस से सारे यूज़र्स का रिज़ल्ट (ResultSet rs) मिला
+import sailpoint.object.ResourceObject;
+import org.apache.log4j.Logger;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+// इस पूरे एग्रीगेशन प्रोसेस के लिए लॉगर बनाना
+Logger bulkLog = Logger.getLogger("identityiq.connector.KKR_BulkUser_Aggregation");
+
+// SailPoint को वापस करने के लिए सारे यूज़र्स के ऑब्जेक्ट्स की एक लिस्ट बनाई
+List allResourceObjectsList = new ArrayList();
+
+PreparedStatement pstmt = null;
+ResultSet rs = null;
+
+try {
+    // 'connection' ऑब्जेक्ट SailPoint कनेक्टर द्वारा हमें पहले से मिलता है
+    String sql = "SELECT emp_id, first_name, email_id, account_status FROM target_employee_table";
+    pstmt = connection.prepareStatement(sql);
+    rs = pstmt.executeQuery();
+
+    bulkLog.debug("टारगेट डेटाबेस से यूज़र्स का डेटा सफलतापूर्वक निकाल लिया गया है। लूप शुरू हो रहा है...");
+
+    // बैकग्राउंड लूप: यह डेटाबेस की हर एक रो (Row) पर एक-एक करके जाएगा
+    while (rs.next()) {
+        
+        // ------------------------------------------------------------------
+        // हर एक यूज़र के लिए बिल्कुल नया और अलग डिब्बा (ResourceObject) बनेगा
+        // ------------------------------------------------------------------
+        ResourceObject ro = new ResourceObject();
+        
+        // 1. इस स्पेसिफिक यूज़र की ID और टाइप सेट की
+        String empId = rs.getString("emp_id");
+        ro.setIdentity(empId); 
+        ro.setObjectType("account");
+        
+        // 2. इस स्पेसिफिक यूज़र के बाकी एट्रिब्यूट्स सेट किए
+        ro.setAttribute("firstName", rs.getString("first_name"));
+        ro.setAttribute("email", rs.getString("email_id"));
+        
+        // 3. स्टेटस चेक करके IIQDisabled सेट करना
+        String dbStatus = rs.getString("account_status");
+        if ("Inactive".equalsIgnoreCase(dbStatus)) {
+            ro.setAttribute("IIQDisabled", true);
+        }
+
+        if (bulkLog.isDebugEnabled()) {
+            bulkLog.debug("-- [BULK PROCESS] नया ResourceObject तैयार किया गया ID के लिए: " + empId);
+        }
+
+        // 4. इस एक यूज़र के तैयार ऑब्जेक्ट को हमारी मेन लिस्ट में डाल दिया
+        allResourceObjectsList.add(ro);
+        
+        // लूप बंद होगा और जब अगली बार 'while' चलेगा, तो 'ro' पुराने यूज़र का डेटा भूलकर 
+        // अगले यूज़र के लिए फिर से एकदम नया फ्रेश ऑब्जेक्ट (ResourceObject ro = new ResourceObject()) बनाएगा।
+    }
+
+    if (bulkLog.isDebugEnabled()) {
+        bulkLog.debug("लूप खत्म! कुल तैयार किए गए यूज़र ऑब्जेक्ट्स: " + allResourceObjectsList.size());
+    }
+
+} catch (SQLException e) {
+    bulkLog.error("डेटाबेस से यूज़र्स का डेटा रीड करने में एरर आया: " + e.getMessage(), e);
+} finally {
+    // रिसोर्सेज को सुरक्षित रूप से बंद करना
+    if (rs != null) { try { rs.close(); } catch (SQLException e) {} }
+    if (pstmt != null) { try { pstmt.close(); } catch (SQLException e) {} }
+}
+
+// अंत में यह लिस्ट SailPoint IIQ को दे दी जाती है ताकि वह सभी 500 या जितने भी यूज़र्स हैं, उन्हें प्रोसेस कर सके
+return allResourceObjectsList;
+---------------------------------------------------------all methoods of resource object-----------------------------------------------------------------------
+()1. object.getObjectType():-
+यह मेथड आपको यह बताता है कि यह ResourceObject किस तरह का डेटा अपने अंदर रखे हुए है।
+यह क्या करता है: यह बाहरी एप्लीकेशन के Schema Type को लौटाता है (जैसे यह "account" है या "group")।
+इसका उपयोग क्यों करते हैं: जब आप कोई रूल (जैसे Customization Rule) लिख रहे होते हैं, 
+तो आपको यह चेक करना पड़ता है कि जो डेटा आ रहा है वो किसी यूज़र का अकाउंट है या कोई ग्रुप/एंटाइटेलमेंट है, ताकि आप उसी हिसाब से अपना लॉजिक चला सकें।
+
+2. object.setAttribute("IIQDisabled", true);
+यह लाइन SailPoint IIQ में किसी अकाउंट के स्टेटस (Status - Enabled/Disabled) को कंट्रोल करने के लिए एक जादुई की (Magic Key) की तरह काम करती है।
+यह क्या करता है: यह ResourceObject के अंदर एक स्पेशल एट्रिब्यूट सेट करता है जिसका नाम है IIQDisabled और उसकी वैल्यू को true कर देता है।
+इसका असर क्या होता है: जब SailPoint इस ResourceObject को प्रोसेस करके IIQ में Link (अकाउंट) बनाएगा या अपडेट करेगा, 
+तो वह समझ जाएगा कि यह अकाउंट Disabled (निष्क्रिय) स्थिति में है। IIQ की स्क्रीन पर उस अकाउंट के आगे एक छोटा सा 'लाल निशान' या 'Disabled' का स्टेटस दिखने लगेगा।
+कब इस्तेमाल करते हैं: मान लो आपके टारगेट डेटाबेस में स्टेटस 'Active' या 'Inactive' लिखा आता है। आप चाहते हैं कि अगर डेटाबेस में 'Inactive' आए,
+ तो SailPoint में भी वह अकाउंट Disabled दिखे। तब आप Customization Rule में यह कोड लिखते हैं।
+ 
+()sare methods of reourceobject:-
+()isEmpty():-
+क्या करता है: यह चेक करता है कि क्या इस ऑब्जेक्ट के अंदर कोई भी एट्रिब्यूट मौजूद है या यह पूरी तरह से खाली है।
+Java
+if(object.isEmpty()) {
+    log.error("No data found in this resource object!");
+}
+
+()toXml():-
+क्या करता है: इस पूरे ResourceObject को SailPoint के XML फॉर्मेट (String) में बदल देता है। यह डीबगिंग या लॉग्स प्रिंट करने के लिए सबसे बेस्ट मेथड है।
+Java
+log.debug("Full Resource Object Data: " + object.toXml());
+
+()isIncremental() / setIncremental(boolean b):-
+क्या करता है: यह चेक या सेट करता है कि यह ऑब्जेक्ट किसी डेल्टा/इन्क्रीमेंटल एग्रीगेशन (Delta Aggregation) का हिस्सा है या नहीं।
+
+()isMissing() / setMissing(boolean b):-
+क्या करता है: यह दर्शाता है कि क्या यह ऑब्जेक्ट टारगेट सिस्टम से गायब (Missing) है।
+Java
+if(object.isMissing()) {
+    log.warn("Account is missing from target application!");
+}
+
+()isDelete() / setDelete(boolean b):-
+क्या करता है: यदि इसे true सेट कर दिया जाए, तो SailPoint समझ जाता है कि यह अकाउंट बाहरी सिस्टम से डिलीट हो चुका है, 
+और वह IIQ में भी उस Link को डिलीट कर देता है (इसे अक्सर 'Deleted Account Aggregation' में यूज़ करते हैं)।
+Java
+object.setDelete(true); // IIQ इस अकाउंट को डिलीट प्रोसेस करेगा
+
+()removeAttribute(String name) या remove(String name):-
+क्या करता है: ऑब्जेक्ट के अंदर से किसी स्पेसिफिक एट्रिब्यूट को पूरी तरह से डिलीट (Remove) कर देता है।
+Java
+object.removeAttribute("temporaryPassword");
+
+()setAttribute(String name, Object value) या put(String name, Object value)
+क्या करता है: रिसोर्स ऑब्जेक्ट में कोई नया एट्रिब्यूट जोड़ता है या पुराने एट्रिब्यूट की वैल्यू को बदल देता है।
+Java
+object.setAttribute("displayName", "Amit Kumar");
+object.setAttribute("IIQDisabled", true); // IIQ में अकाउंट को डिसेबल मार्क करने के लिए
+
+()getAttributes():-
+क्या करता है: इस ऑब्जेक्ट के अंदर मौजूद सभी एट्रिब्यूट्स को Attributes (जो कि एक Map है) के रूप में पूरा का पूरा बाहर निकाल देता है।
+Java
+Attributes allAttrs = object.getAttributes();
+
+()getBooleanAttribute(String name):-
+क्या करता है: एट्रिब्यूट की वैल्यू को boolean (true/false) के रूप में देता है।
+Java
+boolean isManager = object.getBooleanAttribute("isManager");
+
+()getBooleanAttribute(String name):-
+क्या करता है: एट्रिब्यूट की वैल्यू को boolean (true/false) के रूप में देता है।
+Java
+boolean isManager = object.getBooleanAttribute("isManager");
+
+()getListAttribute(String name) या getList(String name):-
+क्या करता है: अगर कोई एट्रिब्यूट मल्टी-वैल्यूड (Multi-valued) है (जैसे memberOf या roles), तो उसकी सभी वैल्यूज को जावा List के रूप में देता है।
+Java
+List groups = object.getListAttribute("memberOf");
+
+()getStringAttribute(String name) या getString(String name):-
+क्या करता है: एट्रिब्यूट की वैल्यू को String फॉर्मेट में सीधे निकाल कर देता है (सबसे ज़्यादा यूज़ होने वाला मेथड)।
+Java
+String email = object.getStringAttribute("email");
+
+()getAttribute(String name):-
+क्या करता है: किसी भी एट्रिब्यूट की वैल्यू को एक साधारण Object के रूप में लौटाता है।
+Java
+Object dept = object.getAttribute("department");
+
+()getUuid() / setUuid(String uuid):-
+क्या करता है: बाहरी सिस्टम का यूनिवर्सल यूनिकIdentifier (UUID) गेट या सेट करता है (जैसे AD का objectGUID)।
+Java
+String guid = object.getUuid();
+
+()getObjectType() / setObjectType(String type):-
+क्या करता है: यह बताता है कि यह ऑब्जेक्ट किस टाइप का है (जैसे: account या group)।
+Java
+String type = object.getObjectType(); // returns "account"
+
+()getIdentity() / setIdentity(String identity):-
+क्या करता है: इस अकाउंट की मुख्य पहचान (Native Identity/Unique Identifier) देता है या सेट करता है 
+(जैसे: Active Directory का distinguishedName या डेटाबेस की Employee_ID)।
+Java
+String nativeId = object.getIdentity(); 
+log.debug("Native Identity of account: " + nativeId);
+
+--------------------------------------------------------------------------------------------------------------------
+()2. Aggregation Task (Data ka SailPoint mein aana):-
+Yeh kahan hota hai? Jab aapka Account Aggregation Task chalta hai, 
+toh SailPoint ka Connector target system se saara raw data khinch kar lata hai.
+Iska data kahan rehta hai? Yeh data temporary roop se ResourceObject class ke andar store hota hai. 
+SailPoint is ResourceObject (jo AD se abhi-abhi aaya hai) ko user ke purane Link object 
+(jo SailPoint ke database mein pehle se save tha) ke sath compare (match) karta hai.
+
+import sailpoint.object.Link;
+import sailpoint.object.ResourceObject;
+import sailpoint.object.Identity;
+import sailpoint.tools.Util;
+
+// Maan lijiye yeh dono objects aapko rule ya task ke context se mil rahe hain
+// Link link = ... (SailPoint ke database mein save purana account data)
+// ResourceObject rObj = ... (AD se aggregation ke dauran aaya naya data)
+
+if (link != null && rObj != null) {
+
+    // 1. LINK OBJECT (Old Data from SailPoint DB)
+    // Link ke andar se purana attribute nikalna
+    String oldDepartment = (String) link.getAttribute("department");
+    String oldTitle = (String) link.getAttribute("title");
+
+    // 2. RESOURCE OBJECT (New Data coming from Active Directory)
+    // ResourceObject ke andar se naya incoming attribute nikalna
+    String newDepartment = (String) rObj.getAttribute("department");
+    String newTitle = (String) rObj.getAttribute("title");
+
+    System.out.println("--- Comparing Link (Old) vs ResourceObject (New AD Data) ---");
+
+    // -------------------------------------------------------------------------
+    // Scenario 1: Department Compare Karna
+    // -------------------------------------------------------------------------
+    // Util.nullSafeEquality use karna best practice hai taaki null hone par crash na ho
+    if (!Util.nullSafeEquality(oldDepartment, newDepartment)) {
+        
+        System.out.println("ALERT: Department badal gaya hai!");
+        System.out.println("Old Data (Link DB): " + oldDepartment);
+        System.out.println("New Data (ResourceObject AD): " + newDepartment);
+        
+        // Aap yahan apna custom logic likh sakte hain
+    } else {
+        System.out.println("Department mein koi badlav nahi hai.");
+    }
+
+    // -------------------------------------------------------------------------
+    // Scenario 2: Job Title Compare Karna
+    // -------------------------------------------------------------------------
+    if (!Util.nullSafeEquality(oldTitle, newTitle)) {
+        
+        System.out.println("ALERT: Job Title badal gaya hai!");
+        System.out.println("Old Data (Link DB): " + oldTitle);
+        System.out.println("New Data (ResourceObject AD): " + newTitle);
+        
+    } else {
+        System.out.println("Job Title mein koi badlav nahi hai.");
+    }
+}

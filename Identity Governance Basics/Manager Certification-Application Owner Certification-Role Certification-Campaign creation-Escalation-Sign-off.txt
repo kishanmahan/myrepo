@@ -1,0 +1,1579 @@
+--------------------------------------------------------------------------------------------------------
+📊 5️⃣ Certification (Access Review):-
+Manager Certification
+Application Owner Certification
+Role Certification
+Campaign creation
+Escalation
+Sign-off
+------------------------------------->>>>>>>>>>>>>>>>>>>>>>
+1️⃣ Access Review / Certification kya hai?
+Access Review / Certification ka matlab:-
+➡ Ye ek process hai jisme manager ya reviewer check karta hai ki user ke access sahi hai ya nahi.
+Example: Rahul ko FinanceRole mila hai
+Manager check karega: “Kya Rahul ko ye access abhi bhi chahiye?”
+Agar nahi chahiye → revoke kar denge
+Agar chahiye → approve kar denge.
+
+2️⃣ Manager Certification:-
+Manager ke liye specially SailPoint UI me task generate hota hai
+Manager review karta hai sab team members ke access
+Approve / Revoke kar sakta hai.
+
+3️⃣ Automated Flow:-
+SailPoint automatically Access Review campaigns generate karta hai
+Manager ko notify karta hai
+Manager login karke Approve / Revoke karta hai
+Provisioning engine automatically access update kar deta hai.
+
+1️⃣ Campaign kya hai?
+Kya hai:
+Campaign basically ek review/ certification process ka container hai.
+Matlab, jab company ko decide karna hota hai ki “kaun kaun se users ke kaun kaun se access sahi hai
+aur kaun se remove karne chahiye”, to us process ko ek Campaign ke andar organize kiya jata hai.
+Kya karti hai:-
+Kaun se users ko review karna hai (scope)
+Kaun se access ya entitlements check karne hai
+Review ka start aur end date define karna
+Kaun kaun reviewers involved hain (manager, application owner, etc.)
+→ Basically Campaign ek review session ka master object hai.
+
+2️⃣ ReviewTask kya hai?
+Kya hai:-
+Jab Campaign start hota hai, to SailPoint automatically ReviewTask create karta hai.
+Ye task ek specific reviewer ko assign hota hai.
+Kya karti hai:-
+Ek reviewer ko bolti hai “tu in users ke access check kar, approve ya revoke kar.”
+Task ke andar ReviewItems hote hain, matlab actual permissions ya entitlements jo review karni hai.
+Track karta hai ki task complete hua ya pending hai.
+
+3️⃣ ReviewItem kya hai?
+Kya hai:-
+ReviewItem ek specific access/ entitlement ka review unit hai.
+Matlab, ye smallest element hai jise reviewer approve ya revoke karta hai.
+Kya karti hai:-
+Example: User “John” ko “FinanceGroup” access hai → ye ek ReviewItem banega.
+Reviewer ke paas options hote hain: Approve / Revoke / Do Nothing / Delegate.
+Status update karta hai ki ye access ok hai ya remove karna hai.
+
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Campaign;
+import sailpoint.object.ReviewTask;
+import sailpoint.object.ReviewItem;
+import sailpoint.object.Identity;
+import sailpoint.object.Entitlement;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Date;
+
+public class AccessReviewExample {
+
+    // 1️⃣ Campaign Create
+    public Campaign createCampaign(SailPointContext context, String name, Date startDate, Date endDate) throws Exception {
+        Campaign campaign = new Campaign();
+        campaign.setName(name);
+        campaign.setDescription("Access review campaign");
+        campaign.setStartDate(startDate);
+        campaign.setEndDate(endDate);
+        context.saveObject(campaign);
+        context.commitTransaction();
+        System.out.println("Campaign created: " + campaign.getName());
+        return campaign;
+    }
+
+    // 2️⃣ ReviewTask Create
+    public ReviewTask createReviewTask(SailPointContext context, Campaign campaign, Identity reviewer, List<Identity> users) throws Exception {
+        ReviewTask task = new ReviewTask();
+        task.setCampaign(campaign);
+        task.setReviewer(reviewer);
+        task.setDescription("Review task for " + reviewer.getDisplayName());
+
+        List<ReviewItem> items = new ArrayList<>();
+        for (Identity user : users) {
+            for (Entitlement ent : user.getEntitlements()) {
+                ReviewItem item = new ReviewItem();
+                item.setIdentity(user);
+                item.setEntitlement(ent);
+                item.setStatus("Pending");
+                items.add(item);
+            }
+        }
+
+        task.setItems(items);
+        context.saveObject(task);
+        context.commitTransaction();
+        System.out.println("ReviewTask created for: " + reviewer.getDisplayName());
+        return task;
+    }
+
+    // 3️⃣ ReviewItem Status Update
+    public void updateReviewItemStatus(SailPointContext context, ReviewItem item, String action) throws Exception {
+        if(action.equalsIgnoreCase("Approve")) item.setStatus("Approved");
+        else if(action.equalsIgnoreCase("Revoke")) item.setStatus("Revoked");
+        else item.setStatus("Pending");
+
+        context.saveObject(item);
+        context.commitTransaction();
+        System.out.println("ReviewItem updated: " + item.getIdentity().getDisplayName() + " - " + item.getEntitlement().getName() + " = " + item.getStatus());
+    }
+
+    // 4️⃣ Full Flow
+    public void runAccessReview(SailPointContext context) throws Exception {
+        // Campaign
+        Campaign campaign = createCampaign(context, "Finance Access Review", new Date(), new Date(System.currentTimeMillis() + 7*24*60*60*1000));
+
+        // Reviewer & Users
+        Identity manager = context.getObjectByName(Identity.class, "manager.john");
+        List<Identity> users = new ArrayList<>();
+        users.add(context.getObjectByName(Identity.class, "user.alice"));
+        users.add(context.getObjectByName(Identity.class, "user.bob"));
+
+        // ReviewTask
+        ReviewTask task = createReviewTask(context, campaign, manager, users);
+
+        // Approve/Revoke Logic
+        for(ReviewItem item : task.getItems()){
+            if(item.getEntitlement().getName().equals("FinanceGroup"))
+                updateReviewItemStatus(context, item, "Revoke");
+            else
+                updateReviewItemStatus(context, item, "Approve");
+        }
+
+        System.out.println("Access review campaign completed: " + campaign.getName());
+    }
+}
+/////////////*
+()1️⃣ campaign.setName(name); Kya hai?
+setName() ek setter method hai.
+Kya karta hai
+Campaign ka naam set karta hai.
+Example:-
+campaign.setName("Finance Access Review");
+Matlab:-
+Campaign ka naam database me Finance Access Review save ho jayega.
+
+()2️⃣ campaign.setDescription("Access review campaign"); Kya hai?
+Ye bhi setter method hai.
+Kya karta hai?
+Campaign ka description (information) set karta hai.
+Example:-
+campaign.setDescription("Review of all finance users access");
+Matlab:-
+Ye batata hai campaign kis purpose ke liye banaya gaya hai.
+
+()3️⃣ campaign.setStartDate(startDate); Kya hai?
+Setter method.
+Kya karta hai?
+Campaign kab start hoga ye define karta hai.
+Example:-
+campaign.setStartDate(new Date());
+Matlab:-
+Aaj se campaign start ho jayega.
+
+()4️⃣ campaign.setEndDate(endDate); Kya hai?
+Setter method.
+Kya karta hai?
+Campaign kab finish hoga ye define karta hai.
+Example:-
+campaign.setEndDate(nextWeekDate);
+Matlab:-
+Campaign 7 din baad close ho jayega.
+
+()5️⃣ context.saveObject(campaign); Kya hai?
+SailPointContext ka important method.
+Kya karta hai?
+Object ko SailPoint database me save karta hai.
+Example:-
+context.saveObject(campaign);
+Matlab:-
+Campaign database me create ho gaya.
+
+()6️⃣ task.setCampaign(campaign); Kya hai?
+Setter method.
+Kya karta hai
+ReviewTask ko kis campaign ke andar hai ye set karta hai.
+Example:-
+Campaign → Finance Review
+     |
+     └ ReviewTask → Manager Task
+Matlab:-
+Ye task Finance Campaign ke andar aayega.
+
+()7️⃣ task.setReviewer(reviewer); Kya hai?
+Setter method.
+Kya karta hai?
+Kaun review karega ye define karta hai.
+Example:-
+task.setReviewer(manager);
+Matlab:-
+Manager ko review karna hai:-
+User Access Review → Manager
+
+()8️⃣ task.setDescription("Review task for " + reviewer.getDisplayName()); Kya hai?
+Setter method.
+Kya karta hai?
+Task ka description set karta hai.
+Example:-
+Review task for John Manager
+
+()9️⃣ user.getEntitlements()
+Kya hai?
+Getter method.
+Kya karta hai/
+User ke saare access / permissions return karta hai.
+Example:-
+User ke paas:-
+FinanceGroup
+HRGroup
+EmailAccess
+
+Code:-
+user.getEntitlements();
+Output:-
+List<Entitlement>
+
+()🔟 item.setIdentity(user); Kya hai?
+Setter method.
+Kya karta hai?
+ReviewItem kis user ka hai ye set karta hai.
+Example:-
+User = Alice
+Matlab:-
+ReviewItem → Alice ka access review.
+
+11️⃣ item.setEntitlement(ent);
+1️⃣ Kya hai?
+Ye setter method hai.
+Setter ka matlab:-
+Value ko object ke andar set karna
+2️⃣ Ye kya karta hai?
+Ye ReviewItem ko batata hai ki kaunsa access (entitlement) review ho raha hai.
+Matlab:-
+User ka kaunsa permission review karna hai
+
+()1️⃣2️⃣ item.setStatus("Pending");
+Kya hai?
+Setter method.
+Kya karta hai?
+Review ka initial status set karta hai.
+Possible Status
+Pending
+Approved
+Revoked
+Delegated
+
+Example:-
+Alice → FinanceGroup → Pending
+
+1️⃣3️⃣ items.add(item); Kya hai?
+ArrayList method.
+Kya karta hai
+ReviewItem ko list me add karta hai.
+
+Example:-
+List banega:-
+ReviewItem1
+ReviewItem2
+ReviewItem3
+
+1️⃣4️⃣ task.setItems(items); Kya hai?
+Setter method.
+Kya karta hai?
+ReviewTask ke andar saare ReviewItems attach karta hai.
+Example:-
+Task
+  ├ ReviewItem1
+  ├ ReviewItem2
+  └ ReviewItem3
+
+1️⃣5️⃣ context.saveObject(task); Kya hai?
+Database method.
+Kya karta hai?
+ReviewTask ko SailPoint database me save karta hai.
+Matlab:-
+Task create ho gaya.
+
+1️⃣6️⃣ task.getItems() Kya hai?
+Getter method.
+Kya karta hai?
+Task ke saare ReviewItems return karta hai.
+
+Example:-
+task.getItems()
+
+Output:-
+[Item1, Item2, Item3]
+
+1️⃣7️⃣ item.getEntitlement().getName() Kya hai?
+2 getter methods chain me.
+Kya karta hai?
+1️⃣ Entitlement object nikalta hai
+2️⃣ uska naam return karta hai
+
+Example:-
+FinanceGroup
+HRGroup
+
+1️⃣8️⃣ context.saveObject(item); Kya hai?
+Database method.
+Kya karta hai?
+ReviewItem ke status update ko database me save karta hai.
+Example:-
+Alice → FinanceGroup → Approved
+
+1️⃣9️⃣ item.getIdentity().getDisplayName() Kya hai?
+Getter chain.
+Kya karta hai
+User ka display name return karta hai.
+
+Example:-
+Alice Johnson
+Bob Smith
+
+2️⃣0️⃣ item.getStatus() Kya hai?
+Getter method.
+
+Kya karta hai?
+ReviewItem ka current status return karta hai.
+
+Example:-
+Approved
+Revoked
+Pending
+
+1️⃣ user.getEntitlements() database se return karta hai kya?
+Short answer: Haan (indirectly).
+Kaise?
+SailPoint me jab tum user object load karte ho:
+Identity user = context.getObjectByName(Identity.class, "alice");
+Ye kya karta hai?
+1️⃣ SailPoint database se user data load karta hai
+2️⃣ Uske saath accounts, roles, entitlements bhi load ho jate hain
+Phir jab tum likhte ho:-
+user.getEntitlements();
+
+Ye kya karta hai?
+User ke saare access / permissions return karta hai.
+Example    database me:-
+User-------Entitlement
+Alice------FinanceGroup
+Alice------EmailAccess
+Alice------HRPortal
+
+Code:-
+List<Entitlement> list = user.getEntitlements();
+
+Output:-
+FinanceGroup
+EmailAccess
+HRPortal
+
+2️⃣ Getter Setter predefined hote hain kya?
+2 cases hote hain:-
+
+Case 1️⃣ SailPoint Objects (predefined);-
+Jaise:-
+Identity
+Campaign
+ReviewTask
+ReviewItem
+Application
+Entitlement
+In classes me getter setter already predefined hote hain.
+Example:-
+
+campaign.setName();
+campaign.getName();
+
+task.setReviewer();
+task.getReviewer();
+
+item.setStatus();
+item.getStatus();
+Ye sab SailPoint framework ne pehle se banaye hote hain.
+Tum sirf use karte ho.
+---------------------------
+Case 2️⃣ Apni Custom Class:-
+Agar tum khud class banao:-
+public class Employee {
+
+    private String name;
+    private int age;
+
+}
+To getter setter khud banana padega.
+Example:-
+public String getName(){
+    return name;
+}
+
+public void setName(String name){
+    this.name = name;
+}
+---------------
+*/////////////
+
+()Application Owner Certification kya hai?
+--1️⃣ Application Owner Certification kya hai
+
+Application Owner Certification ka matlab:
+
+➡ Application ka owner check karta hai ki kis user ke paas us application ka access hona chahiye ya nahi.
+Example:-
+Application: SAP
+
+Application Owner: Rohit
+
+Users:-
+Rahul
+Amit
+Priya
+
+Ab Rohit check karega:-
+Rahul → SAP access ✔
+Amit → SAP access ❌ revoke
+Priya → SAP access ✔
+
+️⃣ Application Owner Certification Processor
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Campaign;
+import sailpoint.object.Identity;
+import sailpoint.object.Application;
+import sailpoint.object.ReviewTask;
+import sailpoint.object.ReviewItem;
+import sailpoint.object.QueryOptions;
+import sailpoint.object.Filter;
+import sailpoint.tools.GeneralException;
+import java.util.List;
+import java.util.Iterator;
+public class ApplicationOwnerCertificationProcessor {
+
+    private SailPointContext context;
+
+    public ApplicationOwnerCertificationProcessor(SailPointContext context) {
+        this.context = context;
+    }
+
+    public void processCertification(String campaignName) throws GeneralException {
+
+        Campaign campaign = context.getObjectByName(Campaign.class, campaignName);
+
+        if (campaign == null) {
+            System.out.println("Campaign not found");
+            return;
+        }
+
+        List tasks = campaign.getTasks();
+
+        for (Object obj : tasks) {
+
+            ReviewTask task = (ReviewTask) obj;
+
+            Identity reviewer = task.getReviewer();
+
+            System.out.println("Reviewer: " + reviewer.getName());
+
+            List items = task.getItems();
+
+            for (Object itemObj : items) {
+
+                ReviewItem item = (ReviewItem) itemObj;
+
+                Identity identity = item.getIdentity();
+
+                String entitlement = item.getEntitlement();
+
+                Application app = item.getApplication();
+
+                System.out.println("User: " + identity.getName());
+                System.out.println("Application: " + app.getName());
+                System.out.println("Entitlement: " + entitlement);
+
+                if ("SAP_ADMIN_ROLE".equals(entitlement)) {
+
+                    item.setDecision("Revoke");
+                    item.setComment("Admin role not required");
+
+                } else {
+
+                    item.setDecision("Approve");
+                    item.setComment("Access valid");
+
+                }
+
+                context.saveObject(item);
+
+            }
+
+        }
+
+        context.commitTransaction();
+    }
+
+}
+----
+️⃣ Certification Campaign Creator
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Campaign;
+import sailpoint.object.Identity;
+import sailpoint.object.Application;
+import sailpoint.object.ReviewTask;
+import sailpoint.object.ReviewItem;
+import sailpoint.object.QueryOptions;
+import sailpoint.object.Filter;
+import sailpoint.tools.GeneralException;
+import java.util.List;
+import java.util.Iterator;
+public class CertificationCampaignCreator {
+
+    private SailPointContext context;
+
+    public CertificationCampaignCreator(SailPointContext context) {
+        this.context = context;
+    }
+
+    public Campaign createCampaign() throws GeneralException {
+
+        Campaign campaign = new Campaign();
+
+        campaign.setName("ApplicationOwnerCertification");
+        campaign.setDescription("Quarterly Application Access Review");
+
+        context.saveObject(campaign);
+
+        context.commitTransaction();
+
+        return campaign;
+    }
+
+}
+-------
+5️⃣ ReviewTask Generator:-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Campaign;
+import sailpoint.object.Identity;
+import sailpoint.object.Application;
+import sailpoint.object.ReviewTask;
+import sailpoint.object.ReviewItem;
+import sailpoint.object.QueryOptions;
+import sailpoint.object.Filter;
+import sailpoint.tools.GeneralException;
+import java.util.List;
+import java.util.Iterator;
+public class ReviewTaskGenerator {
+
+    private SailPointContext context;
+
+    public ReviewTaskGenerator(SailPointContext context) {
+        this.context = context;
+    }
+
+    public ReviewTask createTask(Identity reviewer) throws GeneralException {
+
+        ReviewTask task = new ReviewTask();
+
+        task.setReviewer(reviewer);
+
+        task.setState("Pending");
+
+        context.saveObject(task);
+
+        return task;
+    }
+
+}
+-------
+️⃣ ReviewItem Generator:-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Campaign;
+import sailpoint.object.Identity;
+import sailpoint.object.Application;
+import sailpoint.object.ReviewTask;
+import sailpoint.object.ReviewItem;
+import sailpoint.object.QueryOptions;
+import sailpoint.object.Filter;
+import sailpoint.tools.GeneralException;
+import java.util.List;
+import java.util.Iterator;
+public class ReviewItemGenerator {
+
+    private SailPointContext context;
+
+    public ReviewItemGenerator(SailPointContext context) {
+        this.context = context;
+    }
+
+    public ReviewItem createItem(Identity user, Application app, String entitlement) throws GeneralException {
+
+        ReviewItem item = new ReviewItem();
+
+        item.setIdentity(user);
+
+        item.setApplication(app);
+
+        item.setEntitlement(entitlement);
+
+        item.setDecision("Pending");
+
+        context.saveObject(item);
+
+        return item;
+    }
+
+}
+-------
+7️⃣ Certification Runner:-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Campaign;
+import sailpoint.object.Identity;
+import sailpoint.object.Application;
+import sailpoint.object.ReviewTask;
+import sailpoint.object.ReviewItem;
+import sailpoint.object.QueryOptions;
+import sailpoint.object.Filter;
+import sailpoint.tools.GeneralException;
+import java.util.List;
+import java.util.Iterator;
+public class CertificationRunner {
+
+    public static void runCertification(SailPointContext context) throws Exception {
+
+        ApplicationOwnerCertificationProcessor processor =
+                new ApplicationOwnerCertificationProcessor(context);
+
+        processor.processCertification("ApplicationOwnerCertification");
+
+    }
+
+}
+-------
+8️⃣ Real Enterprise Example:-
+Example data:-
+Application → SAP
+Owner → SAPAdmin
+Users → Rahul, Amit
+Roles → SAP_USER_ROLE, SAP_ADMIN_ROLE
+
+Review output:-
+Rahul → SAP_USER_ROLE → Approve
+Amit → SAP_ADMIN_ROLE → Revoke
+
+Provisioning engine automatically karega:-
+SAP_ADMIN_ROLE removed from Amit
+
+1️⃣ UI directly method call nahi karta:-
+UI
+ ↓
+Certification Engine
+ ↓
+Workflow
+ ↓
+Rule / Task Executor
+ ↓
+Java Method
+
+2️⃣ Example Flow (Application Owner Certification):-
+
+Step 1 – UI
+
+Application Owner login karta hai
+
+Step 2 – Certification screen
+
+SAP Access Review
+
+Step 3 – Decision
+
+Rahul → Approve
+Amit → Revoke
+
+Step 4 – System backend trigger
+
+Certification Engine
+↓
+ProvisioningPlan generate
+↓
+Access remove
+-------------------------------------------------------------------------------
+()1️⃣ Role Certification kya hai?
+Role Certification ka matlab:-
+➡ Company ke roles ko review karna ki ye role sahi hai ya nahi
+Example role:-
+FinanceRole
+HRManagerRole
+AdminRole
+
+Reviewer check karega:-
+Role → FinanceRole
+Entitlements → SAP_FINANCE + DB_READ
+Decision → Approve / Modify
+
+Agar role me galat access hai to:-
+Entitlement remove
+Role modify
+
+1️⃣ Role Certification Processor Class:-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Campaign;
+import sailpoint.object.ReviewTask;
+import sailpoint.object.ReviewItem;
+import sailpoint.object.Bundle;
+import sailpoint.object.Identity;
+import sailpoint.tools.GeneralException;
+
+import java.util.List;
+public class RoleCertificationProcessor {
+
+    private SailPointContext context;
+
+    public RoleCertificationProcessor(SailPointContext context) {
+        this.context = context;
+    }
+
+    public void processCampaign(String campaignName) throws GeneralException {
+
+        Campaign campaign = context.getObjectByName(Campaign.class, campaignName);
+
+        if (campaign == null) {
+            System.out.println("Campaign not found");
+            return;
+        }
+
+        List tasks = campaign.getTasks();
+
+        for (Object obj : tasks) {
+
+            ReviewTask task = (ReviewTask) obj;
+
+            processTask(task);
+        }
+
+        context.commitTransaction();
+    }
+}
+
+2️⃣ ReviewTask Processor:-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Campaign;
+import sailpoint.object.ReviewTask;
+import sailpoint.object.ReviewItem;
+import sailpoint.object.Bundle;
+import sailpoint.object.Identity;
+import sailpoint.tools.GeneralException;
+
+import java.util.List;
+
+private void processTask(ReviewTask task) throws GeneralException {
+
+    Identity reviewer = task.getOwner();
+
+    System.out.println("Reviewer: " + reviewer.getName());
+
+    List items = task.getItems();
+
+    for (Object obj : items) {
+
+        ReviewItem item = (ReviewItem) obj;
+
+        processItem(item);
+    }
+}
+
+3️⃣ ReviewItem Processor:-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Campaign;
+import sailpoint.object.ReviewTask;
+import sailpoint.object.ReviewItem;
+import sailpoint.object.Bundle;
+import sailpoint.object.Identity;
+import sailpoint.tools.GeneralException;
+
+import java.util.List;
+private void processItem(ReviewItem item) throws GeneralException {
+
+    Bundle role = item.getRole();
+
+    String entitlement = item.getEntitlement();
+
+    System.out.println("Role: " + role.getName());
+    System.out.println("Entitlement: " + entitlement);
+
+    if ("DB_ADMIN".equals(entitlement)) {
+
+        item.setDecision("Revoke");
+        item.setComment("Admin access not allowed in this role");
+
+    } else {
+
+        item.setDecision("Approve");
+        item.setComment("Access is valid");
+
+    }
+
+    context.saveObject(item);
+}
+
+4️⃣ Workflow Rule (Execution Entry Point):-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Campaign;
+import sailpoint.object.ReviewTask;
+import sailpoint.object.ReviewItem;
+import sailpoint.object.Bundle;
+import sailpoint.object.Identity;
+import sailpoint.tools.GeneralException;
+
+import java.util.List;
+import sailpoint.api.SailPointContext;
+
+public class RoleCertificationRule {
+
+    public void execute(SailPointContext context) throws Exception {
+
+        RoleCertificationProcessor processor =
+                new RoleCertificationProcessor(context);
+
+        processor.processCampaign("QuarterlyRoleCertification");
+
+    }
+}
+
+//////////*
+()context.getObjectByName(Campaign.class, "RoleCertificationCampaign");:-
+Tabhi milega jab system me campaign create kiya gaya ho.
+
+()2️⃣ Campaign kaha create hota hai?
+Usually campaign UI se create hota hai.
+Admin UI me jaake create karta hai:-
+Governance
+   ↓
+Certifications
+   ↓
+New Certification Campaign
+
+Example campaign:-
+Quarterly Access Review
+Role Certification Campaign
+Application Owner Review
+Ye database me store ho jata hai.
+
+6️⃣ Example Campaign Structure:-
+Real enterprise me data aisa hota hai:-
+Campaign
+   name = QuarterlyRoleCertification
+
+Task
+   owner = FinanceManager
+
+Items
+   Role = FinanceRole
+   Entitlements
+        SAP_FINANCE
+        DB_READ
+        DB_ADMIN
+
+7️⃣ Review Result:-
+Code run hone ke baad:-
+Role: FinanceRole
+Entitlement: SAP_FINANCE → Approve
+Entitlement: DB_READ → Approve
+Entitlement: DB_ADMIN → Revoke
+*//////////
+-----------------------------------------
+()Campaign creation kya hai?
+
+3️⃣ Campaign Creation Code:-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Campaign;
+import sailpoint.object.ReviewTask;
+import sailpoint.object.ReviewItem;
+import sailpoint.object.Identity;
+import sailpoint.object.Bundle;
+import sailpoint.tools.GeneralException;
+
+import java.util.ArrayList;
+import java.util.List;
+public class CampaignCreator {
+
+    private SailPointContext context;
+
+    public CampaignCreator(SailPointContext context) {
+        this.context = context;
+    }
+
+    public Campaign createCampaign() throws GeneralException {
+
+        Campaign campaign = new Campaign();
+
+        campaign.setName("QuarterlyRoleCertification");
+        campaign.setDescription("Quarterly Role Access Review");
+        campaign.setType("ROLE_CERTIFICATION");
+
+        context.saveObject(campaign);
+
+        return campaign;
+    }
+}
+---
+
+4️⃣ Reviewer Task Creation:-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Campaign;
+import sailpoint.object.ReviewTask;
+import sailpoint.object.ReviewItem;
+import sailpoint.object.Identity;
+import sailpoint.object.Bundle;
+import sailpoint.tools.GeneralException;
+
+import java.util.ArrayList;
+import java.util.List;
+public ReviewTask createTask(Campaign campaign) throws GeneralException {
+
+    ReviewTask task = new ReviewTask();
+
+    Identity reviewer =
+            context.getObjectByName(Identity.class, "FinanceManager");
+
+    task.setOwner(reviewer);
+
+    campaign.addTask(task);
+
+    context.saveObject(task);
+
+    return task;
+}
+---
+
+5️⃣ Review Items Creation:-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Campaign;
+import sailpoint.object.ReviewTask;
+import sailpoint.object.ReviewItem;
+import sailpoint.object.Identity;
+import sailpoint.object.Bundle;
+import sailpoint.tools.GeneralException;
+
+import java.util.ArrayList;
+import java.util.List;
+public void createItems(ReviewTask task) throws GeneralException {
+
+    Bundle role =
+            context.getObjectByName(Bundle.class, "FinanceRole");
+
+    ReviewItem item = new ReviewItem();
+
+    item.setRole(role);
+
+    item.setEntitlement("DB_ADMIN");
+
+    item.setDecision("Pending");
+
+    task.addItem(item);
+
+    context.saveObject(item);
+}
+---
+
+6️⃣ Campaign Launch:-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Campaign;
+import sailpoint.object.ReviewTask;
+import sailpoint.object.ReviewItem;
+import sailpoint.object.Identity;
+import sailpoint.object.Bundle;
+import sailpoint.tools.GeneralException;
+
+import java.util.ArrayList;
+import java.util.List;
+public void launchCampaign(Campaign campaign) throws GeneralException {
+
+    campaign.setState("Active");
+
+    context.saveObject(campaign);
+
+    context.commitTransaction();
+
+    System.out.println("Campaign launched: " + campaign.getName());
+}
+---
+
+7️⃣ Full Execution Class:-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Campaign;
+import sailpoint.object.ReviewTask;
+import sailpoint.object.ReviewItem;
+import sailpoint.object.Identity;
+import sailpoint.object.Bundle;
+import sailpoint.tools.GeneralException;
+
+import java.util.ArrayList;
+import java.util.List;
+public class CampaignExecution {
+
+    public void execute(SailPointContext context) throws Exception {
+
+        CampaignCreator creator = new CampaignCreator(context);
+
+        Campaign campaign = creator.createCampaign();
+
+        ReviewTask task = creator.createTask(campaign);
+
+        creator.createItems(task);
+
+        creator.launchCampaign(campaign);
+    }
+}
+---
+
+8️⃣ Output Example:-
+System me campaign create ho jayega:
+
+Campaign Name:
+QuarterlyRoleCertification
+
+Reviewer:
+FinanceManager
+
+Role:
+FinanceRole
+
+Entitlement:
+DB_ADMIN
+
+Decision:
+Pending
+
+Reviewer UI me dekhega:
+
+Approve
+Revoke
+Delegate
+
+9️⃣ UI me kya hota hai:-
+Reviewer UI me dekhta hai:-
+Role : FinanceRole
+Entitlement : DB_ADMIN
+
+Buttons:-
+Approve
+Revoke
+Delegate
+
+Jab reviewer Revoke click karta hai to UI internally ye backend call karta hai:
+ReviewItem.setDecision("Revoke")
+
+10️⃣ Revoke Backend Code:-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.ReviewItem;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.AccountRequest;
+import sailpoint.object.AttributeRequest;
+import sailpoint.object.Identity;
+import sailpoint.tools.GeneralException;
+public void processReviewItem(
+        SailPointContext context,
+        ReviewItem item
+) throws GeneralException {
+
+    String decision = item.getDecision();
+
+    if ("Revoke".equals(decision)) {
+
+        Identity identity = item.getIdentity();
+
+        String entitlement = item.getEntitlement();
+
+        ProvisioningPlan plan = new ProvisioningPlan();
+
+        plan.setIdentity(identity);
+
+        AccountRequest accountRequest = new AccountRequest();
+
+        accountRequest.setOperation(AccountRequest.Operation.Modify);
+
+        AttributeRequest attrRequest = new AttributeRequest();
+
+        attrRequest.setName("memberOf");
+
+        attrRequest.setOperation(AttributeRequest.Operation.Remove);
+
+        attrRequest.setValue(entitlement);
+
+        accountRequest.add(attrRequest);
+
+        plan.add(accountRequest);
+
+        System.out.println("Access removed for: " + identity.getName());
+
+    }
+}
+--------------------------------------------------------------------------------------------------------
+1️⃣ Escalation kya hai?
+Escalation ka matlab:-
+Agar reviewer time par certification review nahi karta, to task automatically next authority ko bhej diya jata hai.
+Example:-
+Reviewer : Manager
+Due date : 7 days
+
+--Agar manager review nahi kare:-
+Task escalate ho jayega
+→ Senior Manager
+
+2️⃣ Escalation Flow:-
+Certification Campaign
+        ↓
+ReviewTask
+        ↓
+Due Date Expire
+        ↓
+Escalation Rule
+        ↓
+New Reviewer Assign
+
+2️⃣ Enterprise Escalation Processor:-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Campaign;
+import sailpoint.object.ReviewTask;
+import sailpoint.object.Identity;
+import sailpoint.tools.GeneralException;
+
+import java.util.Date;
+import java.util.List;
+public class CertificationEscalationProcessor {
+
+    private SailPointContext context;
+
+    public CertificationEscalationProcessor(SailPointContext context) {
+        this.context = context;
+    }
+
+    public void processCampaignEscalation(String campaignName)
+            throws GeneralException {
+
+        Campaign campaign =
+                context.getObjectByName(Campaign.class, campaignName);
+
+        if (campaign == null) {
+            System.out.println("Campaign not found");
+            return;
+        }
+
+        List tasks = campaign.getTasks();
+
+        for (Object obj : tasks) {
+
+            ReviewTask task = (ReviewTask) obj;
+
+            if (isTaskExpired(task)) {
+
+                escalateTask(task);
+
+            }
+
+        }
+
+        context.commitTransaction();
+    }
+private boolean isTaskExpired(ReviewTask task) {
+
+    Date dueDate = task.getDueDate();
+
+    if (dueDate == null) {
+        return false;
+    }
+
+    Date currentDate = new Date();
+
+    return currentDate.after(dueDate);
+}
+private void escalateTask(ReviewTask task)
+        throws GeneralException {
+
+    Identity currentReviewer = task.getOwner();
+
+    if (currentReviewer == null) {
+        return;
+    }
+
+    Identity manager = currentReviewer.getManager();
+
+    if (manager == null) {
+        System.out.println("No manager found for escalation");
+        return;
+    }
+
+    task.setOwner(manager);
+
+    context.saveObject(task);
+
+    System.out.println(
+        "Task escalated from "
+        + currentReviewer.getName()
+        + " to "
+        + manager.getName()
+    );
+}
+}
+
+5️⃣ Execution Rule (Workflow Entry):-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Campaign;
+import sailpoint.object.ReviewTask;
+import sailpoint.object.Identity;
+import sailpoint.tools.GeneralException;
+
+import java.util.Date;
+import java.util.List;
+import sailpoint.api.SailPointContext;
+
+public class EscalationRuleExecutor {
+
+    public void execute(SailPointContext context) throws Exception {
+
+        CertificationEscalationProcessor processor =
+                new CertificationEscalationProcessor(context);
+
+        processor.processCampaignEscalation(
+                "QuarterlyRoleCertification"
+        );
+    }
+}
+Example:-
+Reviewer : FinanceManager
+Due Date : 10 March
+
+10 March ke baad:
+
+Escalated to → FinanceDirector
+////////*
+()Haan bhai, agar if condition true ho jaye aur uske andar return; likha ho, to method wahi par ruk jata hai.
+Uske baad ka code execute nahi hota.
+
+*///////
+--------------------------------------------------------------------------------
+1️⃣ Sign-off kya hota hai?
+
+Sign-off = kisi process ko officially approve karke close kar dena.
+
+Matlab:-
+Review complete ho gaya
+Final approval mil gaya
+Process close ho gaya
+
+2️⃣ SailPoint me Sign-off:-
+Access Review me flow hota hai:-
+Campaign
+   ↓
+ReviewTask
+   ↓
+ReviewItems
+   ↓
+Approve / Revoke decision
+   ↓
+Sign-off
+Sign-off ka matlab:-
+Reviewer ne confirm kar diya ki review complete hai
+
+3️⃣ Example:-
+Manager ko access review mila:-
+Alice → FinanceGroup → Pending
+Bob → HRPortal → Pending
+
+Manager decision deta hai:-
+Alice → FinanceGroup → Approved
+Bob → HRPortal → Revoked
+Ab manager Sign-off karta hai.
+
+Matlab:-
+Review complete
+Campaign close
+
+()Sign-off compliance aur audit ke liye hota hai.
+Auditor check karta hai:-
+Kisne review kiya
+Kis date par sign-off hua
+Kis access ko approve / revoke kiya.
+
+3️⃣ Enterprise Sign-off Backend Code
+
+Full example code:
+
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Campaign;
+import sailpoint.object.ReviewTask;
+import sailpoint.object.ReviewItem;
+import sailpoint.tools.GeneralException;
+
+import java.util.List;
+
+public class CertificationSignOffProcessor {
+
+    private SailPointContext context;
+
+    public CertificationSignOffProcessor(SailPointContext context) {
+        this.context = context;
+    }
+
+    public void processSignOff(String campaignName)
+            throws GeneralException {
+
+        Campaign campaign =
+                context.getObjectByName(Campaign.class, campaignName);
+
+        if (campaign == null) {
+            System.out.println("Campaign not found");
+            return;
+        }
+
+        List tasks = campaign.getTasks();
+
+        for (Object obj : tasks) {
+
+            ReviewTask task = (ReviewTask) obj;
+
+            processTask(task);
+        }
+
+        campaign.setStatus("Completed");
+
+        context.saveObject(campaign);
+
+        context.commitTransaction();
+
+        System.out.println("Campaign Signed Off Successfully");
+    }
+
+    private void processTask(ReviewTask task)
+            throws GeneralException {
+
+        List items = task.getItems();
+
+        for (Object obj : items) {
+
+            ReviewItem item = (ReviewItem) obj;
+
+            if ("Revoke".equals(item.getDecision())) {
+
+                revokeAccess(item);
+
+            }
+
+        }
+
+    }
+
+    private void revokeAccess(ReviewItem item)
+            throws GeneralException {
+
+        System.out.println(
+                "Revoking Access for Identity: "
+                        + item.getIdentityName()
+                        + " Role: "
+                        + item.getTargetName()
+        );
+
+    }
+}
+4️⃣ Execution Rule (Workflow / Scheduler)
+
+Ye rule sign-off ko trigger karta hai.
+
+import sailpoint.api.SailPointContext;
+
+public class SignOffRuleExecutor {
+
+    public void execute(SailPointContext context) throws Exception {
+
+        CertificationSignOffProcessor processor =
+                new CertificationSignOffProcessor(context);
+
+        processor.processSignOff(
+                "QuarterlyAccessCertification"
+        );
+
+    }
+
+}
+5️⃣ Real Enterprise Flow:-
+Campaign Created
+       ↓
+Review Tasks Generated
+       ↓
+Manager Review
+       ↓
+Approve / Revoke
+       ↓
+Revocation processed
+       ↓
+Sign-off
+       ↓
+Campaign Closed
+//////////*
+Example:-
+Campaign : Finance Access Review
+User A → SAP Finance Role → Approved
+User B → Admin Role → Revoked
+Revoked role removed
+Campaign signed off
+
+1️⃣ ReviewTask – Predefined:-
+✔ Ye SailPoint ka built-in class/object hai.
+Developer isko banata nahi hai, system automatically generate karta hai.
+
+2️⃣ ReviewItem – Predefined:-
+✔ Ye bhi system generated object hai.
+ReviewTask ke andar multiple ReviewItem hote hain.
+
+()Developer kya karta hai?
+✔ decision read karta hai.
+Example:-
+List items = task.getItems();
+ReviewItem item = (ReviewItem) items.get(0);
+
+item.getDecision();
+Decision example:-
+Approve
+Revoke
+Delegate
+
+3️⃣ ProvisioningPlan – Developer banata hai?
+✔ Ye developer create karta hai jab access change karna hota hai.
+
+
+*///////////
+
+
+()Example Scenario:-
+Campaign : QuarterlyAccessCertification
+User1 → FinanceRole → Approved
+User2 → AdminRole → Revoke
+User3 → HRRole → Approved
+Manager ne review complete kar diya.
+
+()Console Output:-
+Revoking Access for Identity: User2 Role: AdminRole
+Campaign Signed Off Successfully
+
+----------------------------------
+()sign off 2nd code decision change:-
+1️⃣ CertificationSignOffProcessor (Full Code)
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Campaign;
+import sailpoint.object.ReviewTask;
+import sailpoint.object.ReviewItem;
+import sailpoint.tools.GeneralException;
+
+import java.util.List;
+
+public class CertificationSignOffProcessor {
+
+    private SailPointContext context;
+
+    public CertificationSignOffProcessor(SailPointContext context) {
+        this.context = context;
+    }
+
+    public void processSignOff(String campaignName)
+            throws GeneralException {
+
+        Campaign campaign =
+                context.getObjectByName(Campaign.class, campaignName);
+
+        if (campaign == null) {
+            System.out.println("Campaign not found");
+            return;
+        }
+
+        System.out.println("Campaign Loaded: " + campaignName);
+
+        List tasks = campaign.getTasks();
+
+        for (Object obj : tasks) {
+
+            ReviewTask task = (ReviewTask) obj;
+
+            processTask(task);
+        }
+
+        campaign.setStatus("Completed");
+
+        context.saveObject(campaign);
+
+        context.commitTransaction();
+
+        System.out.println("Campaign Signed Off Successfully");
+    }
+
+    private void processTask(ReviewTask task)
+            throws GeneralException {
+
+        System.out.println("Processing Task: " + task.getName());
+
+        List items = task.getItems();
+
+        for (Object obj : items) {
+
+            ReviewItem item = (ReviewItem) obj;
+
+            processItem(item);
+        }
+    }
+
+    private void processItem(ReviewItem item)
+            throws GeneralException {
+
+        String decision = item.getDecision();
+
+        System.out.println(
+                "Current Decision for Identity "
+                        + item.getIdentityName()
+                        + " Role "
+                        + item.getTargetName()
+                        + " = "
+                        + decision
+        );
+
+        if ("Approve".equals(decision)) {
+
+            item.setDecision("Revoke");
+
+            context.saveObject(item);
+
+            System.out.println(
+                    "Decision changed to Revoke for Identity: "
+                            + item.getIdentityName()
+                            + " Role: "
+                            + item.getTargetName()
+            );
+
+            revokeAccess(item);
+        }
+    }
+
+    private void revokeAccess(ReviewItem item)
+            throws GeneralException {
+
+        System.out.println(
+                "Revoking Access for Identity: "
+                        + item.getIdentityName()
+                        + " Role: "
+                        + item.getTargetName()
+        );
+
+    }
+}
+2️⃣ SignOffRuleExecutor (Execution Class):-
+import sailpoint.api.SailPointContext;
+
+public class SignOffRuleExecutor {
+
+    public void execute(SailPointContext context) throws Exception {
+
+        CertificationSignOffProcessor processor =
+                new CertificationSignOffProcessor(context);
+
+        processor.processSignOff(
+                "QuarterlyAccessCertification"
+        );
+
+    }
+}

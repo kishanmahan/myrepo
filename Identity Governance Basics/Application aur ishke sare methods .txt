@@ -1,0 +1,278 @@
+(1)Application Ye class SailPoint me external system ko represent karta hai 
+(jaise Active Directory, SAP, Oracle, etc.) aur mostly Aggregation, Reconciliation, Provisioning 
+me use hota hai.
+
+Application Class Full Methods:-
+1️⃣ Basic Info / Identity:-
+Method	                                 Description
+setName(String name)-------------------Application ka name set kare
+getName()------------------------------Application name return kare
+setDescription(String description)-----Description set kare
+getDescription()-----------------------Description return kare
+setEnabled(Boolean flag)---------------Application enable/disable kare
+isEnabled()----------------------------Application enabled hai ya nahi return kare
+setOwner(Identity owner)---------------Application ka owner set kare
+getOwner()-----------------------------Application owner return kare
+setType(String type)-------------------Application type set kare (e.g., "LDAP", "Database")
+getType()------------------------------Application type return kare
+
+
+4️⃣ Reconciliation / Aggregation:-
+1. setReconciliationEnabled(Boolean flag)
+Kya karta hai: Reconciliation enable ya disable karta hai.
+Reconciliation = application aur IAM data ko match karna.
+Example:-
+app.setReconciliationEnabled(true);
+
+2. isReconciliationEnabled():-
+Kya karta hai: Reconciliation enable hai ya nahi check karta hai.
+Example:-
+System.out.println(app.isReconciliationEnabled()); // true/false
+
+3. setAggregationEnabled(Boolean flag):-
+Kya karta hai: Aggregation enable/disable karta hai.
+Aggregation = application se users aur access import karna.
+Example:-
+app.setAggregationEnabled(true);
+
+4. isAggregationEnabled():-
+Kya karta hai: Aggregation enable hai ya nahi return karta hai.
+Example:-
+System.out.println(app.isAggregationEnabled()); // true/false
+
+5. runAggregation(SailPointContext context):-
+Kya karta hai: Aggregation process immediately run karta hai.
+Example:-
+app.runAggregation(context);
+
+6. runReconciliation(SailPointContext context):-
+Kya karta hai: Reconciliation process immediately run karta hai.
+Example:-
+app.runReconciliation(context);
+------------------------------------------------------------------------------------------------
+3️⃣ Accounts / Entitlements:-
+Method	                                                     Description
+addAccount(Account account)-------------------------Application me account add kare
+getAccounts()---------------------------------------Application ke accounts list return kare
+removeAccount(Account account)----------------------Application se account remove kare
+setEntitlements(List<String> entitlements)----------Application ke entitlements/roles set kare
+getEntitlements()-----------------------------------Entitlements return kare
+
+-------------------------------------------------------------------------------------------------
+5️⃣ Audit / Metadata:-
+4️⃣ Audit / Metadata Methods (Detail)
+1️⃣ setCreated(Date date):-
+
+Kya karta hai:-
+Ye method application ya object ka creation date set karta hai.
+
+Kab use hota hai:-
+Jab aap manually ek object create karte ho aur uske creation date ko track karna ho.
+
+Example:-
+import sailpoint.object.Application;
+import java.util.Date;
+
+public class AuditExample {
+    public static void main(String[] args) {
+        Application app = new Application();
+        
+        Date now = new Date();
+        app.setCreated(now);  // Creation date set
+        
+        System.out.println("Created Date Set: " + app.getCreated());
+    }
+}
+Output:-
+Created Date Set: Thu Mar 12 11:50:00 IST 2026
+----------------------------------------------------------------------------------------------
+()2️⃣ getCreated():-
+Kya karta hai:-
+Object ka creation date return karta hai.
+-----------------------------------------------
+3️⃣ setModified(Date date):-
+Kya karta hai:-
+Object ka last modified date set karta hai.
+Kab use hota hai:-
+Jab aap object me koi changes karte ho aur modification track karna ho.
+
+Date modified = new Date();
+app.setModified(modified);
+System.out.println("Last Modified Date: " + app.getModified());
+
+Output:-
+Last Modified Date: Thu Mar 12 11:55:00 IST 2026
+----------------------------------------------------------------------------------------------
+()4️⃣ getModified():-
+Kya karta hai:-
+Object ka last modified date return karta hai.
+-----------------------------------------------------
+5️⃣ setNativeIdentity(String nativeId):-
+
+Kya karta hai:-
+Ye method application ke native system ka unique ID set karta hai.
+Example: AD username, SAP user ID, Jira account ID.
+
+Example:-
+app.setNativeIdentity("AD-Rahul123");
+System.out.println("Native Identity: " + app.getNativeIdentity());
+
+Output:-
+Native Identity: AD-Rahul123
+-------------------------------------------------------------------------
+6️⃣ getNativeIdentity():-
+Kya karta hai:-
+Ye native system ID return karta hai.
+----------------------------------------------------------------------------------------------
+2️⃣ Connector / Connection Related:-
+1️⃣ Connector Methods:-
+1. setConnector(String connectorName):-
+Kya karta hai: Connector object ke liye application ke connection type ko set karta hai.
+Example:-
+app.setConnector("JDBC");
+Matlab: Ye application database se connect karega JDBC connector ke through.
+
+2. getConnector():-
+Kya karta hai: Jo connector set hua hai, usko return karta hai.
+Example:-
+String connector = app.getConnector();
+System.out.println(connector); // JDBC
+
+4. getAttributes():-
+Kya karta hai: Saare connector attributes return karta hai.
+Example:-
+Map<String,Object> attrs = app.getAttributes();
+System.out.println(attrs.get("url")); // jdbc:mysql://server/db
+
+6. getConfig(String configName):-
+Kya karta hai: Specific configuration value return karta hai.
+Example:-
+int timeout = (Integer) app.getConfig("timeout");
+System.out.println(timeout); // 30
+
+5️⃣ setAttributes(Map<String,Object> attrs):-
+Kya karta hai:-
+Application ke saare attributes ek saath set karne ke liye use hota hai.
+Ye ek Map leta hai jisme key = attribute name, value = attribute value.
+Example:-
+
+import sailpoint.object.Application;
+import java.util.HashMap;
+import java.util.Map;
+
+public class SetAttributesExample {
+    public static void main(String[] args) {
+        Application app = new Application();
+        
+        Map<String,Object> attrs = new HashMap<>();
+        attrs.put("region","APAC");
+        attrs.put("environment","Production");
+        
+        app.setAttributes(attrs);
+        
+        System.out.println("All Attributes: " + app.getAttributes());
+    }
+}
+Output:-
+All Attributes: {region=APAC, environment=Production}
+------------------------------------------------------------
+2️⃣ setConfig(String configName, Object value):-
+Kya karta hai:-
+Application ke configuration parameters individually set karne ke liye use hota hai.
+
+Example: LDAP server URL, connection timeout, username, password.
+
+app.setConfig("ldapUrl", "ldap://example.com:389");
+app.setConfig("timeout", 30);
+
+System.out.println("LDAP URL: " + app.getConfig("ldapUrl"));
+System.out.println("Timeout: " + app.getConfig("timeout"));
+
+Output:-
+LDAP URL: ldap://example.com:389
+Timeout: 30
+---------------------------------------------
+3️⃣ setAggregationEnabled(Boolean flag):-
+Kya karta hai:-
+Ye application aggregation ko enable/disable karta hai.
+Agar true, to SailPoint ka aggregation engine is application se data fetch karega (users, roles, accounts).
+Important: Ye sirf flag set karta hai, automatic aggregation dusre application se nahi hoti. 
+Aggregation run karne ke liye aapko Application.aggregate() ya scheduled aggregation task call karna padega.
+
+app.setAggregationEnabled(true);
+System.out.println("Aggregation Enabled: " + app.isAggregationEnabled());
+
+Output:-
+Aggregation Enabled: true
+---------------------------------
+5️⃣ Custom / Advanced Methods (Detail):-
+1️⃣ setAttribute(String key, Object value):-
+
+Kya karta hai:
+Application me custom attribute set karta hai.
+
+Kab use hota hai:
+Jab aapko extra info store karni ho, jaise region, environment, department.
+
+app.setAttribute("region", "APAC");
+app.setAttribute("department", "Finance");
+
+System.out.println("Region: " + app.getAttribute("region"));
+System.out.println("Department: " + app.getAttribute("department"));
+
+Output:
+
+Region: APAC
+Department: Finance
+---------------------------
+2️⃣ getAttribute(String key):-
+Kya karta hai:-
+Specific custom attribute ka value return karta hai.
+Example upar code me already use ho gaya.
+-----------------------------------------------------------
+3️⃣ getAttributes():-
+Kya karta hai:-
+Saare custom attributes ka Map return karta hai.
+-----------------------------------------------------------
+4️⃣ setParent(String parent):-
+Kya karta hai:-
+Parent application ya object set karta hai.
+
+Kab use hota hai:
+Agar application group me belong karta hai, ya hierarchical relationship set karna ho.
+
+app.setParent("GlobalAppGroup");
+System.out.println("Parent Application: " + app.getParent());
+
+Output:-
+Parent Application: GlobalAppGroup
+---------------------------------------------------------------------
+5️⃣ getParent():-
+Kya karta hai:-
+Parent object return karta hai.
+-----------------------------------------------------------------------
+6️⃣ setSource(String source):-
+setSource(String source)
+Kya karta hai:-
+Ye method Application object ke liye source define karta hai.
+Source ka matlab hota hai ki data ya configuration kahan se aa raha hai.
+Common values:-
+"Workflow" → Data ya configuration ek automated workflow ke through aaya hai.
+"Connector" → Data direct application connector ke through aggregate/provision hua.
+"Manual" → Data manually set kiya gaya.
+
+Purpose: Ye track karne ke liye ki application ke data ko SailPoint me kaise update/provision/provisioning source specify karna.
+
+Example values: "Workflow", "Connector", "Manual"
+
+Example:-
+app.setSource("Workflow");
+System.out.println("Source: " + app.getSource());
+
+Output:-
+Source: Workflow
+-------------------------------------------------------------------------
+7️⃣ getSource():-
+Kya karta hai:-
+Connector source return karta hai.
+-------------------------------------------------------------------------

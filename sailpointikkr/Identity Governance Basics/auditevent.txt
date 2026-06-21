@@ -1,0 +1,443 @@
+()SailPoint IdentityIQ me AuditEvent ek object hota hai jo system me hone wale actions ko log (audit)
+karne ke liye use hota hai.
+Jaise:-
+login
+access change
+role assign
+provisioning
+sab events audit log me store hote hain.
+AuditEvent system me hone wale events ko record karta hai.
+
+4️⃣ AuditEvent kya hai?
+AuditLogManager ke logs ko represent karta hai.
+Ye object usually ye cheeze contain karta hai:
+id                // unique id
+actor             // kaunne action perform kiya
+action            // kya action perform hua (create, update, delete, approve)
+target            // kis object pe action hua
+result            // success/failure
+timestamp         // action kab hua
+comments          // optional notes
+workflowCase      // agar workflow ka part hai
+
+2️⃣ Important Methods of AuditEvent:-
+
+3️⃣ setSource():-
+Event kaha se generate hua.
+event.setSource("WebUI");
+Example sources:-
+WebUI
+Workflow
+Provisioning
+API
+
+4️⃣ getSource():-
+Source return karta hai.
+String src = event.getSource();
+
+5️⃣ setTarget():-
+Kis identity ya object pe action hua.
+event.setTarget("Rahul");
+
+6️⃣ getTarget():-
+Target return karta hai.
+String target = event.getTarget();
+
+7️⃣ setString1():-
+Custom data store karne ke liye.
+event.setString1("FinanceRole");
+
+8️⃣ getString1():-
+Custom value return karta hai.
+String value = event.getString1();
+
+9️⃣ setString2():-
+Second custom field.
+event.setString2("Access Granted");
+
+🔟 getString2():-
+String value = event.getString2();
+
+1️⃣1️⃣ setAttribute():-
+Extra attributes set karta hai.
+event.setAttribute("Application", "SAP");
+
+1️⃣2️⃣ getAttribute():-
+Attribute value return karta hai.
+String app = event.getAttribute("Application");
+
+4️⃣ getSource():-
+Ye method event ka source return karta hai.
+Matlab event kaha se generate hua.
+Example sources ho sakte hain:-
+WebUI
+Workflow
+Provisioning
+API
+
+6️⃣ getTarget():-
+Ye method target object ya identity return karta hai.
+Matlab kis user ya object pe action hua.
+----------------------------------------------------------------------------------------------------------------------
+📌 AuditEvent ka matlab kya hai?
+AuditEvent ek audit logging class hai
+Ye system me hone wale important actions/events ko record (log) karta hai.
+
+🔥 Simple samajh:-
+👉 Jab bhi system me kuch important hota hai:-
+Request create hua
+Approval hua
+Access grant/revoke hua
+Login/logout hua
+➡️ Ye sab events AuditEvent me store hote hain.
+
+⚙️ Ye kya track karta hai?
+AuditEvent ke through system ye sab track karta hai:
+Kisne action kiya (user)
+Kya action hua
+Kab hua (timestamp)
+Kis object par hua (request / identity / role)
+Result kya tha (success / failure)
+
+()AuditEvent Methods List
+getId()
+setId(String id)
+getAction()
+setAction(String action)
+getString3()
+setString3(String value)
+getString4()
+setString4(String value)
+getAttributeName()
+setAttributeName(String name)
+getAttributeValue()
+setAttributeValue(String value)
+getAttributes()
+setAttributes(Attributes attributes)
+getCreated()
+setCreated(Date date)
+getModified()
+setModified(Date date)
+
+getOwner()
+setOwner(Identity owner)
+
+getApplication()
+setApplication(Application app)
+getAccountName()
+setAccountName(String name)
+
+getInstance()
+setInstance(String instance)
+
+getTrackingId()
+setTrackingId(String trackingId)
+
+getInterface()
+setInterface(String iface)
+
+toMap()
+fromMap(Map map)
+toXml()
+fromXml(String xml)
+clone()
+equals(Object obj)
+hashCode()
+toString()
+------------------------------------------------------------------------------------------------------
+()getId() / setId(String id):-
+Har audit event ka unique ID hota hai.
+Isse event ko identify karte hain DB ya logs me.
+-------------------------------------------------------
+🔹 Action:-
+getAction() / setAction(String action):-
+Ye batata hai kya action hua hai.
+Example:
+"Create"
+"Update"
+"Delete"
+"Login"
+-----------------------------------------------
+🔹 Extra String Fields (Custom Use):-
+getString3() / setString3(String value)
+getString4() / setString4(String value)
+Ye custom fields hote hain.
+Developer apne hisaab se data store kar sakta hai.
+Example:-
+auditEvent.setString3("ManagerApproval");
+auditEvent.setString4("HighPriority");
+------------------------------------------------
+()getAttributeName() / setAttributeName(String name):-
+Kaunsa attribute change hua (field name).
+Example: "email", "role", "department"
+
+()getAttributeValue() / setAttributeValue(String value):-
+Us attribute ka naya value kya hai,jo change hua.
+Example:-
+setAttributeName("email");
+setAttributeValue("user@gmail.com");
+----------------------------------------------------------
+🔹 Time Tracking:-
+getCreated() / setCreated(Date date):-
+Event kab create hua.
+getModified() / setModified(Date date):-
+Event kab last update hua.
+-------------------------------------------------------------------
+🔹 Attributes Map kyu store karta hai?
+Simple line me:-
+👉 Ek hi audit event me multiple data flexible way me store karne ke liye.
+
+🔹 Problem kya hoti agar Attributes na ho?
+Soch:-
+Agar sirf ye fields hoti:-
+attributeName
+attributeValue
+👉 Tab tu sirf ek hi field ka change store kar pata
+Example:-
+email → user@gmail.com
+
+❌ Problem:-
+Agar ek hi request me multiple changes hue:-
+role → Admin
+status → Active
+department → IT
+Toh 3 alag audit events banana padta ❌ (inefficient)
+
+🔹 Attributes Map (Advanced):-
+getAttributes() / setAttributes(Attributes attributes)
+Multiple attributes ko ek saath key-value pair me store karta hai.
+
+Example:-
+✔️ Multiple data ek hi event me:-
+Attributes attrs = new Attributes();
+attrs.put("role", "Admin");
+attrs.put("status", "Active");
+attrs.put("department", "IT");
+auditEvent.setAttributes(attrs);
+👉 Ek hi audit event me sab changes store ho gaye
+--------------------------------------------------------------------
+🔹 Real-world samajh:-
+Scenario:-
+User Rahul ne apna password change kiya
+
+👉 AuditEvent me:-
+Action → Password Change
+Owner → Rahul
+-----------------------------------
+🔹 Methods ka meaning:-
+
+()setOwner(Identity owner)
+Audit event ka owner set karta hai
+Matlab: “ye event kis user ke naam pe log ho raha hai”
+getOwner()
+Audit event ka owner return karta hai
+Matlab: “ye event kis user ka hai”
+🔹 Example (simple)
+Identity user = context.getObjectByName(Identity.class, "rahul");
+
+AuditEvent event = new AuditEvent();
+event.setAction("Update Account");
+event.setOwner(user);
+
+👉 Yaha:-
+Action = Update Account
+Owner = Rahul
+------------------------------------------------------------------------------------
+🔹 getApplication() / setApplication(Application app):-
+👉 Matlab:-
+Ye batata hai kaunsa application (target system) involved hai.
+Example: AD, SAP, Salesforce, etc.
+
+()setApplication(Application app):-
+AuditEvent me application set karta hai
+Matlab: “ye event kis system me hua”
+
+()getApplication():-
+Kaunsa application involved tha → return karta hai
+✅ Example:
+Application app = context.getObjectByName(Application.class, "Active Directory");
+auditEvent.setApplication(app);
+---------------------------------------------------------------------------------------
+🔹 getAccountName() / setAccountName(String name):-
+👉 Matlab:-
+Ye batata hai kaunsa account (username) affected hai us application me
+
+()setAccountName(String name):-
+Account ka naam set karta hai
+Matlab: “kis account pe action hua”
+
+()getAccountName():-
+Account name return karta hai
+----------------------------------------------
+🔹 getInstance() / setInstance(String instance) matlab:-
+👉 Instance = specific environment / system instance / server context
+Ye batata hai ki ye audit event kis instance me hua
+Matlab ek hi application ke multiple environments ho sakte hain:
+Dev
+Test
+Prod
+Ya different servers
+
+🔹 Methods ka meaning:-
+setInstance(String instance)
+AuditEvent me instance ka naam set karta hai
+Matlab: “ye event kis environment/system instance me hua”
+getInstance():-
+Wo instance return karta hai jaha event hua
+--------------------------------------------------------------
+🔹 getTrackingId() / setTrackingId() matlab:-
+👉 TrackingId = ek unique identifier jo ek request/flow ko track karta hai
+Ye use hota hai poore flow ko link karne ke liye
+Matlab: ek hi request ke multiple events ho sakte hain → un sabko ek ID se connect kar dete hain
+🔹 Methods ka meaning:-
+()setTrackingId(String trackingId):-
+AuditEvent me tracking ID set karta hai
+Matlab: “ye event kis request/flow ka part hai”
+
+()getTrackingId():-
+Wo tracking ID return karta hai
+Matlab: “ye event kis flow se related hai”
+--------------------------------------------------------------------------
+interface:-ye batata hai action kis interface (entry point) se aaya hai. 😎
+
+🔹 getInterface() / setInterface() matlab:-
+👉 Interface = kis medium se action perform hua
+Matlab: user ne kaam kahan se kiya
+Ye identify karta hai entry source
+
+🔹 Methods ka meaning:-
+
+()setInterface(String iface):-
+AuditEvent me interface set karta hai
+Matlab: “ye action kis interface se trigger hua”
+
+()getInterface():-
+Wo interface return karta hai
+
+🔹 Common Interface Values:-
+"UI" → User ne portal (web UI) se action kiya
+"API" → REST API se request aayi
+"Workflow" → Workflow engine ne action trigger kiya
+"Task" → Scheduled task/job se action hua
+"LCM" → Lifecycle Manager se aaya
+🔹 Example:-
+auditEvent.setInterface("UI");
+---------------------------------------------------------------------------------------
+()toMap():-
+Object ko Map (key-value pairs) me convert karta hai
+Easy hota hai data ko process ya log karna
+Map map = auditEvent.toMap();
+
+()fromMap(Map map):-
+Map se wapas object create karta hai
+auditEvent.fromMap(map);
+
+()toXml():-
+Object ko XML format me convert karta hai
+Mostly export, logging ya integration ke liye
+String xml = auditEvent.toXml();
+
+()fromXml(String xml):-
+XML se wapas object create karta hai
+auditEvent.fromXml(xml);
+
+()clone():-
+Object ka exact copy (duplicate) banata hai
+AuditEvent copy = (AuditEvent) auditEvent.clone();
+
+()equals(Object obj):-
+Check karta hai 2 objects same hain ya nahi
+auditEvent.equals(otherEvent);
+
+()hashCode():-
+Object ka unique hash value generate karta hai
+Mostly use hota hai HashMap, HashSet me
+
+()toString():-
+Object ko readable string format me convert karta hai
+Debugging me useful
+System.out.println(auditEvent.toString());
+
+import sailpoint.object.AuditEvent;
+import sailpoint.object.Attributes;
+import java.util.Map;
+import java.util.Date;
+
+public class TestAudit {
+    public static void main(String[] args) {
+
+        // Create AuditEvent
+        AuditEvent event = new AuditEvent();
+        event.setId("1");
+        event.setAction("Create Account");
+        event.setAttributeName("role");
+        event.setAttributeValue("Admin");
+        event.setCreated(new Date());
+
+        Attributes attrs = new Attributes();
+        attrs.put("status", "Active");
+        attrs.put("location", "India");
+        event.setAttributes(attrs);
+
+        // 🔹 toMap()
+        Map map = event.toMap();
+        System.out.println("Map Output: " + map);
+
+        // 🔹 fromMap()
+        AuditEvent newEvent = new AuditEvent();
+        newEvent.fromMap(map);
+        System.out.println("FromMap Output: " + newEvent.toString());
+
+        // 🔹 toXml()
+        String xml = event.toXml();
+        System.out.println("XML Output:\n" + xml);
+
+        // 🔹 clone()
+        AuditEvent cloned = (AuditEvent) event.clone();
+        System.out.println("Cloned Output: " + cloned.toString());
+
+        // 🔹 equals()
+        System.out.println("Equals Check: " + event.equals(cloned));
+
+        // 🔹 hashCode()
+        System.out.println("HashCode: " + event.hashCode());
+
+        // 🔹 toString()
+        System.out.println("ToString Output: " + event.toString());
+    }
+}
+🔹 Expected Output (Simplified):-
+✅ toMap() Output:-
+Map Output: {
+  id=1,
+  action=Create Account,
+  attributeName=role,
+  attributeValue=Admin,
+  attributes={status=Active, location=India},
+  created=Mon Mar 23 12:00:00 IST 2026
+}
+✅ fromMap() Output:-
+FromMap Output: AuditEvent[id=1, action=Create Account, attributeName=role, attributeValue=Admin]
+
+✅ toXml() Output:-
+<AuditEvent>
+  <id>1</id>
+  <action>Create Account</action>
+  <attributeName>role</attributeName>
+  <attributeValue>Admin</attributeValue>
+  <attributes>
+    <entry key="status" value="Active"/>
+    <entry key="location" value="India"/>
+  </attributes>
+</AuditEvent>
+✅ clone() Output:-
+Cloned Output: AuditEvent[id=1, action=Create Account, attributeName=role]
+
+✅ equals() Output:-
+Equals Check: true
+
+✅ hashCode() Output:-
+HashCode: 12345678
+
+✅ toString() Output:-
+ToString Output: AuditEvent[id=1, action=Create Account, attributeName=role, attributeValue=Admin]

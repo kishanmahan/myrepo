@@ -1,0 +1,193 @@
+🔷 1. AccountRequest me kitni Identity hoti hai?
+👉Sirf 1 Identity
+👉Sirf 1 AccountRequest = 1 account (1 application)
+🧠 Kyu?
+AccountRequest ek specific identity ke liye hota hai
+Ye batata hai:-
+“Is user ke liye kaunsa account create/modify/delete karna hai”
+
+
+🔷 2. ProvisioningPlan me kitni Identity hoti hai?
+👉 👉 Sirf 1 Identity
+👉 1 ProvisioningPlan = multiple AccountRequest
+🧠 Kyu?
+ProvisioningPlan ek single identity ka full plan hota hai
+Isme multiple account requests ho sakte hain
+👉 BUT identity ek hi hoti hai.
+ex:-
+()ProvisioningPlan plan = new ProvisioningPlan();
+plan.setIdentity(identity);
+
+🔷 AccountRequest me kitne AttributeRequest hote hain?
+👉 👉 Multiple (0 se leke unlimited tak ho sakte hain)
+
+-------------------------------------------------------------------------------------------------------------
+2. AccountRequest Operations:-
+ProvisioningPlan.AccountRequest.Operation
+Ye account level operation hota hai.
+Sare Operations:-
+Operation	Kaam
+Create	Naya account create
+Modify	Existing account update
+Delete	Account delete
+Enable	Account enable
+Disable	Account disable
+Lock	Account lock
+Unlock	Account unlock
+
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+
+ProvisioningPlan plan = new ProvisioningPlan();
+
+AccountRequest accReq = new AccountRequest();
+
+accReq.setApplication("HR Application");
+
+accReq.setNativeIdentity("EMP1001");
+
+accReq.setOperation(AccountRequest.Operation.Modify);
+
+plan.add(accReq);
+
+()Har Operation Ka Example:-
+1. Create Operation:-
+AccountRequest accReq = new AccountRequest();
+accReq.setApplication("HR Application");
+accReq.setNativeIdentity("EMP1001");
+accReq.setOperation(AccountRequest.Operation.Create);
+
+2. Modify Operation:-
+accReq.setOperation(AccountRequest.Operation.Modify);
+3. Delete Operation:-
+accReq.setOperation(AccountRequest.Operation.Delete);
+4. Enable Operation:-
+accReq.setOperation(AccountRequest.Operation.Enable);
+5. Disable Operation:-
+accReq.setOperation(AccountRequest.Operation.Disable);
+6. Lock Operation:-
+accReq.setOperation(AccountRequest.Operation.Lock);
+7. Unlock Operation:-
+accReq.setOperation(AccountRequest.Operation.Unlock);
+------------------------------------------------------------------
+3. AttributeRequest Operations:-
+ProvisioningPlan.AttributeRequest.Operation
+Ye account ke attributes ko handle karta hai.
+Jaise:-
+role
+email
+department
+entitlement
+groups
+
+()Sare Attribute Operations:-
+Operation	         Kaam
+Add	              Attribute add
+Set	              Value replace/update
+Remove	          Attribute remove
+AttributeRequest    Full Example
+
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+AttributeRequest attrReq =
+    new AttributeRequest();
+attrReq.setName("department");
+attrReq.setValue("IT");
+attrReq.setOperation(
+    ProvisioningPlan.Operation.Set
+);
+accReq.add(attrReq);
+
+()Har Attribute Operation Ka Example:-
+1. Add Operation:-
+Mostly entitlements/groups ke liye use hota hai.
+AttributeRequest attrReq =
+    new AttributeRequest();
+
+attrReq.setName("groups");
+
+attrReq.setValue("Admin_Group");
+
+attrReq.setOperation(
+    ProvisioningPlan.Operation.Add
+);
+
+2. Set Operation:-
+Purani value replace/update karta hai.
+AttributeRequest attrReq =
+    new AttributeRequest();
+attrReq.setName("department");
+attrReq.setValue("Finance");
+attrReq.setOperation(
+    ProvisioningPlan.Operation.Set
+);
+
+3. Remove Operation:-
+Attribute ya entitlement remove karta hai.
+AttributeRequest attrReq =
+    new AttributeRequest();
+attrReq.setName("groups");
+attrReq.setValue("Admin_Group");
+attrReq.setOperation(
+    ProvisioningPlan.Operation.Remove
+);
+
+
+Full Real CRUD Example:-
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+
+ProvisioningPlan plan =
+    new ProvisioningPlan();
+
+AccountRequest accReq =
+    new AccountRequest();
+
+accReq.setApplication("HR Application");
+
+accReq.setNativeIdentity("EMP1001");
+
+accReq.setOperation(
+    AccountRequest.Operation.Modify
+);
+
+AttributeRequest emailReq =
+    new AttributeRequest();
+
+emailReq.setName("email");
+
+emailReq.setValue("joker@gmail.com");
+
+emailReq.setOperation(
+    ProvisioningPlan.Operation.Set
+);
+
+accReq.add(emailReq);
+
+AttributeRequest roleReq =
+    new AttributeRequest();
+
+roleReq.setName("groups");
+
+roleReq.setValue("Manager_Group");
+
+roleReq.setOperation(
+    ProvisioningPlan.Operation.Add
+);
+
+accReq.add(roleReq);
+
+AttributeRequest removeReq =
+    new AttributeRequest();
+
+removeReq.setName("groups");
+
+removeReq.setValue("Old_Group");
+
+removeReq.setOperation(
+    ProvisioningPlan.Operation.Remove
+);
+
+accReq.add(removeReq);
+
+plan.add(accReq);

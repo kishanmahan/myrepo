@@ -1,0 +1,23 @@
+1️⃣ Security Breach = सुरक्षा उल्लंघन / Unauthorized Access,
+Matlab koi bina permission ke system ya data me ghus jaye.
+Ye intentional (hacker) ya accidental (employee mistake) dono ho sakta hai.
+
+2️⃣ Why it’s serious:-
+Sensitive data leak ho sakta hai (financial info, health records, personal data).
+Company ka trust aur legal compliance khatam ho sakta hai.
+Laws like SOX, GDPR, HIPAA me security breach ke liye penalties aur reporting mandatory hoti hai.
+
+3️⃣ Examples of Security Breach
+Type	                             Example
+Hacking:---------------Hacker company ke financial database me ghus ke records chura le.
+Unauthorized Access:---Employee ne confidential data ko access kiya jo uske role me nahi tha.
+Data Leak:-------------Customer emails ya medical records accidentally public ho gaye.
+Malware/Ransomware:----Virus ya ransomware se system data inaccessible ho gaya.
+
+4️⃣ Response to Security Breach:-
+Detect: Logs aur monitoring se pata chale ki breach hua.
+Contain: Breach ko immediately stop kare (system disconnect, access block).
+Notify: Laws ke hisab se affected users ya authorities ko inform kare (GDPR me 72 hours, HIPAA me jaldi).
+Recover: Backup se data restore kare, aur future prevention ke liye security strengthen kare.
+
+Mandatory” ka matlab hai अनिवार्य / ज़रूरी.

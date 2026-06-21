@@ -1,0 +1,290 @@
+-------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------
+()SailPoint IdentityIQ me Scorecard ek feature hota hai jo kisi identity/user ka risk level calculate karta hai.
+Ye batata hai ki user kitna risky hai based on:-
+uske roles
+entitlements
+policy violations
+toxic combinations
+privileged access
+inactive accounts
+sensitive applications access.
+
+()SailPoint IdentityIQ me Group Scorecard ka matlab hota hai kisi group/role/application group ka collective risk score dekhna.
+Jaise normal scorecard ek user ka risk dikhata hai, waise hi group scorecard:
+ek group ka total risk
+usme kitne risky users hain
+group me risky entitlements
+SoD violations
+privileged access
+ye sab show karta hai.
+----------------------------------------------------------------------------------------------------------------------------------------
+* How to configure group population / group / workgroup :-
+-> Setup -> group -> Create New group
+-> group attribute ->
+-> isme location nahi to. ->
+-> Global settings -> identity mapping -> Location -> group Factory -> [checkbox] -> fir
+save -> setup -> group -> create New group -> Group Attribute -> Location -> Name -> Location Based Group -> Enabled -> [checkbox]
+-> Group owne rule -> kuch nahi
+-> Save -> and How it will trigger the group -> setup -> tasks -> refresh Identity cube -> ctrl + f ->
+-> group -> yaha Refresh the group scorecards -> [empty checkbox] khali chhod do kyonki 
+-> Sailpoint ek aur ye hi Task alag se provide karta hai.
+-> tasks -> search -> Refresh group
+-> scroll down ->
+Refresh the group scorecards -> [checked box] tick-> save and execute.
+unsave aur tasks -> refresh identity cube -> scroll -> refresh the group scorecards -> [unchecked box] ->
+->kyunki refresh identity cube me bahut saara data hai identity ka.
+
+* "Refresh group Scorecards" kya karta hai?
+-> Refresh the group scorecards ek background task hota hai. Jab tum ye task run karte ho, toh identityiq ->
+-> identityiq sab groups ko scan karta hai,
+Ex -> Roles, workgroups, Entitlement groups.
+Aur identityiq Har group ke liye Data recalculate karta hai.
+kaise karta hai line by line samjhao.
+
+Step 2.1 :- Group Fetch :-
+-> engine DB se ek group uthata hai,
+example :- Role/workgroup/Entitlement group
+
+Step 2.2 :- Group Metadata loads :-
+-> Group ka basic data load karta hai.
+-> ex -> groupid, type, owner, create_date.
+
+Step 2.3 :- System check karta hai kaun user is Group mein hai,
+-> includes :-
+-> Direct members
+-> Role assigned users
+-> nested role members.
+
+Step 2.4 -> identityiq sab me sab members ke identity_id ko collect karta hai.
+
+Step 2.5 -> Agar ek system multiple path se aa raha hai toh system hata dega.
+
+Step 2.6 -> total unique users ko count karta hai.
+
+Step 2.7 -> Har user ke entitlement nikale jaate hain.
+Tables :-
+-> identity_entitlement
+-> role_entitlement
+
+Step 2.8 -> System merge / combine karta hai ye access in group :-
+-> Direct access, inherited access, Role-based access.
+
+Step 2.9 -> Har member ka risk uthata / calculate karta hai,
+Ex -> group_risk = sum(member_risk / total_members):-
+-> group_risk =
+-> to calculate the average premium risk for a group of 5 members, where individual risks are 10, 20, 30, 40, and 50.
+-> group_risk = (10+20+30+40+50) / 5 = 150 / 5 = 30
+
+Step 2.10 -> policy-violation check
+-> SOD, policy breaches check karta hai iiq.
+
+3. latest identify data use karta hai iiq :-
+Step 3.1 -> identity cube read karta hai, identity cube ka fresh data uthata hai.
+
+Step 3.2 -> role expansion apply karta hai, saare chhipe hue entitlements nikalta hai.
+
+Step 3.3 -> ek user ke multiple access apps ke access, merge hote hai,
+Ex -> AD + SAP + DB -> ek hi identity me merge.
+
+Step 3.4 -> identity state check -> identity Active, disable, inactive hai.
+
+4. scorecard table update karta hai.
+
+Step 4.1 -> scorecard object Build
+-> memory me ek object banata hai.
+-> GroupScorecard
+{
+-> group_id
+-> member_count
+-> risk_score
+-> violations_count
+}
+
+Step 4.2 -> check karta hai ki group ka scorecard exist karta hai toh scorecard object update agar.
+nahi karta exist toh scorecards INSERT 
+toh table mein update ya INSERT karta hai.
+
+Step 4.3 -> Indexing Trigger -> search fast karne ke liye ->
+-> indexService.update(group);
+
+Step 4.4 -> System log karta hai ki kis group ka score update hua kab hua. 
+aur UI/dashboard ke liye latest scorecard push karta hai.
+
+-> toh Tasks -> refresh identity cube -> scroll -> refresh the source group scorecards -> [checked box] -> 
+-> identity ye refresh identity jyada Data ko layega. Refresh group ko chhod do.
+
+a) -> refresh identity cube ek user ka full access + profile rebuild kiya tha.
+
+B) -> refresh group -> multiple identities ke cube ka aggregation karta hai.
+
+c) -> refresh identity cube ka output "updated identity cube" aur data source -> DB + Application hai.
+
+B) Refresh groups ka output "aggregated group analytics" aur
+Data source -> identity cube hai.
+
+-> tasks -> refresh group -> Refresh the group scorecards -> [checked box] -> save and execute. -> task result ->
+-> refresh groups -> setup -> group ->
+-> location based group -> see
+-> identity iiq automatic group bana dega. un identities ka jinka application tumhare identity iiq mein pehle se exist karta hai.
+
+-> Agar condition based group banana hai toh population group banayenge. ->
+-> setup -> groups -> populations ->
+-> Group -> search location based group -> yaha jo group owner rule hai wo owner of the group decide karne ka rule hai. 
+-> setup -> groups -> populations -> create ka button nahi toh hum intelligence 
+-> Advanced analytics -> search type -> Identity -> isinactive -> false -> Department -> accounting ->
+-> Location -> SanJose -> Run search -> fir saare identities aa gaye ab ->
+-> result options -> save identities as population -> Name -> All Active SanJose Accounting group -> save ->
+-> setup -> groups -> population -> see.
+
+-> Aur hum sirf in identities ke liye hi refresh identity cube chalayenge toh -> setup -> tasks -> refresh identity cube ->
+-> scroll -> refresh identity cube options ke bagal mein -> v -> click -> select -> All Active SanJose Accounting Group -> save ->
+toh ye identity cube chalega sirf is populated Group ke liye. -> see setup -> population -> see. 
+fir populated group ko hatado identity cube se !
+
+-> setup -> groups -> workgroups -> fir -> intelligence -> Advanced analytics ->
+-> search type -> identity -> kyonki identity khojenge by attribute aur agar denge advanced search click -> 
+->toh aap filter lagake identity khoj sakte ho.
+-> advanced search -> Add Filter ->
+-> Field -> Application -> Search Type -> equals -> value -> Financial Application
+-> Add Filter -> Field -> inactive -> value -> false -> Add Filter ->
+-> Field -> Application -> search type -> is not equal to -> value -> contractor Feed File -> Add Filter
+-> choose fields to display -> Applications
+-> Display name -> username ->
+-> Run search aur see identity.
+
+-> Aur filter source mein Direct code likh ke bhi kaam kar sakte hain. Search kar sakte hai.
+
+-> setup -> groups -> workgroup ->
+-> Create New workgroup -> Name -> workitem_Admin
+-> owner -> the Administrator -> Group email
+-> admin@demoexample.com -> Notification ->
+setting -> Notify members only and group email -> -> Adams.Kennedy -> Add member
+-> Aaron.Nichols -> Add member -> save -> OK
+------------------------------------------------------------------------------------------------------------------------------------
+-> How to Create identity object?
+-> String name = "Alice.Ford";
+-> Identity identity = context.getObjectByName(Identity.class, name);
+-> String id = "402880e77d698bc5017dbee";
+-> Identity identity = context.getObjectById(Identity.class, id);
+
+-> localhost:8080/identityiq/debug/debug.jsf
+-> Debug pages -> object Browser
+-> identity -> 2nd Box -> Alice.Ford ->
+-> click see code. -> <Identity>
+</Identity> tak sara code Identity object hai.
+
+-> How to create any object from name :-
+-> String name = "JDBC";
+-> Application app = context.getObjectByName(Application.class, name);
+-> String name = "000000033";
+-> Workflow app = context.getObjectByName(Workflow.class, name);
+
+Page 159
+
+1. total links count :-
+
+-> import sailpoint.object.Identity;
+-> import sailpoint.object.Link;
+-> import java.util.List;
+
+-> Identity identity = context.getObjectByName(Identity.class, "Susan.Martin");
+
+-> List<Link> links = identity.getLinks();
+
+-> int count = 0;
+
+-> for(int i=0; i<links.size(); i++) {
+Link link = links.get(i);
+count++;
+}
+-> System.out.println("total Links: " + count);
+------------------------------------------------------------------------------------------------------------------------------------
+()how to find count of link object from identity?
+--
+import sailpoint.object.Identity;
+Identity identity=context.getObjectByName(Identity.class,"eva jhonson");
+List<Link> links=identity.getLinks();
+for(Link link : links)
+{
+if(link.getApplicationName().equals("JDBC"))
+{
+String permission = (String)link.getAttribute("permission"));
+link.setAttribute("permission","read-only");
+}
+}
+context.saveObject(identity);
+context.saveObject(link);
+context.commitTransaction();
+------------------------------------------------------------------------------------------------------------------------------------
+()how to fetch only that account which account have jdbc through code?
+--
+import sailpoint.object.Identity;
+Identity identity=context.getObjectByName(Identity.class,"eva jhonson");
+Application app=context.getObjectByName(Application.class,"Jdbc");
+Link link=identity.getLink(app);
+String permission=(String)link.getAttribute("permission");
+---------------------------------------------------------------------------
+()if user have multiple jdbc accoun how can be solve it?
+--
+import sailpoint.object.Identity;
+Identity identity=context.getObjectByName(Identity.class,"eva jhonson");
+Application app=context.getObjectByName(Application.class,"Jdbc");
+IdentityService identityservice = new IdentityService();
+List<Link> links=identityservice.getLinks(identity,app);
+for(Link link : links)
+{
+if(link.getAttribute("prisec").equals("primary"))
+String permission=(String)link.getAttribute("permission");
+}
+-------------------------------------------------------------------------------------
+->debug page me jao -> object browser me first box me search Rule-> Identity creation: SetPassword ->
+fir dekhe->fir debug page me jao aur select and action dropdown me new fir ->
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule Public "sailpoint.dtd">
+<Rule created="1639018616639" id="402880e2071017d9d1f573f02d2" language="beanshell" modified="1639020223511" name="Ruthie test rule">
+<Source>
+import sailpoint.object.Identity;
+Identity identity = context.getObjectByName(Identity.class,"Alice.ford");
+
+String department = identity.getStringAttribute("department");
+String firstname = identity.getFirstName();
+String lastname = identity.getLastName();
+String email = identity.getEmail();
+identity.setAttribute("department", "Engineering");
+context.saveObject(identity);
+context.commitTransaction();
+String department = identity.getStringAttribute("department");
+return "FirstName : "+ firstname+ "LastName :"+ lastname+"email :"+email+"department :"+department; 
+</Source>
+</Rule>
+
+save karo aur fir dekhe ki Ruthie test rule se create ho gayi rule abb fir debug page ke 3rd box me Ruthie test rule search
+fir click once to select aur rule run button dabao fir identity warehose me jao aur ekho toh Alice.ford ke identity ka department badal gaya.
+
+--------------------------------------------------------------------------------------------
+()note:- & aur < kaam nahi karta rule me tumhe ke badle &&==&amp;&amp; aur <==&lt; use karna hoga.
+
+fir ishi Ruthie test rule me jao aur code change karke dekho->
+-> 
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule Public "sailpoint.dtd">
+<Rule created="1639018616639" id="402880e2071017d9d1f573f02d2" language="beanshell" modified="1639020223511" name="Ruthie test rule">
+
+<Source>
+import sailpoint.object.Link;
+import sailpoint.object.Identity;
+import sailpoint.object.Application;
+import java.util.*;
+
+Identity identity = context.getObjectByName(Identity.class,"Susan.Martin");
+Application app = context.getObjectByName(Application.class, "JDBC");
+Link link = identity.getLink(app);
+
+String desc = (String)link.getAttribute("desc");
+return "Desc :"+ desc;
+</Source>
+</Rule>
+
+save aur fir rule select in 3rd box and run rule fir aur susan.martin ke identity me application account me dekho ki description badla.
+

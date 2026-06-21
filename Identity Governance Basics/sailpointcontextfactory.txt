@@ -1,0 +1,74 @@
+()SailPointContextFactory.releaseContext(context) ka kaam context ko close/release karna hai.
+
+1️⃣ Context kya hota hai?
+SailPointContext ek session-like object hai jo IdentityIQ engine se connect hota hai.
+Iske through tu identities, roles, workflows, aur audit logs access kar sakta hai.
+👉 SailPointContext ek live session hota hai jo directly system (database) ke saath connected rehta hai.
+Jab tum context.getObject() karte ho:-
+👉 data live database se fetch hota hai
+Matlab:-ye real-time system data hai.
+
+🔥 🔹 Important Methods (Concept):-
+👉 ContextFactory me generally:-
+getCurrentContext()
+createContext()
+releaseContext()
+-------------------------------------------------------------------------------------------------------------------------
+🔹 getCurrentContext():-
+👉 Current thread/session ka already existing SailPointContext return karta hai (agar hai to same reuse karta hai).
+
+🔹 createContext():-
+👉 Naya fresh SailPointContext create karta hai (new DB session ke saath).
+--------------------------------------------------------------------------------------------------------------
+2️⃣ releaseContext kya karta hai?
+Ye context ke resources free karta hai (jaise memory, database connections).
+Ye context object ko invalidate kar deta hai, taaki aur use na ho sake.
+DB me koi object delete nahi hota, sirf session close hota hai.
+💡 Simple analogy:-
+Context = car ka engine start hua session
+releaseContext() = engine off kar diya, car ab idle hai, lekin road ya car khatam nahi hua.
+
+()SailPointContext ke through tum:-
+--Database access kar sakte ho:-
+Identities, Applications, Roles, Policies, etc. read/write karna.
+--Transactions manage karta hai:-
+Save, commit, rollback operations handle karta hai.
+--Objects load karta hai:-
+context.getObject(...) se koi bhi object fetch kar sakte ho.
+--Provisioning / workflows trigger karta hai.
+--Security & permissions maintain karta hai:-
+Kaun kya access kar sakta hai.
+
+👉 SailPointContextFactory = SailPointContext banane wali machine,
+Ye tumhe ek valid session context provide karta hai.
+Iske bina tum direct SailPointContext nahi bana sakte.
+
+------------------------------SailPointContext vs SailPointContextFactory-----------------------------------------------------
+🔹 1️⃣ Role:-
+--SailPointContext → Working session
+👉 Ye ek active session hai jahan se tum system ke saath kaam karte ho (data access, update, etc.)
+
+--SailPointContextFactory → Context create karta hai
+👉 Ye factory hai jo naya ya valid context bana kar deti hai.
+
+🔹 3️⃣ Nature:-
+--SailPointContext → Runtime object
+👉 Ye run time par exist karta hai
+👉 Jab tak program chalta hai tab tak use hota hai
+
+--SailPointContextFactory → Utility / Factory class
+👉 Ye ek helper class hai jo object (context) create karne ke kaam aati hai.
+
+🔹 4️⃣ Data Handling:-
+--SailPointContext → Direct DB operations
+👉 Ye directly database se interact karta hai:-
+data fetch karta hai
+update karta hai
+commit/rollback karta hai
+
+--SailPointContextFactory → Context return karta hai
+👉 Ye sirf:-
+context banata hai
+aur tumhe return kar deta hai
+👉 Data handling ka actual kaam context karta hai, factory nahi.
+

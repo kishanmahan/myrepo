@@ -1,0 +1,245 @@
+()IdentityRequestLibrary ke methods.
+createIdentityRequest()
+saveIdentityRequest()
+getIdentityRequest()
+updateIdentityRequestState()
+buildApprovalSet()
+createWorkItem()
+approveItems()
+rejectItems()
+buildProvisioningPlan()
+processPlan()
+launchProvisioningWorkflow()
+refreshIdentity()
+auditRequest()
+addMessage()
+sendNotifications()
+addWorkItemComment()
+
+filterRejectedItems()
+buildRejectionPlan()
+compileProvisioningProject()
+closeWorkItem()
+setRequestStatus()
+processApprovalDecisions()
+auditDecisions()
+assimilateWorkItemApprovalSet()
+completeIdentityRequest()
+cancelIdentityRequest()
+
+🔥 1. createIdentityRequest() – Request create
+👉 Example
+
+User bolta hai: “Mujhe SAP access chahiye”
+
+IdentityRequest ir = new IdentityRequest();
+ir.setName("SAP Access Request");
+ir.setRequester("Kishan");
+context.saveObject(ir);
+context.commitTransaction();
+
+📌 Meaning: New access request create ho gaya
+
+💾 2. saveIdentityRequest() – Save request
+context.saveObject(identityRequest);
+context.commitTransaction();
+
+📌 Meaning: Request DB me store ho gaya
+
+🔍 3. getIdentityRequest() – Fetch request
+IdentityRequest ir = context.getObjectByName(IdentityRequest.class, "SAP Access Request");
+
+📌 Meaning: Existing request ko retrieve karna
+
+🔄 4. updateIdentityRequestState()
+ir.setState("APPROVED");
+context.saveObject(ir);
+context.commitTransaction();
+
+📌 Meaning: Request status change ho gaya
+
+✅ 5. buildApprovalSet() – Approval chain banana
+ApprovalSet approvalSet = new ApprovalSet();
+
+Approval approver1 = new Approval();
+approver1.setApprover("manager1");
+
+approvalSet.add(approver1);
+
+📌 Meaning: Kaun approve karega wo define ho gaya
+
+🧾 6. createWorkItem() – Approval task banana
+WorkItem wi = new WorkItem();
+wi.setName("Approve SAP Access");
+wi.setOwner("manager1");
+
+context.saveObject(wi);
+
+📌 Meaning: Manager ke inbox me task chala gaya
+
+👍 7. approveItems()
+wi.setState(WorkItem.State.Finished);
+wi.setApprovalState("Approved");
+context.saveObject(wi);
+📌 Meaning: Manager ne approve kar diya
+
+❌ 8. rejectItems()
+wi.setApprovalState("Rejected");
+context.saveObject(wi);
+
+📌 Meaning: Request reject ho gaya
+
+📦 9. buildProvisioningPlan()
+ProvisioningPlan plan = new ProvisioningPlan();
+
+AccountRequest accReq = new AccountRequest();
+accReq.setApplication("SAP");
+accReq.setOperation(AccountRequest.Operation.Create);
+
+plan.add(accReq);
+
+📌 Meaning: Account create karne ka plan ban gaya
+
+⚙️ 10. processPlan()
+Provisioner provisioner = new Provisioner(context);
+ProvisioningProject project = provisioner.compile(plan);
+provisioner.execute(project);
+
+📌 Meaning: Actual SAP me account create ho gaya
+
+🚀 11. launchProvisioningWorkflow()
+WorkflowLaunch wf = new WorkflowLaunch();
+wf.setWorkflowName("Provisioning Workflow");
+wf.start();
+
+📌 Meaning: Workflow start ho gaya
+
+🔄 12. refreshIdentity()
+Identity identity = context.getObjectByName(Identity.class, "Kishan");
+identity.refresh();
+context.saveObject(identity);
+
+📌 Meaning: Roles + access update ho gaya
+
+🧾 13. auditRequest()
+AuditEvent event = new AuditEvent();
+event.setAction("CREATE_REQUEST");
+event.setTarget("SAP Access");
+
+context.saveObject(event);
+
+📌 Meaning: System me log record ho gaya
+
+💬 14. addMessage()
+workItem.addMessage("Approval required from manager");
+
+📌 Meaning: Workflow me note add ho gaya
+
+📧 15. sendNotifications()
+NotificationUtil.sendEmail("manager1@company.com", "Approval Needed", "Please approve request");
+
+📌 Meaning: Email/notification send ho gaya
+
+💬 16. addWorkItemComment()
+workItem.addComment("Approved after review");
+context.saveObject(workItem);
+📌 Meaning: Approver ka comment add ho gaya.
+
+🔴 17. filterRejectedItems():-
+👉 Meaning:-
+Approval set me se sirf rejected items ko separate karta hai.
+
+💻 Example:-
+List rejectedItems = approvalSet.getItems();
+List filtered = new ArrayList();
+
+for(Object item : rejectedItems){
+    if(item.isRejected()){
+        filtered.add(item);
+    }
+}
+📌 Meaning: Sirf reject hua access alag ho gaya.
+
+18. buildRejectionPlan():-
+👉 Meaning:-
+Rejected requests ke liye rollback / undo provisioning plan banata hai.
+
+💻 Example:-
+ProvisioningPlan rejectionPlan = new ProvisioningPlan();
+
+AccountRequest accReq = new AccountRequest();
+accReq.setOperation(AccountRequest.Operation.Delete);
+accReq.setApplication("SAP");
+rejectionPlan.add(accReq);
+📌 Meaning: Reject hua access remove karne ka plan.
+
+19. compileProvisioningProject():-
+Plan ko executable format (ProvisioningProject) me convert karta hai.
+💻 Example:-
+Provisioner prov = new Provisioner(context);
+ProvisioningProject project = prov.compile(rejectionPlan);
+📌 Meaning: Plan ready for execution.
+
+20. closeWorkItem():-
+👉 Meaning:-
+Approval task ko close karta hai (approve/reject ke baad)
+💻 Example:-
+workItem.setState(WorkItem.State.Closed);
+context.saveObject(workItem);
+📌 Meaning: Manager ka task khatam.
+
+21. setRequestStatus():-
+👉 Meaning:-
+Request ka final status set karta hai
+💻 Example:-
+identityRequest.setStatus("REJECTED");
+context.saveObject(identityRequest);
+📌 Meaning: Request final reject mark ho gaya.
+
+22. ❌ 10. cancelIdentityRequest()
+👉 Meaning:-
+Request ko forcefully cancel karta hai
+💻 Example:
+identityRequest.setState("CANCELLED");
+context.saveObject(identityRequest);
+📌 Meaning: Request abort ho gaya.
+
+23. 🏁 9. completeIdentityRequest()
+👉 Meaning:-
+Request ko fully complete mark karta hai (final stage)
+💻 Example:-
+identityRequest.setState("COMPLETED");
+context.saveObject(identityRequest);
+📌 Meaning: Request lifecycle end.
+
+24. processApprovalDecisions():-
+👉 Meaning:-
+Approve/reject decisions ko system-level processing me convert karta hai
+
+💻 Example:-
+for(Approval app : approvalSet){
+    if(app.isApproved()){
+        log.info("Approved item processing");
+    } else {
+        log.info("Rejected item processing");
+    }
+}
+📌 Meaning: Decision ko system execute karta hai.
+
+25. auditDecisions():-
+👉 Meaning:-
+Approval decisions ka audit log store karta hai
+
+💻 Example:-
+AuditEvent event = new AuditEvent();
+event.setAction("APPROVAL_DECISION");
+event.setStatus("REJECTED");
+context.saveObject(event);
+📌 Meaning: Tracking ke liye record store.
+
+26. assimilateWorkItemApprovalSet():-
+Multiple work items ke approval ko combine + merge karta hai approval set me
+💻 Example:-
+approvalSet.addAll(workItem.getApprovalItems());
+📌 Meaning: Sab approvals ek set me merge ho gaye.
+

@@ -1,0 +1,171 @@
+1️⃣ Certification Evidence kya hota hai?
+Certification Evidence = Proof ki access review hua tha aur decision liya gaya tha.
+Matlab jab access certification campaign hota hai, reviewer jo decision leta hai 
+uska record / proof store kiya jata hai.
+
+2️⃣ Example:-
+Manager ko employee ka access review karna hai.
+User : Rahul
+Access : DatabaseAdmin
+Reviewer : Manager
+Decision : Revoke
+Date : 12 March 2026
+Ye sab information Certification Evidence ban jati hai.
+
+3️⃣ Evidence me kya store hota hai
+Field	          Meaning
+User--------kis user ka access review hua
+Access------kaunsa role / entitlement
+Reviewer----kisne review kiya
+Decision----Approve / Revoke
+Date--------kab review hua
+Comment-----reviewer ka reason
+
+4️⃣ Real IAM Example:-
+Campaign : Q1 Access Review
+User : Amit
+Role : FinanceAdmin
+Reviewer : FinanceManager
+Decision : Revoke
+Comment : Not required anymore
+Ye record auditor ko dikha sakte hain.
+
+Certification Evidence Project (Single File)
+import java.util.ArrayList;
+import java.util.List;
+import java.time.LocalDate;
+
+class User {
+
+    private String name;
+    private List<String> accesses;
+
+    public User(String name) {
+
+        this.name = name;
+        this.accesses = new ArrayList<String>();
+
+    }
+
+    public String getName() {
+
+        return name;
+
+    }
+
+    public void addAccess(String access) {
+
+        accesses.add(access);
+
+    }
+
+    public List<String> getAccesses() {
+
+        return accesses;
+
+    }
+
+}
+
+class CertificationEvidence {
+
+    private String user;
+    private String access;
+    private String reviewer;
+    private String decision;
+    private LocalDate date;
+
+    public CertificationEvidence(String user,String access,String reviewer,String decision) {
+
+        this.user=user;
+        this.access=access;
+        this.reviewer=reviewer;
+        this.decision=decision;
+        this.date=LocalDate.now();
+
+    }
+
+    public void displayEvidence() {
+
+        System.out.println("User : "+user);
+        System.out.println("Access : "+access);
+        System.out.println("Reviewer : "+reviewer);
+        System.out.println("Decision : "+decision);
+        System.out.println("Date : "+date);
+        System.out.println("----------------------------");
+
+    }
+
+}
+
+public class CertificationProject {
+
+    public static void main(String[] args) {
+
+        List<User> users=new ArrayList<User>();
+        List<CertificationEvidence> evidences=new ArrayList<CertificationEvidence>();
+
+        User u1=new User("Rahul");
+        User u2=new User("Amit");
+        User u3=new User("Neha");
+
+        u1.addAccess("DatabaseAdmin");
+        u2.addAccess("FinanceAccess");
+        u3.addAccess("HRRecords");
+
+        users.add(u1);
+        users.add(u2);
+        users.add(u3);
+
+        evidences.add(new CertificationEvidence(
+                u1.getName(),
+                "DatabaseAdmin",
+                "Manager",
+                "Revoke"
+        ));
+
+        evidences.add(new CertificationEvidence(
+                u2.getName(),
+                "FinanceAccess",
+                "FinanceManager",
+                "Approve"
+        ));
+
+        evidences.add(new CertificationEvidence(
+                u3.getName(),
+                "HRRecords",
+                "HRManager",
+                "Approve"
+        ));
+
+        System.out.println("===== Certification Evidence =====");
+
+        for(CertificationEvidence ev:evidences) {
+
+            ev.displayEvidence();
+
+        }
+
+    }
+
+}
+Output:-
+===== Certification Evidence =====
+
+User : Rahul
+Access : DatabaseAdmin
+Reviewer : Manager
+Decision : Revoke
+Date : 2026-03-12
+
+User : Amit
+Access : FinanceAccess
+Reviewer : FinanceManager
+Decision : Approve
+Date : 2026-03-12
+
+User : Neha
+Access : HRRecords
+Reviewer : HRManager
+Decision : Approve
+Date : 2026-03-12

@@ -1,0 +1,125 @@
+()Role Risk kya hai?
+Role Risk = kisi role ke permissions ki wajah se security ya compliance risk.
+
+Example:-
+Example 1 (High Risk Role)
+Role: Finance Admin
+Permissions:
+- Read Financial Data
+- Modify Financial Data
+- Delete Financial Records
+
+Yeh role high risk hai kyunki user:-
+data dekh sakta hai
+data change kar sakta hai
+data delete bhi kar sakta hai
+Agar misuse ho gaya to financial fraud ho sakta hai.
+
+Example 2 (Low Risk Role):-
+Role: Finance Viewer
+Permissions:-
+- Read Financial Data
+Yeh low risk role hai kyunki sirf read access hai.
+-----------------
+()Role Risk ke common reasons:-
+1️⃣ Sensitive Permissions:-
+Example:-
+Delete Database
+Approve Payments
+Modify Payroll
+
+2️⃣ Segregation of Duties (SoD) Conflict:-
+Agar ek hi role me conflicting permissions ho.
+Example:-
+Create Vendor
+Approve Vendor Payment
+Ye dangerous hai kyunki ek hi person fraud kar sakta hai.
+
+3️⃣ Excess Privileges:-
+Role me zarurat se zyada permissions ho.
+Example:-
+Developer Role:
+- Read Code
+- Deploy Code
+- Delete Production Database
+
+()SailPoint me roles ko risk score diya jata hai.
+Example:-
+Role	          Risk Level
+Finance Viewer-----Low
+HR Manager---------Medium
+System Admin-------High
+
+()Risk reduce kaise karte hain:-
+1️⃣ Least Privilege follow karo
+2️⃣ SoD policies use karo
+3️⃣ Access review / certification karo
+4️⃣ Time-bound access do
+-----------------------------------------
+example code:-
+Java Code (Role Risk Example)
+import java.util.ArrayList;
+import java.util.List;
+
+class TechnicalRole {
+
+    String roleName;
+    List<String> permissions = new ArrayList<String>();
+
+    TechnicalRole(String roleName) {
+        this.roleName = roleName;
+    }
+
+    void addPermission(String permission) {
+        permissions.add(permission);
+    }
+
+    int calculateRisk() {
+
+        int riskScore = 0;
+
+        for (String perm : permissions) {
+
+            if (perm.equals("Delete Database")) {
+                riskScore += 50;
+            }
+
+            if (perm.equals("Modify Finance Data")) {
+                riskScore += 30;
+            }
+
+            if (perm.equals("Read Finance Reports")) {
+                riskScore += 10;
+            }
+        }
+
+        return riskScore;
+    }
+}
+
+public class RoleRiskExample {
+
+    public static void main(String[] args) {
+
+        TechnicalRole adminRole = new TechnicalRole("System Admin");
+
+        adminRole.addPermission("Read Finance Reports");
+        adminRole.addPermission("Modify Finance Data");
+        adminRole.addPermission("Delete Database");
+
+        int risk = adminRole.calculateRisk();
+
+        System.out.println("Role: " + adminRole.roleName);
+        System.out.println("Risk Score: " + risk);
+
+        if (risk > 60) {
+            System.out.println("High Risk Role!");
+        } else {
+            System.out.println("Low / Medium Risk Role");
+        }
+    }
+}
+Output Example
+Role: System Admin
+Risk Score: 90
+High Risk Role!

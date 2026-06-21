@@ -1,0 +1,120 @@
+🔹 BuildMap kya hai (SailPoint IdentityIQ):-
+SailPoint IdentityIQ me BuildMap ek utility hai jo key-value pairs (Map) banane ke kaam aata hai — mainly provisioning / rule / connector context me.
+
+👉 Simple language me:-
+BuildMap = ek helper jo attributes ko Map format me organize karta hai.
+
+🔹 1️⃣ Map create karta hai:-
+BuildMap ka main kaam ek Map banana hota hai:-
+Map map = BuildMap.create();
+👉 Ye ek empty container bana deta hai jisme data store hoga
+
+🔹 2️⃣ Key-Value data store karta hai:-
+map.put("displayName", "Kishan Singh");
+map.put("department", "IT");
+👉 Data ko key-value pair me store karta hai
+
+🔹 3️⃣ Provisioning attributes prepare karta hai:-
+accountRequest.setAttributes(map);
+👉 Ye attributes target system (AD, DB etc.) ko bhejne ke liye ready karta hai
+
+🔹 4️⃣ Dynamic data handle karta hai:-
+👉 Runtime pe data add / change kar sakte ho:-
+map.put("location", "Bihar");
+👉 Matlab fixed nahi hai, dynamic hai
+
+🔹 5️⃣ Multiple attributes ek sath manage karta hai:-
+👉 Ek hi Map me sab attributes:-
+sAMAccountName
+mail
+department
+title
+👉 Sab ek jagah store ho jata hai
+
+🔹 6️⃣ Connector ko data pass karta hai:-
+👉 BuildMap se banaya hua Map:-
+➡️ Connector (AD, LDAP, DB) ko data bhejta hai
+➡️ Provisioning ke time use hota hai
+
+🔹 7️⃣ Rule me data organize karta hai:-
+👉 BeforeProvisioning / AfterProvisioning me:-
+clean data
+modify data
+validate data
+sab Map ke through hota hai.
+
+🔥 Final Summary:-
+BuildMap:-
+✔ Map create karta hai
+✔ Key-value store karta hai
+✔ Attributes organize karta hai
+✔ Provisioning ke liye data ready karta hai
+✔ Dynamic data handle karta hai
+✔ Connector ko data pass karta hai.
+-------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Custom-CSV-BuildMap-Rule" type="BuildMap">
+  <Description>
+    Production Rule: 
+    1. Trims all input values to avoid whitespace issues.
+    2. Merges 'FirstName' and 'LastName' into 'DisplayName'.
+    3. Formats 'TerminationDate' for SailPoint compatibility.
+  </Description>
+  <Source>
+  <![CDATA[
+  import sailpoint.connector.Connector;
+  import sailpoint.connector.DelimitedFileConnector;
+  import java.util.Map;
+  import java.text.SimpleDateFormat;
+  import java.util.Date;
+
+  // 1. Row data ko map mein convert karna (Default behavior)
+  Map map = DelimitedFileConnector.defaultBuildMap(cols, record);
+
+  if (map != null) {
+      
+      // 2. Data Cleaning: Saare attributes se extra spaces hatana
+      for (String key : map.keySet()) {
+          Object val = map.get(key);
+          if (val instanceof String) {
+              map.put(key, ((String) val).trim());
+          }
+      }
+
+      // 3. Logic: Full Name / Display Name banana
+      String fName = (String) map.get("First_Name");
+      String lName = (String) map.get("Last_Name");
+      if (fName != null && lName != null) {
+          map.put("DisplayName", fName + " " + lName);
+      }
+
+      // 4. Logic: Date Formatting (Production Standard)
+      // CSV Date: 31-12-2025 -> SailPoint Date: 12/31/2025
+      String rawDate = (String) map.get("Term_Date");
+      if (rawDate != null && !rawDate.isEmpty()) {
+          try {
+              SimpleDateFormat csvFormat = new SimpleDateFormat("dd-MM-yyyy");
+              SimpleDateFormat spFormat = new SimpleDateFormat("MM/dd/yyyy");
+              Date dateObj = csvFormat.parse(rawDate);
+              map.put("Term_Date", spFormat.format(dateObj));
+          } catch (Exception e) {
+              // Agar date galat hai toh null set karke aage badho
+              map.put("Term_Date", null);
+          }
+      }
+
+      // 5. Logic: Status Calculation
+      String hrStatus = (String) map.get("HR_Code");
+      if ("A1".equalsIgnoreCase(hrStatus)) {
+          map.put("status", "Active");
+      } else {
+          map.put("status", "Inactive");
+      }
+  }
+
+  return map; // Ye map "Resource Object" ban jata hai
+  ]]>
+  </Source>
+</Rule>
+-------------------------------------------------------------------------------------------------------

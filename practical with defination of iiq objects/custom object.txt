@@ -1,0 +1,114 @@
+1. Basic Workflows (5–10)
+Pehle ye samjho:
+Hello World / Simple Workflow
+Approval Workflow
+Provisioning Workflow
+Identity Refresh Workflow
+LCM Workflow basics
+Notification / Email Workflow
+Subprocess Workflow
+Form Workflow
+Rule call in Workflow
+Variables, Arg, Transition, Step
+
+2. Important Custom Workflows (10–20)
+Ye practice karo:
+Joiner Workflow (new employee)
+Mover Workflow (department change)
+Leaver Workflow (employee exit)
+Manager Approval Workflow
+Multi-Level Approval Workflow
+Auto Approval Workflow
+Application Provisioning Workflow
+Password Reset Workflow
+Access Request Workflow
+Role Assignment Workflow
+Certification/Review Trigger Workflow
+Escalation Workflow
+Rejection/Rework Workflow
+Email Notification Workflow
+Sunrise/Sunset based Workflow
+
+3. Advanced Custom Workflows (10+)
+Developer level ke liye:
+Dynamic Approver Workflow
+Parallel Approval Workflow
+Custom Form + Workflow
+Rule + Workflow integration
+BeanShell scripting in Workflow
+WebService/API call from workflow
+Error handling & retry workflow
+Workflow debugging/logging
+Subprocess chaining
+Complex provisioning plans
+-----------------------------------------------------------------------------------------------------------
+1. Custom Rules
+Approx 20–50+ types/concepts
+Examples:
+Custom Before Provisioning Rule
+Custom After Provisioning Rule
+Custom Correlation Rule
+Custom Creation Rule
+Custom Validation Rule
+Custom BuildMap Rule
+Custom JDBC Rule
+Custom WebService Rule
+Custom Workflow Rule
+2. Custom Workflows
+Approx 20–30 practice workflows
+Examples:
+Custom Joiner Workflow
+Custom Mover Workflow
+Custom Leaver Workflow
+Custom Approval Workflow
+Dynamic Approver Workflow
+Multi-Level Approval Workflow
+Custom Access Request Workflow
+3. Custom Forms
+Dynamic fields
+Validation
+Field dependencies
+Scripted fields
+Hidden/Readonly fields
+4. Custom Objects / Code
+Custom Java Class
+BeanShell scripting
+Custom library/util classes
+API Integration
+SQL/JDBC logic
+JSON/XML handling
+5. Custom UI / Configuration
+QuickLinks
+Email Templates
+Lifecycle Events
+Policies
+Tasks
+Reports customization
+6. Custom Connector Logic
+JDBC customization
+WebService API customization
+Custom provisioning logic
+Developer level custom development me fixed number nahi hai.
+-------------------------------------------------------------------
+5. Custom Connectors (JDBC, WebService, LDAP, etc.)
+6. Custom Provisioning Logic
+7. Custom Aggregation Logic
+8. Custom Correlation Logic
+9. Custom Java Classes / JAR libraries
+10. Custom API Integration (REST/SOAP)
+11. Custom QuickLinks
+12. Custom Email Templates / Notifications
+13. Custom Lifecycle Events (Joiner/Mover/Leaver)
+14. Custom Policies / Password Policies
+15. Custom Certifications / Campaign configs
+16. Custom Reports
+17. Custom UI / Plugin Development
+18. Custom Objects (Custom object, Configuration object)
+19. Custom SQL / JDBC Logic
+20. Custom Debugging / Logging setup
+21. Custom Beanshell Scripts
+22. Custom XML Configurations
+23. Custom Roles / Entitlement logic
+24. Custom Identity Mapping / Schema logic
+25. Custom Import/Export Deployments
+----------------------------------------------------

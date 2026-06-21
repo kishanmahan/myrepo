@@ -1,0 +1,1324 @@
+🔹 1️⃣ WorkflowService kya hai?
+👉 WorkflowService = class jo workflows ko start / manage / execute karti hai
+👉 Package:-
+sailpoint.api.WorkflowService
+💡 Simple line me:-
+👉 “Workflow chalane ka engine” = WorkflowService
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------------
+🔹 5️⃣ Simple Example:-
+import sailpoint.api.SailPointContext;
+import sailpoint.api.WorkflowService;
+import sailpoint.object.Workflow;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class Demo {
+    public static void main(String[] args) throws Exception {
+
+        SailPointContext context = SailPointContextFactory.createContext();
+
+        WorkflowService wfService = new WorkflowService(context);
+
+        Workflow wf = (Workflow) context.getObjectByName(Workflow.class, "My Workflow");
+
+        Map<String, Object> argsMap = new HashMap<String, Object>();
+        argsMap.put("identityName", "user1");
+
+        wfService.launch(wf, argsMap);
+
+        System.out.println("Workflow started...");
+    }
+}
+🔹 6️⃣ Output:-
+Workflow started...
+------------------------------------------------------------------------------------------------------------------------------
+🔥 1️⃣ Workflow Launch ka pura flow:-
+------------------------------------------------------------------------------------------------------------------------------
+✔🧠 Main kaam kya karta hai?
+1️⃣ Workflow Start Karna?
+👉 WorkflowService ka sabse pehla kaam hota hai workflow ko start karna,
+Kisi bhi workflow ko trigger karta hai
+Input parameters (args) leta hai
+Execution start karta hai.
+
+👉 Example:-
+WorkflowService wfService = new WorkflowService(context);
+wfService.launch(workflowName, args);
+--------------
+✔2️⃣ Workflow Load Hota Hai:-
+👉 Launch hone ke baad:-
+Workflow definition DB ya XML se load hota hai
+Ye ek static template/configuration hota hai
+Isme steps, transitions, approvals defined hote hain
+--------------
+3️⃣ WorkflowCase create aur manage karna:-
+Jab workflow start hota hai → ek WorkflowCase object banta hai
+️⃣ WorkflowCase Me Kya Store Hota Hai
+👉 WorkflowCase ke andar:-
+workflow name
+variables (args)
+current step
+status (Running / Completed / Pending)
+audit info (kisne start kiya, kab, etc.)
+--------------
+5️⃣ Workflow Execution Control:-
+👉 Ab actual execution start hota hai:-
+Workflow step-by-step chalta hai
+Har step ka logic execute hota hai
+WorkflowService decide karta hai:
+next step kya hoga (transition)
+--------------
+🧠 6️⃣ Variables Inject Hote Hain (Deep Explanation)
+👉 Kya hota hai exactly?
+Jab tu workflow launch karta hai:-
+Attributes args = new Attributes();
+args.put("identityName", "Ravi");
+args.put("role", "Developer");
+wfService.launch("MyWorkflow", args);
+👉 Ye jo args hai na — ye hi workflow ke input variables hote hain.
+
+⚙️ Internally kya hota hai?
+✔️ Step 1: args → WorkflowCase me store
+WorkflowService args ko uthata hai
+Aur usko WorkflowCase ke context/variables map me daal deta hai
+👉 Internally kuch aisa samajh:-
+workflowCase.put("identityName", "Ravi");
+workflowCase.put("role", "Developer");
+
+✔️ Step 2: Global Variables ban jaate hain.
+👉 Ab ye variables:-
+Pure workflow me available hote hain
+Har step me access ho sakte hain
+Global scope me rehte hain
+------------------------------------------------------------------------------------------------------------------------------
+🔄 2️⃣ Workflow Execution Engine (core logic):-
+------------------------------------------------------------------------------------------------------------------------------
+WorkflowService internally ek engine ki tarah kaam karta hai.
+👉 Har step pe:-
+Step identify karta hai
+Step type check karta hai
+Uska logic execute karta hai
+
+🔹 Step types kya ho sakte hain:
+1. Script Step
+<Script>
+   // Java / Beanshell code
+</Script>
+👉 Direct code run hota hai.
+
+2. Approval Step:-
+👉 Yaha:-
+ApprovalItem create hota hai
+Approver assign hota hai
+Workflow pause ho jata hai
+
+3. Task Step:-
+👉 Background task run hota hai
+
+4. Transition:-
+👉 Decide karta hai:-
+Next step kya hoga.
+------------------------------------------------------------------------------------------------------------------------------
+🧾 3️⃣ WorkflowCase (Runtime Heart 💥):-
+👉 Ye sabse critical object hai
+-----------------------------------------------------
+Isme kya kya hota hai:-
+
+🔸 Basic Info:-
+workflow name
+case id
+
+🔸 State:-
+Running
+Pending
+Completed
+Terminated
+
+🔸 Variables:-
+case.get("identityName");
+case.put("status", "approved");
+
+🔸 Current Step:-
+Abhi kaun sa step chal raha hai
+------------------------------------------------------------------------------------------------------------------------------
+⏸️ 4️⃣ Pause & Resume Mechanism:-
+----------------------------------------------------
+👉 Jab approval aata hai:
+Workflow pause ho jata hai
+State → Pending
+👉 Jab user approve karta hai:
+WorkflowService fir se call hota hai
+Workflow resume hota hai
+------------------------------------------------------------------------------------------------------------------------------
+✅ 5️⃣ Approval Handling (real flow):-
+----------------------------------------------------------------------------
+👉 Internally kya hota hai:-
+Approval step aaya
+ApprovalItem create hua
+Approver assign hua
+DB me save hua
+Workflow ruk gaya
+👉 Approve hone pe:
+approvalItem.approve();
+context.saveObject(approvalItem);
+
+👉 Fir:-
+WorkflowService resume karta hai
+Next step execute hota hai.
+--------------------------------------------------------------------------------
+🔗 6️⃣ Request + Workflow integration
+----------------------------------------------------------
+👉 Jab user request submit karta hai:-
+Request object create hota hai
+RequestDefinition decide karta hai kaunsa workflow chalega
+WorkflowService launch karta hai
+---------------------------------------------------------------------------------
+🔄 7️⃣ Task Integration:-
+--------------------------------------------------------
+👉 Workflow me task bhi run ho sakta hai:-
+Identity refresh
+Aggregation
+Provisioning
+
+👉 WorkflowService:-
+Task trigger karta hai
+Result handle karta hai
+-----------------------------------------------------------------
+⚠️ 8️⃣ Error Handling:-
+-------------------------------------------
+👉 Agar workflow me error aata hai:-
+WorkflowCase me error store hota hai
+Workflow terminate ho sakta hai
+-----------------------------------------------------------------
+🛑 9️⃣ Termination
+wfService.terminate(workflowCase);
+👉 Ye:-
+Workflow ko force stop karta hai.
+------------------------------------------------------------------------------------------------------------------------------
+()WorkflowService methods:-
+------------------------------------------------------------------------------------------------------------------------------
+getWorkflow(String name)
+getWorkflowById(String id)
+
+launchWorkflow(String workflowName, Map args)
+launchWorkflow(Workflow workflow, Map args)
+launch(String workflowName, Attributes args)
+launch(Workflow workflow, Attributes args)
+
+startWorkflow(String workflowName, Map args)
+startWorkflow(Workflow workflow, Map args)
+
+resumeWorkflow(String workflowId)
+resumeWorkflow(WorkflowCase workflowCase)
+resume(WorkflowCase workflowCase)
+resume(String workflowCaseId)
+
+suspend(WorkflowCase workflowCase)
+suspend(String workflowCaseId)
+suspendWorkflow(String workflowId)
+terminateWorkflow(String workflowId)
+terminate(WorkflowCase workflowCase)
+terminate(String workflowCaseId)
+
+retryWorkflow(String workflowId)
+retry(WorkflowCase workflowCase)
+retry(String workflowCaseId)
+
+getWorkflowCase(String id)
+getWorkflowCaseByName(String name)
+getWorkflowCases()
+getWorkflowCasesByUser(String user)
+getWorkflowCasesByStatus(String status)
+getWorkflowCaseById(String id)
+
+saveWorkflowCase(WorkflowCase workflowCase)
+updateWorkflowCase(WorkflowCase workflowCase)
+deleteWorkflowCase(WorkflowCase workflowCase)
+
+getTasks(WorkflowCase workflowCase)
+getTaskById(String id)
+getTask(String taskId)
+
+completeTask(String taskId, Map args)
+assignTask(String taskId, String user)
+reassignTask(String taskId, String user)
+
+getVariables(WorkflowCase workflowCase)
+setVariable(WorkflowCase workflowCase, String name, Object value)
+
+getHistory(WorkflowCase workflowCase)
+
+validateWorkflow(Workflow workflow)
+
+advance(WorkflowCase workflowCase)
+complete(WorkflowCase workflowCase)
+--------------------------------------------------------------------------------------------------------------------------
+🧠 1️⃣ getWorkflow(String name):-
+👉 Kya karta hai?
+Workflow ko uske naam(name) se fetch karta hai,
+DB ya configuration (XML) se workflow definition uthata hai.
+sirf workflow(template/configuration) object deta hai.
+
+⚙️ Internally kya hota hai:-
+System workflow ka name match karta hai
+Agar match mil gaya → Workflow object return
+Nahi mila → null
+
+📦 Kya return karta hai?
+👉 Workflow object (template)
+
+💡 Example:-
+Workflow wf = wfService.getWorkflow("RoleAssignmentWorkflow");
+
+👉 Ab tu:-
+workflow ke steps dekh sakta hai
+validate kar sakta hai
+launch bhi kar sakta hai.
+---------------------------------------
+🧠 2️⃣ getWorkflowById(String id):-
+👉 Kya karta hai?
+Workflow ko ID se fetch karta hai,
+Usually unique identifier hota hai.
+
+⚙️ Internally:-
+DB me workflow ka ID match karta hai
+Match mila → workflow return
+Nahi mila → null
+
+📦 Return:-
+👉 Workflow object
+
+💡 Example:-
+Workflow wf = wfService.getWorkflowById("8a80828f123456");
+-------------------------------------------------------------
+🧠 1️⃣ launchWorkflow(String workflowName, Map args):-
+👉 Kya karta hai?
+Workflow ko name se launch karta hai.
+Map ke through input variables leta hai.
+
+⚙️ Internally:-
+workflowName se workflow load hota hai
+Map → internally convert hota hai Attributes me
+Fir actual engine launch() ko call karta hai
+💡 Example:-
+Map args = new HashMap();
+args.put("identityName", "Ravi");
+wfService.launchWorkflow("MyWorkflow", args);
+-------------------------------------------------------------
+🧠 2️⃣ launchWorkflow(Workflow workflow, Map args):-
+👉 Kya karta hai?
+Direct Workflow object se launch karta hai,
+Map input leta hai.
+
+⚙️ Internally:-
+Workflow already loaded hota hai
+Map → convert hota hai Attributes me
+Fir launch() call hota hai
+💡 Example:-
+Workflow wf = wfService.getWorkflow("MyWorkflow");
+Map args = new HashMap();
+args.put("identityName", "Ravi");
+wfService.launchWorkflow(wf, args);
+--------------------------------------------------------------------------
+🧠 3️⃣ launch(String workflowName, Attributes args) ✅ (REAL CORE 🔥):-
+👉 Kya karta hai?
+Ye actual core method hai.
+Name se workflow load karta hai.
+Direct Attributes accept karta hai.
+
+⚙️ Internally:-
+Workflow load hota hai
+WorkflowCase create hota hai
+Variables inject hote hain
+Execution start hota hai
+💡 Example:-
+Attributes args = new Attributes();
+args.put("identityName", "Ravi");
+wfService.launch("MyWorkflow", args);
+---------------------------------------------------------------------------
+🧠 4️⃣ launch(Workflow workflow, Attributes args) ✅ (REAL CORE 🔥):-
+👉 Kya karta hai?
+Direct Workflow object se launch karta hai
+Attributes use karta hai
+💡 Example:-
+Workflow wf = wfService.getWorkflow("MyWorkflow");
+Attributes args = new Attributes();
+args.put("identityName", "Ravi");
+wfService.launch(wf, args);
+---------------------------------------------------------------------------
+🧠 1️⃣ startWorkflow(String workflowName, Map args):-
+👉 Kya karta hai?
+Workflow ko naam se start karta hai.
+Map me diye gaye input variables leta hai
+
+⚙️ Internally kya hota hai?
+workflowName se workflow load hota hai
+Map → convert hota hai Attributes me
+Fir internally launch() method call hota hai
+💡 Example:-
+Map args = new HashMap();
+args.put("identityName", "Ravi");
+wfService.startWorkflow("MyWorkflow", args);
+-------------------------------------------------------------------------------
+🧠 2️⃣ startWorkflow(Workflow workflow, Map args):-
+👉 Kya karta hai?
+Direct Workflow object se start karta hai
+Map arguments leta hai
+
+⚙️ Internally:-
+Workflow already loaded hota hai
+Map → Attributes me convert
+Fir launch(workflow, Attributes) call hota hai
+💡 Example:-
+Workflow wf = wfService.getWorkflow("MyWorkflow");
+Map args = new HashMap();
+args.put("identityName", "Ravi");
+wfService.startWorkflow(wf, args);
+---------------------------------------------------------------------------------
+⚠️ Important Points:-
+❗ 1. Same kaam karta hai
+👉 startWorkflow = launchWorkflow = wrapper
+
+❗ 2. Real engine sirf ek hai
+👉 Final execution hamesha:-
+launch(...)
+
+❗ 3. Interview trap 😈:-
+Agar koi bole:-
+👉 “startWorkflow aur launch me difference?”
+
+👉 tu bol:-
+startWorkflow → wrapper
+launch → actual engine method
+
+⚡ Ek Line Me:-
+👉 startWorkflow internally launch ko call karta hai — direct engine method nahi hai.
+-----------------------------------------------------------------------------------------
+🧠 1️⃣ Concept: Resume Workflow:-
+Resume ka kaam:-
+Jab workflow pause ya wait state me hota hai (mostly approval, timer, external input)
+Tab ye method workflow ko dobara execute state me le aata hai
+Step-by-step execution wahi se continue hota hai jaha pause hua tha.
+
+Step 0: Input Method:-
+()Wrapper vs Core:-
+()Wrapper call (custom project):-
+wfService.resumeWorkflow(String workflowCaseId);
+wfService.resumeWorkflow(WorkflowCase workflowCase);
+
+()Core engine call:-
+wfService.resume(WorkflowCase workflowCase);
+wfService.resume(String workflowCaseId); // internally fetch + resume
+
+🧠 1️⃣ Wrapper Call (Custom Project):-
+Methods:-
+wfService.resumeWorkflow(String workflowCaseId);
+wfService.resumeWorkflow(WorkflowCase workflowCase);
+
+Kya karte hain:-
+Ye helper / wrapper methods hote hain,
+WorkflowCase ko resume karne ke liye core engine (resume()) ko internally call karte hain.
+
+()Difference bas input type me hai:-
+String workflowCaseId → workflowCase ko ID se fetch karke resume karta hai
+WorkflowCase object → direct object use karke resume karta hai
+Execution ke har step ka logic core engine handle karta hai.
+
+🧠 2️⃣ Core Engine Call:-
+Methods:-
+wfService.resume(WorkflowCase workflowCase);
+wfService.resume(String workflowCaseId); // internally fetch + resume
+
+Kya karte hain:-
+Ye real workflow execution ka engine hai
+Step-by-step workflow ko waha se resume karta hai jaha workflow paused / pending tha,
+WorkflowCase ke variables, current step, state maintain hote hain.
+Loop ke through current step → next step execute hota hai.
+Status update hota hai (Running → Completed).
+WorkflowCase DB / context me save hota hai aur history / audit trail update hoti hai.
+
+()Difference from wrapper:-
+Wrapper → internally call karta hai core engine,
+Core engine → actual step-by-step execution logic.
+--------------------------------------------------------------------------------------------------------------------------------------------
+🧠 1️⃣ Suspend Workflow – Line by Line Flow:-
+Scenario:-
+WorkflowCase running / pending hai
+Hum usko temporarily pause / suspend karna chahte hain.
+
+()suspend(WorkflowCase workflowCase):-
+ye direct Core engine hai.
+Real engine method → workflow ko pause / suspended state me set karta hai.
+
+()suspend(String workflowCaseId):-
+ye Core wrapper call karta hai.
+ID se WorkflowCase fetch karta hai → internally suspend(WorkflowCase) call karta hai.
+
+()suspendWorkflow(String workflowId):-
+ye Wrapper call karta hai.
+ye method me→ internally core engine suspend() call karta hai.
+
+🧠 2️⃣ Terminate Methods:-
+()terminateWorkflow(String workflowId):-
+Workflow ID ke basis pe workflow fetch karta hai internally aur wrapper call karta hai internally aur 
+core engine ko call karta hai workflow terminate ho jaye forcefully khatam ho jaye. 
+
+()terminate(WorkflowCase workflowCase):-
+ye directly Core engine call karta hai.ki internally 
+core engine → workflow ko terminate / stopped state me set karta hai.
+
+()terminate(String workflowCaseId):-ye Core wrapper call karta hai, 
+ye method ID se WorkflowCase fetch → internally terminate(WorkflowCase) call karta hai.
+-----------------------------------------------------------------------------------------------------------------------------------------
+()🧠 1️⃣ Retry Workflow – Concept:-
+Retry ka kaam:-
+Jab workflow execution fail / error me ho jaye
+Hum workflow ko dobara attempt karna chahte hain
+WorkflowCase ke variables, current step, state maintain hote hain
+Retry = fresh execution from failed step / starting point.
+
+🔹 2️⃣ Methods Overview:-
+()retryWorkflow(String workflowId):-ye method id ke basis pe workflow fetch karta hai aur 
+ye Wrapper call karta hai core engine ko aur core engine internally retry(workflow) call karta hai.
+
+()retry(WorkflowCase workflowCase):-ye method workflowCase object ka input leta hai aur directly core engine call karta hai 
+aur core engine retry(workflow) method call from failed step se karta hai.
+
+()retry(String workflowCaseId):-ye method WorkflowCase object ko ID ke basis pe fetch karta hai,
+ye Core wrapper call karta hai internally core engine ko aur core engine call karta hai internally retry(workflowCaseId).
+internally call retry(WorkflowCase)
+---------------------------------------------------------------------------------------------------------------------------------------------
+()1️⃣ getWorkflowCase(String id) ✅ (Core Method):-
+👉 Kya karta hai:-
+WorkflowCase ko ID se DB / context se fetch karta hai
+🔹 Code:-
+WorkflowCase wfCase = wfService.getWorkflowCase("8a80828f123456");
+🔹 Internally:-
+public WorkflowCase getWorkflowCase(String id) {
+    return context.getObjectById(WorkflowCase.class, id); // DB se fetch
+}
+📌 Output:-
+Ek single WorkflowCase object return
+Nahi mila → null
+
+2️⃣ getWorkflowCaseById(String id):-
+👉 Kya karta hai:-
+Same kaam as getWorkflowCase(id)
+🔹 Internally:-
+public WorkflowCase getWorkflowCaseById(String id) {
+    return getWorkflowCase(id); // same call
+}
+👉 Sirf naming difference hai.
+
+3️⃣ getWorkflowCases():-
+👉 Kya karta hai:-
+System ke saare workflow cases fetch karta hai
+🔹 Internally:-
+public List<WorkflowCase> getWorkflowCases() {
+    return context.getObjects(WorkflowCase.class);
+}
+📌 Output:-
+List of all workflow cases.
+
+4️⃣ getWorkflowCaseByName(String name) ❌ (Custom):-
+👉 Kya karta hai:-
+WorkflowCase ko name se search karta hai
+🔹 Internally (query based):-
+public WorkflowCase getWorkflowCaseByName(String name) {
+    QueryOptions qo = new QueryOptions();
+    qo.addFilter(Filter.eq("name", name));
+
+    return context.getObjects(WorkflowCase.class, qo).get(0);
+}
+
+5️⃣ getWorkflowCasesByUser(String user):-
+👉 Kya karta hai:-
+Kisi specific user ke workflow cases nikalta hai
+🔹 Internally:-
+public List<WorkflowCase> getWorkflowCasesByUser(String user) {
+    QueryOptions qo = new QueryOptions();
+    qo.addFilter(Filter.eq("owner", user));
+
+    return context.getObjects(WorkflowCase.class, qo);
+}
+
+6️⃣ getWorkflowCasesByStatus(String status):-
+👉 Kya karta hai:-
+Status ke basis pe workflow cases filter karta hai
+(Running / Completed / Pending)
+🔹 Internally:-
+public List<WorkflowCase> getWorkflowCasesByStatus(String status) {
+    QueryOptions qo = new QueryOptions();
+    qo.addFilter(Filter.eq("status", status));
+
+    return context.getObjects(WorkflowCase.class, qo);
+}
+-------------------------------------------------------------------------------------------------------------------------------------------------
+🧠 2️⃣ 1️⃣ saveWorkflowCase(WorkflowCase workflowCase)
+👉 Kya karta hai:-
+Naya WorkflowCase DB me save karta hai.
+
+🔹 Wrapper Code:-
+public void saveWorkflowCase(WorkflowCase workflowCase) {
+    context.saveObject(workflowCase);   // DB save
+    context.commitTransaction();        // commit
+}
+
+🧠 2️⃣ 2️⃣ updateWorkflowCase(WorkflowCase workflowCase)
+👉 Kya karta hai:-
+Existing WorkflowCase ko update karta hai.
+
+🔹 Wrapper Code:-
+public void updateWorkflowCase(WorkflowCase workflowCase) {
+    context.saveObject(workflowCase);   // update
+    context.commitTransaction();        // commit
+}
+
+🧠 3️⃣ 3️⃣ deleteWorkflowCase(WorkflowCase workflowCase)
+👉 Kya karta hai:-
+WorkflowCase ko DB se permanently delete karta hai.
+
+🔹 Wrapper Code:-
+public void deleteWorkflowCase(WorkflowCase workflowCase) {
+    context.deleteObject(workflowCase); // delete
+    context.commitTransaction();        // commit
+}
+-----------------------------------------------------------------------------------------------------
+🧠 3️⃣ 2️⃣ getTaskById(String id):-
+👉 Kya karta hai:-
+Task ko ID se fetch karta hai
+🔹 Internally:-
+public Task getTaskById(String id) {
+    return getTask(id); // wrapper
+}
+
+🧠 4️⃣ 3️⃣ getTask(String taskId):-
+👉 Kya karta hai:-
+Task ko direct DB / context se ID ke basis pe fetch karta hai.
+
+🧠 2️⃣ 1️⃣ getTasks(WorkflowCase workflowCase):-
+👉 Kya karta hai:-
+Ek workflowCase ke saare tasks (work items / approval tasks) nikalta hai
+🔹 Internally (Query based):-
+public List<Task> getTasks(WorkflowCase workflowCase) {
+    QueryOptions qo = new QueryOptions();
+
+    // WorkflowCase ke basis pe filter
+    qo.addFilter(Filter.eq("workflowCaseId", workflowCase.getId()));
+
+    return context.getObjects(Task.class, qo);
+}
+--------------------------------------------------------------------------------------------------------\
+🧠 2️⃣ 1️⃣ completeTask(String taskId, Map args):-
+👉 Kya karta hai:-
+Task ko complete karta hai,
+Saath me input variables (args) update karta hai,
+Workflow ko next step me move kar deta hai (resume trigger).
+
+🧠 3️⃣ 2️⃣ assignTask(String taskId, String user):-
+👉 Kya karta hai:-
+Task ko kisi user ko assign karta hai (owner set)
+
+🧠 4️⃣ 3️⃣ reassignTask(String taskId, String user):-
+👉 Kya karta hai:-
+Already assigned task ko dusre user ko transfer karta hai.
+
+🧠 2️⃣ 1️⃣ getVariables(WorkflowCase workflowCase):-
+👉 Kya karta hai:-
+WorkflowCase ke saare variables (args) return karta hai.
+
+🧠 3️⃣ 2️⃣ setVariable(WorkflowCase workflowCase, String name, Object value):-
+👉 Kya karta hai:-
+WorkflowCase me naya variable add / update karta hai.
+
+🧠 4️⃣ 3️⃣ getHistory(WorkflowCase workflowCase):-
+👉 Kya karta hai:-
+WorkflowCase ka audit trail / history return karta hai.
+---------------------------------------------------------------------------------------------------------
+()advance(WorkflowCase workflowCase):-
+🧠 2️⃣ 1️⃣ advance(WorkflowCase workflowCase) 🔥
+👉 Kya karta hai:
+Workflow ko current step se next step tak execute karta hai,
+Ye engine ka heart method hai,
+Resume / launch ke baad internally ye hi chalta hai,
+ye method Core Engine	ko call karta hai directly.
+Step-by-step workflow execute karta hai.
+---------------------------------------------------------------------------------------------------------
+🧠 3️⃣ 2️⃣ complete(WorkflowCase workflowCase):-
+👉 Kya karta hai:-
+Workflow ko final state (Completed) me le jata hai
+Execution finish kar deta hai,
+ye method Core Engine ko call karta hai directly.
+----------------------------------------------------------------------------------------------------------
+()validateWorkflow(Workflow workflow) kya karta hai?
+--👉 🔥 Ye usually launch se pehle workflow sahi hai ya nahi check karta hai.
+🔹 1️⃣ Basic Validation:-
+✔️ Workflow null hai ya nahi
+✔️ Workflow ka naam (name) present hai ya nahi
+✔️ Duplicate workflow name to nahi hai
+
+🔹 2️⃣ Start Step Validation:-
+✔️ Workflow me start step defined hai ya nahi
+✔️ Start step valid step list me exist karta hai ya nahi
+👉 ❌ Agar start step missing → workflow run nahi hoga.
+
+🔹 3️⃣ Steps Validation:-
+✔️ Har step ka name present hai
+✔️ Step duplicate nahi hai
+✔️ Step type valid hai (Script / Task / Approval / End)
+✔️ Step properly defined hai (empty step nahi hona chahiye).
+
+🔹 5️⃣ End Step Validation:-
+✔️ Workflow me kam se kam ek end step hona chahiye
+✔️ End step ka next step nahi hona chahiye.
+
+🔹 6️⃣ Variables / Inputs Validation:-
+✔️ Variables defined hain ya nahi
+✔️ Required inputs missing to nahi hai
+✔️ Variable names duplicate nahi hai
+✔️ Data type compatible hai (String, Boolean, etc.).
+
+🔹 7️⃣ Script Validation:-
+✔️ Script syntax valid hai
+✔️ Script null nahi hai
+✔️ Required variables script me available hain
+✔️ Return type sahi hai
+👉 ❌ Script error → workflow fail.
+
+🔹 8️⃣ Task Validation:-
+✔️ Task definition exist karta hai
+✔️ Task handler defined hai
+✔️ Task properly configured hai
+✔️ Required inputs available hain.
+
+🔹 9️⃣ Approval Step Validation:-
+✔️ Approver defined hai (user / role)
+✔️ Approval type valid hai
+✔️ Escalation / reminder config sahi hai
+✔️ Approval item properly linked hai.
+
+🔹 🔟 Condition / Rule Validation:-
+✔️ Conditions valid hain (if/else)
+✔️ Rule references exist karte hain
+✔️ Expression syntax correct hai
+
+🔹 1️⃣1️⃣ Loop / Flow Safety Validation:-
+✔️ Infinite loop nahi hona chahiye
+✔️ Circular dependency safe hai ya nahi
+✔️ Workflow hang nahi hona chahiye.
+
+🔹 1️⃣2️⃣ Metadata Validation:-
+✔️ Workflow version valid hai
+✔️ Description / metadata correct hai
+✔️ Required flags set hain.
+
+🧠 🔹 4️⃣ Transition Validation (Flow Check):-
+👉 Ye check karta hai ki workflow ek step se dusre step tak sahi flow me ja raha hai ya nahi.
+
+1️⃣ Next Step Exist karta hai ya nahi:-
+✔️ Har step ka next step defined hona chahiye
+✔️ Jo next step diya hai wo workflow me exist karta ho.
+
+2️⃣ Dead End Check:-
+✔️ Har step ka flow kisi next step ya end tak jana chahiye
+✔️ Beech me rukna nahi chahiye.
+
+3️⃣ End Step Validation:-
+✔️ End step ka next step nahi hona chahiye,
+✔️ Workflow properly terminate hona chahiye.
+
+4️⃣ Circular Loop Check (Infinite Loop):-
+✔️ Infinite loop avoid hona chahiye
+✔️ Same steps me endlessly ghoomna nahi chahiye
+
+5️⃣ Conditional Transition Check:-
+✔️ If/Else condition valid honi chahiye
+✔️ Condition ke dono paths valid step pe jane chahiye.
+
+6️⃣ Multiple Path Validation:-
+✔️ Ek step se multiple transitions ho sakte hain
+✔️ Har path valid hona chahiye.
+
+Example:-
+ApproveStep:-
+   → Approved → CompleteStep
+   → Rejected → EndStep
+
+7️⃣ Transition Consistency:-
+✔️ Step flow logical hona chahiye
+✔️ Random / unreachable steps nahi hone chahiye
+❌ Error:-
+Step defined hai but kisi se connected nahi ❌
+----------------------------------------------------------------------------------------------------------------------------------------------
+package com.example.workflow;
+
+import java.util.Map;
+import java.util.List;
+import java.util.Date;
+
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointFactory;
+import sailpoint.object.Workflow;
+import sailpoint.object.WorkflowCase;
+import sailpoint.object.Task;
+import sailpoint.object.QueryOptions;
+import sailpoint.object.Filter;
+
+public class WorkflowUtil {
+
+    // =========================
+    // 🔹 GET CONTEXT
+    // =========================
+    private SailPointContext getContext() throws Exception {
+        return SailPointFactory.getCurrentContext();
+    }
+
+    // =========================
+    // 🔹 LAUNCH WORKFLOW
+    // =========================
+    public WorkflowCase launchWorkflow(String workflowName, Map<String, Object> args) throws Exception {
+
+        SailPointContext context = getContext();
+
+        Workflow wf = context.getObjectByName(Workflow.class, workflowName);
+
+        WorkflowCase wfCase = new WorkflowCase();
+        wfCase.setWorkflow(wf);
+        wfCase.setName(workflowName);
+        wfCase.setVariables(args);
+        wfCase.setStatus("Running");
+        wfCase.setStart(new Date());
+
+        context.saveObject(wfCase);
+        context.commitTransaction();
+
+        advance(wfCase);
+
+        return wfCase;
+    }
+
+    // =========================
+    // 🔹 RESUME
+    // =========================
+    public WorkflowCase resumeWorkflow(WorkflowCase wfCase) throws Exception {
+        return resume(wfCase);
+    }
+
+    public WorkflowCase resume(WorkflowCase wfCase) throws Exception {
+
+        SailPointContext context = getContext();
+
+        if (!"Pending".equals(wfCase.getStatus()) && !"Suspended".equals(wfCase.getStatus())) {
+            throw new IllegalStateException("Cannot resume workflow");
+        }
+
+        wfCase.setStatus("Running");
+
+        context.saveObject(wfCase);
+        context.commitTransaction();
+
+        advance(wfCase);
+
+        return wfCase;
+    }
+
+    // =========================
+    // 🔹 SUSPEND
+    // =========================
+    public void suspendWorkflow(String workflowId) throws Exception {
+
+        SailPointContext context = getContext();
+
+        WorkflowCase wfCase = context.getObjectById(WorkflowCase.class, workflowId);
+
+        wfCase.setStatus("Suspended");
+
+        context.saveObject(wfCase);
+        context.commitTransaction();
+    }
+
+    // =========================
+    // 🔹 TERMINATE
+    // =========================
+    public void terminateWorkflow(String workflowId) throws Exception {
+
+        SailPointContext context = getContext();
+
+        WorkflowCase wfCase = context.getObjectById(WorkflowCase.class, workflowId);
+
+        wfCase.setStatus("Terminated");
+
+        context.saveObject(wfCase);
+        context.commitTransaction();
+    }
+
+    // =========================
+    // 🔹 RETRY
+    // =========================
+    public WorkflowCase retryWorkflow(String workflowId) throws Exception {
+
+        SailPointContext context = getContext();
+
+        WorkflowCase wfCase = context.getObjectById(WorkflowCase.class, workflowId);
+
+        return retry(wfCase);
+    }
+
+    public WorkflowCase retry(WorkflowCase wfCase) throws Exception {
+
+        SailPointContext context = getContext();
+
+        if (!"Failed".equals(wfCase.getStatus())) {
+            throw new IllegalStateException("Retry allowed only for failed workflow");
+        }
+
+        wfCase.setStatus("Running");
+
+        context.saveObject(wfCase);
+        context.commitTransaction();
+
+        advance(wfCase);
+
+        return wfCase;
+    }
+
+    // =========================
+    // 🔹 GET WORKFLOW CASES
+    // =========================
+    public List<WorkflowCase> getWorkflowCases() throws Exception {
+
+        SailPointContext context = getContext();
+
+        return context.getObjects(WorkflowCase.class);
+    }
+
+    // =========================
+    // 🔹 SAVE / UPDATE / DELETE
+    // =========================
+    public void saveWorkflowCase(WorkflowCase wfCase) throws Exception {
+
+        SailPointContext context = getContext();
+
+        context.saveObject(wfCase);
+        context.commitTransaction();
+    }
+
+    public void updateWorkflowCase(WorkflowCase wfCase) throws Exception {
+
+        SailPointContext context = getContext();
+
+        context.saveObject(wfCase);
+        context.commitTransaction();
+    }
+
+    public void deleteWorkflowCase(WorkflowCase wfCase) throws Exception {
+
+        SailPointContext context = getContext();
+
+        context.deleteObject(wfCase);
+        context.commitTransaction();
+    }
+
+    // =========================
+    // 🔹 TASK METHODS
+    // =========================
+    public List<Task> getTasks(WorkflowCase wfCase) throws Exception {
+
+        SailPointContext context = getContext();
+
+        QueryOptions qo = new QueryOptions();
+        qo.addFilter(Filter.eq("workflowCaseId", wfCase.getId()));
+
+        return context.getObjects(Task.class, qo);
+    }
+
+    public Task getTaskById(String id) throws Exception {
+
+        SailPointContext context = getContext();
+
+        return context.getObjectById(Task.class, id);
+    }
+
+    public void completeTask(String taskId, Map<String, Object> args) throws Exception {
+
+        SailPointContext context = getContext();
+
+        Task task = context.getObjectById(Task.class, taskId);
+
+        for (String key : args.keySet()) {
+            task.setAttribute(key, args.get(key));
+        }
+
+        task.setStatus("Completed");
+
+        context.saveObject(task);
+
+        WorkflowCase wfCase = task.getWorkflowCase();
+
+        context.commitTransaction();
+
+        resume(wfCase);
+    }
+
+    public void assignTask(String taskId, String user) throws Exception {
+
+        SailPointContext context = getContext();
+
+        Task task = context.getObjectById(Task.class, taskId);
+
+        task.setOwner(user);
+
+        context.saveObject(task);
+        context.commitTransaction();
+    }
+
+    public void reassignTask(String taskId, String user) throws Exception {
+
+        SailPointContext context = getContext();
+
+        Task task = context.getObjectById(Task.class, taskId);
+
+        task.setOwner(user);
+
+        context.saveObject(task);
+        context.commitTransaction();
+    }
+
+    // =========================
+    // 🔹 HISTORY
+    // =========================
+    public List<String> getHistory(WorkflowCase wfCase) {
+        return wfCase.getHistory();
+    }
+
+    // =========================
+    // 🔹 VALIDATE
+    // =========================
+    public void validateWorkflow(Workflow workflow) {
+
+        if (workflow == null) {
+            throw new IllegalArgumentException("Workflow null");
+        }
+
+        if (workflow.getStartStep() == null) {
+            throw new IllegalStateException("Start step missing");
+        }
+    }
+
+    // =========================
+    // 🔹 ADVANCE
+    // =========================
+    public void advance(WorkflowCase wfCase) throws Exception {
+
+        Object step = wfCase.getCurrentStep();
+
+        while (step != null) {
+            step = null; // simplified
+            wfCase.setCurrentStep(step);
+        }
+
+        complete(wfCase);
+    }
+
+    // =========================
+    // 🔹 COMPLETE
+    // =========================
+    public void complete(WorkflowCase wfCase) throws Exception {
+
+        SailPointContext context = getContext();
+
+        wfCase.setStatus("Completed");
+        wfCase.setCurrentStep(null);
+
+        context.saveObject(wfCase);
+        context.commitTransaction();
+
+        wfCase.getHistory().add("Completed at " + new Date());
+    }
+}
+----------------------------------------------------------------------------------------------------------------------------------------------
+🧠 ✅ Admin Level Code (SailPointFactory + Admin Context)
+package com.example.admin;
+
+import java.util.Map;
+import java.util.List;
+import java.util.Date;
+
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointFactory;
+import sailpoint.object.Workflow;
+import sailpoint.object.WorkflowCase;
+import sailpoint.object.Task;
+import sailpoint.object.QueryOptions;
+import sailpoint.object.Filter;
+import sailpoint.object.Identity;
+
+public class AdminWorkflowUtil {
+
+    // =========================
+    // 🔹 GET ADMIN CONTEXT
+    // =========================
+    private SailPointContext getContext() throws Exception {
+        return SailPointFactory.getCurrentContext();
+    }
+
+    // =========================
+    // 🔥 RUN AS ADMIN (IMPORTANT)
+    // =========================
+    private void setAdminContext(SailPointContext context) throws Exception {
+
+        Identity admin = context.getObjectByName(Identity.class, "spadmin");
+
+        if (admin == null) {
+            throw new RuntimeException("Admin not found");
+        }
+
+        context.setUser(admin); // 🔥 elevate privilege
+    }
+
+    // =========================
+    // 🔹 LAUNCH WORKFLOW (ADMIN)
+    // =========================
+    public WorkflowCase launchWorkflowAsAdmin(String workflowName, Map<String, Object> args) throws Exception {
+
+        SailPointContext context = getContext();
+        setAdminContext(context); // 🔥 admin rights
+
+        Workflow wf = context.getObjectByName(Workflow.class, workflowName);
+
+        WorkflowCase wfCase = new WorkflowCase();
+        wfCase.setWorkflow(wf);
+        wfCase.setName(workflowName);
+        wfCase.setVariables(args);
+        wfCase.setStatus("Running");
+        wfCase.setStart(new Date());
+
+        context.saveObject(wfCase);
+        context.commitTransaction();
+
+        advance(wfCase);
+
+        return wfCase;
+    }
+
+    // =========================
+    // 🔹 FORCE RESUME (ADMIN)
+    // =========================
+    public void forceResume(String workflowCaseId) throws Exception {
+
+        SailPointContext context = getContext();
+        setAdminContext(context);
+
+        WorkflowCase wfCase = context.getObjectById(WorkflowCase.class, workflowCaseId);
+
+        wfCase.setStatus("Running"); // bypass checks
+
+        context.saveObject(wfCase);
+        context.commitTransaction();
+
+        advance(wfCase);
+    }
+
+    // =========================
+    // 🔹 FORCE TERMINATE
+    // =========================
+    public void forceTerminate(String workflowCaseId) throws Exception {
+
+        SailPointContext context = getContext();
+        setAdminContext(context);
+
+        WorkflowCase wfCase = context.getObjectById(WorkflowCase.class, workflowCaseId);
+
+        wfCase.setStatus("Terminated");
+
+        context.saveObject(wfCase);
+        context.commitTransaction();
+    }
+
+    // =========================
+    // 🔹 CLEANUP WORKFLOWS
+    // =========================
+    public void deleteAllCompletedWorkflows() throws Exception {
+
+        SailPointContext context = getContext();
+        setAdminContext(context);
+
+        QueryOptions qo = new QueryOptions();
+        qo.addFilter(Filter.eq("status", "Completed"));
+
+        List<WorkflowCase> list = context.getObjects(WorkflowCase.class, qo);
+
+        for (WorkflowCase wfCase : list) {
+            context.deleteObject(wfCase);
+        }
+
+        context.commitTransaction();
+    }
+
+    // =========================
+    // 🔹 REASSIGN ALL TASKS
+    // =========================
+    public void reassignAllTasks(String oldUser, String newUser) throws Exception {
+
+        SailPointContext context = getContext();
+        setAdminContext(context);
+
+        QueryOptions qo = new QueryOptions();
+        qo.addFilter(Filter.eq("owner", oldUser));
+
+        List<Task> tasks = context.getObjects(Task.class, qo);
+
+        for (Task task : tasks) {
+            task.setOwner(newUser);
+            context.saveObject(task);
+        }
+
+        context.commitTransaction();
+    }
+
+    // =========================
+    // 🔹 FORCE COMPLETE TASK
+    // =========================
+    public void forceCompleteTask(String taskId) throws Exception {
+
+        SailPointContext context = getContext();
+        setAdminContext(context);
+
+        Task task = context.getObjectById(Task.class, taskId);
+
+        task.setStatus("Completed");
+
+        context.saveObject(task);
+
+        WorkflowCase wfCase = task.getWorkflowCase();
+
+        context.commitTransaction();
+
+        advance(wfCase);
+    }
+
+    // =========================
+    // 🔹 ADVANCE ENGINE
+    // =========================
+    private void advance(WorkflowCase wfCase) throws Exception {
+
+        Object step = wfCase.getCurrentStep();
+
+        while (step != null) {
+            step = null; // simplified execution
+            wfCase.setCurrentStep(step);
+        }
+
+        complete(wfCase);
+    }
+
+    // =========================
+    // 🔹 COMPLETE
+    // =========================
+    private void complete(WorkflowCase wfCase) throws Exception {
+
+        SailPointContext context = getContext();
+
+        wfCase.setStatus("Completed");
+        wfCase.setCurrentStep(null);
+
+        context.saveObject(wfCase);
+        context.commitTransaction();
+
+        wfCase.getHistory().add("Admin completed at " + new Date());
+    }
+}
+🔥 Admin Level Power (IMPORTANT)
+Normal User:
+   restricted operations ❌
+
+Admin (spadmin):
+   bypass validation ✔️
+   force resume ✔️
+   force terminate ✔️
+   delete workflows ✔️
+   reassign tasks ✔️
+   
+---------------------------------------------------------------------------------------------------------------------------------------------
+🧠 ✅ 1️⃣ REAL launch() (Engine Style)
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointFactory;
+import sailpoint.api.WorkflowService;
+import sailpoint.object.Workflow;
+import sailpoint.object.WorkflowCase;
+import sailpoint.object.Attributes;
+
+import java.util.Date;
+
+public class RealWorkflowRun {
+
+    public static void launch(String workflowName) throws Exception {
+
+        SailPointContext context = SailPointFactory.getCurrentContext();
+
+        // 1️⃣ Workflow load
+        Workflow workflow = context.getObjectByName(Workflow.class, workflowName);
+
+        // 2️⃣ Input args (real object)
+        Attributes args = new Attributes();
+        args.put("identityName", "Ravi");
+
+        // 3️⃣ WorkflowService (REAL ENGINE ENTRY)
+        WorkflowService wfService = new WorkflowService(context);
+
+        // 4️⃣ Launch (ye internally WorkflowCase create karta hai)
+        WorkflowCase wfCase = wfService.launch(workflow, args);
+
+        // ❗ IMPORTANT:
+        // launch() ke andar hi advance() trigger hota hai
+    }
+}
+🧠 ✅ 2️⃣ REAL advance() (Engine Core Concept)
+
+👉 Ye method tu direct call nahi karta normally
+👉 Ye engine ke andar hota hai, par main tujhe real internal flow dikha raha hoon
+
+import sailpoint.object.WorkflowCase;
+import sailpoint.object.WorkflowStep;
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointFactory;
+
+public class RealAdvanceFlow {
+
+    public static void advance(WorkflowCase wfCase) throws Exception {
+
+        SailPointContext context = SailPointFactory.getCurrentContext();
+
+        // 1️⃣ Current step uthao
+        WorkflowStep step = wfCase.getCurrentStep();
+
+        // 2️⃣ Loop jab tak steps hain
+        while (step != null) {
+
+            // 3️⃣ Step execute (real engine handler call)
+            step.getHandler().execute(context, wfCase);
+
+            // 4️⃣ Approval / wait check
+            if (step.isWait()) {
+                wfCase.setState("Pending");
+
+                context.saveObject(wfCase);
+                context.commitTransaction();
+
+                return; // stop → resume ke liye wait
+            }
+
+            // 5️⃣ Next step transition
+            step = step.getNextStep();
+            wfCase.setCurrentStep(step);
+        }
+
+        // 6️⃣ End reached → complete
+        wfCase.setState("Completed");
+
+        context.saveObject(wfCase);
+        context.commitTransaction();
+    }
+}

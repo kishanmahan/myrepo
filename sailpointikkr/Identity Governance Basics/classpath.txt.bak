@@ -1,0 +1,14 @@
+()Classpath kya hota hai?
+👉 Classpath = Java ko batane wala path jahan se wo classes (.class files) aur JAR files dhoondta hai.
+
+🔹 Classpath me kya hota hai?
+Classpath me ye sab include hota hai:-
+.class files
+.jar files
+folders (jahan classes stored hain)
+
+🔹 Classpath ka kaam:-
+👉 Java ko ye batata hai:-
+classes kaha search karni hai
+dependencies kaha se load karni hai
+

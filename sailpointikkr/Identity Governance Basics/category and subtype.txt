@@ -1,0 +1,69 @@
+💡 Category ka matlab:-
+👉 UI me grouping ke liye use hota hai
+
+Example UI:-
+Aggregation Tasks
+   → Identity Aggregation
+   → Account Aggregation
+
+Provisioning Tasks
+   → Create Account
+   → Disable Account
+   
+()subtype kya hai?
+--Category ke andar specific type:-
+→ Identity Aggregation
+   → Account Aggregation
+   → Create Account
+   → Disable Account
+----------------------------------------------------------------------------
+🚀 TaskDefinition Categories List + Meaning:-
+📂 1️⃣ Aggregation Tasks:-
+👉 External systems se data lana / sync karna
+Example: AD se users lana
+
+📂 2️⃣ Provisioning Tasks:-
+👉 Systems me account create/update/delete karna
+Example: AD me user create
+
+📂 3️⃣ Identity Tasks:-
+👉 Identity ko refresh / calculate karna
+Example: roles, entitlements update
+
+📂 4️⃣ Certification Tasks:-
+👉 Access review / approval process
+Example: manager approval
+
+📂 5️⃣ Reporting Tasks:-
+👉 Reports generate karna
+Example: user access report
+
+📂 6️⃣ Workflow Tasks:-
+👉 Workflow execute karna
+Example: joiner workflow run
+
+📂 7️⃣ Rule Tasks:-
+👉 Custom rules run karna
+Example: validation rule
+
+📂 8️⃣ Maintenance Tasks:-
+👉 System cleanup / maintenance
+Example: logs delete
+
+📂 9️⃣ System Tasks:-
+👉 System-level operations
+Example: cache refresh
+
+📂 🔟 Import/Export Tasks:-
+👉 Data import/export
+Example: CSV import/export
+
+📂 1️⃣1️⃣ Batch / Master Tasks:-
+👉 Multiple tasks ek saath run karna
+Example: parent task → child tasks
+
+📂 1️⃣2️⃣ Audit Tasks:-
+👉 Audit logs generate/check
+Example: access audit report
+------------------------------------------------------------------------------------------------------------
+

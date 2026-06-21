@@ -1,0 +1,614 @@
+1. One To One:-
+Matlab: Ek table ka 1 record dusre table ke sirf 1 record se connected hoga.
+Example:-
+()users table
+id    name
+1----Rahul
+2----Amit
+()passport table
+id----passport_no----user_id
+1----IN123----1
+2----IN456----2
+Yaha:
+Rahul ka ek passport
+Amit ka ek passport
+➡ Ek user = ek passport. 
+CREATE TABLE users (
+    id INT PRIMARY KEY,
+    name VARCHAR(50)
+);
+
+CREATE TABLE passport (
+    id INT PRIMARY KEY,
+    passport_no VARCHAR(50),
+    user_id INT UNIQUE,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+----------------
+() UNIQUE:-
+lagane se ek user multiple passport nahi rakh sakta.
+
+2. One To Many:-
+Matlab: Ek table ka 1 record dusre table ke many records se connected ho sakta hai.
+Example:-
+()department table me:--
+id----dept_name
+1----IT
+()employee table se:--
+id----name----dept_id
+1----Rahul----1
+2----Amit----1
+3----Neha----1
+➡ Ek department me bahut employees ho sakte hain.
+Ex:-
+CREATE TABLE department (
+    id INT PRIMARY KEY,
+    dept_name VARCHAR(50)
+);
+
+CREATE TABLE employee (
+    id INT PRIMARY KEY,
+    name VARCHAR(50),
+    dept_id INT,
+    FOREIGN KEY (dept_id) REFERENCES department(id)
+);
+------------------
+3. Many To One:-
+Ye basically One-To-Many ka ulta view hota hai.
+Example:--
+Bahut employees ek department me kaam karte hain.
+()employee table:-
+id   name  dept_id
+1----Rahul----1
+2----Amit----1
+Many employees → One department. 
+ex:-
+CREATE TABLE employee (
+    id INT PRIMARY KEY,
+    name VARCHAR(50),
+    dept_id INT,
+    FOREIGN KEY (dept_id) REFERENCES department(id)
+);
+-----------------------
+Difference:-
+Many To Many me dono side multiple hote hain, aur One To Many me sirf ek side multiple hota hai.
+Example:-
+Department → Employees
+ 1Department=many-Employes
+
+()Lekin:-
+1 Employee = sirf 1Department
+IT department me many employees hain
+BUT Rahul ek hi department me hai
+➡ Employee multiple department me nahi ho sakta.
+
+2. Many To Many (M : M)
+Example:-
+Students ↔ Courses
+1 Student = many Courses
+AND
+1 Course = many Students
+Dono side many hai 🔥
+()student table:-
+id   name
+1----Rahul
+2----Amit
+() course table:-
+course  id  course_name
+1----Java
+2----Python
+( )student_course:-
+student_id   course_id
+1--------1
+1--------2
+2--------1
+Rahul multiple courses le raha
+Java course multiple students le rahe
+➡ Dono side many.
+--------------------------------------------
+1. One To One:-
+-- CREATE DATABASE relationship_demo;
+
+USE relationship_demo;
+
+CREATE TABLE users (
+
+    user_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_name VARCHAR(100)
+
+);
+
+CREATE TABLE passport (
+
+    passport_id INT PRIMARY KEY AUTO_INCREMENT,
+    passport_number VARCHAR(100),
+
+    user_id INT UNIQUE,
+
+    FOREIGN KEY(user_id)
+    REFERENCES users(user_id)
+
+);
+
+INSERT INTO users(user_name)
+VALUES
+('Rahul'),
+('Amit');
+
+INSERT INTO passport(passport_number, user_id)
+VALUES
+('IND12345',1),
+('IND67890',2);
+
+SELECT * FROM users;
+
+SELECT * FROM passport;
+----------------------------------
+2. One To Many / Many To One :--
+Sql id="79jv4r"
+Copy code
+CREATE DATABASE relationship_demo2;
+
+USE relationship_demo2;
+
+CREATE TABLE department (
+
+    dept_id INT PRIMARY KEY AUTO_INCREMENT,
+    dept_name VARCHAR(100)
+
+);
+
+CREATE TABLE employee (
+
+    emp_id INT PRIMARY KEY AUTO_INCREMENT,
+    emp_name VARCHAR(100),
+
+    dept_id INT,
+
+    FOREIGN KEY(dept_id)
+    REFERENCES department(dept_id)
+
+);
+
+INSERT INTO department(dept_name)
+VALUES
+('IT'),
+('HR');
+
+INSERT INTO employee(emp_name, dept_id)
+VALUES
+('Rahul',1),
+('Amit',1),
+('Neha',2);
+
+SELECT * FROM department;
+
+SELECT * FROM employee;
+--------------------------------------
+3. Many To Many:-
+CREATE DATABASE relationship_demo3;
+
+USE relationship_demo3;
+
+CREATE TABLE student (
+
+    student_id INT PRIMARY KEY AUTO_INCREMENT,
+    student_name VARCHAR(100)
+
+);
+
+CREATE TABLE course (
+
+    course_id INT PRIMARY KEY AUTO_INCREMENT,
+    course_name VARCHAR(100)
+
+);
+
+CREATE TABLE student_course (
+
+    student_id INT,
+    course_id INT,
+
+    PRIMARY KEY(student_id, course_id),
+
+    FOREIGN KEY(student_id)
+    REFERENCES student(student_id),
+
+    FOREIGN KEY(course_id)
+    REFERENCES course(course_id)
+
+);
+
+INSERT INTO student(student_name)
+VALUES
+('Rahul'),
+('Amit');
+
+INSERT INTO course(course_name)
+VALUES
+('Java'),
+('Python');
+
+INSERT INTO student_course(student_id, course_id)
+VALUES
+(1,1),
+(1,2),
+(2,1);
+
+SELECT * FROM student;
+
+SELECT * FROM course;
+
+SELECT * FROM student_course;
+--------------------------------------your workbench work jdbc onboarding start after here:-----------------------------------------------------------------
+()workbench:-
+()create database financial_planning_and_forecasting;->select run.
+()use financial_planning_and_forecasting;->select run.
+
+()create table employees(
+employee varchar(50),
+firstName varchar(50),
+lastName varchar(50),
+empStatus varchar(50),
+department varchar(50),
+userLevel varchar(50),
+hireDate varchar(50),
+salaryClass varchar(50),
+terminationDate varchar(50),
+workState varchar(50),
+email varchar(50),
+countryCode varchar(50),
+workCountry varchar(50),
+manager varchar(50),
+superviserId varchar(50),
+employeeId varchar(50) primary key,
+bussinessUnit varchar(50),
+annualHours varchar(50),
+jobTitle varchar(50),
+isManager varchar(50));  
+
+->select aur run.
+
+()create table roles(
+roleId varchar(50) primary key,
+name varchar(50),
+description varchar(150),
+type varchar(50),
+status varchar(50),
+owner varchar(50),
+createdDate varchar(50),
+modifiedDate varchar(50));
+
+->select run.
+
+()create table employee_roles(
+employeeId varchar(50),
+roleId varchar(50),
+Primary key(employeeId,roleId),
+FOREIGN Key(employeeId) REFERENCES employees(employeeId) on delete CASCADE,
+FOREIGN key (roleId) REFERENCES roles(roleId) on delete CASCADE);
+->select and run.
+///////////*
+()ON DELETE CASCADE ka matlab hota hai:-
+Agar parent table ka data delete hoga, toh child table ka related data bhi automatically delete ho jayega.
+
+Tumhare query me:-
+FOREIGN KEY(employeeId) REFERENCES employees(employeeId) ON DELETE CASCADE
+iska matlab:-
+employees = parent table
+employee_roles = child table
+Agar employees table se koi employee delete hua, toh employee_roles me us employee ki sari matching rows automatically delete ho jayengi.
+
+Example:-
+()employees table:-
+employeeId        name
+E101--------------Rahul
+
+()roles table:-
+roleId	   roleName
+R1----------Admin
+
+()employee_roles table:-
+employeeId	  roleId
+E101------------R1
+
+()Agar tum ye chalao:-
+DELETE FROM employees
+WHERE employeeId='E101';
+
+->toh automatically:
+
+employee_roles table me jo:-
+E101 | R1 
+wali row hai woh bhi delete ho jayegi.
+
+()Same cheez:-
+FOREIGN KEY(roleId) REFERENCES roles(roleId)
+ON DELETE CASCADE
+
+->Agar roles table se koi role delete hua:-
+DELETE FROM roles
+WHERE roleId='R1';
+
+toh employee_roles me us role se related sari rows automatic delete ho jayengi.
+
+()Ye mainly use hota hai:-
+orphan records bachane ke liye
+automatic cleanup ke liye
+relationship maintain karne ke liye
+
+Visual flow:-
+employees ----<
+                employee_roles
+roles --------<
+Parent delete → child automatic delete.
+*/////////////
+
+
+()INSERT INTO roles (roleId, name, description, type, status, owner, createdDate, modifiedDate)
+VALUES
+('ROL_FIN_AP_ANALYST_001', 
+'Accounts Payable Analyst', 
+'Responsible for processing vendor invoices, performing three-way matching, and managing payment runs.', 
+'Business', 
+'Active', 
+'payables.team@sriiq.com', 
+'2025-01-10', 
+'2025-09-15'),
+
+('ROL_FIN_AR_OFFICER_002', 
+'Accounts Receivable Officer', 
+'Manages customer invoicing, collections, and credit adjustments in AR module.', 
+'Business', 
+'Active', 
+'receivables.lead@sriiq.com', 
+'2025-02-05', 
+'2025-09-22'),
+
+('ROL_FIN_GEN_LEDGER_003', 
+'General Ledger Accountant', 
+'Prepares journal entries, reconciliations, and monthly financial close activities.', 
+'Business', 
+'Active', 
+'gl.controller@sriiq.com', 
+'2025-03-02', 
+'2025-09-30'),
+
+('ROL_FIN_PROCUREMENT_004', 
+'Procurement Officer', 
+'Creates and approves purchase requisitions, manages vendor onboarding and PO releases.', 
+'Business', 
+'Active', 
+'procurement.manager@sriiq.com', 
+'2025-03-18', 
+'2025-09-10'),
+
+('ROL_FIN_TREASURY_005', 
+'Treasury Specialist', 
+'Handles bank reconciliation, cash forecasting, and fund transfers across business units.', 
+'Business', 
+'Active', 
+'treasury@sriiq.com', 
+'2025-04-10', 
+'2025-09-25'),
+
+('ROL_FIN_AUDITOR_006', 
+'Internal Auditor', 
+'Conducts internal audit of financial transactions, ensures compliance with GAAP and SOX.', 
+'Governance', 
+'Active', 
+'audit.controller@sriiq.com', 
+'2025-05-07', 
+'2025-09-28'),
+
+('ROL_FIN_APPROVER_007', 
+'Financial Approver Level 1', 
+'Authorized to approve financial transactions up to defined threshold.', 
+'Business', 
+'Active', 
+'finance.head@sriiq.com', 
+'2025-06-12', 
+'2025-09-20'),
+
+('ROL_FIN_BUDGET_CTRL_008', 
+'Budget Controller', 
+'Monitors budget allocations, variance reporting, and cost control measures.', 
+'Business', 
+'Active', 
+'budget.office@sriiq.com', 
+'2025-07-05', 
+'2025-09-25'),
+
+('ROL_FIN_RECONCILE_009', 
+'Reconciliation Analyst', 
+'Performs account and bank reconciliations ensuring financial integrity.', 
+'Business', 
+'Active', 
+'recon.team@sriiq.com', 
+'2025-08-01', 
+'2025-09-22'),
+
+('ROL_FIN_AUDIT_VIEWER_010', 
+'Audit Viewer', 
+'Read-only role for audit and compliance teams to review financial records.', 
+'Governance', 
+'Active', 
+'audit.viewer@sriiq.com', 
+'2025-08-18', 
+'2025-09-30');
+
+->select and run.
+
+INSERT INTO employees (
+    employee,
+    firstName,
+    lastName,
+    empStatus,
+    department,
+    userLevel,
+    hireDate,
+    salaryClass,
+    terminationDate,
+    workState,
+    email,
+    countryCode,
+    workCountry,
+    manager,
+    superviserId,
+    employeeId,
+    bussinessUnit,
+    annualHours,
+    jobTitle,
+    isManager
+)
+VALUES (
+    'Christian Armstrong',     -- employee (displayName)
+    'Christian',               -- firstName
+    'Armstrong',               -- lastName
+    'Joiner-Completed 01-31-2018', -- empStatus (srStatus)
+    'Morph',                   -- department
+    'Professional',            -- userLevel (mapped from workerType)
+    '01-31-2018',              -- hireDate
+    NULL,                      -- salaryClass (not in provided data)
+    '09-08-2025',              -- terminationDate
+    NULL,                      -- workState (not provided)
+    'christian.armstrong@SR.com', -- email
+    NULL,                      -- countryCode (not provided)
+    'United States of America',-- workCountry
+    'shani rajawat',                      -- manager (not provided)
+    '739012',                      -- superviserId
+    '739079',                  -- employeeId
+    'Sriiq Inc',               -- bussinessUnit (company)
+    '1920',                      -- annualHours
+    'Advice worker',           -- jobTitle
+    'No'                       -- isManager (not specified, assuming No)
+),
+(
+    'Aadhya Das',     -- employee (displayName)
+    'Aadhya',               -- firstName
+    'Das',               -- lastName
+    'Joiner-Completed 01-31-2018', -- empStatus (srStatus)
+    'Morph',                   -- department
+    'Professional',            -- userLevel (mapped from workerType)
+    '01-31-2018',              -- hireDate
+    NULL,                      -- salaryClass (not in provided data)
+    '09-08-2025',              -- terminationDate
+    NULL,                      -- workState (not provided)
+    'christian.armstrong@SR.com', -- email
+    NULL,                      -- countryCode (not provided)
+    'United States of America',-- workCountry
+    'shani rajawat',                      -- manager (not provided)
+    '739012',                      -- superviserId
+    '8512570',                  -- employeeId
+    'Sriiq Inc',               -- bussinessUnit (company)
+    '1920',                      -- annualHours
+    'Advice worker',           -- jobTitle
+    'No'                       -- isManager (not specified, assuming No)
+),
+(
+    'Aadhya Gupta',     -- employee (displayName)
+    'Aadhya',               -- firstName
+    'Gupta',               -- lastName
+    'Joiner-Completed 01-31-2018', -- empStatus (srStatus)
+    'Morph',                   -- department
+    'Professional',            -- userLevel (mapped from workerType)
+    '01-31-2018',              -- hireDate
+    NULL,                      -- salaryClass (not in provided data)
+    '09-08-2025',              -- terminationDate
+    NULL,                      -- workState (not provided)
+    'christian.armstrong@SR.com', -- email
+    NULL,                      -- countryCode (not provided)
+    'United States of America',-- workCountry
+    'shani rajawat',                      -- manager (not provided)
+    '739012',                      -- superviserId
+    '8512545',                  -- employeeId
+    'Sriiq Inc',               -- bussinessUnit (company)
+    '1920',                      -- annualHours
+    'Advice worker',           -- jobTitle
+    'No'                       -- isManager (not specified, assuming No)
+),
+(
+    'Aadhya Mishra',     -- employee (displayName)
+    'Aadhya',               -- firstName
+    'Mishra',               -- lastName
+    'Joiner-Completed 01-31-2018', -- empStatus (srStatus)
+    'Morph',                   -- department
+    'Professional',            -- userLevel (mapped from workerType)
+    '01-31-2018',              -- hireDate
+    NULL,                      -- salaryClass (not in provided data)
+    '09-08-2025',              -- terminationDate
+    NULL,                      -- workState (not provided)
+    'christian.armstrong@SR.com', -- email
+    NULL,                      -- countryCode (not provided)
+    'United States of America',-- workCountry
+    'shani rajawat',                      -- manager (not provided)
+    '739012',                      -- superviserId
+    '8512576',                  -- employeeId
+    'Sriiq Inc',               -- bussinessUnit (company)
+    '1920',                      -- annualHours
+    'Advice worker',           -- jobTitle
+    'No'                       -- isManager (not specified, assuming No)
+),
+(
+    'Aadhya Rao',     -- employee (displayName)
+    'Aadhya',               -- firstName
+    'Rao',               -- lastName
+    'Joiner-Completed 01-31-2018', -- empStatus (srStatus)
+    'Morph',                   -- department
+    'Professional',            -- userLevel (mapped from workerType)
+    '01-31-2018',              -- hireDate
+    NULL,                      -- salaryClass (not in provided data)
+    '09-08-2025',              -- terminationDate
+    NULL,                      -- workState (not provided)
+    'christian.armstrong@SR.com', -- email
+    NULL,                      -- countryCode (not provided)
+    'United States of America',-- workCountry
+    'shani rajawat',                      -- manager (not provided)
+    '739012',                      -- superviserId
+    '8512579',                  -- employeeId
+    'Sriiq Inc',               -- bussinessUnit (company)
+    '1920',                      -- annualHours
+    'Advice worker',           -- jobTitle
+    'No'                       -- isManager (not specified, assuming No)
+);
+
+
+Select * from roles;
+->select and run.
+
+Select * from employees;
+->select and run.
+-------------------------------------------------------------------------------------------------------------------------------------------
+->eclipse->file->new->java project->name-sailpointm->java17->next->libraries->
+->add exeternal jars->finish->sailpointm-ke andar jre ke andar sare file ko hatado->
+->fir jre me src ke andar->package banao-name-org.SailPoint_IIQ.Utils-aur aek class add karo main jiska naam-JavaTest.java->aur finish->
+->fir aek class banao->name-FinancialAndForecastingProvisioningRule.java->
+
+->fir C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\identityiq\WEB-INF\lib->select all files-open->finish.(in files ko open kare reference library me)
+->fir->WEbINF->classes->org->SailPointIIQ->Utils->FinancialAndForecastingProvisioningRule-ko paste->
+->restart your tomacatserver->
+
+()aur test class me run as->1 application->
+-->C:\Users\kishan kumar\eclipse-workspace\sailpointm\src\org\SailPoint_IIQ\Utils->(financial provissining pe right click->shown in-system explorer->
+)->financial provissing-ko copy->C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\identityiq\WEB-INF\classes\org\SailPointIIQ\Utils->
+yaha dede paste->fir restart tomcat server->
+
+->iiq application me-rule tab-me->aggregation customizationrule->kkr-Financial_Planing_CustomizationRule->ko import karo->aur->
+->provissining rule->KKR_Rule_FinancialAndForecasting_ProvisioningRule->ko import karo->
+->fir configuration-provissiningpolicies-create-add policy me-KKR_Form_Financial_Planning_AccountCreate.xml ko import karo->
+->refrence form se->save->Account Agg - Financial Planing And Forecasting->Promote managed attributes-tick->run->
+->
+
+->aek rule banaye:->>inhe->Managed Entitlement Customization Rule->name:->kkr-Financial-Forecasting:Manage-Attribute-Rule).
+attribute.setRequestable(true);
+attribute.setAttribute("certifiable", true);//
+
+->pehle Application->entitlement ctalog->fir->name dekhe ki koun sha requestable banana hai->jaise audit viewer->
+->toh debug me jaye aur ->ManagedAttribute->search->audit viewer ko khole->fir line <ManagedAttribute  ke modifier ke baad->
+->type kare->requestable="true" ko paste kare in->save->manage user access->select any user->fir->next->search->
+->fir select audit viewer->fir submit.
+
+/////////*
+Add policy provissining ishliye taki iiq ke attributes ko sql ke attributes se joda jaye ki kispe kya operation chalani hai->
+*////////
+

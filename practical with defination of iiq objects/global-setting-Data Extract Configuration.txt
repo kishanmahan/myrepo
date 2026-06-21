@@ -1,0 +1,14 @@
+()global-setting-Data Extract Configuration->
+
+1. Data Extract Configuration:-
+Jab aap Enable Data Extract Tasks ko check karte hain, toh aap system ko allow karte hain ki 
+woh bade paimane par data ko bahar (external system) bhej sake.
+
+Maqsad (Purpose): SailPoint ke data ko kisi third-party tool (jaise BI tools, Analytics engines, 
+ya external databases) mein bhejkar report banane ke liye.
+
+Kaise Kaam Karta Hai: Ise enable karne ke baad aap "Data Extract" naam ka task chala sakte hain,
+jo identity aur access data ko CSV ya database format mein export karta hai.
+
+Benefit: Agar aapko IdentityIQ ke bahar koi complex dashboard ya chart banana hai, 
+toh yeh feature wahan data supply karta hai.

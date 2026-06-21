@@ -1,0 +1,254 @@
+1️⃣ ReportColumnConfig kya hai?
+Ye ek object hai jo report me ek column ka configuration define karta hai.
+Har report me multiple columns hote hain, aur har column ka detail ReportColumnConfig me store hota hai.
+Column ka naam, label, type, order, aur display properties iske andar rakhe jaate hain.
+
+()ReportDefinition:---Report ka template: name, object type, format, filter, schedule, aur saare columns.
+()ReportColumnConfig:-Us report me ek column ka detail: name, label, type, order, format, hidden flag.
+
+🧠 1️⃣ ReportColumnConfig kya karta hai?
+Ye report ke ek single column ka pura behavior control karta hai
+Decide karta hai ki:
+Column ka naam kya hai
+UI/report me kaise dikhega
+Data ka format kya hoga
+Column visible hoga ya hidden
+Column ka order kya hoga.
+
+⚙️ 2️⃣ Iske andar kya hota hai (Internal Data)
+
+ReportColumnConfig ke andar generally ye cheeze hoti hain:
+
+Field	               Kaam
+name:-----Actual field name (DB/object se aata hai)
+label:----Display name (UI me dikhega)
+type:-----Data type (String, Date, Integer)
+format:----Data format (date format, number format)
+order:-----Column ka position (1st, 2nd, 3rd…)
+hidden:-----Column show hoga ya nahi
+width:------Column ki width (UI display ke liye)
+sortable:---Column sort ho sakta hai ya nahi
+searchable:--Column search me use hoga ya nahi.
+
+📋 4️⃣ Sare Methods List:-
+getName()
+setName(String name)
+getLabel()
+setLabel(String label)
+getType()
+setType(Class type)
+getFormat()
+setFormat(String format)
+getOrder()
+setOrder(int order)
+isHidden()
+setHidden(boolean hidden)
+getWidth()
+setWidth(int width)
+isSortable()
+setSortable(boolean sortable)
+isSearchable()
+setSearchable(boolean searchable)
+-----------------------------------------------------------------------------------------------------------
+syntax:-ReportColumnConfig col = new ReportColumnConfig();
+
+1️⃣ getName() / setName(String name):-
+col.setName("email");
+System.out.println(col.getName());
+
+👉 Kaam: Column ka original field name set/get karta hai
+👉 Output:-
+email
+
+2️⃣ getLabel() / setLabel(String label):-
+col.setLabel("Email Address");
+System.out.println(col.getLabel());
+
+👉 Kaam: UI me dikhne wala naam set karta hai
+👉 Output:-
+Email Address
+
+3️⃣ getType() / setType(Class type):-
+col.setType(String.class);
+System.out.println(col.getType());
+
+👉 Kaam: Column ka data type define karta hai
+👉 Output:-
+class java.lang.String
+
+4️⃣ getFormat() / setFormat(String format):-
+col.setFormat("dd-MM-yyyy");
+System.out.println(col.getFormat());
+
+👉 Kaam: Data ka format set karta hai (mostly date/number ke liye)
+👉 Output:-
+dd-MM-yyyy
+
+5️⃣ getOrder() / setOrder(int order):-
+col.setOrder(2);
+System.out.println(col.getOrder());
+
+👉 Kaam: Column ka position decide karta hai report me
+👉 Output:-
+2
+
+6️⃣ isHidden() / setHidden(boolean hidden):-
+col.setHidden(true);
+System.out.println(col.isHidden());
+
+👉 Kaam: Column ko hide/show karta hai
+👉 Output:-
+true
+💡 Matlab → column report me nahi dikhega
+
+7️⃣ getWidth() / setWidth(int width):-
+col.setWidth(200);
+System.out.println(col.getWidth());
+
+👉 Kaam: UI me column ki width set karta hai
+👉 Output:-
+200
+
+8️⃣ isSortable() / setSortable(boolean sortable):-
+col.setSortable(true);
+System.out.println(col.isSortable());
+
+👉 Kaam: Column sorting enable karta hai
+👉 Output:-
+true
+💡 Matlab → user ascending/descending sort kar sakta hai
+
+9️⃣ isSearchable() / setSearchable(boolean searchable):-
+col.setSearchable(true);
+System.out.println(col.isSearchable());
+
+👉 Kaam: Column search/filter me use hoga ya nahi
+👉 Output:-
+true
+--------------------------------------------------------------------------------------------------------------------------------
+✅ Full Working Code (Context + Column Config + ReportDefinition)
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointContextFactory;
+import sailpoint.object.ReportDefinition;
+import sailpoint.object.ReportColumnConfig;
+import sailpoint.object.Filter;
+import sailpoint.object.Identity;
+
+public class ReportExample {
+
+    public static void main(String[] args) {
+
+        SailPointContext context = null;
+
+        try {
+            // 1️⃣ Context create
+            context = SailPointContextFactory.createContext();
+
+            // 2️⃣ ReportDefinition create
+            ReportDefinition report = new ReportDefinition();
+            report.setName("ActiveUsersReport");
+            report.setDescription("Active users report with column config");
+            report.setObjectType(Identity.class);
+            report.setFormat("CSV");
+
+            // 3️⃣ Filter (sirf active users)
+            Filter filter = Filter.eq("status", "Active");
+            report.setFilter(filter);
+
+            // 4️⃣ Column 1
+            ReportColumnConfig col1 = new ReportColumnConfig();
+            col1.setName("name");
+            col1.setLabel("User Name");
+            col1.setType(String.class);
+            col1.setOrder(1);
+            col1.setWidth(150);
+            col1.setSortable(true);
+            col1.setSearchable(true);
+
+            // 5️⃣ Column 2
+            ReportColumnConfig col2 = new ReportColumnConfig();
+            col2.setName("email");
+            col2.setLabel("Email Address");
+            col2.setType(String.class);
+            col2.setOrder(2);
+            col2.setWidth(200);
+            col2.setSortable(true);
+            col2.setSearchable(true);
+
+            // 6️⃣ Column 3
+            ReportColumnConfig col3 = new ReportColumnConfig();
+            col3.setName("department");
+            col3.setLabel("Department");
+            col3.setType(String.class);
+            col3.setOrder(3);
+            col3.setWidth(120);
+            col3.setHidden(false);
+
+            // 7️⃣ Column add to report
+            report.addColumn(col1);
+            report.addColumn(col2);
+            report.addColumn(col3);
+
+            // 8️⃣ Validate
+            report.validate();
+
+            // 9️⃣ Save
+            context.saveObject(report);
+            context.commitTransaction();
+
+            System.out.println("✅ Report created successfully: " + report.getName());
+
+            // 🔟 Check column output
+            for (Object obj : report.getColumns()) {
+                ReportColumnConfig col = (ReportColumnConfig) obj;
+
+                System.out.println("Column Name: " + col.getName());
+                System.out.println("Label: " + col.getLabel());
+                System.out.println("Type: " + col.getType());
+                System.out.println("Order: " + col.getOrder());
+                System.out.println("Width: " + col.getWidth());
+                System.out.println("Sortable: " + col.isSortable());
+                System.out.println("Searchable: " + col.isSearchable());
+                System.out.println("----------------------");
+            }
+
+        } catch (Exception e) {
+            System.out.println("❌ Error: " + e.getMessage());
+        } finally {
+            // Context release (VERY IMPORTANT)
+            if (context != null) {
+                SailPointContextFactory.releaseContext(context);
+            }
+        }
+    }
+}
+------------------------------------------------------------------------------
+🖥️ Expected Output (Console):-
+✅ Report created successfully: ActiveUsersReport
+
+Column Name: name
+Label: User Name
+Type: class java.lang.String
+Order: 1
+Width: 150
+Sortable: true
+Searchable: true
+----------------------
+
+Column Name: email
+Label: Email Address
+Type: class java.lang.String
+Order: 2
+Width: 200
+Sortable: true
+Searchable: true
+----------------------
+
+Column Name: department
+Label: Department
+Type: class java.lang.String
+Order: 3
+Width: 120
+Sortable: false
+Searchable: false
+-----------------------------------------------------------------------------------------------

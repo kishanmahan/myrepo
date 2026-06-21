@@ -1,0 +1,56 @@
+()AfterProvisioning kya hai kya karta hai?
+--🔹 AfterProvisioning Rule kya hai?
+👉 SailPoint IdentityIQ me:-
+AfterProvisioning Rule ek post-processing rule hoti hai jo tab run hoti hai jab provisioning process successfully complete ho jata hai.
+
+🔹 Simple Samajh (Flow):-
+Access Request / Identity Refresh
+        ↓
+ProvisioningPlan create
+        ↓
+BeforeProvisioning Rule  🔥
+        ↓
+Provisioning (AD, DB, etc.) execute
+        ↓
+AfterProvisioning Rule  🔥 (yaha tera rule chalta hai).
+
+🔹 AfterProvisioning ka main purpose:-
+1️⃣ 📊 Logging & Audit:-
+Kaun sa account create hua
+Kaun se attributes set hue
+Kaun si application me provisioning hui
+👉 Example:-
+AD account created → log store
+Compliance ke liye tracking
+
+2️⃣ 📧 Notification:-
+Email to user / manager / admin
+Slack / webhook alerts
+👉 Example:-
+“Your account has been created”
+“Provisioning failed for user”
+
+3️⃣ 🔍 Result Validation:-
+Check provisioning success/failure
+Analyze provisioning errors
+👉 Example:-
+AD failed → error log
+DB update failed → retry logic trigger
+
+4️⃣ 🧹 Post Processing:-
+Extra attributes update
+Custom database update
+External system call
+👉 Example:-
+EmployeeId ko CRM me update karna
+Custom logging system me entry
+
+5️⃣ ⚠️ Error Handling:-
+👉 Provisioning process me:-
+AD / DB / LDAP call fail ho sakta hai
+Attribute set nahi ho pata
+Network / API issue aa sakta hai
+👉 AfterProvisioning me tu:-
+Result check karta hai
+Errors identify karta hai
+Actions leta hai (log, alert, retry)

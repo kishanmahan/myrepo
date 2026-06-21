@@ -1,0 +1,13 @@
+3️⃣ Identity / IAM / SailPoint me Source:-
+IAM me source ka matlab hota hai system ya application jahan se identity data aata hai.
+Example:-
+Source	            Data
+Active Directory----Users
+Database-----------Employees
+Salesforce----------Accounts
+
+Example:-
+Agar SailPoint me Active Directory se users aa rahe hai to:
+
+Source = Active Directory
+

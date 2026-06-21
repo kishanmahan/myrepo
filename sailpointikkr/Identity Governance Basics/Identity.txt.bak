@@ -1,0 +1,203 @@
+()Identity kya karta hai?
+Identity = ek user ya account jo system me exist karta hai
+Ye SailPoint me central object hai jo kisi employee,contractor,partner ya service account ko represent karta hai.
+Simple Example:-
+Ravi Kumar → Identity object
+Attributes: email, role, department, status, accounts
+
+🔹 2️⃣ Identity ka kaam:-
+Kaam	                           Explanation
+Access/Entitlements track:-------Identity ke upar assigned roles aur entitlements track karna
+Workflow/Policy enforcement:-----Identity changes pe workflows / triggers run karna
+Certification:-------------------Certification campaigns me reviewer assign karne me use hota hai
+Reporting/Audit:-----------------Audit me identity ke details use hote hain
+Event generation:----------------IdentityEvent create hone me base object
+
+🔹 3️⃣ Identity ke andar kya hota hai(Attributes / Fields):-
+Field	            Description
+id:------------Unique ID of the identity
+name:-------------Full name / username
+email:---------------Email ID
+manager:-------Reporting manager (Identity reference)
+status:---------Active / Inactive / Suspended
+department:--------------Department name
+accounts:------------List of linked system accounts (Account objects)
+roles:---------------List of assigned roles
+entitlements:---------List of entitlements / permissions
+createdDate:---------Identity creation date
+modifiedDate:--------Last modification date
+certifications:-------Certifications linked to this identity
+customAttributes:----Any additional custom attribute (key-value)
+--------------------------------------------------------------------------------------------------------------------
+🔹 4️⃣ Identity ke methods (Common)
+getId()               // ID return karta hai
+setId(String id)      // ID set karta hai
+hasId()               // ID exist karti hai ya nahi
+getName()
+setName(String name)
+hasName()
+getEmail()
+setEmail(String email)
+hasEmail()
+getManager()
+setManager(Identity manager)
+getStatus()
+setStatus(String status)
+getDepartment()
+setDepartment(String dept)
+getAccounts()         // List<Account>
+setAccounts(List<Account>)
+getRoles()            // List<Role>
+setRoles(List<Role>)
+getEntitlements()     // List<Entitlement>
+setEntitlements(List<Entitlement>)
+getCreatedDate()
+setCreatedDate(Date date)
+getModifiedDate()
+setModifiedDate(Date date)
+toString()
+equals(Object obj)
+hashCode()
+----------------------------------------------------------------------------------------------------------------------------------------
+🔹5️⃣ DB me Identity ka storage:-
+Yes bhai, Identity DB me store hota hai
+Tables usually:
+Identity → basic fields (id, name, email, status, manager_id, department, createdDate, modifiedDate)
+Identity_Accounts → linked accounts
+Identity_Roles → assigned roles
+Identity_Entitlements → permissions / entitlements
+Identity_Certifications → linked certifications
+Ye DB me store hone ke baad SailPoint workflow aur triggers ke saath integrate hota hai.
+
+🔹Manager field kya hai?
+manager = Identity object ka reporting manager
+Matlab ye us bande ka reference hai jo directly identity ka boss hai
+Ye Identity reference type ka hota hai, yani ek Identity object ke andar dusra Identity object store hota hai
+
+Example:-
+Employee Identity	Manager Identity
+Ravi Kumar	Sunil Sharma
+Priya Verma	Sunil Sharma
+Yaha Ravi Kumar aur Priya Verma dono ki manager field me Sunil Sharma ki Identity reference store hai.
+
+()🔹Ye kaam kya karta hai?
+Certification / Approval workflow me:-
+Jab koi certification campaign run hota hai, manager ko reviewer assign karna hota hai → manager field use hoti hai.
+
+()Trigger/Event automation:-
+Example: Jab employee ka role change ho → manager ko notification / approval send karna.
+---------------------------------------------------------------------------------------------------------------------------------
+1️⃣ getId():-
+Purpose: Identity ka unique ID return karta hai
+identity.getId(); // "ID_1001"
+
+2️⃣ setId(String id):-
+Purpose: Identity ka ID set karta hai
+identity.setId("ID_1001");
+
+3️⃣ hasId():-
+Purpose: Check karta hai ID set hai ya nahi
+identity.hasId(); // true
+
+4️⃣ getName():-
+Purpose: Identity ka name return karta hai
+identity.getName(); // "Ravi Kumar"
+
+5️⃣ setName(String name):-
+Purpose: Identity ka name set karta hai
+identity.setName("Ravi Kumar");
+
+6️⃣ hasName():-
+Purpose: Name set hai ya nahi check karta hai
+identity.hasName(); // true
+
+7️⃣ getEmail():-
+Purpose: Identity ka email return karta hai
+identity.getEmail(); // "ravi.kumar@company.com"
+
+8️⃣ setEmail(String email):-
+Purpose: Email set karta hai
+identity.setEmail("ravi.kumar@company.com");
+
+9️⃣ hasEmail():-
+Purpose: Email exist karta hai ya nahi check karta hai
+identity.hasEmail(); // true
+
+🔟 getManager():-
+Purpose: Reporting manager ka Identity object return karta hai
+Identity manager = identity.getManager();
+System.out.println(manager.getName()); // "Sunil Sharma"
+
+1️⃣1️⃣ setManager(Identity manager):-
+Purpose: Reporting manager set karta hai
+identity.setManager(manager);
+
+1️⃣2️⃣ getStatus():-
+Purpose: Identity ka status return karta hai (Active / Inactive)
+identity.getStatus(); // "Active"
+
+1️⃣3️⃣ setStatus(String status):-
+Purpose: Status set karta hai
+identity.setStatus("Active");
+
+1️⃣4️⃣ getDepartment():-
+Purpose: Department return karta hai
+identity.getDepartment(); // "IT"
+
+1️⃣5️⃣ setDepartment(String dept):-
+Purpose: Department set karta hai
+identity.setDepartment("IT");
+
+1️⃣6️⃣ getAccounts():-
+Purpose: Linked accounts ka list return karta hai
+List<Account> accounts = identity.getAccounts();
+
+1️⃣7️⃣ setAccounts(List<Account>):-
+Purpose: Accounts assign karta hai
+identity.setAccounts(List.of(account1, account2));
+
+1️⃣8️⃣ getRoles():-
+Purpose: Assigned roles return karta hai
+List<Role> roles = identity.getRoles();
+
+1️⃣9️⃣ setRoles(List<Role>):-
+Purpose: Roles assign karta hai
+identity.setRoles(List.of(role1, role2));
+
+2️⃣0️⃣ getEntitlements():-
+Purpose: Assigned permissions return karta hai
+List<Entitlement> ents = identity.getEntitlements();
+
+2️⃣1️⃣ setEntitlements(List<Entitlement>):-
+Purpose: Permissions assign karta hai
+identity.setEntitlements(List.of(ent1, ent2));
+
+2️⃣2️⃣ getCreatedDate():-
+Purpose: Identity kab create hui return karta hai
+identity.getCreatedDate(); // Fri Mar 27 10:00:00 IST 2026
+
+2️⃣3️⃣ setCreatedDate(Date date):-
+Purpose: Creation date set karta hai
+identity.setCreatedDate(new Date());
+
+2️⃣4️⃣ getModifiedDate():-
+Purpose: Last modified date return karta hai
+identity.getModifiedDate(); // Fri Mar 27 12:00:00 IST 2026
+
+2️⃣5️⃣ setModifiedDate(Date date):-
+Purpose: Last modified date set karta hai
+identity.setModifiedDate(new Date());
+
+2️⃣6️⃣ toString():-
+Purpose: Readable string representation return karta hai
+System.out.println(identity.toString());
+// Identity[id=ID_1001, name=Ravi Kumar, email=ravi.kumar@company.com, status=Active]
+
+2️⃣7️⃣ equals(Object obj):-
+Purpose: Do Identity objects compare karta hai (id based)
+identity1.equals(identity2); // true / false
+
+2️⃣8️⃣ hashCode():-
+Purpose: Unique hash code return karta hai, collections me use hota hai
+identity.hashCode(); // 12345678
+----------------------------------------------------------------------------------------------------------------------------------

@@ -1,0 +1,516 @@
+1️⃣ Risk Policy क्या होती है
+Risk Policy ऐसी security policy होती है जो user के risk score के आधार पर access allow या block करती है।
+मतलब:-
+👉 हर user या access का risk score calculate होता है।
+अगर:-
+Risk Score > Threshold
+➡ Policy Violation
+
+2️⃣ Enterprise Example:-
+Company policy:-
+Risk Score > 70 → Access Block
+Risk Score <= 70 → Access Allowed
+
+3️⃣ Project Structure
+risk-policy-project
+│
+├── Identity.java
+├── RiskPolicyEngine.java
+└── RiskPolicyMain.java
+4️⃣ Identity Class
+public class Identity {
+
+    private String name;
+    private String role;
+    private int riskScore;
+
+    public Identity(String name, String role, int riskScore) {
+        this.name = name;
+        this.role = role;
+        this.riskScore = riskScore;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public int getRiskScore() {
+        return riskScore;
+    }
+}
+5️⃣ Risk Policy Engine
+public class RiskPolicyEngine {
+
+    private static final int RISK_THRESHOLD = 70;
+
+    public static void evaluateRisk(Identity identity) {
+
+        int risk = identity.getRiskScore();
+
+        if (risk > RISK_THRESHOLD) {
+
+            System.out.println("RISK POLICY VIOLATION");
+            System.out.println("User: " + identity.getName());
+            System.out.println("Role: " + identity.getRole());
+            System.out.println("Risk Score: " + risk);
+            System.out.println("Action: Access Blocked / Security Review");
+
+        } else {
+
+            System.out.println("Access Allowed");
+            System.out.println("User: " + identity.getName());
+            System.out.println("Risk Score: " + risk);
+
+        }
+    }
+}
+6️⃣ Main Program
+public class RiskPolicyMain {
+
+    public static void main(String[] args) {
+
+        Identity user1 = new Identity("Rahul", "Admin", 85);
+        Identity user2 = new Identity("Amit", "Developer", 40);
+
+        RiskPolicyEngine.evaluateRisk(user1);
+
+        System.out.println("----------------------");
+
+        RiskPolicyEngine.evaluateRisk(user2);
+
+    }
+}
+7️⃣ Output
+Case 1 (High Risk)
+RISK POLICY VIOLATION
+User: Rahul
+Role: Admin
+Risk Score: 85
+Action: Access Blocked / Security Review
+Case 2 (Normal Risk)
+Access Allowed
+User: Amit
+Risk Score: 40
+----------------------------------------------------------------------------------------------------------------------------------
+🔥 🔹 RiskPolicy ke andar kya hota hai?
+👉 Ye ek policy object hota hai jo define karta hai:
+Risk rules / conditions
+Policy violations (SoD etc.)
+Risk level / severity
+Filters (kis user pe apply hoga)
+Actions (violation hone par kya kare)
+Risk contribution/scoring
+---------------------------------------------------------------------------------
+getId()
+setId(String id)
+getName()
+setName(String name)
+getDescription()
+setDescription(String description)
+getType()
+setType(String type)
+getState()
+setState(String state)
+isActive()
+setActive(boolean active)
+getOwner()
+setOwner(Identity owner)
+
+getSeverity()
+setSeverity(String severity)
+getPriority()
+setPriority(int priority)
+getRiskScore()
+setRiskScore(int riskScore)
+getRiskScoreWeight()
+setRiskScoreWeight(int weight)
+getFilter()
+setFilter(Filter filter)
+
+getViolationLimit()
+setViolationLimit(int limit)
+getViolationOwner()
+setViolationOwner(Identity owner)
+getConstraints()
+setConstraints(java.util.List constraints)
+
+getActions()
+setActions(java.util.List actions)
+
+getMitigations()
+setMitigations(java.util.List mitigations)
+getApplications()
+setApplications(java.util.List applications)
+getRoles()
+setRoles(java.util.List roles)
+getEntitlements()
+setEntitlements(java.util.List entitlements)
+getCreated()
+setCreated(java.util.Date date)
+getModified()
+setModified(java.util.Date date)
+----------------------------------------------------------------------------------------------------------------------------
+🔥 🔹 RiskPolicy TYPE kya hota hai?
+👉 Type batata hai policy kis tarah ka check karegi.
+✅ Common Types (SailPoint me):-
+1. 🔹 SOD (Segregation of Duties):-
+👉 Conflict detect karta hai (2 dangerous access ek sath)
+Example:-
+User ke paas:-
+- Payment Create
+- Payment Approve ❌
+👉 Ye violation hai
+
+2. 🔹 Activity:-
+👉 User ke actions/activity pe based
+Example:-
+User ne 10 baar login fail kiya
+
+3. 🔹 Identity:-
+👉 Identity attributes pe check
+Example:-
+Department = Finance AND Role = Admin
+
+4. 🔹 Account:-
+👉 Account level check (Link level)
+Example:-
+AD account disabled nahi hai but user inactive hai
+
+5. 🔹 Entitlement:-
+👉 Access/group level check
+Example:-
+User ke paas "Admin Group" hai
+
+6. 🔹 Role:-
+👉 Role based violation
+Example:-
+2 high-risk roles ek sath assign.
+---------------------------------------------------------------------------------------------------------------------
+🔥 🔹 RiskPolicy STATE kya hota hai?
+👉 State batata hai policy ka current status kya hai.
+✅ Common States:-
+1. 🔹 Active:-
+👉 Policy chal rahi hai (enabled)
+Violations detect honge ✅
+
+2. 🔹 Inactive:-
+👉 Policy band hai
+Koi violation check nahi hoga ❌
+
+3. 🔹 Draft:-
+👉 Policy abhi ban rahi hai (testing phase)
+Final nahi hai
+
+4. 🔹 Deprecated:-
+👉 Old policy (use nahi karna)
+Replace ho chuki hai
+
+5. 🔹 Testing (kabhi-kabhi custom):-
+👉 Sirf testing ke liye
+Production me use nahi hoti
+
+⚡ Short me:-
+👉 State = policy chal rahi hai ya nahi
+
+🔥 Real Example:-
+Policy Name: Finance SoD
+Type  = SOD
+State = Active
+👉 Matlab:-
+👉 Finance conflict detect karegi aur abhi active hai.
+------------------------------------------------------------------------------------------------------
+🔥 🔹 1. getId() / setId(String id):-
+👉 Policy ka unique ID set aur get karta hai
+✅ Code:-
+Policy policy = new Policy();
+policy.setId("RP001");
+System.out.println(policy.getId());
+✅ Output:-
+RP001
+
+🔥 🔹 2. getName() / setName(String name):-
+👉 Policy ka naam (name) set/get karta hai
+✅ Code:-
+policy.setName("Finance SoD Policy");
+System.out.println(policy.getName());
+✅ Output:-
+Finance SoD Policy
+
+🔥 🔹 3. getDescription() / setDescription(String description):-
+👉 Policy ka detail description store karta hai
+✅ Code:-
+policy.setDescription("This policy checks finance conflicts");
+System.out.println(policy.getDescription());
+✅ Output:-
+This policy checks finance conflicts
+
+🔥 🔹 4. getType() / setType(String type):-
+👉 Policy kis type ki hai (SOD, Entitlement, Role, etc.)
+✅ Code:-
+policy.setType("SOD");
+System.out.println(policy.getType());
+✅ Output:-
+SOD
+
+🔥 🔹 5. getState() / setState(String state):-
+👉 Policy ka status (Active, Inactive, Draft)
+✅ Code:-
+policy.setState("Active");
+System.out.println(policy.getState());
+✅ Output:-
+Active
+
+🔥 🔹 6. isActive() / setActive(boolean active):-
+👉 Boolean form me batata hai policy ON hai ya OFF
+✅ Code:-
+policy.setActive(true);
+System.out.println(policy.isActive());
+✅ Output:-
+true
+--------------------------------------------------------------------------
+⚡ Combined Example (Full Flow):-
+Policy policy = new Policy();
+
+policy.setId("RP001");
+policy.setName("Finance SoD Policy");
+policy.setDescription("Checks conflicting access");
+policy.setType("SOD");
+policy.setState("Active");
+policy.setActive(true);
+
+System.out.println(policy.getId());
+System.out.println(policy.getName());
+System.out.println(policy.getDescription());
+System.out.println(policy.getType());
+System.out.println(policy.getState());
+System.out.println(policy.isActive());
+✅ Final Output:-
+RP001
+Finance SoD Policy
+Checks conflicting access
+SOD
+Active
+true
+----------------------------------------------------------------------------------------------------------------------
+🔥 🔹 getOwner() / setOwner(Identity owner) kya hai?
+👉 Ye methods Policy ke owner ko set aur get karte hain.
+🧠 Owner ka matlab kya hota hai?
+👉 Owner = wo banda (Identity) jo policy ka responsible hai
+✔ Policy create kar sakta hai
+✔ Policy modify (sudhar) sakta hai
+✔ Violation ko review / approve / mitigate karta hai
+👉 Sirf creator hi nahi, responsible person hota hai
+
+🔥 🔹 Simple samajh:-
+👉 Tumne policy banayi, lekin baad me koi aur admin handle kare
+👉 Toh owner change ho sakta hai
+
+🔥 🔹 Code Example:-
+Identity admin = new Identity();
+admin.setName("Rahul Admin");
+Policy policy = new Policy();
+policy.setOwner(admin);
+System.out.println(policy.getOwner().getName());
+✅ Output:-
+Rahul Admin
+------------------------------------------------------------------------------------------------------------------------
+🔥 🔹 1. getSeverity() / setSeverity(String severity):-
+👉 Policy ki danger level batata hai
+🎯 Values:-
+LOW
+MEDIUM
+HIGH
+CRITICAL
+
+✅ Code:-
+policy.setSeverity("HIGH");
+System.out.println(policy.getSeverity());
+✅ Output:-
+HIGH
+👉 Matlab: ye policy risky hai 🚨
+
+🔥 🔹 2. getPriority() / setPriority(int priority):-
+👉 Policy ki importance order (kaunsi pehle check hogi)
+✅ Code:-
+policy.setPriority(1);
+System.out.println(policy.getPriority());
+✅ Output:-
+1
+👉 Lower number = higher priority
+👉 1 = sabse important
+
+🔥 🔹 3. getRiskScore() / setRiskScore(int riskScore):-
+👉 Policy violation hone par kitna risk add hoga
+✅ Code:-
+policy.setRiskScore(50);
+System.out.println(policy.getRiskScore());
+✅ Output:-
+50
+👉 Matlab: violation = +50 risk
+
+🔥 🔹 4. getRiskScoreWeight() / setRiskScoreWeight(int weight):-
+👉 Risk ka weight (percentage importance)
+
+✅ Code:-
+policy.setRiskScoreWeight(20);
+System.out.println(policy.getRiskScoreWeight());
+✅ Output:-
+20
+
+👉 Formula use hota hai:-
+Final Risk = (RiskScore * Weight) / 100
+
+👉 Example:-
+(50 * 20) / 100 = 10
+-----------------------------------------------------------
+🔥 🔹 5. getFilter() / setFilter(Filter filter):-
+👉 Kis user pe policy apply hogi (condition)
+
+✅ Code:-
+Filter filter = new Filter();
+filter.setExpression("department == 'Finance'");
+policy.setFilter(filter);
+System.out.println(policy.getFilter().getExpression());
+✅ Output:-
+department == 'Finance'
+
+👉 Matlab:-
+👉 Ye policy sirf Finance users pe lagegi
+
+🔥 🔥 Full Combined Example:-
+Policy policy = new Policy();
+policy.setSeverity("CRITICAL");
+policy.setPriority(1);
+policy.setRiskScore(80);
+policy.setRiskScoreWeight(25);
+Filter filter = new Filter();
+filter.setExpression("department == 'IT'");
+policy.setFilter(filter);
+System.out.println(policy.getSeverity());
+System.out.println(policy.getPriority());
+System.out.println(policy.getRiskScore());
+System.out.println(policy.getRiskScoreWeight());
+System.out.println(policy.getFilter().getExpression());
+✅ Final Output:-
+CRITICAL
+1
+80
+25
+department == 'IT'
+------------------------------------------------------------------------------------------------------------------------
+🔥 🔹 1. getViolationLimit() / setViolationLimit(int limit):-
+👉 Violation Limit kya hota hai?
+👉 Ye decide karta hai kitni baar violation hone ke baad action lena hai
+
+🧠 Simple samajh:-
+limit = 3
+👉 Agar user 3 baar policy todta hai
+👉 Tab system action lega (alert / block / escalation)
+
+✅ Code:-
+policy.setViolationLimit(2);
+System.out.println(policy.getViolationLimit());
+✅ Output:-
+2
+
+🎯 Real Example:-
+Policy: Login Failure Policy
+Limit = 3
+👉 3 baar galat login → account lock 🔒
+---------------------------------------------------------------------
+🔥 🔹 2. getViolationOwner() / setViolationOwner(Identity owner):-
+👉 Violation Owner kya hota hai?
+👉 Wo banda jo violation handle karega.
+🧠 Difference samajh:-
+Type	            Meaning
+Owner:------------Policy ka malik
+ViolationOwner:---Violation ka handler
+
+✅ Code:-
+Identity manager = new Identity();
+manager.setName("Security Manager");
+policy.setViolationOwner(manager);
+System.out.println(policy.getViolationOwner().getName());
+✅ Output:-
+Security Manager
+
+🎯 Real Example:-
+Policy Owner = Admin
+Violation Owner = Manager
+👉 Admin banata hai
+👉 Manager handle karta hai.
+---------------------------------------------------------------
+🔥 🔹 3. getConstraints() / setConstraints(List constraints)
+👉 Constraint kya hota hai?
+👉 Policy ke rules / conditions / logic
+🧠 Simple samajh:-
+👉 Constraint = "kab violation hoga" ka rule
+🎯 Example:-
+Rule:-
+User ke paas Role A AND Role B dono nahi hone chahiye
+👉 Ye hi constraint hai
+---------------------------------------------------------
+✅ Code:-
+List<String> constraints = new ArrayList<>();
+constraints.add("RoleA AND RoleB not allowed");
+policy.setConstraints(constraints);
+System.out.println(policy.getConstraints());
+
+✅ Output:-
+[RoleA AND RoleB not allowed]
+---------------------------------------------------------------------------------------------------------------------
+🔥 🔹 getActions() / setActions(List actions):-
+👉 Actions kya hote hain?
+👉 Jab policy violation hota hai, tab system kya karega — wo define karta hai
+
+🧠 Simple samajh:-
+👉 Constraint = rule
+👉 Violation = rule toot gaya
+👉 Action = ab kya karna hai
+
+🎯 Common Actions:-
+Alert bhejna 📩
+Email notify karna
+Access revoke karna ❌
+Approval bhejna
+Account disable karna 🔒
+----------------------------------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointFactory;
+import sailpoint.object.Policy;
+import sailpoint.object.Identity;
+
+import java.util.*;
+
+public class PolicyActionDemo {
+
+    public static void main(String[] args) throws Exception {
+
+        // 🔹 1. Context lena
+        SailPointContext context = SailPointFactory.getCurrentContext();
+
+        // 🔹 2. Policy fetch karna
+        Policy policy = context.getObjectByName(Policy.class, "Finance SoD Policy");
+
+        // 🔹 3. Actions banana
+        List<String> actions = new ArrayList<>();
+        actions.add("Send Email");
+        actions.add("Revoke Access");
+
+        // 🔹 4. Set actions
+        policy.setActions(actions);
+
+        // 🔹 5. Save to DB
+        context.saveObject(policy);
+        context.commitTransaction();
+
+        System.out.println("Actions added successfully!");
+    }
+}
+✅ Output:
+Actions added successfully!
+-------------------------------------------------------------------------------------------------------

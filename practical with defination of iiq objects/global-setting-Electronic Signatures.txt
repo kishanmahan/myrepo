@@ -1,0 +1,22 @@
+()global-setting-Electronic Signatures->
+
+()Name: Yeh system-level unique identifier hai. Iska upyog backend configuration aur XML files mein signature ko refer karne ke liye kiya jata hai.
+
+()Display Name: Yeh user-friendly label hai jo sirf Admin interface mein dikhta hai taaki aap alag-alag meanings ko pehchan sakein.
+
+()Meaning (Text Editor): Yeh sabse mahatvapurn part hai.
+Yahan aap woh exact language likhte hain jo user ko "Sign" button dabane se pehle dikhayi degi.
+
+()Use Case Example:-
+Agar aapki company mein niyam hai ki har manager ko har saal apni team ka access review sign karna hai:
+Name: accessReviewMeaning
+Display Name: Annual Access Review Declaration
+Meaning: "By signing this, I take full responsibility for the access granted to my subordinates."
+
+()Signature Trigger Hone ka Flow:-
+Selection: Aap kisi Certification ya Workflow step mein is "Meaning" ko select karte hain.
+Prompt: Jab user apna task khatam karne ke liye "Sign" par click karta hai, toh ek popup aata hai.
+Authentication: User ko woh "Meaning" text dikhaya jata hai aur unse unka Login Password firse maanga jata hai.
+Audit Trail: Ek baar sign hone par, IdentityIQ database mein record ho jata hai ki kis user ne, 
+kis samay par, kaunse legal text ko agree kiya hai.
+

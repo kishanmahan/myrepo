@@ -1,0 +1,8 @@
+()Self-contained unit – Module apne andar ka code logically group karta hai.
+Example: Python me math module me saare mathematical functions (like sqrt(), sin()) hote hain.
+()Reusability – Module ko ek jagah likhke multiple programs me use kar sakte ho.
+Example: Agar ek module me database connection ka code hai, to har project me use kar sakte ho bina firse likhe.
+()Ease of maintenance – Agar module ka code change karna hai to sirf module me change karo, baki programs me import wahi se hoga.
+
+()Namespace management – Module ke andar ke variables aur functions directly global namespace me nahi jaate, isliye naming conflicts kam hote hain.
+()Ease of maintenance – Agar module ka code change karna hai to sirf module me change karo, baki programs me import wahi se hoga.

@@ -1,0 +1,51 @@
+()Compliance Standards / Regulations hain jo companies ko security, 
+data protection aur auditing rules follow karne ke liye banaye gaye hain.
+IAM tools jaise SailPoint IdentityIQ aur Okta inko follow karne me help karte hain.
+
+1️⃣ ISO 27001:-
+ISO 27001 = Information Security Management Standard
+Ye batata hai company ko data security kaise manage karni chahiye.
+Main points:-
+Risk management
+Access control
+Security policies
+Incident management
+Audit logs
+
+Example:-
+Company ko ensure karna hai ki sirf authorized user hi database access kare.
+
+2️⃣ SOC 2:-
+SOC 2 = Service Organization Control
+Ye mostly cloud companies ke liye hota hai.
+Isme 5 trust principles hote hain:-
+1️⃣ Security
+2️⃣ Availability
+3️⃣ Processing integrity
+4️⃣ Confidentiality
+5️⃣ Privacy
+
+Example:-
+Customer data unauthorized user ko visible nahi hona chahiye.
+
+3️⃣ GDPR:-
+GDPR = General Data Protection Regulation
+Ye Europe ka data protection law hai.
+Main rule
+User ka personal data protect karna zaroori hai.
+Example:-
+User agar bole mera data delete karo
+company ko delete karna padega
+
+4️⃣ HIPAA:-
+HIPAA = Health Insurance Portability and Accountability Act
+Ye medical data protection law hai.
+Hospitals aur healthcare companies ko follow karna padta hai.
+Example:-
+Patient ka medical record unauthorized user nahi dekh sakta.
+
+5️⃣ Sarbanes‑Oxley Act (SOX):-
+SOX = Financial security law
+Ye companies ke financial data ko protect karta hai.
+Example:-
+Finance employee ko financial database ka access control hona chahiye.

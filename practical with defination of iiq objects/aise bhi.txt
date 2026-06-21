@@ -1,0 +1,36 @@
+private ProvisioningResult create(plan,con,aqqreq){
+ProvisioningResult result=new ProvisioningResult();
+Result rs;
+String id,name,email,idval,nameval,emailval,attrname;
+List<AttributeRequest> attreqs=aqqreq.getAttributeRequests();
+for(AttributeRequest attreq:attreqs){
+
+if(attreq!=null){
+attrname=attreq.getName();
+
+if("employeeId".equals(attrname))
+id=(String)attreq.getValue();
+if("name".equals(attrname))
+name=(String)attreq.getValue();
+if("email".equals(attrname))
+email=(String)attreq.getValue();
+}
+
+}<!--//big for loop close of create-->
+try{
+SQL_query ="INSERT INTO employee(id,name,email) VALUES(?,?,?)";
+smtp=con.prepareStatement(SQL_query);
+smtp.setString(1,id);
+smtp.setString(2,name);
+smtp.setString(3,email);
+rs=smtp.executeUpdate();
+smtp.close();
+}
+catch(SQLException e){
+log.error("sql exception:-"+e.getMessage());
+result.setStatus(ProvisioningResult.STATUS_FAILED);
+result.addError(e);
+}
+return result;
+}<!--create method close-->
+-----------------------------------------------------------------------------------

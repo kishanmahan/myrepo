@@ -1,0 +1,50 @@
+()Is code ko step-by-step dekh:-
+if (admin == null) {
+    throw new RuntimeException("Admin not found");
+}
+🔍 Kya hota hai yaha?
+👉 Case 1: admin == null (Condition TRUE)
+throw new RuntimeException(...) execute hoga
+Exception turant throw ho jayega
+Us line ke baad ka code execute nahi hoga
+Control current method se bahar chala jayega
+
+👉 Matlab:-
+Current method yahi ruk jayega
+Aage ka code skip ho jayega.
+
+--------------------------------------------
+()Is code ko step-by-step dekh:-
+if (admin == null) {
+    return;
+}
+yaha bhi return ke baad code execute nahi hoga.
+-------------------------------------------------------
+🔹 Code:-
+if (identity == null) {
+    return false;
+}
+🧠 Kya hoga?
+👉 return false; aate hi method wahi pe ruk jayega ❌➡️ STOP
+
+🔥 Detail me samajh:-
+Agar identity == null hai
+👉 return false; execute hoga
+👉 method turant exit ho jayega
+Uske baad ka code:-
+❌ run nahi hoga.
+---------------------------------------------------------
+Haan bhai, agar if condition true ho jaye aur uske andar return; likha ho, to method wahi par ruk jata hai.
+Uske baad ka code execute nahi hota.
+Ye dekho:-
+if (identityObj == null) {
+    return null;
+}
+Agar condition true ho gayi:-
+identityObj == null
+matlab identity mili hi nahi.
+Tab:-
+return null;
+execute hoga.
+Aur method/script wahi pe khatam ho jayega.
+Uske niche ka code run nahi hoga.

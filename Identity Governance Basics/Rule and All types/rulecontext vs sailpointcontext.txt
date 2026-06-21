@@ -1,0 +1,36 @@
+context (RuleContext):----------Rule execution ke liye current state, arguments, logs, provisioning plan handle karta hai.
+spContext (SailPointContext):---Database operations, Identity / Application / Entitlement fetch/update, transaction handle.
+
+// 1️⃣ RuleContext se SailPointContext le rahe ho
+SailPointContext spContext = context.getContext();
+
+// 2️⃣ Current provisioning plan fetch
+ProvisioningPlan plan = context.getProvisioningPlan();
+
+// 3️⃣ Fetch identity & entitlement objects using SailPointContext
+Identity target = spContext.getObjectByName(Identity.class, "Rahul");
+Entitlement role = spContext.getObjectByName(Entitlement.class, "Manager_Role");
+
+// 4️⃣ Create new provisioning plan request
+ProvisioningPlanRequest request = new ProvisioningPlanRequest();
+request.setType(ProvisioningPlanRequest.Type.ADD);
+request.setTargetIdentity(target);
+request.setTargetEntitlement(role);
+
+// 5️⃣ Add request to plan
+plan.add(request);
+
+// 6️⃣ Update plan in RuleContext
+context.setProvisioningPlan(plan);
+
+// 7️⃣ Log updated plan size
+context.log("Updated provisioning plan now has " + plan.getRequests().size() + " requests.");
+////////*
+spContext = SailPointContext object
+Ye RuleContext se liya jata hai:-
+SailPointContext spContext = context.getContext();
+Matlab RuleContext ke andar jo current SailPoint session/context hai, usko use kar rahe ho.
+
+////////*
+()yaha context RuleContext ka object hai.
+*/////////

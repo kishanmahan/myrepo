@@ -1,0 +1,100 @@
+2️⃣ Activity Based Policy (Detail):-
+Activity Based Policy user की activity / behavior / action के आधार पर check होती है।
+👉 मतलब policy user के क्या कर रहा है उस पर depend करती है।
+Example activities:-
+Login activity
+File download
+Database access
+Sensitive data access
+Privilege change
+अगर activity suspicious है → policy violation।
+
+Example 1 (Simple):-
+Policy:-
+User cannot download more than 100 files in 10 minutes
+अगर user:-
+User = Rahul
+Downloaded files = 250
+Time = 10 minutes
+➡ Violation detected
+
+Example 2 (Security):-
+Policy:-
+Admin login allowed only from office network
+User activity:-
+User = Admin
+Location = Unknown IP
+
+➡ Policy violation:-
+Example 3 (Real Banking Example)
+Policy:-
+User cannot approve transaction immediately after creating it
+Activity:-
+User created payment
+User approved same payment
+➡ Fraud risk → Violation
+---------------------------------------------------------
+()Activity Based:-
+--1️⃣ Enterprise Activity Policy Code (Java)
+import java.util.HashMap;
+import java.util.Map;
+
+public class ActivityPolicyEngine {
+
+    private static Map<String, Integer> downloadTracker = new HashMap<>();
+
+    private static final int DOWNLOAD_LIMIT = 100;
+
+    public static void recordDownload(String user) {
+
+        int count = downloadTracker.getOrDefault(user, 0);
+
+        count++;
+
+        downloadTracker.put(user, count);
+
+        checkPolicy(user, count);
+    }
+
+    private static void checkPolicy(String user, int count) {
+
+        if(count > DOWNLOAD_LIMIT) {
+
+            System.out.println("ACTIVITY POLICY VIOLATION DETECTED");
+            System.out.println("User: " + user);
+            System.out.println("Downloaded Files: " + count);
+            System.out.println("Limit: " + DOWNLOAD_LIMIT);
+            System.out.println("Action: Security Alert Generated");
+
+        } else {
+
+            System.out.println("Download Allowed for user: " + user +
+                    " | Total Downloads: " + count);
+
+        }
+    }
+}
+2️⃣ Main Program (Enterprise Simulation)
+public class ActivityPolicyMain {
+
+    public static void main(String[] args) {
+
+        String user = "rahul";
+
+        for(int i = 1; i <= 105; i++) {
+
+            ActivityPolicyEngine.recordDownload(user);
+
+        }
+
+    }
+}
+3️⃣ Output (Normal Activity)
+
+First few downloads:
+
+Download Allowed for user: rahul | Total Downloads: 1
+Download Allowed for user: rahul | Total Downloads: 2
+Download Allowed for user: rahul | Total Downloads: 3
+...
+Download Allowed for user: rahul | Total Downloads: 100

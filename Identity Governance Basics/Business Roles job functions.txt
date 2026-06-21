@@ -1,0 +1,182 @@
+----------------------------------------------------------------------------------------------------
+🏗️ 3️⃣ Role Management:-
+----------------------------------------------------------------------------------------------------
+()Business Roles kya hai?
+--1️⃣ Business Role kya hai?
+Meaning: Ye role ek group of permissions ka logical set hai,
+jo specific business function ya job responsibilities ke liye assign hota hai.
+Purpose:-
+Access management ko simple banaye
+Business workflows ke hisaab se access automatically assign kare
+Auditing aur compliance easy ho.
+
+2️⃣ Examples of Business Roles:-
+Business Role	                    Example Users	                Permissions Included
+Finance Manager----------------------Rahul, Priya------------SAP Full Access, Finance Reports Read/Write
+HR Specialist------------------------Anil, Riya--------------Employee Records Read/Write, Leave Approvals
+IT Admin-----------------------------Ravi, Mohit-------------Server Admin, Network Config
+Employee-----------------------------All staff---------------Email, Leave Portal
+Ye roles high-level job functions ke according defined hote hain.
+Underlying permissions, applications, aur policies automatically link ho jate hain.
+
+4️⃣ Code Conceptual Example:-
+Identity rahul = getIdentity("EMP12345");
+
+// Define Business Role
+BusinessRole financeManager = new BusinessRole("Finance Manager");
+
+// Link underlying technical permissions
+financeManager.addPermission("SAP Full Access");
+financeManager.addPermission("Finance Reports Read/Write");
+
+// Assign Business Role to user
+rahul.assignBusinessRole(financeManager);
+
+Ab Rahul automatically all Finance Manager permissions inherit kar lega
+Agar role change hota hai (Mover stage) → Access automatic update.
+---------------------
+()1️⃣ Underlying Permissions:-
+Meaning: Ye actual actions ya rights hote hain jo user kisi system/application me perform kar sakta hai.
+Example:-
+SAP me Read Finance Reports
+Salesforce me Edit Leads
+Jira me Create Tickets
+
+Key Point:-
+Ye Business Role ke andar hidden hote hain
+User ko direct assign karne ki zarurat nahi, role assign karte hi ye automatically mil jaate hain,
+Ye fine-grained access control provide karte hain.
+Examples:-
+SAP: Read Finance Reports, Write Finance Reports
+Salesforce: Edit Leads, View Opportunities
+Jira: Create Tickets, Assign Tickets
+💡 Note: Ye directly user ko assign nahi hote.
+Usually Technical Role ke andar included hote hain,
+aur Business Role assign karte hi user ko indirectly mil jate hain.
+--------------------
+()3️⃣ Policies:-
+Meaning: Ye rules define karte hain ki kaun kaunse user ko access kaise milega.
+Types:-
+Segregation of Duties (SoD)
+Approval Required
+Time-Bound Access
+MFA Enforcement
+--------------------------------------------------------------------------------------------------
+()job functions kya hai?
+--“Job function = employee ka kaam ya responsibility”.
+2️⃣ Examples of Job Functions:-
+Job Function	            Example Business Role	             Notes
+Finance----------------Finance Manager, Accountant--------Access to SAP, Finance Reports
+HR---------------------------HR Specialist----------------Access to Employee Records, Leave Approvals
+IT---------------------IT Admin, System Operator----------Server Admin, Network Config
+Employee---------------Staff------------------------------Email, Leave Portal, Intranet
+
+4️⃣ Code Conceptual Example:-
+Identity rahul = getIdentity("EMP12345");
+
+// Define Job Function
+JobFunction finance = new JobFunction("Finance");
+
+// Assign Business Role based on Job Function
+BusinessRole financeManager = new BusinessRole("Finance Manager");
+financeManager.addPermission("SAP Full Access");
+financeManager.addPermission("Finance Reports Read/Write");
+
+// Map Job Function to Business Role
+finance.addBusinessRole(financeManager);
+
+// Assign to User
+rahul.assignJobFunction(finance);
+
+✅ Is example me:-
+Job Function high-level kaam define karta hai
+Business Role permissions ka package banata hai
+Identity ko assign karke automated RBAC workflow ready ho jata hai
+-----------------------------------------------------------------------------------------
+Full Java Code (Job Function → Business Role → Permissions):-
+import java.util.ArrayList;
+import java.util.List;
+
+class BusinessRole {
+
+    String roleName;
+    List<String> permissions = new ArrayList<String>();
+
+    BusinessRole(String roleName) {
+        this.roleName = roleName;
+    }
+
+    void addPermission(String permission) {
+        permissions.add(permission);
+    }
+}
+
+class JobFunction {
+
+    String name;
+    List<BusinessRole> roles = new ArrayList<BusinessRole>();
+
+    JobFunction(String name) {
+        this.name = name;
+    }
+
+    void addBusinessRole(BusinessRole role) {
+        roles.add(role);
+    }
+}
+
+class Identity {
+
+    String name;
+    List<JobFunction> jobFunctions = new ArrayList<JobFunction>();
+
+    Identity(String name) {
+        this.name = name;
+    }
+
+    void assignJobFunction(JobFunction jobFunction) {
+
+        jobFunctions.add(jobFunction);
+
+        System.out.println("User: " + name);
+        System.out.println("Assigned Job Function: " + jobFunction.name);
+
+        for (BusinessRole role : jobFunction.roles) {
+
+            System.out.println("Business Role: " + role.roleName);
+
+            for (String perm : role.permissions) {
+                System.out.println("Permission: " + perm);
+            }
+        }
+    }
+}
+
+public class JobFunctionExample {
+
+    public static void main(String[] args) {
+
+        Identity rahul = new Identity("Rahul");
+
+        // Define Job Function
+        JobFunction finance = new JobFunction("Finance");
+
+        // Define Business Role
+        BusinessRole financeManager = new BusinessRole("Finance Manager");
+        financeManager.addPermission("SAP Full Access");
+        financeManager.addPermission("Finance Reports Read/Write");
+
+        // Map Job Function → Business Role
+        finance.addBusinessRole(financeManager);
+
+        // Assign Job Function to user
+        rahul.assignJobFunction(finance);
+    }
+}
+Output:-
+Program run karne par:-
+User: Rahul
+Assigned Job Function: Finance
+Business Role: Finance Manager
+Permission: SAP Full Access
+Permission: Finance Reports Read/Write

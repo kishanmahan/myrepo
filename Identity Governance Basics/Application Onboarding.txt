@@ -1,0 +1,77 @@
+1️⃣ Application Onboarding kya hota hai?
+Application Onboarding = kisi new application ko IAM system me add karna taaki uska access manage ho sake.
+
+Example application:-
+SAP
+Workday
+ServiceNow
+Database
+Inko IAM me add karna hi Application Onboarding hai.
+
+2️⃣ Application Onboarding me kya hota hai:-
+
+Step by step process:-
+
+1️⃣ Application add karna:-
+Application Name
+Connection Details
+Account Schema
+
+2️⃣ Connector configure karna:-
+Example:-
+LDAP
+Database
+REST API
+Active Directory
+
+3️⃣ Account schema define:-
+Example:-
+username
+email
+department
+role
+
+4️⃣ Entitlements import:-
+Example:-
+Admin
+FinanceUser
+HRManager
+
+5️⃣ Aggregation run:-
+Application se users aur access IAM me import
+
+()bhai ye onboarding ka code developer likhta hai ki kaam ui se hota hai?
+👍 Application Onboarding usually UI se hota hai, developer code se nahi karta.
+IAM tools jaise SailPoint IdentityIQ aur Okta me onboarding ka main kaam admin UI configuration se hota hai.
+Mostly UI se hota hai, code nahi likhna padta.
+Ye process tools jaise SailPoint IdentityIQ ya Okta me admin UI se configure kiya jata hai.
+
+1️⃣ Normally onboarding kaise hota hai
+
+Admin UI me steps:
+
+Setup → Applications → New Application
+
+Phir configuration:
+
+Application Name
+Connector Type
+Connection Details
+Schema
+Aggregation
+
+Example:
+
+Application : SAP
+Connector : JDBC
+Database URL : jdbc:mysql://server/db
+
+Ye sab UI form me fill hota hai, code nahi likhna padta.
+
+2️⃣ Developer kab code likhta hai:-
+Developer tab code likhta hai jab custom logic chahiye.
+Example cases:-
+1️⃣ Custom provisioning rule
+2️⃣ Custom aggregation logic
+3️⃣ Data transformation
+4️⃣ Workflow automation

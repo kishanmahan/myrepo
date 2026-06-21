@@ -1,0 +1,136 @@
+1️⃣ Compliance Report kya hota hai?
+Compliance Report = Security rules aur policies follow ho rahi hain ya nahi uska summary report.
+Is report ko usually:-
+Auditor
+Security team
+Compliance team
+check karti hai.
+
+2️⃣ Example Compliance Report:-
+Compliance Report:-
+User        Access            Status
+-----------------------------------------
+Rahul       DatabaseAdmin     Violation
+Amit        FinanceAccess     Compliant
+Neha        HRRecords         Compliant
+Matlab:-
+Rahul ke access me policy violation hai,
+Amit aur Neha rules follow kar rahe hain.
+
+4️⃣ Real Example:-
+Policy : Finance role ko Admin access nahi mil sakta
+
+User : Rahul
+Role : Finance + Admin
+
+Result : Compliance Violation
+
+5️⃣ Compliance Reports kyun important hai:-
+✔ Security monitoring
+✔ Audit proof
+✔ Risk detection
+✔ Compliance verification
+
+Compliance Report Project (Single Java File)
+import java.util.ArrayList;
+import java.util.List;
+
+class Identity {
+
+    private String name;
+    private String role;
+    private boolean sensitiveAccess;
+    private boolean violation;
+
+    public Identity(String name,String role,boolean sensitiveAccess){
+
+        this.name=name;
+        this.role=role;
+        this.sensitiveAccess=sensitiveAccess;
+        this.violation=false;
+
+    }
+
+    public void checkCompliance(){
+
+        // Policy Rule
+        if(role.equals("FinanceAdmin") && sensitiveAccess){
+
+            violation=true;
+
+        }
+
+    }
+
+    public void printReport(){
+
+        System.out.println("User : "+name);
+        System.out.println("Role : "+role);
+        System.out.println("Sensitive Access : "+sensitiveAccess);
+
+        if(violation){
+
+            System.out.println("Compliance Status : VIOLATION");
+
+        }else{
+
+            System.out.println("Compliance Status : COMPLIANT");
+
+        }
+
+        System.out.println("-------------------------------");
+
+    }
+
+}
+
+public class ComplianceReportProject {
+
+    public static void main(String[] args) {
+
+        List<Identity> users=new ArrayList<Identity>();
+
+        Identity u1=new Identity("Rahul","FinanceAdmin",true);
+        Identity u2=new Identity("Amit","Employee",false);
+        Identity u3=new Identity("Neha","HR",false);
+        Identity u4=new Identity("Karan","FinanceAdmin",false);
+
+        users.add(u1);
+        users.add(u2);
+        users.add(u3);
+        users.add(u4);
+
+        System.out.println("===== COMPLIANCE REPORT =====");
+
+        for(Identity id:users){
+
+            id.checkCompliance();
+            id.printReport();
+
+        }
+
+    }
+
+}
+Output Example:-
+===== COMPLIANCE REPORT =====
+
+User : Rahul
+Role : FinanceAdmin
+Sensitive Access : true
+Compliance Status : VIOLATION
+
+User : Amit
+Role : Employee
+Sensitive Access : false
+Compliance Status : COMPLIANT
+
+User : Neha
+Role : HR
+Sensitive Access : false
+Compliance Status : COMPLIANT
+
+User : Karan
+Role : FinanceAdmin
+Sensitive Access : false
+Compliance Status : COMPLIANT

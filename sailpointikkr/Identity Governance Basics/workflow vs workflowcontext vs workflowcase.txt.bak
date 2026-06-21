@@ -1,0 +1,40 @@
+❗ Short Answer (direct):-
+👉 WorkflowContext data leta hai → WorkflowCase se ✅
+👉 Workflow se nahi ❌ kyuki workflow ke basis par workflowcase banata hai sailpoint.
+
+🧠 Ab detail me samajh
+🔷 1️⃣ Workflow kya hai?
+Ye definition / design hai
+XML/config hota hai
+Static hota hai
+
+👉 Example:-
+OnboardingWorkflow.xml
+
+👉 Isme:-
+steps
+transitions
+rules
+
+🔷 2️⃣ WorkflowCase kya hai?
+Ye runtime instance hai
+Jab workflow run hota hai tab banta hai
+Isme actual data store hota hai
+👉 Example:-
+john.doe ka onboarding run → ek WorkflowCase banega
+👉 Isme hota hai:-
+arguments
+status
+messages
+variables
+
+🔷 3️⃣ WorkflowContext kya hai?
+Ye execution helper / wrapper hai
+WorkflowCase ko access karne ka tool
+
+🔥 Relationship (sabse important):-
+Workflow (design)
+      ↓
+WorkflowCase (runtime data)
+      ↓
+WorkflowContext (access / execution)

@@ -1,0 +1,148 @@
+--------------------------------------------------------------------------------------------------------------------------------------
+We will onboard JDBC Application :-
+
+जो NON Authoritative Application है !-
+
+-> Application Definition -> Add New Application -> Name -> JDBC Application -> The Administrator -> Owner -> Configuration
+
+-> Application Type -> JDBC ->
+
+-> scroll down -> (kata hua)
+
+और पहले JDBC Drive के box में link दे तो link के लिए जाओ
+
+-> sailpoint -> apache-tomcat-7.0.53 -> webapps -> identityiq -> WEB-INF -> classes->iiq->
+
+-> फिर right click -> और Edit with notepad++ ->
+
+और यहाँ mysql या कोई भी database का Driver mil जाएगा तो मुझे mysql का चाहिए तो copy ->
+
+-> com.mysql.jdbc.Driver -> paste
+
+-> Database URL देना है तो localhost:3306/?jdbc:mysql://
+
+क्यों ! अब हमें Database URL देना है तो create mysql Database first
+
+तो -> window search -> mysql query Browser -> open -> password root -> ok -> ignore -> Right click Any where -> create New Schema ->
+
+Image 10 (Page 70)
+-> Schema name -> ruthie -> ok
+
+-> ruthie -> (kata hua) Ruthie पे right click फिर -> create New table ->
+
+-> (kata hua) -> track ->
+
+-> Table name -> track ->
+
+-> Database -> ruthie ->
+
+-> column name -> Id ->
+
+-> column name -> Fname ->
+
+-> column name -> Lname ->
+
+-> email ->
+
+-> fullname ->
+
+-> permission ->
+
+-> description -> Apply changes
+
+70 -> execute ->
+
+-> अब -> ruthie -> track -> पे click
+
+-> अब डाटा को भरदो AuthEmployee.csv से -> तो
+
+-> ID Fname Lname email fullname permission description ->
+
+-> में 101, Robert, Brown, Robert.Brown@gmail.com, Robert.Brown@demoexample.com / robert.brown, Readonly / test -> Apply changes
+
+-> फिर (scribble)-> click
+
+-> एक और record देदो ।
+
+Image 1 (Page 71)
+-> अब Database check कर लेते है -> ०
+
+jdbc:mysql://localhost/ruthie ->
+
+-> Test connection sql [Tick mark] ->
+
+-> SELECT * FROM ruthie.track;
+
+-> Sql statement में भी यही SELECT * FROM ruthie.track;
+
+71
+
+-> test connection -> Connection Successful.
+
+-> और id हमेशा Integer रखना DB में ।
+
+-> schema name -> schema ->
+
+-> Display Attribute -> fullname ->
+
+-> identity Attribute -> ID ->
+
+-> Discover schema Attribute ->
+
+-> permission को edit -> multivalued , Entitlement , Managed -> save.
+
+-> preview और see. हो गया । save.
+
+-> Application definition end see.
+
+Correlation rule configure कैसे करते है?
+
+-> Application definition -> JDBC -> Correlation -> New -> Next ->
+
+-> Enter a name for this new configuration -> JDBC -> Next -> Next
+
+-> Application Attribute -> empId ->
+
+Image 2 (Page 72)
+-> identity Attribute -> EmpID
+
+-> save -> ऐसे कर लोगे लेकिन correlation rule से सिखना है तो -> वापस -> Rules ->
+
+72
+
+-> Correlation Rule -> ... ->
+
+-> map map = new HashMap();
+
+-> String empId = (String) account.getAttribute("empId"); // 1a2a3a
+
+-> map.put("identityAttributeName", "empId");
+
+-> map.put("identityAttributeValue", empId);
+
+-> return map;
+
+-> Rule Name ->
+
+JDBC Correlation : Hemanth
+
+-> Return type -> Map -> Save.
+
+-> Rule -> correlation Rule -> JDBC: correlation: Hemanth
+
+-> Save -> Tasks ->
+
+-> New Task -> Account Agg ->
+
+-> Name -> AccAgg JDBC
+
+-> Account Aggregation options के Right में [Tick mark]
+
+Note:- जब भी Application बनाओगे तो Application field में Attribute value यहाँ से match होना चाहिए । spelling in csv.
+
+-> JDBC select -> save and execute.
+
+-> Task Results -> AccAgg JDBC ->
+
+-> identity warehouse -> identity में जाओ जो तुमने JDBC में दिया फिर Application Accounts Application देखो हो गया Success.
+

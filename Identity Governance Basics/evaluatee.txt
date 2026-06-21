@@ -1,0 +1,12 @@
+👉 evaluate():-
+User (Identity) ka access check karta hai
+Policy rules ke against compare karta hai
+Agar rule break hua → PolicyViolation return karta hai.
+
+List<PolicyViolation> violations = policy.evaluate(identity);
+
+if (violations.isEmpty()) {
+    System.out.println("No Violation");
+} else {
+    System.out.println("Violation Found!");
+}

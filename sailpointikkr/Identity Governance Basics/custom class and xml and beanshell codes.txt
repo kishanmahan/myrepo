@@ -1,0 +1,341 @@
+()Custom class kya hai kya karta hai?
+--Custom.class = context ko batata hai ki Custom type ka object fetch karo (DB se).
+
+🔹 Custom.class kya hai?
+👉 Custom.class = Java class reference hai (type batane ke liye)
+📌 Simple line:-
+Context ko batata hai ki kis type ka object fetch karna hai.
+code:-
+Custom custom = context.getObjectByName(Custom.class, "MyConfig");
+👉 Yaha:-
+Custom.class → bol raha hai:-
+“Custom type ka object lao”
+
+🔥store hota hai db me:-
+👉 Ye internally karta hai:-
+Custom.class → spt_custom table
+Identity.class → spt_identity table
+
+🔹 Code Concept:-
+Custom custom = context.getObjectByName(Custom.class, "Mapping_AD_Restricted_Groups");
+🧠 Kya ho raha hai yaha?
+👉 Ye line:-
+Custom object ko DB se fetch kar rahi hai by name.
+
+🔸 "Mapping_AD_Restricted_Groups"
+👉 Object ka naam hai
+👉 Jo SailPoint me already stored hai.
+
+⚔️ Real Comparison:-
+✔️ Correct:-
+context.getObjectByName(Custom.class, "MyConfig");
+❌ Galat:-
+context.getObjectByName(Identity.class, "MyConfig");
+👉 Kyunki:-
+"MyConfig" Custom object hai, Identity nahi.
+---------------------------------------------
+()custom.class:-
+Ye XML SailPoint ka ek Custom Object define karta hai jo ek configurable data store ki tarah kaam karta hai,
+jisme organization ke sensitive AD groups ke liye risk levels aur access governance rules
+(approval, approver, auto revoke) structured format me store kiye jate hain,
+taki runtime pe system in rules ke basis pe automated aur secure decision le sake.
+-----------------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Custom PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Custom name="Mapping_AD_Restricted_Groups">
+  <Description>This object stores the mapping of highly restricted AD groups to their risk levels and required approver workgroups.</Description>
+  <Attributes>
+    
+	<Map>
+      <entry key="Domain Admins" value="Critical_Risk"/>
+      <entry key="Enterprise Admins" value="Critical_Risk"/>
+      <entry key="Account Operators" value="High_Risk"/>
+      
+      <entry key="VPN_External_Access">
+        <value>
+          <Map>
+            <entry key="requiresApproval" value="true"/>
+            <entry key="approverWorkgroup" value="Network_Security_Team"/>
+            <entry key="autoRevokeDays" value="30"/>
+          </Map>
+        </value>
+      </entry>
+
+      <entry key="AWS_Production_ReadWrite">
+        <value>
+          <Map>
+            <entry key="requiresApproval" value="true"/>
+            <entry key="approverWorkgroup" value="Cloud_Admin_Team"/>
+            <entry key="autoRevokeDays" value="15"/>
+          </Map>
+        </value>
+      </entry>
+    </Map>
+  
+  
+  </Attributes>
+</Custom>
+////////////*
+()<?xml version='1.0' encoding='UTF-8'?>
+👉 Standard XML declaration
+👉 Batata hai:-
+XML version
+encoding (UTF-8)
+-------------------------------------------------------
+()🔥 🔹 2️⃣ DOCTYPE:-
+<!DOCTYPE Custom PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+👉 Bada explanation:-
+Ye line define karti hai ki:-
+👉 “Ye XML ek valid SailPoint Custom object hai”
+sailpoint.dtd:-
+Ye ek rulebook (schema) hai
+Jo define karta hai:-
+kaunse tags allowed hain
+kaunsa structure valid hai
+👉 Iska role:-
+XML validation
+Structure correctness ensure karna
+
+👉 Agar structure galat hua:-
+➡ SailPoint load nahi karega
+------------------------------------------------------------------
+()🔥 🔹 <Custom> tag:-
+<Custom name="Mapping_AD_Restricted_Groups">
+Main object hai SailPoint ka
+🔹 name:-
+👉 Object ka naam:-
+Mapping_AD_Restricted_Groups
+👉 Is naam se:-
+context.getObject(Custom.class, "Mapping_AD_Restricted_Groups");
+se fetch kar sakte ho.Ye ek named configuration container hai jisme specific business logic data store hai.
+-------------------------------------------------------------------
+()🔥 🔹 <Description>:-
+<Description>This object stores the mapping of highly restricted AD groups...</Description>
+Human-readable description hai
+👉 Batata hai:-
+Ye object kis kaam ke liye bana hai
+👉 System use nahi karta logic me
+👉 Sirf documentation / understanding ke liye.
+-----------------------------------------------------
+🔥 🔹 5️⃣ <Attributes>
+<Attributes>:-
+👉 Bada explanation:-
+Ye ek data container tag hai
+Custom object ke andar jo bhi actual data hota hai, wo isi ke andar hota hai
+👉 SailPoint internally:-
+Isko Map structure me convert karta hai
+👉 Matlab:-
+Ye logical boundary hai jahan se actual configuration start hota hai.
+-------------------------------------------------------------------------
+🔥 🔹 6️⃣ <Map> (CORE ENGINE ⚡):-
+👉 Bada explanation:-
+Ye sabse important tag hai
+Ye represent karta hai:-
+👉 Java Map (key-value structure)
+👉 Iska kaam:-
+Data ko structured form me store karna
+Fast lookup provide karna
+👉 Structure:-
+key → value
+👉 Ye allow karta hai:-
+simple values
+complex nested structures
+----------------------------------
+🔥 🔹 7️⃣ <entry> (Data Unit):-
+<entry key="Domain Admins" value="Critical_Risk"/>
+👉 Bada explanation:-
+Ye ek single data record represent karta hai
+Har entry ek mapping define karti hai.
+👉 Real meaning:-
+Ek rule define ho raha hai: “Is group ka risk kya hai”
+-------------------------------------------
+<entry key="Domain Admins" value="Critical_Risk"/>
+<entry key="Enterprise Admins" value="Critical_Risk"/>
+<entry key="Account Operators" value="High_Risk"/>
+👉 Deep explanation:-
+Ye groups highly privileged hain
+System ko bataya ja raha hai:-
+kaunsa group kitna dangerous hai.
+
+🔥 System kya karega:-
+👉 Jab koi user ye group maangega:-
+System bolega → HIGH ALERT 🚨
+Extra approval ya restriction lagega
+-----------------------------------------
+🔥 🔹 8️⃣ <value> (Wrapper for Complex Data):-
+<value>
+  <Map>
+👉 Bada explanation:-
+Jab value simple string nahi hoti
+Tab <value> tag use hota hai
+👉 Ye allow karta hai:-
+nested structure
+multiple parameters store karna
+-----------------------------------------
+🔥 🔹 1️⃣ <value> kyun use kiya?
+👉 Simple case:-
+<entry key="Domain Admins" value="Critical_Risk"/>
+👉 Yaha:-
+value = ek simple string hai
+➡ isliye direct value="..." likh diya.
+
+👉 Complex case:-
+<entry key="VPN_External_Access">
+  <value>
+    <Map>...</Map>
+  </value>
+</entry>
+👉 Yaha:-
+value simple string nahi hai ❌
+multiple settings hain ✔
+👉 Isliye <value> tag use kiya.
+<value> ek wrapper hai jo complex data (jaise Map, List, object) ko hold karta hai.
+------------------------------------
+🔥 🔹 2️⃣ Ye 3 entries ka matlab kya hai?
+<entry key="requiresApproval" value="true"/>
+<entry key="approverWorkgroup" value="Network_Security_Team"/>
+<entry key="autoRevokeDays" value="30"/>
+
+🔹 1️⃣ requiresApproval = true:-
+Ye ek boolean flag hai jo system ko batata hai:-
+➡ “User ko direct access mat do”
+➡ “Pehle approval lo”
+
+🔹 2️⃣ approverWorkgroup = Network_Security_Team:-
+Ye batata hai kaun approve karega
+🔥 Real execution:-
+String approver = "Network_Security_Team";
+sendApprovalRequest(approver);
+👉 System:-
+request us group ko bhejta hai
+wo approve/reject karte hain
+
+🔹 3️⃣ autoRevokeDays = 30:-
+Ye batata hai access kitne din valid rahega
+🔥 Real execution:-
+scheduleRevoke(user, access, 30);
+👉 System:-
+30 din baad access hata deta hai.
+
+
+-----------------------------------------------
+👉 “kya ye system ko bolta hai ya khud kuch karta hai?”
+👉 Direct answer:-
+❌ Ye khud kuch nahi karta
+✔ Ye sirf configuration / instruction deta hai
+
+🔥 🔹 Actual kaam kaun karta hai?
+Rules (Beanshell)
+Workflows
+Provisioning engine
+SailPoint logic
+
+🔥 Flow samajh (VERY IMPORTANT):-
+Custom Object (ye XML)
+        ↓
+System read karta hai
+        ↓
+Rule / Workflow use karta hai
+        ↓
+Actual action hota hai
+----------------------------------------
+*///////////
+-----------------------------------------------------------------------------------------------------------------------------------------------
+🔢 Total Attributes Count:-
+👉 Direct top-level <entry> count karte hain:-
+✔️ Simple entries:-
+Domain Admins
+Enterprise Admins
+Account Operators
+
+✔️ Complex (nested Map) entries:-
+VPN_External_Access
+AWS_Production_ReadWrite
+
+✅ Final Answer:-
+👉 Total attributes (top-level entries) = 5
+
+🔥 Total including inner?
+👉 Agar sab count kare:-
+Top-level = 5
+Inner = 3 + 3 = 6
+👉 Grand total = 11 entries
+-----------------------------------------------------------
+import sailpoint.object.Custom;
+import sailpoint.object.Identity;
+import sailpoint.object.Workgroup;
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Workflow;
+import sailpoint.object.WorkflowLaunch;
+
+import java.util.Map;
+
+// 🔹 1. Custom Object fetch karo
+Custom custom = context.getObject(Custom.class, "Mapping_AD_Restricted_Groups");
+
+Map map = custom.getAttributes();
+
+// 🔹 2. Requested group (example)
+String requestedGroup = "VPN_External_Access";
+
+// 🔹 3. Group config nikaalo
+Object value = map.get(requestedGroup);
+
+if (value != null && value instanceof Map) {
+
+    Map groupConfig = (Map) value;
+
+    // 🔹 4. Approval check
+    Boolean requiresApproval = Boolean.valueOf((String) groupConfig.get("requiresApproval"));
+
+    if (requiresApproval) {
+
+        // 🔹 5. Approver Workgroup nikaalo
+        String approverName = (String) groupConfig.get("approverWorkgroup");
+
+        Workgroup approverGroup = context.getObject(Workgroup.class, approverName);
+
+        // 🔹 6. Identity (user)
+        Identity user = context.getObject(Identity.class, "john.doe");
+
+        // 🔹 7. Workflow launch prepare karo
+        Workflow wf = context.getObject(Workflow.class, "Access Request Approval");
+
+        WorkflowLaunch wfLaunch = new WorkflowLaunch();
+        wfLaunch.setWorkflowName(wf.getName());
+
+        Map args = new java.util.HashMap();
+        args.put("identityName", user.getName());
+        args.put("approver", approverGroup.getName());
+        args.put("groupName", requestedGroup);
+
+        wfLaunch.setVariables(args);
+
+        // 🔹 8. Workflow trigger karo
+        context.launch(wfLaunch);
+
+        log.info("Approval triggered for group: " + requestedGroup);
+    }
+}
+/////////*
+()custom.getAttributes(); ko print kare toh output?
+-👉 Ye poora XML Map structure print karega (Java Map format me)
+👉 Tera XML convert hoke approx aisa dikhega 👇
+{
+  Domain Admins=Critical_Risk,
+  Enterprise Admins=Critical_Risk,
+  Account Operators=High_Risk,
+
+  VPN_External_Access={
+    requiresApproval=true,
+    approverWorkgroup=Network_Security_Team,
+    autoRevokeDays=30
+  },
+
+  AWS_Production_ReadWrite={
+    requiresApproval=true,
+    approverWorkgroup=Cloud_Admin_Team,
+    autoRevokeDays=15
+  }
+}
+*/////////

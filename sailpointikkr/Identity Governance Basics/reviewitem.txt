@@ -1,0 +1,112 @@
+3️⃣ ReviewItem kya hai?
+Kya hai:-
+ReviewItem ek specific access/ entitlement ka review unit hai.
+Matlab, ye smallest element hai jise reviewer approve ya revoke karta hai.
+Kya karti hai:-
+Example: User “John” ko “FinanceGroup” access hai → ye ek ReviewItem banega.
+Reviewer ke paas options hote hain: Approve / Revoke / Do Nothing / Delegate.
+Status update karta hai ki ye access ok hai ya remove karna hai.
+
+1️⃣ getIdentity():-
+item.getIdentity();
+Kya karta hai?
+Jis user ka access review ho raha hai usko return karta hai.
+Example:-
+Rahul
+
+2️⃣ setIdentity(Identity identity):-
+Review item ka user set karta hai.
+
+3️⃣ getApplication():-
+item.getApplication();
+Kya karta hai?
+Access kis application ka hai ye batata hai.
+Example:-
+ActiveDirectory
+SAP
+Database
+
+4️⃣ setApplication(Application app):-
+Application assign karta hai.
+
+5️⃣ getEntitlement():-
+item.getEntitlement();
+Kya karta hai?
+Review hone wala entitlement return karta hai.
+Example:-
+FinanceGroup
+AdminGroup
+
+6️⃣ setEntitlement(String ent):-
+Entitlement set karta hai.
+
+7️⃣ getDecision();-
+Reviewer ka decision return karta hai.
+Example:-
+Approve
+Revoke
+
+8️⃣ setDecision(String decision):-
+Decision set karta hai.
+Example:-
+item.setDecision("Revoke");
+
+9️⃣ getComment():-
+Reviewer ka comment return karta hai.
+Example:-
+Access no longer required
+
+🔟 setComment(String comment):-
+Reviewer ka comment set karta hai.
+---------------------------------------------------------------
+1️⃣ item.getTargetName() kya hai?
+Ye ReviewItem ka method hai jo target ka naam return karta hai.
+Target = jis cheez ka access review ho raha hai
+Matlab:-
+Application
+Role
+Entitlement
+Account
+
+2️⃣ Ye kya karta hai?
+Ye review item kis object se related hai uska naam return karta hai.
+Example:-
+User = Alice
+Access = FinanceGroup
+Application = SAP
+
+Code:-
+String target = item.getTargetName();
+
+Output:-
+FinanceGroup
+
+3️⃣ Example Flow:-
+Access Review Item:-
+User → Alice
+Application → SAP
+Entitlement → FinanceGroup
+Status → Pending
+
+Code:-
+item.getTargetName();
+
+Output:-
+FinanceGroup
+
+4️⃣ Real Company Example:-
+Company me:-
+User → John
+Application → ActiveDirectory
+Group → VPN_ACCESS
+
+ReviewItem:-
+John → VPN_ACCESS → Pending
+
+Code:-
+String name = item.getTargetName();
+System.out.println(name);
+
+Output:-
+VPN_ACCESS
+--------------------------------------------

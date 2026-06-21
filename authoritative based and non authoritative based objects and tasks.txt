@@ -1,0 +1,204 @@
+🔥 🔹 AUTHORITATIVE SIDE (Source / Identity आधारित)
+✅ Objects
+Identity
+IdentitySnapshot
+IdentityEntitlement
+IdentityRequest
+IdentityRequestItem
+IdentityHistory
+IdentityEvent
+IdentityTrigger
+RoleAssignment
+Bundle
+Capability
+Workgroup
+Population
+GroupDefinition
+DynamicScope
+Scope
+Attributes
+AttributeDefinition
+ObjectAttribute
+Schema
+ResourceObject
+TaskResult
+TaskDefinition
+TaskSchedule
+TaskEvent
+TaskItem
+Dictionary
+Configuration
+Custom
+AuditEvent
+AuditConfig
+AuditAction
+AuditObject
+MessageTemplate
+LocalizedMessage
+Notification
+EmailTemplate
+QuickLink
+QuickLinkCategory
+DashboardContent
+Dashboard
+UIConfig
+UIRule
+Report
+ReportColumnConfig
+ReportDataSource
+ReportDefinition
+ReportResult
+ReportParameter
+Filter
+QueryOptions
+Sort
+PasswordPolicy
+PasswordHistory
+PasswordConstraint
+AuthenticationConfig
+LoginConfig
+Session
+SessionManager
+AccessRequest
+AccessRequestItem
+AccessHistory
+AccessProfile
+AccessReview
+AccessReviewItem
+AccessReviewDecision
+AccessReviewDefinition
+LifecycleEvent
+LifecycleState
+LifecyclePolicy
+LifecycleWorkflow
+Joiner
+Mover
+Leaver
+Event
+EventTrigger
+EventAction
+EventDefinition
+EventResult
+IdentitySelector
+CorrelationConfig
+CorrelationRule
+CorrelationResult
+MatchResult
+AggregationResult
+AggregationConfig
+AggregationPartition
+AggregationContext
+AggregationSummary
+✅ Tasks
+Identity Aggregation
+Account Aggregation
+Refresh Identity Cube
+Identity Refresh
+Identity Cube Refresh Task
+Manager Correlation
+Correlation Task
+Refresh Manager Status
+Lifecycle Event Trigger
+Workflow Trigger Task
+Prune Identity Cubes
+Perform Identity Request Maintenance
+Refresh Identity History
+Refresh Identity Entitlements
+Refresh Assigned Roles
+Refresh Identity Risk Scores
+🔥 🔹 NON-AUTHORITATIVE SIDE (Target / Provisioning आधारित)
+✅ Objects
+Application
+ApplicationScorecard
+Link
+LinkSnapshot
+LinkDelta
+ManagedAttribute
+Entitlement
+EntitlementGroup
+AccountGroup
+ProvisioningPlan
+ProvisioningPlan.AccountRequest
+ProvisioningPlan.AttributeRequest
+ProvisioningPlan.ObjectRequest
+ProvisioningPlan.PermissionRequest
+ProvisioningResult
+ProvisioningTransaction
+ProvisioningProject
+Connector
+ConnectorFactory
+ConnectorConfig
+ConnectorState
+IntegrationConfig
+Target
+Field
+Form
+Section
+FormField
+Approval
+ApprovalSet
+ApprovalItem
+ApprovalSummary
+Workflow
+WorkflowCase
+WorkflowStep
+WorkflowTransition
+WorkflowVariable
+WorkflowEvent
+WorkflowLibrary
+Rule
+RuleContext
+Script
+Certification
+CertificationItem
+CertificationEntity
+CertificationGroup
+CertificationPhase
+CertificationDecision
+CertificationAction
+CertificationArchive
+CertificationDefinition
+Policy
+PolicyViolation
+PolicyRule
+PolicyConfig
+RiskScore
+Scorecard
+ScorecardDefinition
+ObjectConfig
+ObjectPermission
+ObjectLock
+ObjectState
+ObjectSummary
+ObjectUtil
+SPRight
+RightConfig
+✅ Tasks
+Provisioning Task
+Provisioning Retry Task
+Group Aggregation
+Entitlement Aggregation
+Target Aggregation
+Aggregation Task
+Certification Generation Task
+Certification Refresh Task
+Certification Archival Task
+Access Review Task
+Policy Scan Task
+Policy Violation Remediation Task
+Lifecycle Manager Task
+Workflow Case Maintenance
+Perform Maintenance
+Prune Certifications
+Refresh Scorecards
+Refresh Risk Scores
+Task Scheduler
+Batch Request Task
+Execute Rule Task
+Import Task
+Export Task
+Report Generation Task
+Report Execution Task
+System Maintenance Task
+Cleanup Task
+Indexing Task

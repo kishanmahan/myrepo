@@ -1,0 +1,5 @@
+7. optimisticProvisioning:-
+optimisticProvisioning: Agar ise true kar dein, toh SailPoint manager ke approve karte hi user ke profile (Identity Cube) par
+naya access turant dikhana shuru kar deta hai, bina target system se confirmation ka wait kiye.
+Value Kaun Deta Hai: Inbuilt Initializer (false) aur Admin UI Settings
+Kaise/Kab: Default value false hoti hai. Agar admin chahta hai ki badlav turant user ke account par dikhein, toh woh UI se ise true kar deta hai.

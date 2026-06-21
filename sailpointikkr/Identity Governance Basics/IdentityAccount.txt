@@ -1,0 +1,120 @@
+()IdentityAccount kya hai?
+--🔹 1️⃣ IdentityAccount kya hai?
+👉 IdentityAccount = user ka external system account
+Matlab:-
+Identity = internal user (Rahul)
+IdentityAccount = uske accounts in different systems
+✅ Example:-
+User: Rahul
+Accounts:-
+Active Directory → rahul.ad
+SAP → rahul.sap
+Database → rahul.db
+➡ Ye sab IdentityAccount objects hain
+
+🔹 2️⃣ Ye kya karta hai?
+👉 Ye represent karta hai:-
+user ka account kisi application me
+account ka status (active / disabled)
+account ke entitlements
+
+🔹 3️⃣ Kya ye DB me store hota hai?
+✅ Haan bhai, DB me store hota hai,
+📦 Structure:-
+Identity (Rahul)
+   ↓
+IdentityAccount (AD)
+   ↓
+username: rahul.ad
+status: active
+
+🔹 4️⃣ IdentityAccount ke andar kya hota hai?
+Field	            Meaning
+application:-------kis system ka account hai
+nativeIdentity:----username (rahul.ad)
+status:------------active/disabled
+entitlements:------account ke permissions
+attributes:--------extra info (email, dept)
+
+🔹 5️⃣ Important Methods:-
+🔸 Basic:-
+getApplication() → account kis application ka hai
+setApplication(String app) → application set karta hai
+getNativeIdentity() → username deta hai
+setNativeIdentity(String id) → username set karta hai
+
+🔸 Status:-
+getStatus() → account status deta hai
+setStatus(String status) → status set karta hai
+isDisabled() → check karta hai disabled hai ya nahi
+setDisabled(boolean flag) → disable/enable karta hai
+
+🔸 Entitlements:-
+getEntitlements() → permissions list deta hai
+addEntitlement(Object ent) → ek permission add karta hai
+
+🔸 Attributes:-
+getAttribute(String name) → attribute value deta hai
+setAttribute(String name, Object value) → attribute set karta hai
+
+🔸 Utility:-
+toString() → readable string
+equals(Object obj) → compare karta hai
+hashCode() → hash value generate karta hai.
+
+🚀 🔥 Full Code (SailPointContext ke saath):-
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointFactory;
+import sailpoint.object.IdentityAccount;
+import java.util.ArrayList;
+import java.util.List;
+
+public class AccountExample {
+
+    public static void main(String[] args) throws Exception {
+
+        SailPointContext context = SailPointFactory.getCurrentContext();
+
+        IdentityAccount acc = new IdentityAccount();
+
+        // Basic
+        acc.setApplication("Active Directory");
+        acc.setNativeIdentity("rahul.ad");
+
+        // Status
+        acc.setStatus("Active");
+        acc.setDisabled(false);
+
+        // Entitlements
+        List<String> ents = new ArrayList<String>();
+        ents.add("READ");
+        ents.add("WRITE");
+
+        for(String e : ents) {
+            acc.addEntitlement(e);
+        }
+
+        // Attributes
+        acc.setAttribute("email", "rahul@gmail.com");
+
+        // Print
+        System.out.println(acc.getApplication());
+        System.out.println(acc.getNativeIdentity());
+        System.out.println(acc.getStatus());
+        System.out.println(acc.getEntitlements());
+        System.out.println(acc.getAttribute("email"));
+
+        // Save
+        context.saveObject(acc);
+        context.commitTransaction();
+
+        System.out.println("✅ Account Saved");
+    }
+}
+📤 Output:-
+Active Directory
+rahul.ad
+Active
+[READ, WRITE]
+rahul@gmail.com
+✅ Account Saved

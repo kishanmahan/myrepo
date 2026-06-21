@@ -1,0 +1,832 @@
+🔐 SailPoint IdentityIQ (IIQ) kya hai?
+SailPoint IdentityIQ (IIQ) ek Identity Governance & Administration (IGA) tool hai.
+Iska kaam hota hai:-
+User ka access manage karna
+Kaun kis system me kya permission rakhta hai, track karna
+Compliance aur audit manage karna
+Access request aur approval workflow chalana
+Role based access control (RBAC) implement karna
+👉 Ye mostly enterprise companies me use hota hai jahan hazaaro employees aur multiple applications hote hain.
+
+()Compliance aur audit manage karna kya hai?
+--Compliance ka matlab hota hai:-
+Company ke rules, policies aur legal requirements ke hisaab se user ko sahi access dena.
+
+🔥 SailPoint me Compliance ka kaam:-
+✅ 1. Access Certification (Review):-
+Manager ya Application Owner check karta hai:-
+Kya user ko ye access milna chahiye?
+Kya extra access toh nahi hai?
+Example:-
+Rahul ke paas Finance + HR dono ka access hai
+System bolega → “Review karo”
+
+✅ 2. Segregation of Duties (SoD):-
+Ek user ko conflicting access nahi milna chahiye.
+Example:-
+❌ User:-
+Payment approve kare
+Aur payment release bhi kare
+Ye fraud risk hai.
+SailPoint detect karta hai:-
+SoD violation 🚨
+
+🛡️️⃣ Policy Enforcement (SailPoint me):-
+👉 Matlab kya?
+System automatically check karta hai ki company ke security rules follow ho rahe hain ya nahi.
+🔹 Types of Policies:-
+✅Segregation of Duties (SoD):-
+Ek user ko conflicting access nahi milna chahiye.
+Example:-
+❌ User:-
+Payment approve kare
+Aur payment release bhi kare
+Ye fraud risk hai.
+SailPoint detect karta hai:-
+SoD violation 🚨
+
+✅ 2. Password Policy:-
+Minimum length
+Special characters
+Expiry
+
+✅ 3. Role Policy:-
+User ko sirf approved roles hi milne chahiye.
+
+🧠 1️⃣ Risk Scoring (SailPoint me)
+👉 Simple matlab:-
+Har user ka ek Risk Score hota hai jo batata hai ki wo user kitna security risk hai.
+🔹 Risk Score kis base par banta hai?
+1. Role Risk
+Agar role sensitive hai (Admin, Finance etc.)
+
+2. Entitlement Risk
+Specific permission ka risk value
+
+3. Application Risk
+Critical system ka access (SAP, DB, Prod Server)
+
+4. Policy Violations
+SoD violation hai ya nahi
+
+🔥 Example:-
+Maan le:-
+Access	      Risk Value
+DB Admin	     70
+Prod Server	     60
+SoD Violation	 40
+Total Risk Score = 170 → 🔴 High Risk
+
+🎯 Real Use:-
+High risk user ko:-
+Priority certification me dala jata hai
+Extra review hota hai
+Escalation possible hota hai.
+-------------------------------------------------------------------------
+📋 2️⃣ Review (Certification Process):-
+👉 Review kya hota hai?
+Manager ya Application Owner check karta hai:-
+“Kya is user ko ye access abhi bhi chahiye?”
+Ye process periodic hota hai:-
+Quarterly
+Half yearly
+Annual
+🔄 Certification Flow:-
+Campaign create hota hai
+Users assign hote hain reviewer ko
+Reviewer dashboard me list dekhta hai
+Har access pe action leta hai.
+---------------------------------------------------------------------
+✅ 1️⃣ Approve (Certification me):-
+👉 Kya hota hai?
+Reviewer (Manager / App Owner) decide karta hai ki:
+“Haan, is user ko ye access abhi bhi chahiye.”
+🔹 System kya karta hai?
+Decision store karta hai
+Timestamp save karta hai
+Reviewer ka naam save hota hai
+Audit trail maintain hota hai
+📌 Example:-
+Kishan → DB Access
+Manager dekhta hai → Kishan still backend pe kaam kar raha hai
+→ Approve
+Access unchanged rahega ✅
+-----------------------------------------------------------------------------------------------
+1️⃣ Escalation kya hota hai?
+--Escalation ka matlab hai kisi task ko higher authority ya next level user ko bhejna, jab assigned user time par action nahi leta.
+Example:-
+Manager ko Access Certification approve karna tha.
+Manager ne 5 din tak kuch action nahi liya.
+System automatically us task ko Manager ke manager ya kisi aur admin ko bhej deta hai.
+👉 Is process ko Escalation bolte hain.
+
+Simple flow:-
+Task assign hua
+Time limit cross ho gayi
+System task ko next level ko bhej deta hai
+
+📌 Use case:-
+Certification
+Access request approval
+Policy violation
+--------------------------------------------------------------------------------------------------------------
+2️⃣ Campaign Create kya hota hai?
+Campaign ka matlab hota hai Access Review process.
+Jab company sab users ke access ko review karna chahti hai, tab ek Certification Campaign banaya jata hai.
+Campaign create karne ka matlab
+
+Admin ek certification process start karta hai jisme:-
+Kis users ka access review hoga
+Kaun reviewer hoga
+Deadline kya hogi
+
+Example:-
+Company check karna chahti hai:-
+Kis employee ke paas extra access hai.
+Admin ek Certification Campaign create karta hai.
+
+Fir:-
+Managers ko tasks milte hain
+
+Wo review karte hain:-
+✔ Keep Access
+❌ Revoke Access
+---------------------------------------------------------------------------------------------------------------
+3️⃣ Priority Certification kya hota hai?
+Priority Certification ka matlab hai high importance wala certification.
+Iska use tab hota hai jab:-
+Critical application ho
+Security risk ho
+Urgent review chahiye
+
+Example:-
+Application:-
+Finance system
+Production database
+Agar kisi user ko extra access mil gaya hai, to admin Priority Certification create kar sakta hai.
+Difference
+Type	                     Meaning
+Normal Certification------Normal access review
+Priority Certification----Urgent / high risk access review
+--------------------------------------------------------------------------------------------------------
+1️⃣ Certification kya hota hai?
+--Certification ka matlab hota hai user ke access ka review karna.
+Company time-time par check karti hai ki:-
+Kis user ke paas kaunsa access hai
+Kya wo access abhi bhi required hai
+Koi unnecessary access toh nahi
+Reviewer decide karta hai:-
+✔ Approve / Keep Access
+❌ Revoke Access
+
+Example:-
+User Ravi ke paas:-
+Finance Application access
+Database access
+Manager check karega ki Ravi ko ye access abhi bhi chahiye ya nahi.
+------------------------------------------------------------------------------------------------------------
+2️⃣ Access Request Approval kya hai?
+Ye access lene ka process hota hai.
+Flow:-
+1️⃣ User portal me access request karta hai
+2️⃣ Request Manager ya Application Owner ko jati hai
+3️⃣ Wo approve ya reject karte hain
+4️⃣ Approve hone par access mil jata hai
+
+Example:-
+Ravi ko Salesforce access chahiye.
+
+Flow:-
+User → Request
+Manager → Approve
+System → Access provide
+-----------------------------------------------------------------------------------------------------------
+7️⃣ SailPoint Certification Types kitne hai:-
+--SailPoint IdentityIQ me mainly ye certification types hote hain:-
+
+1️⃣ Manager Certification 
+
+2️⃣ Application Owner Certification 
+
+3️⃣ Role Certification 
+
+4️⃣ Identity Certification 
+
+5️⃣ Entitlement Certification
+
+6️⃣ Account Group Certification
+--------------------------------------------------------------------------------------------------------
+3️⃣ Manager Certification kya hai?
+Is certification me Manager apne team members ke access review karta hai.
+Manager kya check karta hai
+Team member ke paas kaunsa access hai
+Kya wo access abhi bhi required hai
+
+Example:-
+Manager ke paas 10 employees hain.
+
+Manager review karega:-
+Ravi
+Amit
+Pooja
+
+Aur decide karega:-
+✔ Keep Access
+❌ Remove Access
+-----------------------------------------------------------------------------------------------------------
+4️⃣ Application Owner Certification kya hai?
+Is certification me Application Owner access review karta hai.
+Application owner wo person hota hai jo application ka responsible hota hai.
+
+Example:-
+Application:-
+SAP
+Salesforce
+Oracle DB
+
+Application owner check karega:-
+Kaun kaun user is application ko access kar raha hai.
+
+Aur decide karega:-
+✔ Keep access
+❌ Revoke access
+-------------------------------------------------------------------------------------------------------------
+5️⃣ Role Certification kya hai?
+Is certification me roles review kiye jate hain.
+Role ka matlab hota hai multiple permissions ka group.
+
+Example;-
+Role = "HR Role"
+
+Is role me permissions ho sakti hain:-
+Employee data read
+Employee data update
+
+Certification me check hota hai:-
+Kya role me unnecessary permission hai
+Kya role abhi bhi valid hai.
+--------------------------------------------------------------------------------------------------------------
+6️⃣ Identity Certification kya hai?
+Is certification me pure identity (user) ka review hota hai.
+
+Reviewer check karta hai:-
+User ke paas kaunsa access hai
+Kya user abhi bhi company me kaam kar raha hai
+
+Example:-
+User:-
+Ravi
+
+Access:-
+SAP
+Database
+Email
+
+Reviewer decide karega:-
+✔ Keep
+❌ Revoke
+---------------------------------------------------------------------------------------------------------------
+3️⃣ Account Group Certification kya hai?
+Isme groups ka review hota hai.
+
+Example:-
+Active Directory me group:-
+HR_Group
+Finance_Group
+Admin_Group
+
+Reviewer check karta hai:-
+Kaun kaun user group me hai.
+Aur decide karta hai:-
+✔ Keep
+❌ Remove
+------------------------------------------------------------------------------------------------------------
+1️⃣ Entitlement Certification kya hai?
+Entitlement ka matlab hota hai specific permission ya privilege jo kisi application me user ko diya jata hai.
+
+Example:-
+Application: Active Directory
+Permissions / Entitlements:-
+Read
+Write
+Admin
+HR_Group
+Finance_Group
+
+Entitlement Certification me reviewer check karta hai:-
+Kya user ko ye permission chahiye?
+Kya permission remove karni chahiye?
+
+Certification me options:-
+Reviewer ke paas usually ye options hote hain:-
+✔ Approve / Keep → Access same rahega
+❌ Revoke → Access remove ho jayega
+
+Example:-
+User: Ravi
+Access:-
+SAP_Read
+SAP_Admin
+
+Manager bole:-
+✔ SAP_Read keep
+❌ SAP_Admin revoke
+---------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------
+4️⃣ Aggregation kya hai?
+Aggregation ka matlab hai applications se data SailPoint me lana.
+
+Applications:-
+Active Directory
+SAP
+Database
+Salesforce
+
+SailPoint in applications se data fetch karta hai:-
+Users
+Accounts
+Roles
+Permissions
+
+Example Flow:-
+Application → Data pull → SailPoint
+Is process ko Aggregation bolte hain.
+------------------------------------------------------------------------------------------------------------
+5️⃣ Provisioning kya hai?
+Provisioning ka matlab hai user ko access dena ya remove karna.
+Provisioning ka matlab hota hai application me user ka access create, update ya remove karna.
+Ye kaam usually access request approve hone ke baad automatically hota hai.
+Example:-
+User ne request ki:-
+SAP access
+
+Approval ke baad:-
+SailPoint automatically SAP me account create karega.
+
+Provisioning types;-
+Create account
+Enable account
+Disable account
+Add role
+Remove role
+-----------------------------------------
+1. Create Account kya hai?
+Isme naya user account create hota hai.
+
+Example:-
+Employee company join karta hai.
+
+System automatically create karega:-
+Email account
+Active Directory account
+Application account
+
+Example:-
+Username: ravi.kumar
+Application: SAP
+Action: Account Create
+---------------------------------------
+2. Enable Account kya karta hai?
+Agar account disabled tha to usko fir se activate kar diya jata hai.
+Example:-
+User leave par gaya tha aur account disable ho gaya tha.
+Ab wapas aaya:-
+➡ Account enable ho jayega.
+-----------------------------------
+3. Disable Account kya hai?
+Isme user ka account temporarily disable kar diya jata hai.
+Example;-
+Employee:-
+Suspended
+Long leave
+Security issue
+Tab account disable ho jata hai.
+User login nahi kar payega.
+-------------------------------
+4. Add Role kya hai?
+Isme user ko ek role assign kiya jata hai.
+Role ek permissions ka group hota hai.
+Example:-
+Role = HR Role
+Permissions:-
+Employee read
+Employee update
+Agar user ko HR role milta hai to automatically ye permissions mil jayengi.
+-----------------------------------
+5. Remove Role kya hai?
+Isme user se role remove kar diya jata hai.
+Example:-
+User department change karta hai:-
+HR → Sales
+System karega:-
+❌ Remove HR Role
+✔ Add Sales Role
+--------------------------------------
+Provisioning Example Flow:-
+User Request
+     ↓
+Manager Approval
+     ↓
+Provisioning Engine
+     ↓
+Application Update
+------------------------------------------------------------------------------------------------------------
+6️⃣ Identity Lifecycle kya hai?
+Ye user ka complete lifecycle manage karta hai.
+
+Stages:-
+1️⃣ Joiner:-
+New employee join karta hai
+
+2️⃣ Mover:-
+Employee department change karta hai
+
+3️⃣ Leaver:-
+Employee company leave karta hai
+
+Example:-
+Joiner:-
+➡ Account create
+
+Mover:-
+➡ Old access remove + new access add
+
+Leaver:-
+➡ All access remove
+----------------------------------------------------------------------------------------------------------
+7️⃣ Role Mining:-
+Role Mining ka use hota hai roles automatically discover karne ke liye.
+
+System check karta hai:-
+Kis department ke users ke paas same access hai.
+
+Fir suggest karta hai:-
+➡ Isko ek role bana do
+
+Example:-
+HR department ke sab users ke paas same access hai.
+
+System bolega:-
+Create role = HR Role
+
+-----------------------------------------------------------------------------------------------------------
+8️⃣ Policies kya hai?
+Policies ka matlab hota hai security rules.
+Ye check karta hai ki koi risky access combination toh nahi hai.
+
+Example:-
+User ke paas:-
+Payment create
+Payment approve
+Ye dangerous hai.
+
+Policy bolegi:-
+❌ Segregation of Duties violation
+-----------------------------------------------------------------------------------------------------------
+9️⃣ SailPoint Workflow kya hai?
+
+Workflow ka matlab hota hai automation process.
+Jab koi event hota hai to system automatically steps follow karta hai.
+
+Example:-
+User request karta hai:-
+SAP access
+
+Workflow:-
+User request karega toh ⬇Manager approval toh ⬇Application owner approval toh ⬇Provisioning toh ⬇Access granted
+------------------------------------------------------------------------------------------------------------
+1️⃣ User Portal kya hota hai?
+User Portal ek web interface hota hai jahan normal users login karke access related kaam karte hain.
+User portal me kya kar sakte hain
+Access request karna
+Apna access dekhna
+Password reset
+Certification complete karna
+Approval dena
+
+Example:-
+Employee login karta hai aur bolta hai:-
+➡ Mujhe SAP access chahiye
+Wo portal se request karta hai.
+---------------------------------------------------------------------------------------------------------------
+📊 2️⃣ Audit Manage Karna (SailPoint me):-
+👉 Audit ka matlab:-
+Kaun kab kya access liya? Kisne approve kiya? Kab revoke hua?
+Sabka record maintain karna.
+
+🔎 SailPoint me Audit ka kaam:-
+✅ 1. Audit Logs
+System track karta hai:-
+Kisne access request ki
+Kisne approve ki
+Kisne reject ki
+Kab change hua
+
+✅ 2. Access History:-
+User ka pura history:-
+Join date
+Role assign date
+Role remove date
+
+📜 3️⃣ Certification Evidence:-
+👉 Matlab:-
+Audit ke time proof dikhana hota hai ki access review hua tha.
+🔹 Evidence kya hota hai?
+Kisne review kiya
+Kab kiya
+Approve ya revoke
+Comments
+Example:-
+Manager ne bola:-
+“Yes, Kishan still needs this access”
+
+Ye decision system store karega permanently.
+------------------------------------------------------------
+❌ 2️⃣ Revoke (Certification me):-
+👉 Kya hota hai?
+Reviewer decide karta hai:-
+“Ab is user ko ye access nahi chahiye.”
+🔹 System kya karta hai?
+Revocation task create hota hai
+Provisioning engine trigger hota hai
+Application se access remove hota hai
+Audit log create hota hai
+
+📌 Example:-
+Employee department change
+Old Admin role ab required nahi
+→ Manager click karega Revoke
+
+System:-
+Access remove karega
+Record store karega
+Compliance proof ready karega
+--------------------------------------------------------------------------------
+💬 3️⃣ Comments (Bahut Important 🔥):-
+Approve ya Revoke karte waqt reviewer comment add kar sakta hai.
+🔹 Kyun important hai?
+Audit ke time proof milta hai:-
+Decision ka reason
+Business justification
+Kis basis pe action liya gaya
+
+📌 Example Comments:-
+Approve case:-
+“Access required for ongoing production support.”
+Revoke case:-
+“User moved to HR team, DB access no longer needed.”
+
+📊 4️⃣ Compliance Reports:-
+Certification complete hone ke baad reports generate hoti hain.
+
+🔹 Common Reports in SailPoint:-
+✅ Certification Completion Report
+Kitne review complete hue
+
+✅ Revoked Access Report
+Kaun kaun se access remove hue
+
+✅ Decision History Report
+Approve / Revoke history
+
+✅ Reviewer Activity Report
+Kis reviewer ne kya action liya
+
+✅ SoD Violation Report
+Policy violation list
+-------------------------------------------------------------------------------------------------------
+📚 SailPoint IIQ ke Main Chapters / Modules:-
+
+Main tumhe full structured syllabus de raha hoon 👇
+
+1️⃣ Identity Governance Basics:-
+IGA kya hota hai?
+IAM vs IGA difference
+SailPoint architecture overview
+IIQ components (UI, DB, Application server)
+
+2️⃣ Installation & Architecture:-
+IIQ installation (Tomcat + Database)
+WAR deployment
+Database configuration (Oracle / MySQL)
+Debug mode
+Log files
+
+3️⃣ Identity & Account Management
+Identity object kya hota hai
+Account aggregation
+Correlation
+Identity cube
+Link objects
+
+4️⃣ Application Onboarding:-
+Application kaise onboard karte hain
+Direct connector vs Delimited file connector
+JDBC connector
+Active Directory integration
+Web Services connector
+
+5️⃣ Aggregation
+Full aggregation
+Delta aggregation
+Account group aggregation
+Refresh identity cube
+
+6️⃣ Provisioning
+Provisioning plan
+Provisioning policies
+Create / Modify / Delete account
+Entitlement assignment
+Birthright access
+
+7️⃣ Access Request & Workflow
+Access request flow
+Approval workflow
+LCM (Lifecycle Manager)
+Custom workflow banana
+Workflow XML samajhna
+
+8️⃣ Role Management
+Business role
+IT role
+Role mining
+Role hierarchy
+Role assignment
+
+9️⃣ Certification (Access Review)
+Certification types
+Manager certification
+Application owner certification
+Role certification
+Campaign creation
+Revocation process
+
+🔟 Policies:-
+Separation of Duties (SoD)
+Policy violation
+Risk score
+Mitigation
+
+5. Correlation:-
+Identity correlation
+Correlation rules
+Account linking
+
+7. Access Request Management;-
+User portal
+Access request flow
+Approval process
+Request policies
+
+🔟 Role Mining:-
+Automatic role discovery
+Role analysis
+
+1️⃣1️⃣ Identity Lifecycle Management:-
+Lifecycle stages:-
+Joiner
+Mover
+Leaver
+
+1️⃣3️⃣ Workflow Basics:-
+Access request workflow
+Certification workflow
+Provisioning workflow
+
+
+
+1️⃣1️⃣ Rules (Important for Developers 🔥)
+BeanShell rules
+Rule types:
+Before provisioning rule
+After provisioning rule
+Correlation rule
+Build map rule
+Java integration
+
+1️⃣2️⃣ Reports & Audit
+Standard reports
+Custom reports
+Audit events
+Access history
+Access reports
+Compliance reports
+Audit logs
+
+1️⃣3️⃣ Tasks & Task Scheduler
+Task definition
+Task execution
+Custom task creation
+Aggregation tasks
+Identity refresh
+Certification tasks
+Scheduled jobs
+
+1️⃣4️⃣ Debugging & Troubleshooting
+Log4j
+Debug page
+Identity search
+Provisioning error analysis
+Logs check karna
+Task results
+Error analysis
+
+1️⃣5️⃣ API & Integration
+REST API
+Web Services
+SCIM
+External system integration
+------------------------------------------------------------------------------------------------------------
+2️⃣ SailPoint Developer – All Chapters:-
+
+Developer ka kaam mostly customization aur coding hota hai.
+1. SailPoint Architecture
+System architecture
+Components
+Identity cube
+
+2. SailPoint Object Model
+Objects:
+Identity
+Application
+Link
+Role
+Entitlement
+
+3. Beanshell Scripting
+Beanshell basics:
+Variables
+Loops
+Conditions
+Java classes usage
+
+4. SailPoint Rules
+Rule types:
+Before Provisioning Rule
+After Provisioning Rule
+Correlation Rule
+Identity Attribute Rule
+Policy Rule
+Validation Rule
+
+5. Workflow Development
+Workflow components:
+Steps
+Transitions
+Variables
+Approval logic
+
+6. Provisioning Customization
+Provisioning plan
+Provisioning rules
+Custom provisioning logic
+
+7. API & Integration
+REST APIs
+Web services
+External system integration
+
+8. Email Templates
+Notification configuration
+Custom email templates
+
+9. Task Development
+Custom tasks
+Scheduled tasks
+
+🔟 Debugging
+Developer debugging tools:
+Log4j logs
+Debug pages
+Rule testing
+
+1️⃣1️⃣ Identity Refresh
+Identity refresh ka use hota hai:
+Role recalculation
+Policy evaluation
+Identity update
+
+1️⃣2️⃣ Custom UI Development
+UI customization
+Forms
+Request forms
+
+1️⃣3️⃣ Performance Optimization
+Aggregation performance
+Query optimization
+-----------------------------------------------------------
+Developer Chapters me coding kaha kaha hogi:-
+Chapter	                   Coding
+Architecture-----------------❌
+Object Model-----------------❌
+Beanshell Scripting----------✔
+Rules------------------------✔✔✔
+Workflow Development---------✔✔
+Provisioning Customization---✔✔
+API Integration--------------✔
+Email Templates--------------✔
+Task Development-------------✔
+Debugging--------------------❌
+Identity Refresh-------------⚠️
+UI Development---------------✔
+Performance Optimization-----⚠️

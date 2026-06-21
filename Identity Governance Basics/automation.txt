@@ -1,0 +1,10 @@
+(1)Automation” ka matlab hai – kaam ko manually karne ki bajaye software ya system khud automatically kar de. 😎
+SailPoint aur enterprise systems me ye bahut common hai, aur ye time save karta hai aur errors kam karta hai.
+
+2️⃣ SailPoint me Automation ka matlab:-
+Enterprise me, SailPoint ke developer ye kaam automate karte hain:
+Manual Process	                                                     Automation in SailPoint
+HR ko manually naye employee ke accounts create karna------SailPoint automatically Active Directory, Email, SAP accounts create kare
+Manager se manual approval lena----------------------------Approval workflow automatically trigger ho jaye
+Users ka access quarterly check karna----------Reconciliation/Policy Enforcement automatically run ho jaye
+Extra access detect karke remove karna---------------------SailPoint automatically Deprovision kare

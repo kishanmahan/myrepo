@@ -1,0 +1,933 @@
+🔷 WorkItem kya hai?
+👉 WorkItem = Approval task jo kisi user (manager, owner) ko diya jata hai.
+👉 WorkItem = workflow ka wo task jo user ke haath me diya jata hai 🔥
+🧠 Simple samajh:-
+Workflow me step aaya → ManagerApproval
+        ↓
+System ne manager ko ek task diya
+        ↓
+Ye task hi = WorkItem
+
+🔥 Real Example:-
+Employee ne role request kiya
+   ↓
+Manager ko approval dena hai
+   ↓
+Manager ke inbox me ek item aata hai
+   ↓
+Wo item = WorkItem
+
+🧠 🔹 WorkItem me kya hota hai:-
+✔️ id
+✔️ workflowCase (kis workflow ka part hai)
+✔️ comments (approve/reject note)
+✔️ created date
+✔️ completed date
+✔️ owner (current assignee)
+✔️ requester (kisne request kiya)
+✔️ target (kispe action ho raha hai)
+✔️ state (Pending / Finished)
+
+🔥 🔹 Kya karta hai?
+👉 Workflow me jab bhi human decision chahiye hota hai:-
+Workflow
+   ↓
+Approval step aaya
+   ↓
+WorkItem create hua
+   ↓
+User ko assign (owner)
+   ↓
+User action (Approve / Reject)
+   ↓
+WorkItem complete
+   ↓
+Workflow resume
+--------------------------------------------------------
+🔷 WorkItem Methods List (Full):-
+--------------------------------------------------------
+getId()
+getName()
+getType()
+getOwner()
+setOwner(Identity owner)
+
+getRequester()
+setRequester(Identity requester)
+
+getTarget()
+setTarget(Object target)
+
+getTargetName()
+getTargetType()
+
+getState()
+setState(String state)
+
+getStatus()
+setStatus(String status)
+
+getComments()
+setComments(String comments)
+
+addComment(String comment)
+
+getCreated()
+getModified()
+
+getCreatedBy()
+getModifiedBy()
+
+getCompletionDate()
+setCompletionDate(Date date)
+
+getExpiration()
+setExpiration(Date date)
+
+isCompleted()
+isExpired()
+
+getPriority()
+setPriority(String priority)
+
+getDescription()
+setDescription(String description)
+
+getAttributes()
+setAttributes(Map attributes)
+getAttribute(String key)
+setAttribute(String key, Object value)
+
+getArguments()
+setArguments(Map args)
+
+getWorkItemConfig()
+setWorkItemConfig(WorkItemConfig config)
+
+getApprovalSet()
+setApprovalSet(ApprovalSet approvalSet)
+
+getIdentityRequestId()
+setIdentityRequestId(String id)
+
+getCaseId()
+setCaseId(String id)
+
+getWorkflowCase()
+setWorkflowCase(WorkflowCase wc)
+
+getEscalationDate()
+setEscalationDate(Date date)
+
+getEscalationLevel()
+setEscalationLevel(int level)
+
+getEscalationOwner()
+setEscalationOwner(Identity owner)
+
+getReminders()
+setReminders(List reminders)
+
+addReminder(Date date)
+
+archive()
+complete()
+reject()
+
+toXml()
+fromXml(String xml)
+
+toMap()
+fromMap(Map map)
+
+validate()
+
+clone()
+
+equals(Object obj)
+hashCode()
+toString()
+------------------------------------------------------------------------------------------------------------------------------------
+🔷 1️⃣ getId():-
+👉 WorkItem ka unique ID deta hai
+String id = workItem.getId();
+System.out.println(id);
+
+🟢 Output:-
+WI-1001
+
+🔷 2️⃣ getName():-
+👉 WorkItem ka naam (mostly step name)
+String name = workItem.getName();
+System.out.println(name);
+
+🟢 Output:-
+ManagerApproval
+
+🔷 3️⃣ getType():-
+👉 WorkItem ka type (Approval / Task)
+String type = workItem.getType();
+System.out.println(type);
+
+🟢 Output:-
+Approval
+
+🔷 4️⃣ getOwner():-
+👉 Kaun approve karega (manager / owner)
+Object owner = workItem.getOwner();
+System.out.println(owner);
+
+🟢 Output:-
+Identity[jane.manager]
+
+🔷 5️⃣ setOwner(Identity owner):-
+👉 Owner change karta hai
+Identity newOwner = context.getObjectByName(Identity.class, "john.manager");
+workItem.setOwner(newOwner);
+
+🟢 Output:-
+Owner updated to john.manager
+
+🔷 6️⃣ getRequester():-
+👉 Kisne request kiya
+Object requester = workItem.getRequester();
+System.out.println(requester);
+
+🟢 Output:-
+Identity[john.doe]
+
+🔷 7️⃣ setRequester(Identity requester):-
+Identity req = context.getObjectByName(Identity.class, "alice.user");
+workItem.setRequester(req);
+
+🟢 Output:-
+Requester updated to alice.user
+
+🔷 8️⃣ getTarget():-
+👉 Kis object ka approval ho raha hai
+Object target = workItem.getTarget();
+System.out.println(target);
+
+🟢 Output:-
+Identity[john.doe]
+
+🔷 9️⃣ setTarget(Object target):-
+Identity target = context.getObjectByName(Identity.class, "mark.user");
+workItem.setTarget(target);
+
+🟢 Output:-
+Target updated to mark.user
+
+🔷 🔟 getTargetName():-
+👉 Target ka naam (string)
+String tName = workItem.getTargetName();
+System.out.println(tName);
+
+🟢 Output:-
+john.doe
+
+🔷 1️⃣1️⃣ getTargetType():-
+👉 Target ka type (Identity / Role / Application)
+String tType = workItem.getTargetType();
+System.out.println(tType);
+
+🟢 Output:-
+Identity
+--------------------------------------
+🔥 ✅ All Common WorkItem Status
+Status	        Meaning
+PENDING	    Approval ka wait
+APPROVED	Approve ho gaya
+REJECTED	Reject ho gaya
+COMPLETED	Fully done
+CANCELLED	Cancel ho gaya
+EXPIRED	      Time over
+ESCALATED	Higher level pe bheja gaya
+WAITING	    External input ka wait
+
+1️⃣ WorkItem STATE kitne hote hain?
+PENDING
+IN_PROGRESS
+COMPLETED
+REJECTED
+FAILED
+EXPIRED
+CANCELLED
+---------------------------------------
+🔹 getState():-
+👉 Internal state (engine level)
+String state = workItem.getState();
+System.out.println(state);
+
+🟢 Output:-
+PENDING
+
+🔹 setState(String state):-
+workItem.setState("COMPLETED");
+🟢 Output:-
+State changed
+
+🔹 getStatus():-
+👉 Business status (UI me dikhta hai)
+String status = workItem.getStatus();
+System.out.println(status);
+🟢 Output:-
+PENDING
+
+🔹 setStatus(String status):-
+workItem.setStatus("APPROVED");
+🟢 Output:-
+Status updated
+
+🔷 💬 COMMENTS METHODS:-
+🔹 getComments()
+String c = workItem.getComments();
+System.out.println(c);
+🟢 Output:-
+Approved by manager
+
+🔹 setComments(String comments):-
+workItem.setComments("Reviewed");
+🟢 Output:-
+Comments replaced
+
+🔹 addComment(String comment):-
+workItem.addComment("Second approval done");
+🟢 Output:-
+Comment added
+
+🔷 ⏱️ TIME / AUDIT METHODS:-
+🔹 getCreated():-
+kab bana.
+System.out.println(workItem.getCreated());
+🟢 Output:-
+Wed Mar 18 10:00:00 IST 2026
+
+🔹 getModified():-
+kab update hua.
+System.out.println(workItem.getModified());
+🟢 Output:-
+Wed Mar 18 10:30:00 IST 2026
+
+🔹 getCreatedBy():-
+kiske dwara banaya gaya.
+System.out.println(workItem.getCreatedBy());
+🟢 Output:-
+system
+
+🔹 getModifiedBy():-
+kisne update kiya.
+System.out.println(workItem.getModifiedBy());
+
+🟢 Output:-
+jane.manager
+-----------------------------------------------------------------
+🔹 getCompletionDate():-
+👉 Ye batata hai:-
+WorkItem kab complete hua tha
+System.out.println(workItem.getCompletionDate());
+🟢 Matlab:-
+Manager ne kab approve/reject kiya → uska time
+
+🔹 setCompletionDate(Date date):-
+👉 System ko bol rahe ho:-
+"is time pe ye work item complete maana jaaye"
+workItem.setCompletionDate(new Date());
+🟢 Real use:-
+Approve/Reject hone ke baad engine ye set karta hai
+
+🔷 ⏳ Expiration (deadline concept):-
+
+🔹 getExpiration():-
+👉 Deadline kya hai
+System.out.println(workItem.getExpiration());
+🟢 Matlab:-
+Manager ko kab tak approve karna hai
+
+🔹 setExpiration(Date date):-
+👉 Deadline set karna
+workItem.setExpiration(new Date(System.currentTimeMillis() + 86400000));
+🟢 Matlab:-
+1 din ke andar approve karo warna expire
+
+🔥 3️⃣ CHECK METHODS (REAL LOGIC):-
+🔹 isCompleted():-
+👉 Check karta hai:-
+Kya work item complete ho chuka hai?
+System.out.println(workItem.isCompleted());
+🟢 TRUE kab hoga:-
+Approve ya reject ho chuka ho
+
+🔹 isExpired():-
+👉 Check karta hai:-
+Kya deadline cross ho gayi?
+System.out.println(workItem.isExpired());
+🟢 TRUE kab hoga:-
+Time > Expiration date
+------------------------------------------------------------------------
+🔹 getPriority():-
+👉 WorkItem ki priority (High / Medium / Low)
+String p = workItem.getPriority();
+System.out.println(p);
+
+🟢 Output:-
+HIGH
+
+🔹 setPriority(String priority):-
+workItem.setPriority("LOW");
+🟢 Output:-
+Priority updated to LOW
+📌 Real use:-
+Urgent approval → HIGH
+Normal → MEDIUM
+
+
+🔹 getDescription():-
+👉 WorkItem ka description (UI me dikhta hai)
+String desc = workItem.getDescription();
+System.out.println(desc);
+🟢 Output:-
+Access request for Finance role
+
+🔹 setDescription(String description):-
+workItem.setDescription("Manager approval required for role");
+🟢 Output:-
+Description updated
+-------------------------------------------------------------------------------
+🔹 getAttributes():-
+👉 Saara custom data (Map form me) nikalta hai
+Kaam:-
+→ extra stored data read kar raha hai
+
+Map attrs = workItem.getAttributes();
+System.out.println(attrs);
+🟢 Output:-
+{role=Finance, level=2}
+-------------------------------------------------------
+🔹 setAttributes(Map attributes):-
+👉 Purana saara data hata ke naya data set karta hai
+Kaam:-
+→ pura custom data replace kar raha hai
+Map map = new HashMap();
+map.put("role", "Admin");
+workItem.setAttributes(map);
+🟢 Output:-
+Attributes replaced
+------------------------------------------
+🔹 getAttribute(String key):-
+👉 Ek specific value nikalta hai
+Kaam:-
+→ key ke basis pe value fetch kar raha hai
+Object val = workItem.getAttribute("role");
+System.out.println(val);
+🟢 Output:-
+Admin
+---------------------------------------------
+🔹 setAttribute(String key, Object value):-
+👉 Ek new key-value add/update karta hai
+Kaam:-
+→ custom field add kar raha hai.
+workItem.setAttribute("region", "India");
+🟢 Output:-
+Attribute added
+----------------------------------------------
+🔹 getArguments():-
+Map args = workItem.getArguments();
+System.out.println(args);
+🟢 Output:-
+{identity=john.doe, role=Finance}
+
+👉 Workflow se jo data aaya tha wo deta hai.
+Kaam:-
+→ workflow input data read kar raha hai.
+---------------------------------------------------------------
+🔹 setArguments(Map args):-
+Map a = new HashMap();
+a.put("identity", "mark.user");
+workItem.setArguments(a);
+🟢 Output:-
+Arguments updated
+
+👉 Workflow data update karta hai.
+Kaam:
+→ workflow me pass hone wala data change kar raha hai.
+------------------------------------------------------------
+-------------------------------------------------------------------------
+🔷 WorkItemConfig kya hai?
+👉 WorkItemConfig = WorkItem ka UI + behavior control object
+Approval screen ka design + rules + options
+👉 Ye decide karta hai:-
+Approver ko kya dikhega
+Kaise approve/reject karega
+Kaunse buttons honge
+Comments mandatory hai ya nahi
+
+🔷 Default (Non-Custom) WorkItemConfig me kya hota hai:-
+👉 SailPoint already kuch default config deta hai (tum custom define nahi karte):-
+
+🔹 1. Approval Buttons:-
+Approve
+Reject
+👉 Ye config decide karta hai ki:-
+Kaunse actions allowed hain
+
+🔹 2. Comments Requirement:-
+Reject → comment required
+Approve → optional
+👉 Config control karta hai:-
+Comment mandatory hai ya nahi
+
+🔹 3. WorkItem Type:-
+Approval
+ManualAction
+👉 UI ka behavior change hota hai type ke hisaab se
+
+🔹 4. Form / Fields:-
+👉 Approval screen pe fields dikhti hain:-
+Identity Name
+Requested Role
+Application
+Comments box
+👉 Ye sab config define karta hai
+
+🔹 5. Auto Complete Behavior:-
+👉 Config decide karta hai:-
+Approve → next step pe jao
+Reject → workflow stop ya rollback
+
+🔹 6. Escalation Settings:-
+👉 Agar approver action nahi leta:-
+Reminder bhejo
+Escalate karo
+👉 Ye bhi config me hota hai
+--------------------------------------------------------------------
+
+----------------------------------------------------------------------
+🔹 getApprovalSet()
+Object approval = workItem.getApprovalSet();
+System.out.println(approval);
+🟢 Output:-
+ApprovalSet[APPROVED]
+----------------------------------------------------------------------
+🔹 setApprovalSet(ApprovalSet approvalSet)
+workItem.setApprovalSet(approvalSet);
+🟢 Output:-
+Approval set updated
+----------------------------------------------------------------------
+🔷 1️⃣ getWorkItemConfig():-
+👉 Kya karta hai:-
+WorkItem ka UI + behavior configuration object nikalta hai
+
+Object config = workItem.getWorkItemConfig();
+System.out.println(config);
+
+🟢 Output:-
+WorkItemConfig[approval, commentsRequired=true, actions=Approve/Reject]
+-------------------------------------------------------------------------------
+🔷 2️⃣ setWorkItemConfig(WorkItemConfig config):-
+👉 Kya karta hai:-
+WorkItem ka UI/behavior replace karta hai
+
+WorkItemConfig config = new WorkItemConfig();
+workItem.setWorkItemConfig(config);
+System.out.println("Config updated");
+
+🟢 Output:-
+Config updated
+
+🧠 Real Meaning:-
+→ Approval screen ka behavior change ho gaya
+→ Buttons / rules / UI update ho gaya
+
+📌 Note:-
+👉 Real me mostly system khud set karta hai (workflow XML se).
+----------------------------------------------------------------------------------
+🔷 3️⃣ getApprovalSet():-
+👉 Kya karta hai:-
+Approval ka decision data (approve/reject + details) nikalta hai
+
+Object approval = workItem.getApprovalSet();
+System.out.println(approval);
+
+🟢 Output:-
+ApprovalSet[APPROVED, approver=jane.manager, comments=ok]
+
+🧠 Real Meaning:-
+→ Kisne approve kiya
+→ Reject hua ya approve
+→ Kya comment diya
+
+🔷 4️⃣ setApprovalSet(ApprovalSet approvalSet):-
+👉 Kya karta hai:-
+Approval ka decision store karta hai
+
+ApprovalSet set = new ApprovalSet();
+workItem.setApprovalSet(set);
+System.out.println("Approval stored");
+
+🟢 Output:-
+Approval stored
+
+🧠 Real Meaning:-
+→ System ko bataya gaya ki decision kya hai
+→ Approve / Reject store ho gaya.
+-----------------------------------------------------------------------------------------
+🔷 1️⃣ getIdentityRequestId():-
+Kya karta hai: Ye WorkItem ke saath linked IdentityRequest ka ID deta hai.
+
+String id = workItem.getIdentityRequestId();
+System.out.println(id);
+
+🟢 Output:-
+IR-1001
+
+🔷 2️⃣ setIdentityRequestId(String id):-
+Kya karta hai: WorkItem me IdentityRequest ID assign/update karta hai
+workItem.setIdentityRequestId("IR-2002");
+System.out.println("IdentityRequestId set");
+
+🟢 Output:-
+IdentityRequestId set
+
+🔷 3️⃣ getCaseId():-
+Kya karta hai: WorkItem ka WorkflowCase ID return karta hai
+String caseId = workItem.getCaseId();
+System.out.println(caseId);
+
+🟢 Output:-
+WC-5001
+
+🔷 4️⃣ setCaseId(String id):-
+Kya karta hai: WorkflowCase ID set/update karta hai
+
+workItem.setCaseId("WC-6002");
+System.out.println("CaseId updated");
+
+🟢 Output:-
+CaseId updated
+
+🔷 5️⃣ getWorkflowCase():-
+Kya karta hai: WorkItem ka actual WorkflowCase object return karta hai
+
+WorkflowCase wc = workItem.getWorkflowCase();
+System.out.println(wc.getName());
+
+🟢 Output:-
+OnboardingWorkflowCase
+
+🔷 6️⃣ setWorkflowCase(WorkflowCase wc):-
+Kya karta hai: WorkItem me WorkflowCase attach/update karta hai
+
+workItem.setWorkflowCase(wc);
+System.out.println("WorkflowCase attached");
+
+🟢 Output:-
+WorkflowCase attached
+
+🔷 7️⃣ getEscalationDate():-
+Kya karta hai: Next escalation ka date/time return karta hai
+
+Date d = workItem.getEscalationDate();
+System.out.println(d);
+
+🟢 Output:-
+Thu Mar 19 10:00:00 IST 2026
+
+🔷 8️⃣ setEscalationDate(Date date):-
+Kya karta hai: WorkItem ka escalation date set/update karta hai
+
+workItem.setEscalationDate(new Date(System.currentTimeMillis() + 86400000));
+System.out.println("Escalation date set");
+
+🟢 Output:-
+Escalatio date set
+
+🔷 9️⃣ getEscalationLevel():-
+Kya karta hai: Current escalation stage return karta hai (0 = original approver, 1 = first escalated manager...)
+
+int level = workItem.getEscalationLevel();
+System.out.println(level);
+
+🟢 Output:-
+0
+
+🔷 🔟 setEscalationLevel(int level):-
+Kya karta hai: WorkItem ka escalation stage set/update karta hai
+
+workItem.setEscalationLevel(1);
+System.out.println("Escalation level updated");
+
+🟢 Output:-
+Escalation level updated
+
+🔷 1️⃣1️⃣ getEscalationOwner():-
+
+Kya karta hai: Current escalation owner (Identity) return karta hai
+
+Identity owner = workItem.getEscalationOwner();
+System.out.println(owner.getName());
+
+🟢 Output:-
+john.manager
+
+🔷 1️⃣2️⃣ setEscalationOwner(Identity owner):-
+Kya karta hai: Escalation ka owner set/update karta hai
+
+workItem.setEscalationOwner(newOwner);
+System.out.println("Escalation owner set");
+
+🟢 Output:-
+Escalation owner set
+-------------------------------------------------------------------------
+🔷 1️⃣ EscalationLevel
+🔹 Kya hai:-
+WorkItem me current escalation stage ko represent karta hai.
+Jab approver action nahi leta, workflow escalate hota hai higher authority ya manager ko.
+Ye level track karta hai ki abhi WorkItem original approver ke paas hai ya escalate ho chuka hai.
+🔹 Possible Levels:-
+Level	         Meaning
+0	Original approver (first person)
+1	First escalation (manager / next in line)
+2	Second escalation (higher manager / admin)
+3+	Further escalation steps (optional, workflow dependent)
+
+-------------------------------------------------------------------------
+🔷 1️⃣3️⃣ getReminders()
+
+Kya karta hai: WorkItem ke sab reminder dates list me return karta hai
+
+List<Date> reminders = workItem.getReminders();
+reminders.forEach(System.out::println);
+
+🟢 Output:
+
+Wed Mar 18 12:00:00 IST 2026
+Wed Mar 18 18:00:00 IST 2026
+------------------------------------------
+🔷 1️⃣4️⃣ setReminders(List reminders):-
+
+Kya karta hai: WorkItem ke reminders replace/set karta hai
+
+List<Date> r = new ArrayList<>();
+r.add(new Date(System.currentTimeMillis() + 10800000)); // +3 hour
+r.add(new Date(System.currentTimeMillis() + 3600000)); // +1 hour
+workItem.setReminders(r);
+System.out.println("Reminders set");
+
+🟢 Output:
+
+Reminders set
+-----------------------------------
+🔷 1️⃣5️⃣ addReminder(Date date):-
+Kya karta hai: WorkItem me naya reminder add karta hai
+
+workItem.addReminder(new Date(System.currentTimeMillis() + 7200000)); // +2 hour
+System.out.println("Reminder added");
+
+🟢 Output:-
+Reminder added
+-------------------------------------------------------------------------------------------------------
+🔹Reminder(Date date) Kya hai:-
+WorkItem ke liye reminder notifications ka schedule rakhta hai.
+Agar approver action nahi leta, system reminder emails ya notifications bhejta hai.
+Ye List<Date> form me hota hai.
+------------------------------------------------------------------------------
+🔹 1️⃣ archive():-
+Kya karta hai:-
+WorkItem ko archive kar deta hai, matlab ye active task list me nahi rahega, par data system me stored rahega.
+Mostly purane/completed/rejected tasks ke liye use hota hai.
+
+workItem.archive();
+System.out.println("WorkItem archived");
+
+🟢 Output:-
+WorkItem archived
+💡 Use: Cleanup / history ke liye.
+
+🔹 4️⃣ toXml();-
+Kya karta hai:-
+WorkItem object ko XML string me convert karta hai.
+Export / persistence / logging ke liye use hota hai.
+String xml = workItem.toXml();
+System.out.println(xml);
+
+🟢 Output: (example):-
+<WorkItem>
+   <Id>WI-1001</Id>
+   <Status>Pending</Status>
+   <EscalationLevel>0</EscalationLevel>
+   <Target>john.doe</Target>
+</WorkItem>
+
+🔹 5️⃣ fromXml(String xml):-
+Kya karta hai:-
+XML string se WorkItem object create karta hai.
+WorkItem wi = WorkItem.fromXml(xml);
+System.out.println(wi.getId());
+
+🟢 Output:-
+WI-1001
+
+🔹 6️⃣ toMap();-
+Kya karta hai:-
+WorkItem ke sab fields ko Map<Key, Value> me convert karta hai.
+Map<String,Object> map = workItem.toMap();
+System.out.println(map);
+
+🟢 Output:-
+{Id=WI-1001, Status=Pending, EscalationLevel=0, Target=john.doe}
+
+🔹 7️⃣ fromMap(Map map):-
+Kya karta hai:-
+Map se WorkItem object create/update karta hai.
+
+WorkItem wi2 = WorkItem.fromMap(map);
+System.out.println(wi2.getStatus());
+
+🟢 Output:-
+Pending
+
+🔹 8️⃣ validate():-
+Kya karta hai:-
+WorkItem ke mandatory fields aur rules check karta hai.
+Agar required data missing hai, exception throw kar sakta hai.
+workItem.validate();
+System.out.println("WorkItem validated");
+
+🟢 Output:-
+WorkItem validated
+
+🔹 9️⃣ clone():-
+Kya karta hai:-
+WorkItem ka duplicate / copy create karta hai.
+Workflow engine me sometimes same task copy karne ke liye use hota hai.
+WorkItem copy = workItem.clone();
+System.out.println(copy.getId());
+
+🟢 Output:-
+WI-1001
+
+🔹 🔟 equals(Object obj):-
+Kya karta hai:-
+Do WorkItems same hai ya nahi check karta hai.
+
+boolean same = workItem.equals(copy);
+System.out.println(same);
+
+🟢 Output:-
+true
+
+🔹 1️⃣1️⃣ hashCode():-
+Kya karta hai:-
+WorkItem ka unique hash code return karta hai.
+Collections / HashMap me use hota hai.
+
+int hash = workItem.hashCode();
+System.out.println(hash);
+
+🟢 Output:-
+123456789
+
+🔹 1️⃣2️⃣ toString():-
+Kya karta hai:-
+WorkItem object ko readable string format me convert karta hai.
+Logging / debugging ke liye use hota hai.
+System.out.println(workItem.toString());
+
+🟢 Output:-
+WorkItem[Id=WI-1001, Status=Pending, EscalationLevel=0, Target=john.doe]
+-----------------------------------------------------------------------------------------
+🔹 1️⃣ complete():-
+Kya karta hai:-
+Ye method WorkItem ko completed mark karta hai.
+Matlab workflow engine ko signal milta hai ki ye step successfully finish ho gaya.
+Completion ka matlab hota hai ki approver ne action le liya aur WorkItem ka status ab Completed ho gaya.
+
+Code Example:-
+// WorkItem initial status pending
+System.out.println("Before: " + workItem.getStatus());
+
+// Complete the work item
+workItem.complete();
+
+// After completion
+System.out.println("After: " + workItem.getStatus());
+
+🟢 Output:-
+Before: Pending
+After: Completed
+
+Kaun complete karta hai:-
+Original approver ya assigned user jo WorkItem ke liye responsible hai.
+Workflow engine me jab user(manager/owner) approve button click karta hai, tab internally complete() call hota hai.
+
+------------------------------------------------------
+🔹 2️⃣ reject():-
+Kya karta hai:-
+Ye method WorkItem ko rejected mark karta hai.
+
+Matlab approver ne request deny kar di aur workflow ko signal milta hai ki ye step fail hua.
+
+Code Example:-
+// WorkItem initial status pending
+System.out.println("Before: " + workItem.getStatus());
+
+// Reject the work item
+workItem.reject();
+
+// After rejection
+System.out.println("After: " + workItem.getStatus());
+
+🟢 Output:-
+Before: Pending
+After: Rejected
+
+Kaun reject karta hai:-
+Assigned approver / reviewer — usually manager ya workflow ke liye designated user.
+Jab approver reject button click karta hai ya workflow me reject action trigger hota hai, internally ye reject() call hota hai.
+-------------------------------------------------------------------------------------------
+🔹 3️⃣ validate():-
+Kya karta hai:-
+WorkItem ke mandatory fields aur rules check karta hai.
+Agar required data missing ya invalid ho, exception throw kar sakta hai.
+Validation workflow engine ko ensure karta hai ki WorkItem properly configured hai aur execute ho sakta hai.
+
+Fields jo validate karta hai (common):-
+Field	               Check
+Id	              WorkItem ID present hai?
+Status	          Valid status hai (Pending / Completed / Rejected)
+Target	          Target object exist karta hai (Identity / Role / Plan)
+EscalationLevel	  Valid integer, >=0
+EscalationOwner	  Valid Identity object hai?
+Reminders	      Valid dates
+
+Code Example:-
+try {
+    workItem.validate();
+    System.out.println("WorkItem validated successfully");
+} catch (Exception e) {
+    System.out.println("Validation failed: " + e.getMessage());
+}
+
+🟢 Output (if valid):-
+WorkItem validated successfully.
+
+🟢 Output (if invalid, e.g., target missing):-
+Validation failed: Target object is missing.
+-----------------------------------------------------------------------------------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointFactory;
+import sailpoint.object.WorkItem;
+
+public class TestWorkItem {
+
+    public static void getWI(String id) throws Exception {
+
+        SailPointContext context = SailPointFactory.getCurrentContext();
+
+        WorkItem wi = context.getObjectById(WorkItem.class, id);
+
+        System.out.println("Owner: " + wi.getOwner());
+        System.out.println("State: " + wi.getState());
+    }
+}

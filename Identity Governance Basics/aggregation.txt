@@ -1,0 +1,87 @@
+🔹 Aggregation kya hota hai?
+👉 Aggregation = External system se data uthana (import karna)
+Matlab:-
+Users (accounts)
+Groups
+Entitlements
+👉 Ye sab external system (AD, SAP, DB) se laake system me store hota hai.
+
+🔥 Aggregation Types:-
+
+🔸 1️⃣ Full Aggregation:-
+👉 Saara data ek baar me fetch hota hai.
+
+🔹 Kya karta hai?
+Sab users laata hai
+Sab groups laata hai
+Purana data overwrite/update karta hai
+🔹 Example:-
+AD me 10,000 users hain → sab ek baar me aa jayenge
+
+🔹 Use kab?
+First time setup
+Data mismatch fix karna ho
+
+🔹 Problem:-
+Slow hota hai ⏳
+Heavy load 🚨
+
+🔸 2️⃣ Incremental Aggregation:-
+👉 Sirf changed data fetch hota hai.
+🔹 Kya karta hai?
+New users
+Updated users
+Deleted users
+👉 Bas wahi data aata hai jo last aggregation ke baad change hua
+🔹 Example:-
+Kal 10,000 users the
+Aaj 10 new users aaye → sirf 10 hi fetch honge
+
+🔹 Use kab?
+Daily sync
+Production environment
+
+🔹 Benefit:-
+Fast ⚡
+Efficient ✅
+
+🔸 3️⃣ Targeted Aggregation:-
+👉 Specific user ya group ka data fetch karna
+🔹 Kya karta hai?
+Ek particular account fetch karta hai
+🔹 Example:-
+Sirf "Rahul" user ka data refresh karna
+aggregateAccount("rahul");
+🔹 Use kab?
+Troubleshooting
+Single user update
+
+🔸 4️⃣ Partitioned Aggregation:-
+👉 Data ko parts me divide karke fetch karna
+🔹 Kya karta hai?
+Large data ko chunks me laata hai
+🔹 Example:
+10,000 users ko:
+1–2000
+2001–4000
+etc.
+
+🔹 Use kab?
+Huge systems (SAP, AD)
+
+🔹 Benefit:-
+Performance better 🚀
+Parallel processing possible
+
+🔸 5️⃣ Delta Aggregation:-
+👉 Sirf exact changes (delta) track karta hai
+
+🔹 Kya karta hai?
+Change logs se data fetch karta hai
+
+🔹 Example:-
+"lastModifiedDate" ke basis pe
+
+🔹 Use:-
+Advanced integrations
+---------------------------------------------------------------------------------------------------------------------------------------

@@ -1,0 +1,34 @@
+🔥 ✅ 1️⃣ Correlation kya hota hai?
+👉Correlation = “Account kis Identity ka hai?” ye find karna
+
+🧠 Simple example:-
+External system (AD) me user aaya:-
+username = john.doe
+email = john@gmail.com
+
+👉 Ab system poochta hai:-
+"Ye account IdentityIQ me kis user ka hai?"
+
+🔥 Matching ka process:-
+System match karta hai:-
+account.email == identity.email
+
+👉 Agar match mil gaya:-
+✔ Same identity se link ho jayega
+
+👉 Agar match nahi mila:-
+✔ New identity create ho sakta hai.
+------------------------------------------------
+🔥 ✅ 2️⃣ Promotion kya hota hai?
+💡 ONE LINE
+👉
+Promotion = Account ke data ko Identity me copy/update karna
+
+🧠 Simple example:-
+Account me hai:-
+email = john@gmail.com
+department = IT
+
+👉 Promotion karega:-
+identity.email = john@gmail.com
+identity.department = IT

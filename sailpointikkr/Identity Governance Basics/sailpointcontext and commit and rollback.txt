@@ -1,0 +1,30 @@
+1️⃣ SailPointContext:-
+Type: Core API Context
+Use: Ye basically SailPoint ke system ke core environment ka access deta hai, jisme identity, accounts, roles, policies, etc. ka full access hota hai.
+Ye sab ka entry point hai jab aap database ya SailPoint objects ko query ya modify karte ho.
+Kya karta hai:-
+Identity, Account, Role objects ko retrieve ya update karta hai.
+Policies aur rules ke execution ke liye global context provide karta hai.
+Transaction management handle karta hai (commit/rollback).
+Aapko system ke sare objects (identity, account, role) milte hain aur unhe manipulate kar sakte ho.
+Basically, system ke core data ke saath kaam karne ka handle.
+
+2️⃣ Commit / Rollback ka flow:-
+Rule start hota hai → RuleContext create hota hai.
+Rule ke andar changes kiye ja sakte hain:-
+Identity modify karna
+Role assign karna
+Account update karna
+Changes ko commit karne ke liye:-
+SailPointContext context = ruleContext.getSailPointContext();
+
+// Example: Identity update
+Identity identity = context.getObjectByName(Identity.class, "john.doe");
+identity.setDisplayName("John Doe Updated");
+
+// Commit changes
+context.saveObject(identity);
+context.commitTransaction();  // <-- yaha changes save ho gaye
+
+Rollback karne ke liye:-
+context.rollbackTransaction();  // <-- sari changes cancel ho gayi

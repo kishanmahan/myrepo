@@ -1,0 +1,208 @@
+()CertificationGroup kya hai?
+CertificationGroup ek object hai jo multiple certifications ko ek group me organize karta hai.
+👉 Matlab:-
+Ek hi type ke ya related certifications ko group karke manage karna,
+Review process ko easy aur structured banana.
+
+🔹 Ye kya karta hai?
+CertificationGroup ka main kaam:-
+()Certifications ko group karna
+Jaise: sabhi “Manager Reviews” ek group me
+
+()Bulk handling:-
+Ek saath multiple certifications ko process kar sakte ho.
+
+()Tracking & management:-
+Kaun sa certification kis group me hai → easily track.
+
+🔹 Iske andar kya hota hai (Fields / Attributes)?
+Typical fields 👇
+1️⃣ Basic Info:-
+id → unique ID
+name → group ka naam
+
+2️⃣ Certifications list:-
+List<Certification> → group ke andar jitne certifications hain
+
+3️⃣ Type:-
+Kis type ka group hai
+(Manager, Application Owner, Role-based, etc.)
+
+4️⃣ Status:-
+Pending / Completed / In Progress
+
+5️⃣ Owner / Reviewer:-
+Kaun group ko handle kar raha hai
+
+6️⃣ Dates:-
+Created date
+Due date
+
+🔹 Simple Example:-
+CertificationGroup group = new CertificationGroup();
+
+group.setName("Manager Certification Group");
+
+List<Certification> certs = new ArrayList<>();
+certs.add(cert1);
+certs.add(cert2);
+
+group.setCertifications(certs);
+
+System.out.println(group.getName());
+System.out.println(group.getCertifications().size());
+
+👉 Output:-
+Manager Certification Group
+2
+
+🔹 Kya ye DB me store hota hai?
+👉 Haan bhai ✔️
+Ye object database me persist hota hai
+SailPoint (IdentityIQ) isko table me store karta hai
+👉 Generally:-
+CertificationGroup ka record DB me hota hai
+Iske andar jo certifications hain → unka relation bhi store hota hai.
+---------------------------------------------------------------------------------------------------------------------------
+()👉 getId():-
+➡️ Group ka unique ID return karta hai
+String id = group.getId();
+System.out.println(id);
+
+()👉 setId(String id):-
+➡️ Group ka ID set karta hai
+group.setId("CG123");
+
+👉 hasId():-
+➡️ Check karta hai ID set hai ya nahi
+System.out.println(group.hasId());
+👉 Output:-
+true / false
+
+()👉 getName():-
+➡️ Group ka naam return karta hai
+System.out.println(group.getName());
+
+()👉 setName(String name):-
+➡️ Group ka naam set karta hai
+group.setName("Manager Certification Group");
+
+()👉 hasName():-
+➡️ Name present hai ya nahi
+System.out.println(group.hasName());
+
+()👉 getCertifications():-
+➡️ Group ke andar sab certifications return karta hai
+List<Certification> list = group.getCertifications();
+System.out.println(list.size());
+
+()👉 setCertifications(List<Certification> certs):-
+➡️ Group me certifications set karta hai
+group.setCertifications(certs);
+
+()👉 hasCertifications():-
+➡️ Check karta hai list empty hai ya nahi
+System.out.println(group.hasCertifications());
+
+()👉 getType():-
+➡️ Group ka type batata hai
+(Manager / Application / Role):-
+System.out.println(group.getType());
+
+()👉 setType(String type):-
+➡️ Group ka type set karta hai
+group.setType("Manager");
+
+()👉 hasType():-
+➡️ Type set hai ya nahi
+System.out.println(group.hasType());
+
+()👉 getStatus():-
+➡️ Current status return karta hai
+System.out.println(group.getStatus());
+
+()👉 setStatus(String status):-
+➡️ Status set karta hai
+group.setStatus("Pending");
+
+()👉 hasStatus():-
+➡️ Status present hai ya nahi
+System.out.println(group.hasStatus());
+
+()👉 getOwner():-
+➡️ Group ka owner return karta hai
+System.out.println(group.getOwner());
+
+()👉 setOwner(String owner):-
+➡️ Owner set karta hai
+group.setOwner("Admin");
+
+()👉 hasOwner():-
+➡️ Owner set hai ya nahi
+System.out.println(group.hasOwner());
+
+()👉 getCreatedDate():-
+➡️ Group kab bana tha
+System.out.println(group.getCreatedDate());
+
+()👉 setCreatedDate(Date date):-
+➡️ Created date set karta hai
+group.setCreatedDate(new Date());
+
+()👉 getDueDate():-
+➡️ Deadline return karta hai
+System.out.println(group.getDueDate());
+
+()👉 setDueDate(Date date):-
+➡️ Due date set karta hai
+group.setDueDate(new Date());
+
+()👉 toString():-
+➡️ Object ko readable string me convert karta hai
+System.out.println(group.toString());
+👉 Output:-
+CertificationGroup[id=CG123, name=Manager Group]
+
+()👉 equals(Object obj):-
+➡️ 2 groups same hain ya nahi compare karta hai
+group1.equals(group2);
+
+()👉 hashCode():-
+➡️ Object ka unique hash value deta hai
+(DB aur collections me use hota hai)
+System.out.println(group.hashCode());
+
+🔹 getOwner() me “Owner” kaun hota hai?
+👉 Owner = wo banda (identity) jo CertificationGroup ka zimmedar hai
+Matlab:-
+Jo us group ko manage kare
+Jo uska review/process control kare
+Jo ensure kare ki certification complete ho
+
+🔹 Real me Owner kaun ho sakta hai?
+Situation pe depend karta hai 👇
+
+1️⃣ Manager:-
+👉 Agar Manager Certification hai
+➡️ Owner = Manager
+Example:-
+User: Ravi
+Manager: Amit
+👉 Owner = Amit
+
+2️⃣ Application Owner:-
+👉 Agar Application access review hai
+➡️ Owner = Application ka owner
+Example:-
+App: SAP
+Owner: Rahul
+👉 Owner = Rahul
+
+3️⃣ Role Owner:-
+👉 Agar role-based certification hai
+➡️ Owner = Role ka owner
+
+4️⃣ Admin / Governance Team:-
+👉 Kabhi kabhi system assign karta hai
+➡️ Owner = Admin ya Compliance team.
+

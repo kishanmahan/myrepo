@@ -1,0 +1,30 @@
+🔹 ViolationOwner ka matlab:-
+ViolationOwner = wo banda jo specific violation ka responsible hai
+Ye banda violation ka resolution handle karta hai
+-----------------------------------------------------------------------------------------------------------------------------
+🔹 Responsibilities of ViolationOwner:-
+Policy ya violation create / edit / update kar sakta hai
+Agar violation nayi identify hui hai, to wo create karega
+Agar existing violation me changes chahiye, wo update karega
+Review action le sakta hai
+Apne aap review complete kar sakta hai ✅
+Ya kisi aur reviewer ko notify kar sakta hai (delegate / assign)
+Temporary Mitigation apply kar sakta hai
+Agar immediate action nahi liya ja sakta, to mitigation set kar sakta hai
+Example: "Manager Approval" ya "Temporary Access Justification"
+
+🔹 Example Flow:-
+User Rahul ke paas Admin role hai, par policy violation hai
+ViolationOwner: Manager1
+
+Step 1: Manager1 check karta hai → violation validate
+Step 2: Manager1 action leta hai:
+    - Direct revoke (permanent)
+    - Approve temporary access (mitigation)
+    - Notify aur assign dusre reviewer
+Step 3: System updates violation status
+------------------------------------------------------------------------------------------------------------------------------
+🔹 AccessReviewOwner ka matlab:-
+👉 Owner = wo Identity (user) jo policy, access review ya certification campaign ka responsible hai
+Ye banda policy create karega, edit karega, ya review monitor karega
+Basically “accountable person”

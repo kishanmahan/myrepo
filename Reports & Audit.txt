@@ -1,0 +1,225 @@
+📘 REPORTS & AUDIT – ALL CHAPTERS:-
+🟢 CHAPTER 1: Reports Overview
+Report kya karta hai?
+👉 Data ko structured format me show karta hai for:-
+Compliance
+Management review
+Security monitoring
+Audit evidence
+Reports generate ho sakte hain:-
+On-demand
+Scheduled
+
+🟢 CHAPTER 2: Types of Reports
+Major categories:-
+1️⃣ Identity Reports
+2️⃣ Access Reports
+3️⃣ Policy Violation Reports
+4️⃣ Certification Reports
+5️⃣ Activity Reports
+6️⃣ Audit Reports
+7️⃣ Risk Reports
+8️⃣ Custom Reports
+
+🟢 CHAPTER 3: Identity Reports
+Common reports:-
+✔ Identity Detail Report
+✔ Identity Attribute Report
+✔ Manager-wise User List
+✔ Department-wise Users
+
+Used for:-
+HR verification
+Auditor review
+
+🟢 CHAPTER 4: Access Reports
+Shows:-
+✔ User access per application
+✔ Role membership
+✔ Entitlement listing
+✔ Privileged users
+
+Important for:-
+SOX audits
+Access review
+
+🟢 CHAPTER 5: Policy Violation Reports
+Shows:-
+✔ SoD violations
+✔ Risk severity
+✔ Mitigation status
+✔ Open violations
+Auditor ka favorite report 🔥
+
+🟢 CHAPTER 6: Certification Reports
+Used after access review:-
+✔ Who approved access
+✔ Who revoked access
+✔ Review completion percentage
+✔ Overdue certifications
+Proof of compliance.
+
+🟢 CHAPTER 7: Activity Reports
+Track karta hai:-
+✔ Login activity
+✔ Access request history
+✔ Provisioning actions
+✔ Workflow activity
+Security monitoring ke liye important.
+
+🟢 CHAPTER 8: Audit Reports
+Audit logs show:-
+✔ Who changed role
+✔ Who modified policy
+✔ Who created application
+✔ Who ran certification
+Complete change tracking.
+
+🟢 CHAPTER 9: Risk Reports
+Shows:-
+✔ Identity risk score
+✔ High-risk users
+✔ Policy risk summary
+✔ Risk trend
+Management dashboard ke liye useful.
+
+🟢 CHAPTER 10: Custom Reports
+Developer bana sakta hai:-
+Custom SQL-based report
+HQL-based report
+Jasper-based report
+Used when built-in report enough nahi hota.
+
+🟢 CHAPTER 11: Report Scheduling
+Options:-
+✔ Daily
+✔ Weekly
+✔ Monthly
+✔ Custom cron
+
+Output formats:-
+PDF
+CSV
+Excel
+Auto email bhi kar sakte ho.
+
+🟢 CHAPTER 12: Report Filters & Parameters
+Dynamic filters:-
+✔ Department
+✔ Application
+✔ Date range
+✔ Manager
+Runtime parameter selection possible.
+
+🟢 CHAPTER 13: Export & Distribution
+Reports export kar sakte ho:-
+CSV
+XLS
+PDF
+
+Send to:-
+Compliance team
+Auditor
+Management
+
+🟢 CHAPTER 14: Audit Logs Overview
+Audit logs capture:-
+✔ Configuration change
+✔ Provisioning action
+✔ Policy violation
+✔ Certification decision
+Stored in database.
+
+🟢 CHAPTER 15: Audit Event Types
+Common audit events:-
+Identity Create
+Identity Modify
+Role Assign
+Access Request
+Policy Violation
+Certification Complete
+
+🟢 CHAPTER 16: Audit Configuration
+Define kar sakte ho:-
+✔ What to log
+✔ Log retention period
+✔ Event severity
+Best practice:-
+Only important events log karo.
+
+🟢 CHAPTER 17: Audit Retention Policy
+Retention period define karo:-
+✔ 1 year
+✔ 3 years
+✔ 7 years (banking sector)
+Depends on compliance requirement.
+
+🟢 CHAPTER 18: Compliance Use Cases
+For frameworks like:-
+✔ SOX
+✔ ISO 27001
+✔ GDPR
+✔ HIPAA
+Reports + Audit logs act as evidence.
+
+🟢 CHAPTER 19: Performance Considerations
+Large org me:-
+Millions of audit records
+
+Optimize:-
+✔ Archival strategy
+✔ DB indexing
+✔ Scheduled cleanup
+
+🟢 CHAPTER 20: Troubleshooting Reports
+Scenario 1:
+Report slow
+→ Check DB indexing
+
+Scenario 2:
+Missing data
+→ Check aggregation
+
+Scenario 3:
+Wrong count
+→ Check filter logic
+
+🟢 CHAPTER 21: Report Security
+Important:-
+✔ Only authorized users run reports
+✔ Sensitive data mask karo
+✔ Role-based access control
+
+🟢 CHAPTER 22: Real Project Scenarios
+
+Scenario 1:
+Auditor asks:
+"Show all users with SAP Admin access last 1 year"
+→ Run access report + activity report
+
+Scenario 2:
+SOX audit:
+"Show who approved finance access"
+→ Certification decision report
+
+Scenario 3:
+Security incident:
+"Who granted this role?"
+→ Audit event report
+
+🟢 CHAPTER 23: Best Practices
+✔ Schedule compliance reports monthly
+✔ Archive old audit logs
+✔ Validate report filters
+✔ Restrict sensitive reports
+✔ Test report performance
+
+🟢 CHAPTER 24: End-to-End Audit Flow
+User request access →
+Approval workflow →
+Provisioning →
+Policy check →
+Certification →
+Audit event stored →
+Report generated →
+Auditor review

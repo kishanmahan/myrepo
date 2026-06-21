@@ -1,0 +1,199 @@
+()ABAC kya hai?
+--1️⃣ ABAC kya hai?
+ABAC me user ke attributes, resource ke attributes, aur environment conditions ko check karke
+access decide hota hai.
+Purpose: Fine-grained aur dynamic access control dena.
+
+2️⃣ Example Attributes in ABAC:-
+Type	                                       Example
+User Attributes----------------------Department, Job Title, Location, Cost Center,role,
+Resource Attributes------------------File Type, Sensitivity Level, Application Name
+Environment Attributes---------------Time of Day, IP Address, Device Type
+
+3️⃣ Example Scenario:-
+Rahul (Finance, Mumbai, Manager) access request karta hai SAP file “Financial_Report_2026.pdf”
+Policy:-
+IF user.department == "Finance" AND user.location == "Mumbai" AND resource.sensitivity == "High" 
+THEN allow access
+ELSE deny access
+
+2️⃣ Simple Example:-
+Policy:-
+Agar user.department = Finance
+aur resource.type = FinancialReport
+to access allow
+Agar koi IT department ka user access karega:-
+Access Denied
+
+5️⃣ Combined ABAC Example (Code Conceptual):-
+Identity rahul = getIdentity("EMP12345");
+Resource payrollFile = getResource("Payroll_2026.xlsx");
+
+// Current time
+LocalTime currentTime = LocalTime.now();
+
+// ABAC Fine-Grained + Dynamic Policy
+if(rahul.getDepartment().equals("Finance") &&
+   rahul.getRole().equals("Manager") &&
+   payrollFile.getSensitivity().equals("High") &&
+   currentTime.isAfter(LocalTime.of(9,0)) &&
+   currentTime.isBefore(LocalTime.of(18,0))){
+       
+    grantAccess(rahul, payrollFile);
+}else{
+    denyAccess(rahul, payrollFile);
+}
+-------------------------------------------------------------------------------------------------
+1️⃣ User.java
+package abac;
+
+public class User {
+
+    private String name;
+    private String department;
+    private String location;
+    private String role;
+
+    public User(String name, String department, String location, String role) {
+        this.name = name;
+        this.department = department;
+        this.location = location;
+        this.role = role;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public String getRole() {
+        return role;
+    }
+}
+2️⃣ Resource.java
+package abac;
+
+public class Resource {
+
+    private String resourceName;
+    private String resourceType;
+    private String sensitivity;
+
+    public Resource(String resourceName, String resourceType, String sensitivity) {
+        this.resourceName = resourceName;
+        this.resourceType = resourceType;
+        this.sensitivity = sensitivity;
+    }
+
+    public String getResourceName() {
+        return resourceName;
+    }
+
+    public String getResourceType() {
+        return resourceType;
+    }
+
+    public String getSensitivity() {
+        return sensitivity;
+    }
+}
+3️⃣ Environment.java
+package abac;
+
+public class Environment {
+
+    private String location;
+    private int hour;
+
+    public Environment(String location, int hour) {
+        this.location = location;
+        this.hour = hour;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public int getHour() {
+        return hour;
+    }
+}
+4️⃣ ABACPolicyEngine.java
+package abac;
+
+public class ABACPolicyEngine {
+
+    public boolean checkAccess(User user, Resource resource, Environment env) {
+
+        if (user.getDepartment().equals("Finance")
+                && resource.getResourceType().equals("FinancialReport")
+                && env.getLocation().equals("Office")
+                && env.getHour() >= 9
+                && env.getHour() <= 18) {
+
+            return true;
+        }
+
+        return false;
+    }
+}
+5️⃣ ABACExample.java (Main Class)
+Import Lines yaha aayengi
+package abac;
+
+import abac.User;
+import abac.Resource;
+import abac.Environment;
+import abac.ABACPolicyEngine;
+
+public class ABACExample {
+
+    public static void main(String[] args) {
+
+        User user = new User(
+                "Rahul",
+                "Finance",
+                "India",
+                "Manager"
+        );
+
+        Resource resource = new Resource(
+                "QuarterReport",
+                "FinancialReport",
+                "High"
+        );
+
+        Environment env = new Environment(
+                "Office",
+                11
+        );
+
+        ABACPolicyEngine engine = new ABACPolicyEngine();
+
+        boolean access = engine.checkAccess(user, resource, env);
+
+        if (access) {
+            System.out.println("Access Allowed");
+        } else {
+            System.out.println("Access Denied");
+        }
+
+    }
+}
+▶️ Output:-
+Access Allowed
+
+Agar environment change kar do:
+
+Environment env = new Environment("Home", 11);
+
+Output:
+
+Access Denied

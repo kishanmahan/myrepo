@@ -1,0 +1,190 @@
+()1️⃣ Automated Provisioning ka Simple Matlab:-
+Provisioning = kisi user ko system/application me access dena.
+Automated Provisioning = ye process automatic ho jaye bina manual admin ke action ke.
+Example:-
+Naya employee join hota hai → HR system me add hota hai → SailPoint automatically:
+Email account create kare
+Salesforce access de
+VPN access enable kare
+Ye sab without admin manually creating each account ho jata hai.
+
+()Automated provisioning kya hai?
+Automated Provisioning ka matlab:-
+➡ System automatically user ko access de deta hai without human intervention.
+Ye usually hota hai:-
+Birthright roles
+RBAC
+Joiner-Mover-Leaver workflows
+
+Example:-
+Employee join karta hai.
+System automatically:-
+Email account create
+Active Directory account create
+HR portal access
+VPN access
+koi admin manually nahi karta.
+
+1️⃣ Automated Provisioning Project
+Project Structure
+iam-project
+ ├── AutomatedProvisionService.java
+ ├── RoleAssignmentService.java
+ └── ProvisionExecutor.java
+
+1️⃣ RoleAssignmentService.java:-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.Bundle;
+
+public class RoleAssignmentService {
+
+    public void assignBirthrightRole(SailPointContext context, String username) throws Exception {
+
+        Identity user = context.getObjectByName(Identity.class, username);
+
+        Bundle role = context.getObjectByName(Bundle.class, "EmployeeBirthrightRole");
+
+        user.add(role);
+
+        context.saveObject(user);
+
+        context.commitTransaction();
+    }
+}
+2️⃣ AutomatedProvisionService.java:-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+
+public class AutomatedProvisionService {
+
+    public ProvisioningPlan createProvisionPlan(SailPointContext context, String username) throws Exception {
+
+        Identity user = context.getObjectByName(Identity.class, username);
+
+        ProvisioningPlan plan = new ProvisioningPlan();
+        plan.setIdentity(user);
+
+        AccountRequest accountRequest = new AccountRequest();
+        accountRequest.setApplication("ActiveDirectory");
+        accountRequest.setOperation(AccountRequest.Operation.Create);
+
+        AttributeRequest attrReq = new AttributeRequest();
+        attrReq.setName("memberOf");
+        attrReq.setOperation(ProvisioningPlan.Operation.Add);
+        attrReq.setValue("EmployeeGroup");
+
+        accountRequest.add(attrReq);
+
+        plan.add(accountRequest);
+
+        return plan;
+    }
+}
+3️⃣ ProvisionExecutor.java:-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.object.ProvisioningPlan;
+
+public class ProvisionExecutor {
+
+    public void executeProvision(SailPointContext context, ProvisioningPlan plan) throws Exception {
+
+        ProvisioningProject project = new ProvisioningProject(plan);
+
+        context.provision(project);
+
+        context.commitTransaction();
+    }
+}
+Automated Flow
+Employee Join
+      ↓
+RoleAssignmentService
+      ↓
+AutomatedProvisionService
+      ↓
+ProvisionExecutor
+      ↓
+Account + Access Created
+-----------------------------------
+()Manual provisioning kya hai?
+Manual Provisioning ka matlab:-
+➡ Admin manually access assign karta hai.
+Example:-
+Admin login karta hai
+User search karta hai
+Access manually add karta hai
+Example Scenario
+Rahul ko Finance access chahiye
+Process:-
+Rahul request karta hai
+↓
+Manager approve karta hai
+↓
+Admin manually access add karta hai.
+
+2️⃣ Manual Provisioning Project
+Project Structure
+iam-project
+ ├── AccessRequestService.java
+ ├── ApprovalService.java
+ └── ManualProvisionService.java
+1️⃣ AccessRequestService.java
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+
+public class AccessRequestService {
+
+    public Identity getUser(SailPointContext context, String username) throws Exception {
+
+        Identity user = context.getObjectByName(Identity.class, username);
+
+        return user;
+    }
+}
+2️⃣ ApprovalService.java
+public class ApprovalService {
+
+    public boolean managerApproval(String managerDecision) {
+
+        if ("APPROVED".equals(managerDecision)) {
+            return true;
+        }
+
+        return false;
+    }
+}
+3️⃣ ManualProvisionService.java
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.Bundle;
+
+public class ManualProvisionService {
+
+    public void assignRole(SailPointContext context, String username, String roleName) throws Exception {
+
+        Identity user = context.getObjectByName(Identity.class, username);
+
+        Bundle role = context.getObjectByName(Bundle.class, roleName);
+
+        user.add(role);
+
+        context.saveObject(user);
+
+        context.commitTransaction();
+    }
+}
+Manual Flow:-
+User Request Access
+       ↓
+Manager Approval
+       ↓
+Admin Trigger ManualProvisionService
+       ↓
+Role Assigned
+       ↓
+Access Granted

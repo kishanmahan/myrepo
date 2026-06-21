@@ -1,0 +1,312 @@
+1️⃣ AuditLogManager kya hai?
+AuditLogManager ek SailPoint service/class hai jo system ke audit events ko handle karta hai.
+Ye track karta hai kya kaunse user ne kya action perform kiya system me.
+Basically:
+"AuditLogManager = system ka diary/journal jisme saare important actions store hote hain"
+
+2️⃣ AuditLogManager kya karta hai?
+()Log create karna:-
+Jab koi user identity, role, request, policy ya object modify karta hai, to ye audit event create karta hai.
+
+()Log persist karna:-
+Ye events database me store hote hain.
+
+()Log query karna:-
+Kisi user, date, object, ya action ke basis pe audit logs fetch karna.
+
+()Log filter & search:-
+Action type, target object, approver, ya workflow case ke basis pe search kar sakte ho.
+
+4️⃣ AuditEvent kya hai?
+AuditLogManager ke logs ko represent karta hai.
+Ye object usually ye cheeze contain karta hai:
+id                // unique id
+actor             // kaunne action perform kiya
+action            // kya action perform hua (create, update, delete, approve)
+target            // kis object pe action hua
+result            // success/failure
+timestamp         // action kab hua
+comments          // optional notes
+workflowCase      // agar workflow ka part hai
+
+5️⃣ Ye logs store hota hai DB me?
+Haan bhai, AuditEvent ya AuditLogManager ke logs usually database me persist hote hain.
+SailPoint me ye logs ka table AuditEvent ya AuditLog hota hai (depends on version).
+Ye table me columns: ID, Actor, Action, Target, Result, Timestamp, Comments, etc.
+
+3️⃣ AuditLogManager ke andar kya hota hai (methods):-
+Mostly ye methods hote hain:-
+log(AuditEvent event)                      // Event log karna
+log(String action, String actor, String target)  
+log(String action, String actor, String target, String result)  
+log(AuditEvent event, boolean persist)     // Agar persist true hai to db me store kare
+getLogsByUser(String userName)             // Specific user ke logs
+getLogsByAction(String action)             // Specific action ke logs
+getLogsByDateRange(Date start, Date end)   // Date range ke logs
+deleteLogsOlderThan(Date date)             // Purane logs delete karna
+------------------------------------------------------------------------------------------------------------------------------------------------
+6️⃣ Example usage
+import sailpoint.api.AuditLogManager;
+import sailpoint.object.AuditEvent;
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointContextFactory;
+
+public class AuditExample {
+    public static void main(String[] args) throws Exception {
+
+        SailPointContext context = SailPointContextFactory.createContext();
+        AuditLogManager auditManager = new AuditLogManager(context);
+
+        // Event create
+        AuditEvent event = new AuditEvent();
+        event.setActor("joker boy");
+        event.setAction("CREATE_ROLE");
+        event.setTarget("Admin");
+        event.setResult("SUCCESS");
+
+        // Log the event
+        auditManager.log(event);  // store hota hai db me automatically
+
+        System.out.println("Audit event logged!");
+        
+ SailPointContextFactory.releaseContext(context);       //SailPointContextFactory.releaseContext(context) ka kaam context ko close/release karna hai.
+    }
+}
+Output example:-
+Audit event logged!
+
+DB me record:-
+ID	Actor	       Action	  Target	     Result	          Timestamp
+101	joker boy	CREATE_ROLE	   Admin	    SUCCESS	        2026-03-24 15:30
+-------------------------------------------------------------------------------------------------------------------------------------------------
+log(AuditEvent event)
+log(String action, String actor, String target)
+log(String action, String actor, String target, String result)
+log(AuditEvent event, boolean persist)
+
+getLogsByUser(String userName)
+getLogsByAction(String action)
+getLogsByDateRange(Date start, Date end)
+deleteLogsOlderThan(Date date)
+getLogsByTarget(String target)
+getLogsByWorkflowCase(String workflowCase)
+getLogsByResult(String result)
+getLogsByActor(String actor)
+getLogsByType(String type)
+getAllLogs()
+---------------------------------------------------------------------------------------------------------------------------------------------------
+1️⃣ log(AuditEvent event):-
+Kya karta hai:-
+Ye AuditEvent object ko system me log karta hai.
+Default behavior: ye event ko DB me persist kar deta hai.
+
+Example:-
+AuditEvent event = new AuditEvent();
+event.setActor("joker boy");
+event.setAction("CREATE_ROLE");
+event.setTarget("Admin");
+event.setResult("SUCCESS");
+
+auditManager.log(event);
+System.out.println("Audit logged for action: " + event.getAction());
+
+Output (console):-
+Audit logged for action: CREATE_ROLE
+
+DB me record example:-
+ID	Actor	       Action	   Target	Result	Timestamp
+101	joker boy	CREATE_ROLE	   Admin	SUCCESS	2026-03-24 15:30
+----------------------------------------------------------------------------------------------------------------------
+2️⃣ log(String action, String actor, String target):-
+Kya karta hai:-
+Ye simple string parameters se log create karta hai.
+Result field default me "SUCCESS" ya null ho sakta hai depending on config.
+
+Example:-
+auditManager.log("DELETE_ROLE", "joker boy", "UserRole");
+
+System.out.println("Audit logged for DELETE_ROLE");
+
+Output (console):-
+Audit logged for DELETE_ROLE
+
+DB me record example:-
+ID	Actor	      Action	  Target	Result	Timestamp
+102	joker boy	DELETE_ROLE	  UserRole	SUCCESS	2026-03-24 15:32
+----------------------------------------------------------------------------------------------------------------------
+3️⃣ log(String action, String actor, String target, String result):-
+Kya karta hai:-
+Ye action ka result bhi explicitly specify karta hai (SUCCESS, FAILURE, ERROR, etc.)
+
+Example:-
+auditManager.log("UPDATE_ROLE", "joker boy", "Admin", "FAILURE");
+
+System.out.println("Audit logged for UPDATE_ROLE with FAILURE");
+
+Output (console):-
+Audit logged for UPDATE_ROLE with FAILURE
+
+DB me record example:-
+ID	Actor	      Action	  Target	Result	Timestamp
+103	joker boy	UPDATE_ROLE	   Admin	FAILURE	2026-03-24 15:35
+----------------------------------------------------------------------------------------------------
+4️⃣ log(AuditEvent event, boolean persist):-
+Kya karta hai:-
+Agar persist = true, to event database me save ho jata hai.
+Agar persist = false, to event sirf memory me ya session ke liye available hota hai, DB me nahi store hota.
+
+Example:-
+AuditEvent event = new AuditEvent();
+event.setActor("joker boy");
+event.setAction("RESET_PASSWORD");
+event.setTarget("User123");
+
+// Log but do not persist
+auditManager.log(event, false);
+
+System.out.println("Audit logged in memory only for RESET_PASSWORD");
+
+Output (console):-
+Audit logged in memory only for RESET_PASSWORD
+
+DB record:-
+Koi record nahi banta kyunki persist=false
+-----------------------------------------------------------------------------------------------------------------
+1️⃣ getLogsByUser(String userName):-
+Kya karta hai:-
+Specific user ke sab logs fetch karta hai.
+Example:-
+List<AuditEvent> logs = auditManager.getLogsByUser("joker boy");
+
+for(int i = 0; i < logs.size(); i++) {
+    System.out.println(logs.get(i).getAction() + " - " + logs.get(i).getTarget());
+}
+Output example:-
+CREATE_ROLE - Admin
+DELETE_ROLE - UserRole
+RESET_PASSWORD - User123
+-------------------------------------------------------------------------------------
+2️⃣ getLogsByAction(String action):-
+Kya karta hai:-
+Specific action ke sab logs return karta hai.
+Example:-
+List<AuditEvent> logs = auditManager.getLogsByAction("CREATE_ROLE");
+
+for(int i = 0; i < logs.size(); i++) {
+    System.out.println(logs.get(i).getActor() + " - " + logs.get(i).getTarget());
+}
+Output example:-
+joker boy - Admin
+alice - Manager
+-----------------------------------------------------------------------------
+3️⃣ getLogsByDateRange(Date start, Date end):-
+Kya karta hai:-
+Specific date range me hone wale logs fetch karta hai.
+Example:-
+Date start = new SimpleDateFormat("yyyy-MM-dd").parse("2026-03-20");
+Date end = new SimpleDateFormat("yyyy-MM-dd").parse("2026-03-24");
+List<AuditEvent> logs = auditManager.getLogsByDateRange(start, end);
+
+for(int i = 0; i < logs.size(); i++) {
+    System.out.println(logs.get(i).getAction() + " - " + logs.get(i).getActor());
+}
+Output example:-
+CREATE_ROLE - joker boy
+DELETE_ROLE - alice
+UPDATE_ROLE - joker boy
+--------------------------------------------------------------------------
+4️⃣ deleteLogsOlderThan(Date date):-
+Kya karta hai:-
+Us date se purane logs ko delete karta hai.
+
+Example:-
+Date oldDate = new SimpleDateFormat("yyyy-MM-dd").parse("2026-03-01");
+auditManager.deleteLogsOlderThan(oldDate);
+System.out.println("Purane logs delete ho gaye!");
+---------------------------------------------------------------------------
+5️⃣ getLogsByTarget(String target):-
+Kya karta hai:-
+Specific object ya role/user ke logs fetch karta hai.
+
+Example:-
+List<AuditEvent> logs = auditManager.getLogsByTarget("Admin");
+
+for(int i = 0; i < logs.size(); i++) {
+    System.out.println(logs.get(i).getActor() + " - " + logs.get(i).getAction());
+}
+Output example:-
+joker boy - CREATE_ROLE
+alice - UPDATE_ROLE
+---------------------------------------------------------------------------------
+6️⃣ getLogsByWorkflowCase(String workflowCase):-
+Kya karta hai:-
+Specific workflow case ke logs return karta hai.
+
+Example:-
+List<AuditEvent> logs = auditManager.getLogsByWorkflowCase("WF-101");
+
+for(int i = 0; i < logs.size(); i++) {
+    System.out.println(logs.get(i).getActor() + " - " + logs.get(i).getAction());
+}
+
+Output example:-
+joker boy - APPROVE_REQUEST
+alice - REJECT_REQUEST
+---------------------------------------------------------------------------------
+7️⃣ getLogsByResult(String result):-
+Kya karta hai:-
+Success/Failure/Error ke basis pe logs fetch karta hai.
+
+Example:-
+List<AuditEvent> logs = auditManager.getLogsByResult("FAILURE");
+
+for(int i = 0; i < logs.size(); i++) {
+    System.out.println(logs.get(i).getActor() + " - " + logs.get(i).getAction());
+}
+Output example:-
+joker boy - UPDATE_ROLE
+alice - DELETE_ROLE
+--------------------------------------------------------------------------------
+8️⃣ getLogsByActor(String actor):-
+Kya karta hai:-
+Actor ke naam ke basis pe logs fetch karta hai.
+
+Example:-
+List<AuditEvent> logs = auditManager.getLogsByActor("alice");
+
+for(int i = 0; i < logs.size(); i++) {
+    System.out.println(logs.get(i).getAction() + " - " + logs.get(i).getTarget());
+}
+Output example:-
+DELETE_ROLE - UserRole
+UPDATE_ROLE - Manager
+----------------------------------------------------------------------------------
+9️⃣ getLogsByType(String type):-
+Kya karta hai:-
+Event type ke basis pe logs fetch karta hai (jaise CREATE, UPDATE, DELETE).
+
+Example:-
+List<AuditEvent> logs = auditManager.getLogsByType("CREATE");
+
+for(int i = 0; i < logs.size(); i++) {
+    System.out.println(logs.get(i).getActor() + " - " + logs.get(i).getTarget());
+}
+Output example:-
+joker boy - Admin
+alice - Manager
+------------------------------------------------------------------------------------------------------------
+🔟 getAllLogs():-
+Kya karta hai:-
+System ke saare audit logs fetch karta hai.
+
+Example:-
+List<AuditEvent> logs = auditManager.getAllLogs();
+
+for(int i = 0; i < logs.size(); i++) {
+    System.out.println(logs.get(i).getActor() + " - " + logs.get(i).getAction() + " - " + logs.get(i).getTarget());
+}
+
+Output example:-
+joker boy - CREATE_ROLE - Admin
+alice - UPDATE_ROLE - Manager
+joker boy - DELETE_ROLE - UserRole

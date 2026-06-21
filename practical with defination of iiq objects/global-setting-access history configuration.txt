@@ -1,0 +1,11 @@
+()global-setting-access history configuration->
+
+1. Access History Configuration:-
+Jab aap Enable Access History ko check karte hain, toh SailPoint user ke access badlavon ka ek timeline record karna shuru kar deta hai.
+
+Maqsad (Purpose): Yeh dekhne ke liye ki kisi user ke paas purane samay mein kya access tha.
+
+Kaise Kaam Karta Hai: Yeh identities aur unke assigned roles/entitlements ke snapshots leta hai.
+
+Benefit: Agar audit mein pucha jaye ki "Pichle saal June mein is user ke paas kaunse accounts the?", 
+toh Access History se uska jawab mil jayega. Yeh compliance ke liye bahut zaroori hai.

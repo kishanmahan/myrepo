@@ -1,0 +1,242 @@
+Debugging & Troubleshooting ke sare chapters:-
+🟢 CHAPTER 1: Debugging Overview
+
+Debugging = Problem ka root cause find karna.
+Troubleshooting = Problem ko fix karna.
+
+Areas:-
+Provisioning issue
+Aggregation issue
+Policy violation
+Certification issue
+Workflow stuck
+Performance issue
+
+🟢 CHAPTER 2: Logs – Primary Weapon 🔥
+Most important log files:-
+✔ catalina.out
+✔ iiQ.log
+✔ application server logs
+✔ connector logs
+90% issues logs se solve hote hain.
+
+🟢 CHAPTER 3: Log Levels
+Use in rules:-
+log.error()
+log.warn()
+log.info()
+log.debug()
+Production me debug mode permanently ON mat rakho ⚠️
+
+🟢 CHAPTER 4: Provisioning Issues
+Common problems:-
+1️⃣ Access not provisioned
+2️⃣ Access stuck in provisioning
+3️⃣ Access partially provisioned
+Check:-
+ProvisioningPlan
+Workflow case
+Before/After provisioning rule
+Connector response
+
+🟢 CHAPTER 5: Aggregation Issues
+Problems:-
+✔ Accounts not loading
+✔ Wrong correlation
+✔ Duplicate identities
+Check:-
+Connector config
+Correlation rule
+Schema mapping
+Task result
+
+🟢 CHAPTER 6: Identity Refresh Issues
+Symptoms:-
+✔ Role not assigned
+✔ Policy not triggered
+✔ Risk not updated
+Check:-
+Identity refresh task options
+Lifecycle event
+Assignment rule
+Policy scope
+
+🟢 CHAPTER 7: Workflow Debugging
+Common issues:-
+✔ Approval stuck
+✔ Workflow not triggered
+✔ Wrong approver
+
+Check:-
+Workflow case status
+Approval step logic
+Workflow rule
+Identity attributes
+
+🟢 CHAPTER 8: Policy Violation Issues
+Problems:-
+✔ Violation not detected
+✔ False positive
+✔ Mitigation not saving
+
+Check:-
+Policy active status
+Identity refresh
+Scope configuration
+Risk scoring
+
+🟢 CHAPTER 9: Certification Issues
+Problems:-
+✔ Certification not generated
+✔ Reviewer not assigned
+✔ Decisions not applied
+Check:-
+Generation task
+Escalation rule
+Revocation settings
+TaskResult logs
+
+🟢 CHAPTER 10: Performance Troubleshooting
+Symptoms:-
+✔ Identity refresh slow
+✔ Aggregation slow
+✔ UI lag
+Check:-
+DB indexing
+Heavy policies
+Large role hierarchy
+Long-running tasks
+
+🟢 CHAPTER 11: Database-Level Troubleshooting
+Important tables:-
+✔ spt_identity
+✔ spt_link
+✔ spt_role
+✔ spt_policy_violation
+✔ spt_audit_event
+Use SQL carefully ⚠️
+Production me direct update avoid karo.
+
+🟢 CHAPTER 12: Task Failure Troubleshooting
+Steps:-
+1️⃣ Check TaskResult
+2️⃣ Check logs
+3️⃣ Check memory usage
+4️⃣ Check DB connectivity
+Common error:-
+OutOfMemoryError
+
+🟢 CHAPTER 13: Rule Debugging
+Common errors:-
+✔ NullPointerException
+✔ ClassCastException
+✔ Infinite loop
+Tips:-
+✔ Add log.debug
+✔ Check null
+✔ Test in lower environment
+
+🟢 CHAPTER 14: Connector Troubleshooting
+If target system issue:-
+✔ Check credentials
+✔ Check firewall
+✔ Check endpoint URL
+✔ Test connection
+Sometimes issue IIQ me nahi hota 🔥
+
+🟢 CHAPTER 15: Cluster Environment Issues
+In multi-node setup:-
+✔ Task running wrong node
+✔ Session timeout
+✔ Cache not synced
+Check:-
+Cluster config
+Load balancer
+Cache refresh
+
+🟢 CHAPTER 16: Access Request Issues
+Problems:-
+✔ Request not visible
+✔ Approval skipped
+✔ Request auto-approved
+Check:-
+Request workflow
+Approval assignment rule
+Role config
+
+🟢 CHAPTER 17: Role Assignment Issues
+Problems:-
+✔ Role not assigned after joiner
+✔ Duplicate role
+Check:-
+Role assignment rule
+Identity attribute mapping
+Refresh task
+
+🟢 CHAPTER 18: Email Notification Issues
+Problems:-
+✔ Email not triggered
+✔ Wrong template
+✔ SMTP error
+Check:-
+SMTP config
+Email template
+Logs
+
+🟢 CHAPTER 19: Risk Calculation Issues
+Symptoms:-
+✔ Risk score not updated
+✔ Risk showing wrong
+Check:-
+Risk model
+Policy severity
+Identity refresh
+
+🟢 CHAPTER 20: Debug Page Usage
+Debug page use karo for:-
+✔ Test rule
+✔ Run task manually
+✔ Inspect object
+✔ Modify object carefully
+Production me caution ⚠️
+
+🟢 CHAPTER 21: Real Production Troubleshooting Flow
+Step-by-step method:-
+1️⃣ Understand issue
+2️⃣ Reproduce issue
+3️⃣ Check logs
+4️⃣ Check workflow
+5️⃣ Check DB
+6️⃣ Identify root cause
+7️⃣ Apply fix in lower env
+8️⃣ Deploy to prod
+
+🟢 CHAPTER 22: Common Real Scenarios
+Scenario 1:
+User access not revoked after termination
+→ Check lifecycle event + identity refresh
+
+Scenario 2:
+Policy violation missing
+→ Check refresh + scope
+
+Scenario 3:
+Aggregation loaded 0 accounts
+→ Check connector credentials
+
+🟢 CHAPTER 23: Root Cause Analysis (RCA)
+Always document:-
+✔ What happened
+✔ Why happened
+✔ Impact
+✔ Fix applied
+✔ Preventive action
+Professional approach 🔥
+
+🟢 CHAPTER 24: Best Practices
+✔ Always check logs first
+✔ Never directly update DB
+✔ Test fix in lower env
+✔ Keep documentation
+✔ Monitor nightly tasks
+✔ Avoid enabling debug permanently

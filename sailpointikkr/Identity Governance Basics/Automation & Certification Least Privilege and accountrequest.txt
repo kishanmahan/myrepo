@@ -1,0 +1,152 @@
+()3️⃣ Least Privilege in SailPoint:-
+Roles + Policies + ABAC ka combination use karke implement hota hai.
+Automation & Certification:-
+SailPoint automatically check karta hai ki user ke paas extra access na ho
+Certification workflow me managers review karte hain aur unnecessary access revoke karte hain.
+
+4️⃣ Code Example Conceptual:-
+Identity rahul = getIdentity("EMP12345");
+Role financeAnalyst = new Role("Finance Analyst");
+
+// Assign only required permissions
+financeAnalyst.addPermission("Finance Reports Read");
+
+// Do not assign Payroll Write access
+rahul.assignRole(financeAnalyst);
+
+// Access check
+if(rahul.hasPermission("Payroll Write")){
+    System.out.println("Access Denied! Least Privilege enforced.");
+}else{
+    System.out.println("Access Granted!");
+}
+
+()example code of Least Privilege in SailPoint:-
+Roles + Policies + ABAC ka combination use karke implement hota hai.:-
+
+-------------------------------------------------------------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.Link;
+import sailpoint.object.Application;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.ProvisioningPlan.Operation;
+
+import java.util.List;
+
+public class LeastPrivilegeExample {
+
+    public static void applyLeastPrivilege(SailPointContext context) throws Exception {
+
+        // Identity fetch
+        Identity user = context.getObjectByName(Identity.class, "john.doe");
+
+        // Application fetch
+        Application app = context.getObjectByName(Application.class, "ActiveDirectory");
+
+        // User ke accounts
+        List<Link> links = user.getLinks();
+
+        // Provisioning Plan
+        ProvisioningPlan plan = new ProvisioningPlan();
+        plan.setIdentity(user);
+
+        for(Link link : links){
+
+            if(link.getApplicationName().equals("ActiveDirectory")){
+
+                // Example: Remove extra entitlement
+                AccountRequest accReq = new AccountRequest();
+                accReq.setApplication(app.getName());
+                accReq.setNativeIdentity(link.getNativeIdentity());
+                accReq.setOperation(Operation.Modify);
+
+                AttributeRequest attrReq = new AttributeRequest();
+                attrReq.setName("memberOf");
+                attrReq.setOperation(Operation.Remove);
+                attrReq.setValue("AdminGroup");
+
+                accReq.add(attrReq);
+
+                plan.add(accReq);
+
+            }
+
+        }
+
+        // Save provisioning plan
+        context.saveObject(plan);
+        context.commitTransaction();
+
+        System.out.println("Least Privilege applied for user: " + user.getName());
+    }
+}
+///////////*
+()AccountRequest accReq = new AccountRequest();
+accReq.setApplication("ActiveDirectory");
+accReq.setOperation(Operation.Modify);
+Matlab:-
+Active Directory account modify karo
+
+()1️⃣ attrReq.setName("memberOf");;-
+1️⃣ attrReq.setName("memberOf");
+Kya hai?
+Ye attribute ka naam set karta hai.
+Kya karta hai
+Ye batata hai ki kaunsa attribute modify karna hai.
+Example:-
+memberOf
+Active Directory me memberOf = user ke groups.
+Example:-
+john.doe
+
+memberOf:-
+AdminGroup
+FinanceGroup
+VPNUsers
+
+()3️⃣ attrReq.setValue("AdminGroup");
+Matlab:-
+Ye batata hai kaunsa entitlement remove karna hai.
+Example:-
+AdminGroup
+Matlab:-
+User ko AdminGroup se hata do.
+
+()2️⃣ attrReq.setOperation(Operation.Remove);
+Kya hai?
+Ye operation type set karta hai.
+Kya karta hai,
+Ye decide karta hai attribute ke saath kya action karna hai.
+Operations:-
+Operation	    Meaning
+Add------------access add
+Remove---------access remove
+Set------------replace value
+Yaha:-
+Remove
+Matlab group access hatao.
+
+4️⃣ accReq.add(attrReq);
+Kya hai?
+Ye AttributeRequest ko AccountRequest me add karta hai.
+Kya karta hai
+Ye bolta hai:-
+is account me ye attribute change karo.
+
+5️⃣ plan.add(accReq);
+Kya hai?
+Ye AccountRequest ko ProvisioningPlan me add karta hai.
+Kya karta hai
+Ye provisioning engine ko batata hai:-
+ye account modify karo.
+
+()👍 ye teen lines milkar AdminGroup access remove karne ke liye hi use hoti hain,
+attrReq.setName("memberOf");
+attrReq.setOperation(Operation.Remove);
+attrReq.setValue("AdminGroup");
+
+
+*//////////

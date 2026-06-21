@@ -1,0 +1,322 @@
+()buildSplitApprovalSet:-
+Aasan bhasha mein kahein toh: Jab approvalSplitPoint ek bade provisioning plan ko alag-alag chote plans (sub-plans) mein tod deta
+hai, tab buildSplitApprovalSet ka kaam un sabhi chote plans ke liye alag-alag approval requests (Approval Items/Sets) ka ek 
+poora group taiyar karna hota hai.
+<!-- 1. Pehle hum Master ApprovalSet ko tod kar Split Approval Map banate hain -->
+<Step name="Build Split Approval Set" resultVariable="splitApprovalsMap">
+  <Description>
+    Yeh step master approval set ko read karta hai aur approver-wise alag-alag ApprovalSet objects ka Map taiyar karta hai.
+  </Description>
+  <Script>
+    <Source>
+      <![CDATA[
+        import sailpoint.object.ApprovalSet;
+        import sailpoint.object.ApprovalItem;
+        import java.util.Map;
+        import java.util.HashMap;
+
+        ApprovalSet masterSet = (ApprovalSet) workflow.get("approvalSet");
+        Map splitMap = new HashMap();
+
+        if (masterSet != null && !masterSet.isEmpty()) {
+            for (ApprovalItem item : masterSet.getItems()) {
+                // Maan lijiye humne har application ka ek dedicated owner define kiya hua hai
+                String ownerName = "spadmin"; 
+                if ("Active Directory".equals(item.getApplication())) {
+                    ownerName = "adManager";
+                } else if ("SAP".equals(item.getApplication())) {
+                    ownerName = "sapOwner";
+                }
+
+                // Agar is owner ka pehle se koi bucket nahi bana toh naya ApprovalSet banao
+                ApprovalSet subSet = (ApprovalSet) splitMap.get(ownerName);
+                if (subSet == null) {
+                    subSet = new ApprovalSet();
+                    splitMap.put(ownerName, subSet);
+                }
+                
+                // Item ko uske sahi owner ke bucket me daal do
+                subSet.add(new ApprovalItem(item));
+            }
+        }
+        return splitMap;
+      ]]>
+    </Source>
+  </Script>
+  <Transition to="Generate Parallel Approvals"/>
+</Step>
+
+<!-- 2. Ab is tayar splitMap ka use karke hum parallel approvals trigger karte hain -->
+<Step name="Generate Parallel Approvals" lineItem="ownerSubSet" replicator="splitApprovalsMap">
+  <Description>
+    'replicator' attribute splitApprovalsMap ke har ek key-value pair ke liye is step ko loop chalayega.
+    'lineItem' ke andar har ek loop me us individual approver ka ApprovalSet milega.
+  </Description>
+  <Approval action="approval" mode="parallel">
+    <Arg name="approver" value="script:return itemKey;"/> <!-- 'itemKey' me approver ka naam aayega (e.g., adManager) -->
+    <Arg name="approvalSet" value="ref:ownerSubSet"/>    <!-- Is approver ko sirf iska restricted data dikhega -->
+    <Arg name="workItemDescription" value="string:Please approve split items assigned to you."/>
+  </Approval>
+  <Transition to="End"/>
+</Step>
+/////////*
+()splitApprovalsMap:-Jab ek bada ApprovalSet hota hai aur usko different approvers / groups / owners ke hisab se split kiya jata hai,
+tab jo result banta hai usko aksar splitApprovalsMap me store karte hain.
+splitApprovalsMap ek Map hota hai.Isliye ye multiple key-value pairs store kar sakta hai.
+
+()Iske andar kya store hota hai?
+-->Generally 2 cheeze:-key aur value:-
+
+(1)Key:-Approver / owner / approval target
+Example:-
+Manager
+ApplicationOwner
+SecurityTeam
+John
+ABC_Group
+
+(2)Value:-
+Usually ApprovalSet
+Jisme us approver ke items hote hain.
+Example:-
+Key = Manager
+
+Value =
+ApprovalSet
+   ├── RoleAdd
+   └── EntitlementAdd
+
+Structure:-
+splitApprovalsMap
+   |
+   ├── Manager → ApprovalSet
+   │       ├── Item1
+   │       └── Item2
+   │
+   ├── AppOwner → ApprovalSet
+   │       └── Item3
+   │
+   └── SecurityTeam → ApprovalSet
+           └── Item4
+*/////////
+//////////*
+()replicator kya karta hai?
+Ye loop/iterate karta hai.
+Map ko read karta hai.
+Aur har map entry ke liye alag approval generate karta hai,aur approval step internally un sab approvals ko workitem me badal deta haai..
+ex;-
+replicator="splitApprovalsMap":-
+splitApprovalsMap me ye 3 entry data hai:-
+Manager      → ApprovalSet(Item1, Item2)
+AppOwner     → ApprovalSet(Item3)
+Security     → ApprovalSet(Item4, Item5)
+
+teeno ka alag alag teen approval banadega.
+*///////////
+////////*
+Example full flow:-
+Request aayi approvalSet me:-
+Add SAP Role
+Add AD Group
+Add DB Access
+
+Split:-
+SAPOwner → ApprovalSet(1 item)
+ADOwner → ApprovalSet(1 item)
+DBATeam → ApprovalSet(1 item)
+
+()<Approval replicator="splitApprovalsMap"/>
+Output:-
+3 workitems create honge.
+1 → SAP Owner inbox
+1 → AD Owner inbox
+1 → DBA Team inbox
+
+()replicator me item aur itemkey:-
+-->KEY   = Approver
+VALUE = ApprovalSet
+
+itemkey          item
+SAPOwner → ApprovalSet(1 item)
+ADOwner → ApprovalSet(1 item)
+DBATeam → ApprovalSet(1 item)
+*///////////
+////////////*
+()replicator="splitApprovalsMap" directly WorkItem create nahi karta.
+Ye Approval step ko replicate (multiple approval instances) karta hai.
+Phir Approval step internally WorkItem create karta hai.
+
+example flow:-
+Example:-
+splitApprovalsMap me:-
+Manager    → ApprovalSet(A,B)
+AppOwner   → ApprovalSet(C)
+Security   → ApprovalSet(D,E)
+fir ishko approval se workitem me badal deta hai.
+*////////////
+///////*
+()ownerSubSet kya hai?
+Original ApprovalSet ka chhota tukda (subset) jo ek specific owner ko diya gaya hai.
+Example:-
+Original ApprovalSet:-
+ApprovalSet
+ ├── RoleA
+ ├── RoleB
+ ├── ADGroup
+ └── SAPRole
+
+Split hua:-
+Manager
+   → RoleA, RoleB
+
+AppOwner
+   → ADGroup
+
+Security
+   → SAPRole
+
+Ab:-
+Manager ke liye
+ownerSubSet
+   ├── RoleA
+   └── RoleB
+AppOwner ke liye
+ownerSubSet
+   └── ADGroup
+Security ke liye
+ownerSubSet
+   └── SAPRole
+
+So:-
+ownerSubSet = ek approver ka approval subset.
+*/////////
+//////////*
+()lineItem practically kya karta hai?
+Approval UI / WorkItem me jo individual approval rows/items dikhte hain, unke source ko indicate karta hai.
+Example:-
+Manager inbox me:-
+Approve Access
+[Approve] RoleA
+[Approve] RoleB
+Ye data ownerSubSet se aa raha ho sakta hai.
+
+Short answer:-
+ownerSubSet = specific owner/approver ka ApprovalSet subset.
+lineItem="ownerSubSet" =
+Approval step me line-item approvals ke liye ownerSubSet variable use karo.
+*///////////
+///////////*
+()yaha ownersubsets ka alag alag approve aur reject decisions kaha store hoga?
+-->Maan lo:-
+Original ApprovalSet me 4 request teen object ka:-
+RoleA
+RoleB
+ADGroup
+SAPRole
+
+Split hua:-
+Manager   → ownerSubSet1
+AppOwner  → ownerSubSet2
+Security  → ownerSubSet3
+----------------------
+Step 1 — Split ke baad kaha store hai?
+splitApprovalsMap:-
+
+Manager
+   → ownerSubSet1
+
+AppOwner
+   → ownerSubSet2
+
+Security
+   → ownerSubSet3
+
+Aur:-fir badla approvals aur approvals se workitems:-
+ownerSubSet1 = ApprovalSet(RoleA, RoleB)
+ownerSubSet2 = ApprovalSet(ADGroup)
+ownerSubSet3 = ApprovalSet(SAPRole)
+--------------------------------------------------------------------------------
+Step 2 — Approver decision kaha store hoga?
+Har ownerSubSet ke apne ApprovalItems me.
+
+()Manager WorkItem:-
+Manager approve/reject karta hai.
+
+Before manager ko bhejne ke pehle:-
+ownerSubSet1
+RoleA
+RoleB
+
+Manager action lene ke baad:-
+RoleA → Approve
+RoleB → Reject
+
+manager decision lene ke baad decision Stored in ownerSubSet:-
+ownerSubSet1
+RoleA (Approved)
+RoleB (Rejected)
+AppOwner WorkItem
+---------------------
+Before manager ko bhejne ke pehle:-
+ownerSubSet2
+ADGroup
+
+manager ke Action lene ke baad:-
+ADGroup → Approve
+
+manager decision lene ke baad decision Stored in ownerSubSet:-
+ownerSubSet2
+ADGroup (Approved)
+--------------------
+Security WorkItem
+Before manager ko bhejne ke pehle:-
+ownerSubSet3
+SAPRole
+
+Action:
+SAPRole → Reject
+
+manager decision lene ke baad decision Stored in ownerSubSet:-
+ownerSubSet3
+SAPRole (Rejected)
+------------------------------
+Inside each ownerSubSet's ApprovalItems.
+Structure:-
+ownerSubSet (ApprovalSet)
+     |
+     └── ApprovalItem
+             |
+             └── state / decision
+---------------------------------------
+Example:-
+ownerSubSet1
+
+ApprovalItem(RoleA)
+      decision=Approved
+
+ApprovalItem(RoleB)
+      decision=Rejected
+*//////////
+/////////////*
+()variable workflow kya ha kya karta hai in Workflow?
+-->Yaha workflow = Workflow object hai.
+Ye current running workflow ka object/container hota hai.
+Iske andar workflow ki variables, state, context, data hota hai.
+ex:-
+SailPoint me:-
+workflow.get("approvalSet");
+Matlab:-
+
+-->Suppose workflow me variable hai:-
+<Variable name="approvalSet"/> declare hai in current workflow:-
+Value stored:-
+ApprovalSet object
+-->Workflow object se "approvalSet" variable ki value nikalo.
+Code:-
+ApprovalSet set =
+    (ApprovalSet) workflow.get("approvalSet");
+
+()workflow kya store karta hai?
+Workflow object me usually:-
+workflow variables,state,arguments,metadata store karta hai.
+*////////////

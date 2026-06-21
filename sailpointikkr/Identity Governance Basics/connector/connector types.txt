@@ -1,0 +1,188 @@
+1️⃣ Connector kya hai?
+Connector = Bridge / Adapter
+Ye SailPoint IdentityIQ ko external system (application) se connect karne ke liye use hota hai.
+Matlab: SailPoint → Connector → External System (AD, SAP, Oracle, Database, etc.)
+Ye connector read/write operations handle karta hai, jaise:
+Aggregation → Account aur entitlements read karna
+Provisioning → New access create karna ya remove karna
+Reconciliation → Application aur SailPoint ke data ko compare karna.
+
+()3️⃣ Connector kya kya karta hai:-
+Connector mainly 3 kaam karta hai.
+
+1️⃣ Aggregation kya hai?
+Aggregation ka matlab hai Application se users aur access IAM me import karta hai.
+SailPoint connector ke through application se:-
+Accounts
+Groups
+Permissions
+sab data read karta hai.
+Example:-
+Application me data:-
+Rahul → FinanceGroup
+Amit → HRGroup
+Aggregation run hone ke baad SailPoint me bhi ye data aa jata hai.
+
+2️⃣ Provisioning:-
+IAM se application me access create / remove karta hai.
+Example:-
+IAM → Rahul ko SAP Admin access do,
+Connector SAP me access create karega.
+
+3️⃣ Reconciliation:-
+Reconciliation ka matlab hai application ke users aur unke access ko SailPoint me laana aur compare karna.
+update karna.
+--Reconciliation kya kya import karta hai
+
+1️⃣ Accounts:-
+Application ke users
+Example:-
+Rahul
+Amit
+Priya
+
+2️⃣ Entitlements:-
+Application ke permissions ya groups
+Example:-
+FinanceGroup
+AdminGroup
+HRGroup
+Reconciliation ka purpose
+Application aur SailPoint ka data same rakhna
+Access track karna
+Security maintain karna.
+
+
+--------------------------------------------------------------------
+2️⃣ Connector ke Types:-
+SailPoint me mainly 2 types hote hain:-
+A. custom connectors
+B. Out-of-the-Box Connectors (Prebuilt):-
+
+()LDAP / Active Directory:-
+Microsoft Active Directory, LDAP directories ke liye
+Example: AD users aur groups ko aggregate karna
+
+()Database Connector:-
+Oracle, SQL Server, MySQL jaise databases ke liye
+Example: Employees table se data read karna
+
+()Application Connectors:-
+SAP, Salesforce, Workday, ServiceNow, Jira etc.
+Example: SAP user accounts aur roles fetch/provision karna
+
+()Email / Collaboration Systems;-
+Exchange, Office 365, Gmail
+Example: Email accounts create/remove, group memberships
+
+()Generic Connectors:-
+JDBC, REST API, SCIM-based systems
+
+()connectors Methods:-
+
+1️⃣ testConnection():-
+Purpose: Connector aur external system ke beech connection check karna.
+Use case: Aggregation/provisioning se pehle connection validate karna.
+Connector connector = new LDAPConnector();
+boolean status = connector.testConnection();
+if(status) {
+    System.out.println("Connection successful!");
+} else {
+    System.out.println("Connection failed!");
+}
+Output:-
+Connection successful!
+
+2️⃣ getAccounts():-
+Purpose: External system se saare accounts fetch karna (Aggregation).
+Use case: Active Directory, SAP, ya koi database se user data lena.
+
+List<Account> accounts = connector.getAccounts();
+for(Account acc : accounts){
+    System.out.println("Account: " + acc.getName());
+}
+Output (example):-
+Account: rahul123
+Account: amit234
+
+3️⃣ provisionAccount(Account acc):-
+Purpose: Account create/update/delete karna (Provisioning).
+Use case: Naya user create karna ya role assign karna external system me.
+
+Account newAcc = new Account();
+newAcc.setName("jokerboy");
+newAcc.setEntitlements(List.of("FinanceGroup"));
+
+connector.provisionAccount(newAcc); // Adds user in AD/SAP
+System.out.println("Provisioned: " + newAcc.getName());
+
+Output:-
+Provisioned: jokerboy
+
+4️⃣ reconcile():-
+Purpose: Connector aur SailPoint identities match karna (Reconciliation).
+
+Use case: Check kare ki kaunse accounts missing hai, extra hai, ya mismatch hai.
+
+List<Account> mismatched = connector.reconcile();
+for(Account acc : mismatched){
+    System.out.println("Mismatch: " + acc.getName());
+}
+Output (example):-
+Mismatch: amit234
+
+5️⃣ getSchema():-
+Purpose: External system ka account aur attribute schema return kare.
+Use case: Aggregation/provisioning me attributes ka structure samajhna.
+
+Schema schema = connector.getSchema();
+System.out.println("Attributes: " + schema.getAttributeNames());
+
+Output (example):-
+Attributes: [name, email, department, title, manager]
+
+6️⃣ getAttributes():-
+Purpose: Connector se available attributes list fetch karna.
+Ye mostly aggregation aur correlation me use hota hai, jab SailPoint ko external system ke fields pata karne hote hain.
+
+Example:-
+Connector connector = new LDAPConnector();
+
+// Assume connector configured
+Map<String, Object> attributes = connector.getAttributes();
+
+// Print all attributes
+attributes.forEach((key, value) -> {
+    System.out.println(key + " : " + value);
+});
+
+Expected Output (example):-
+name : rahul123
+email : rahul@gmail.com
+department : Finance
+title : Manager
+manager : amit234
+
+7️⃣ setConfiguration(Map<String, Object> config):-
+Purpose:-
+Ye method connector ki settings/configuration set karne ke liye hota hai.
+Matlab, jab SailPoint ko kisi external system (AD, SAP, Database, REST API) se connect karna ho,
+to connection details aur behavior define karte hain.
+--Common Configuration Parameters:-
+Key	Value            Type	       Description
+host	            String----External system ka hostname ya IP
+port	              int-----System ka port (e.g., 389 for LDAP)
+username	        String----Connector ke liye login user
+password	        String----Connector ke liye password
+protocol	        String----Connection protocol (LDAP, JDBC, REST, SCIM)
+timeout	              int-----Connection timeout in seconds
+
+
+
+()connector name:-
+Connector Type	                                 Connector Name (Technical)	                                                                   Use Case / Notes
+LDAP / Active Directory-------------------AD Connector, LDAP Connector-------------------------------------------------------------------Microsoft AD ya OpenLDAP directories se users/groups aggregate/provision karne ke liye
+Database----------------------------------JDBC Connector, Oracle Connector, SQL Server Connector, MySQL Connector------------------------Database se user/account data read/write ke liye
+Application / Enterprise Systems----------SAP Connector, Salesforce Connector, Workday Connector, ServiceNow Connector, Jira Connector---SaaS/ERP applications ke user accounts aur roles fetch/provision ke liye
+Email / Collaboration---------------------Exchange Connector, Office365 Connector, Gmail Connector---------------------------------------Email accounts create/remove aur group membership manage karne ke liye
+Generic / API / Cloud---------------------SCIM Connector, REST Connector, SOAP Connector-------------------------------------------------Custom apps ya cloud systems ke liye API-based integration

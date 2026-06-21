@@ -1,0 +1,58 @@
+🚀 launchWorkflow kya hai?
+👉 launchWorkflow ek method hai jo workflow ko start/run karta hai
+👉 Ye method **SailPointContext ke through call hota hai
+
+💡 Simple Definition:-
+👉 launchWorkflow = “workflow ko execute/start karo with input data”
+
+🔥 Syntax (Real Style):-
+context.launchWorkflow(workflow, args);
+
+🚀 Full Code Example:-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Workflow;
+import java.util.Map;
+import java.util.HashMap;
+
+Workflow wf = context.getObjectByName(Workflow.class, "MyWorkflow");
+
+Map<String, Object> args = new HashMap<String, Object>();
+args.put("identityName", "Kishan");
+
+context.launchWorkflow(wf, args);
+✅ Output:-
+Workflow MyWorkflow started for identity: Kishan
+
+🔥 launchWorkflow vs startWorkflow:-
+Method	Meaning
+launchWorkflow()	Direct workflow start
+startWorkflow()	    Same ka extended/internal version (zyada control)
+👉 Practically dono ka use hota hai.
+
+🚀 startWorkflow kya hai?
+👉 startWorkflow ek method hai jo workflow ko start karta hai with more control
+👉 Ye bhi **SailPointContext ke through call hota hai
+
+💡 Simple Definition:-
+👉 startWorkflow = workflow ko start karo + uska execution track karo (WorkflowCase ke through)
+
+🔥 Syntax:-
+context.startWorkflow(workflow, args);
+
+🚀 Full Code Example:-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Workflow;
+import sailpoint.object.WorkflowCase;
+import java.util.Map;
+import java.util.HashMap;
+
+Workflow wf = context.getObjectByName(Workflow.class, "MyWorkflow");
+
+Map<String, Object> args = new HashMap<String, Object>();
+args.put("identityName", "Kishan");
+
+WorkflowCase wfCase = context.startWorkflow(wf, args);
+
+System.out.println("Workflow Started: " + wfCase.getId());
+✅ Output:-
+Workflow Started: WF12345

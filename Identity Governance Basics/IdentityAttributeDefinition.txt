@@ -1,0 +1,158 @@
+()IdentityAttributeDefinition kya hai?
+--🔹 1️⃣ IdentityAttributeDefinition kya hai?
+👉 IdentityAttributeDefinition = attribute ka “rule / metadata / configuration”
+Matlab:-
+IdentityAttribute = actual value (email = rahul@gmail.com)
+IdentityAttributeDefinition = us attribute ka structure aur rules.
+
+✅ Example:-
+Attribute	  Value	                        Definition
+email:----rahul@gmail.com:-----------String, required, read-only
+department:-----IT:----------------------String,editable 
+age:------------25:------------------------Integer, required
+
+🔹 2️⃣ Ye kya karta hai?
+👉 Ye define karta hai:-
+attribute ka type (String, Boolean, Number)
+attribute mandatory hai ya nahi
+attribute editable hai ya read-only
+UI me kaise dikhega
+
+🔹 3️⃣ Kya ye DB me store hota hai?
+✅ Haan bhai, ye bhi DB me store hota hai
+📦 Difference:-
+Identity → user data
+AttributeDefinition → system configuration
+
+🔹 4️⃣ Important Fields:-
+Field	        Meaning
+name:---------attribute ka naam
+type:---------data type (String, Boolean, etc.)
+required:-----mandatory hai ya nahi
+readOnly:-----edit allowed hai ya nahi
+multiValued:--ek se zyada value allowed
+displayName:--UI me naam
+description:--explanation
+
+🔹 5️⃣ Important Methods:-
+🔸 Basic:-
+getName()
+setName(String name)
+getDisplayName()
+setDisplayName(String displayName)
+getDescription()
+setDescription(String description)
+
+🔸 Type & Format:-
+getType()
+setType(Class type)
+getFormat()
+setFormat(String format)
+
+🔸 Validation:-
+isRequired()
+setRequired(boolean required)
+isMultiValued()
+setMultiValued(boolean multiValued)
+
+🔸 Access Control:-
+isReadOnly()
+setReadOnly(boolean readOnly)
+isHidden()
+setHidden(boolean hidden)
+
+🔸 Utility:-
+toString()
+equals(Object obj)
+hashCode()
+--------------------------------------------------------------------------------------------------------
+🚀 🔥 IdentityAttributeDefinition Full Code (One Page)
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointFactory;
+import sailpoint.object.IdentityAttributeDefinition;
+
+public class IdentityAttrDefExample {
+
+    public static void main(String[] args) throws Exception {
+
+        // 🔹 1️⃣ Get SailPoint Context
+        SailPointContext context = SailPointFactory.getCurrentContext();
+
+        // 🔹 2️⃣ Create Definition Object
+        IdentityAttributeDefinition def = new IdentityAttributeDefinition();
+
+        // =========================
+        // 🔸 Basic
+        // =========================
+        def.setName("email");
+        def.setDisplayName("Email Address");
+        def.setDescription("User email attribute");
+
+        System.out.println("Name: " + def.getName());
+        System.out.println("DisplayName: " + def.getDisplayName());
+        System.out.println("Description: " + def.getDescription());
+
+        // =========================
+        // 🔸 Type & Format
+        // =========================
+        def.setType(String.class);
+        def.setFormat("email");
+
+        System.out.println("Type: " + def.getType());
+        System.out.println("Format: " + def.getFormat());
+
+        // =========================
+        // 🔸 Validation
+        // =========================
+        def.setRequired(true);
+        def.setMultiValued(false);
+
+        System.out.println("Required: " + def.isRequired());
+        System.out.println("MultiValued: " + def.isMultiValued());
+
+        // =========================
+        // 🔸 Access Control
+        // =========================
+        def.setReadOnly(false);
+        def.setHidden(false);
+
+        System.out.println("ReadOnly: " + def.isReadOnly());
+        System.out.println("Hidden: " + def.isHidden());
+
+        // =========================
+        // 🔸 Utility Methods
+        // =========================
+        System.out.println("toString(): " + def.toString());
+
+        IdentityAttributeDefinition def2 = new IdentityAttributeDefinition();
+        def2.setName("email");
+
+        System.out.println("equals(): " + def.equals(def2));
+        System.out.println("hashCode(): " + def.hashCode());
+
+        // 🔹 3️⃣ Save in DB (optional)
+        context.saveObject(def);
+        context.commitTransaction();
+
+        System.out.println("✅ Definition Saved Successfully");
+    }
+}
+📤 🔥 Output Example:-
+Name: email
+DisplayName: Email Address
+Description: User email attribute
+
+Type: class java.lang.String
+Format: email
+
+Required: true
+MultiValued: false
+
+ReadOnly: false
+Hidden: false
+
+toString(): IdentityAttributeDefinition[email]
+equals(): true
+hashCode(): 12345678
+
+✅ Definition Saved Successfully

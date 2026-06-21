@@ -1,0 +1,585 @@
+1️⃣ Request kya hai SailPoint me?
+Request basically ek object hai jo kisi bhi action ko represent karta hai jo user ya system ke taraf se IdentityIQ me perform karna hai.
+Ye mostly account provisioning, access request, approval workflow me use hota hai.
+Ye ek container hai jo store karta hai ki kya action perform karna hai, kis user pe, kis target system pe, aur kaun approve karega.
+Request ke through hi approval items, workflows, notifications trigger hote hai.
+Use case examples:-
+Ek user ko Salesforce me access dena → ye ek Request create karega.
+Manager ko approval bhejna → Request me ApprovalItem attach hoga.
+Request complete hone ke baad workflow update hota hai aur account provisioning hota hai.
+-------------------------------------------------------------------------------------------------------------------------------
+1️⃣ Request:-
+Request ek actual instance hai jo represent karta hai ki kisi user ne koi action initiate kiya hai.
+Ye runtime object hai, jo database me save hota hai aur workflow engine ke through process hota hai.
+Ye ApprovalItems, requester, target, workflowCase, state, result, attributes sab store karta hai.
+Example:-
+John Doe ne Salesforce account create karne ki request ki → ek Request object create hua.
+
+🔹 Kya hota hai Request me?
+Field / Property	                 Description	                                                     Example
+Requester:-----------------------Kisne request initiate ki:-----------------------------------------Identity("john.doe")
+Target:--------------------------Kis account/application/role pe action ho raha hai;-------------Account("Salesforce:john.doe")
+ApprovalItems:-------------------Kaun approve/reject karega aur unka state:---------------------[ApprovalItem(Manager1, Pending)]
+State:-----------------------------Request ka current status:--------------------------------Pending, Approved, Rejected, Cancelled
+WorkflowCase:---------------------Workflow instance associated with request:-------------------"ProvisioningWorkflow" instance
+Attributes:---------------------------Extra metadata:--------------------------------------------priority="High", department="IT"
+Comments:--------------------------Approvers ke notes / audit:---------------------------------------"Approved by manager"
+Result:--------------------------------Final outcome:-----------------------------------------------"Success" ya "Failure"
+Partition / Host / Thread:------------Internal workflow execution info:-----------------------"partition-1", "host1", "thread-12"
+Error / Warning Count:-------------------Execution errors or minor warnings;-------------------------ErrorCount=0, WarningCount=1
+Retry Count:-----------------------Retry attempts if request execution failed:-----------------------------RetryCount=2
+
+🔹 Kya karta hai?
+Represent karta hai real action initiated by user
+Track karta hai approval progress, state, result, workflow execution
+Trigger karta hai workflow engine, jisme:
+Provisioning
+Notifications
+State updates
+Error / warning handling
+
+🔹 Kaun banata hai?
+Normally user initiate karta hai request
+
+1️⃣ Request ka origin:-
+Request SailPoint me do tarah se create ho sakta hai:-
+
+()User-initiated request (Manual request):-
+Ye tab hota hai jab user ya admin khud request karta hai.
+Example:-
+User “mujhe new account chahiye Salesforce me” ya “Access revoke karo” ke liye portal me form fill karta hai.
+Is case me:-
+User UI (SailPoint IdentityNow portal ya IdentityIQ portal) se request submit karta hai.
+System ya workflow engine RequestDefinition ke rules(validation, approval, target, etc.) follow karke ek Request object create karta hai,
+lekin initiation manual hai.
+
+()System-initiated request (Automated request):-
+Ye tab hota hai jab system ya workflow engine automatically request generate karta hai.
+Example:-
+Scheduled access review ke liye auto-remediation.
+Account provisioning workflow triggers.
+Is case me:-
+System ya workflow engine RequestDefinition ke rules check karta hai.
+Request object create hota hai programmatically, user input ke bina.
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+2️⃣ Request ke andar kya kya hota hai?
+Main attributes:-
+Attribute	     Description
+id-------------Unique request ID
+created--------Request kab create hua
+modified-------Last update date
+requester------Kaun ne request ki
+target---------Kis account/resource pe action hoga
+state----------Pending, Approved, Rejected, Cancelled
+approvalItems--List of ApprovalItem (Manager approvals etc.)
+comments-------Notes or comments added during workflow
+workflowCase---Kaunse workflow me ye request hai
+attributes-----Extra metadata, like priority, level, department
+dueDate--------Kab tak complete hona chahiye
+completedDate--Kab complete hua
+result---------Final result/status of request
+-----------------------------------------------------------------------------------------------------------------------------
+1️⃣ Request States:-
+Request ke state batate hai ki request ka current status kya hai. Common states ye hote hai:-
+State	                          Description
+Pending:----Request abhi pending hai, action ya approval ka wait hai
+Approved:---Request approve ho chuka hai
+Rejected:---Request reject ho chuka hai
+Cancelled:--Request cancel kar diya gaya
+InProgress:-Request abhi process ho raha hai
+Completed:--Request successfully complete ho chuka hai
+Failed:-----Request process fail ho gaya (errors ke karan)
+OnHold:-----Request temporarily hold pe hai
+---------------------------------------------------------------------------
+2️⃣ Request Results:-
+Result bataata hai ki request ka final outcome kya hua. Ye mostly approval ke baad ya workflow execution ke baad set hota hai. Common results:-
+Result	           Description
+Success:--------Request successfully complete ho gaya
+Failure:--------Request fail ho gaya
+PartialSuccess:-Request ka kuch part succeed hua, kuch fail
+Cancelled:------Request user/system ne cancel kar diya
+Error:----------Request process me koi error aya
+NoAction:-------Request perform nahi hua (skip ya ignore)
+-----------------------------------------------------------------------------------------------------------------------------
+3️⃣ Request ke main methods:-
+Note: Main methods jo mostly use hote hai, SailPoint ke SDK/Java API me.
+
+🔹 Metadata (Audit):-
+getCreated()
+setCreated(Date date)
+getModified()
+setModified(Date date)
+
+🔹 Approval Items:-
+getApprovalItems()// List<ApprovalItem> return karta hai
+setApprovalItems(List<ApprovalItem> items)
+addApprovalItem(ApprovalItem item)
+removeApprovalItem(ApprovalItem item)
+
+🔹 Approval Actions:-
+approve()                        // Request approve karta hai
+reject()                         // Request reject karta hai
+cancel()                         // Request cancel karta hai
+
+🔹 Request Details:-
+getRequester()                   // Request kisne kiya
+setRequester(Identity requester)
+
+getTarget()                      // Target account/resource
+setTarget(Object target)
+
+getState()                       // Pending, Approved, Rejected
+setState(String state)
+
+getAttributes()
+setAttributes(Attributes attributes)
+getAttribute(String name)
+setAttribute(String name, Object value)
+
+🔹 Workflow / Result:-
+getWorkflowCase()                 // Workflow ka case object
+setWorkflowCase(WorkflowCase case)
+
+getResult()                       // Result object
+setResult(Object result)
+🔹 Comments:-
+getComments()                     // List<Comment>
+addComment(String comment)
+🔹 Utility / Clone / XML:-
+toXml()                            // Request XML me convert
+fromXml(String xml)                // XML se Request load
+clone()                            // Duplicate Request object
+toMap()                            // Map representation
+fromMap(Map map)                   // Map se populate
+--------------------------------------------------------------------------------------------------------------------
+1️⃣ getCreated() aur setCreated(Date date):-
+Purpose:-
+setCreated(Date date) → Request ka creation date set karta hai.
+getCreated() → Request ka creation date return karta hai.
+Ye mostly audit ke liye use hota hai, ki request kab create hua tha.
+
+2️⃣ getModified() aur setModified(Date date):-
+Purpose:-
+setModified(Date date) → Request ka last modified date set karta hai.
+getModified() → Request ka last modified date return karta hai.
+Ye track karta hai ki request me last changes kab kiye gaye.
+----------------------------------------------------------------------------------------
+()Request ke andar approvalItems list hoti hai jo track karti hai ki kaunse approvals pending/complete hai.
+2️⃣ Approval Item Methods:-
+Method	                                                        Description
+getApprovalItems():------------------------------Request me currently attached ApprovalItems list return karta hai
+setApprovalItems(List<ApprovalItem> items):------Request ke approvalItems list ko set karta hai
+addApprovalItem(ApprovalItem item):--------------Naya ApprovalItem request me add karta hai
+removeApprovalItem(ApprovalItem item):-----------Specific ApprovalItem request se remove karta hai.
+
+import java.util.List;
+import java.util.ArrayList;
+import sailpoint.object.Request;
+import sailpoint.object.ApprovalItem;
+import sailpoint.object.Identity;
+
+public class ApprovalExample {
+    public static void main(String[] args) {
+        // Request object
+        Request request = new Request();
+
+        // ApprovalItem create karte hai
+        ApprovalItem approval1 = new ApprovalItem();
+        approval1.setApprover(new Identity("manager1"));
+        approval1.setState("Pending");
+
+        ApprovalItem approval2 = new ApprovalItem();
+        approval2.setApprover(new Identity("manager2"));
+        approval2.setState("Pending");
+
+        // List me set karte hai
+        List<ApprovalItem> approvalList = new ArrayList<>();
+        approvalList.add(approval1);
+        approvalList.add(approval2);
+
+        // Request me set karte hai
+        request.setApprovalItems(approvalList);
+
+        // Get Approval Items
+        System.out.println("Initial Approval Items:");
+        for (ApprovalItem ai : request.getApprovalItems()) {
+            System.out.println("Approver: " + ai.getApprover().getName() + ", State: " + ai.getState());
+        }
+
+        // Add new Approval Item
+        ApprovalItem approval3 = new ApprovalItem();
+        approval3.setApprover(new Identity("manager3"));
+        approval3.setState("Pending");
+
+        request.addApprovalItem(approval3);
+
+        System.out.println("\nAfter Adding manager3:");
+        for (ApprovalItem ai : request.getApprovalItems()) {
+            System.out.println("Approver: " + ai.getApprover().getName() + ", State: " + ai.getState());
+        }
+
+        // Remove approval2
+        request.removeApprovalItem(approval2);
+
+        System.out.println("\nAfter Removing manager2:");
+        for (ApprovalItem ai : request.getApprovalItems()) {
+            System.out.println("Approver: " + ai.getApprover().getName() + ", State: " + ai.getState());
+        }
+    }
+}
+------------------------------------------------------------------------------------------------------------------------
+()approve():--Request approve kar deta hai. Agar saare ApprovalItems approve ho gaye hai, Request state = Approved ho jata hai
+()reject():---Request reject kar deta hai,agar aek bhi approvalItem reject hua toh. Request state = Rejected, workflow stop ho jata hai
+()cancel():---Request ko user ya system cancel kar deta hai. State = Cancelled, pending approvals ignore ho jate hai.
+import sailpoint.object.Request;
+import sailpoint.object.ApprovalItem;
+import sailpoint.object.Identity;
+import java.util.ArrayList;
+import java.util.List;
+
+public class RequestApprovalDemo {
+    public static void main(String[] args) {
+        // Request create
+        Request request = new Request();
+
+        // ApprovalItems create
+        ApprovalItem a1 = new ApprovalItem();
+        a1.setApprover(new Identity("manager1"));
+        a1.setState("Pending");
+
+        ApprovalItem a2 = new ApprovalItem();
+        a2.setApprover(new Identity("manager2"));
+        a2.setState("Pending");
+
+        List<ApprovalItem> list = new ArrayList<>();
+        list.add(a1);
+        list.add(a2);
+
+        request.setApprovalItems(list);
+
+        // Managers approve one by one
+        a1.setState("Approved");
+        a2.setState("Approved");
+
+        // Request approve method call
+        request.approve(); // Request state = Approved
+
+        System.out.println("Request state: " + request.getState());
+    }
+}
+------------------------------------------------------------------------------------
+1️⃣ getRequester() / setRequester(Identity requester):-
+Purpose:-
+Requester ye batata hai ki request kisne initiate ki.
+Usually ye ek Identity object hota hai jo user ko represent karta hai.
+setRequester() → request me requester assign karta hai
+getRequester() → request me assigned requester ko read karta hai
+Example:-
+
+import sailpoint.object.Request;
+import sailpoint.object.Identity;
+
+public class RequesterExample {
+    public static void main(String[] args) {
+        // Identity object create (user)
+        Identity user = new Identity("john.doe");
+
+        // Request create
+        Request request = new Request();
+
+        // Requester set karte hai
+        request.setRequester(user);
+
+        // Requester get karte hai
+        Identity requester = request.getRequester();
+        System.out.println("Request initiated by: " + requester.getName());
+    }
+}
+Output:-
+Request initiated by: john.doe
+✅ Ye basically track karta hai ki request kiske dwara create hua.
+---------------------------------------------------------------------------------------
+2️⃣ getTarget() / setTarget(Object target):-
+Purpose:-
+Target ye batata hai ki request kis resource/account pe perform hoga.
+Ye Object type hota hai kyunki target ho sakta hai:-
+Account (Account object)
+Role (Role object)
+Application (Application object)
+setTarget() → request me target assign karta hai,
+getTarget() → request ka target read karta hai.
+
+import sailpoint.object.Request;
+import sailpoint.object.Account;
+
+public class TargetExample {
+    public static void main(String[] args) {
+        // Account object create (target resource)
+        Account account = new Account();
+        account.setName("Salesforce");
+
+        // Request create
+        Request request = new Request();
+
+        // Target set karte hai
+        request.setTarget(account);
+
+        // Target get karte hai
+        Account target = (Account) request.getTarget();
+        System.out.println("Request target: " + target.getName());
+    }
+}
+--------------------------------------------------------------------------------------------------
+1️⃣ Attributes
+
+Ye methods Request ke extra metadata ko manage karte hai, jaise priority, department, level, ya koi bhi custom data.
+
+import sailpoint.object.Request;
+import sailpoint.object.Attributes;
+
+public class RequestAttributesExample {
+    public static void main(String[] args) {
+        Request request = new Request();
+
+        // Attributes set karna
+        Attributes attrs = new Attributes();
+        attrs.put("priority", "High");
+        attrs.put("level", "L2");
+
+        request.setAttributes(attrs);
+
+        // Single attribute set
+        request.setAttribute("department", "IT");
+
+        // Get all attributes
+        Attributes allAttrs = request.getAttributes();
+        System.out.println("All Attributes: " + allAttrs);
+
+        // Get single attribute
+        System.out.println("Priority: " + request.getAttribute("priority"));
+        System.out.println("Department: " + request.getAttribute("department"));
+    }
+}
+
+Output:
+
+All Attributes: {priority=High, level=L2, department=IT}
+Priority: High
+Department: IT
+
+✅ Attributes request ke custom data store karne ke liye use hote hai.
+---------------------------------------------------------------------------------
+2️⃣ Workflow / Result:-
+WorkflowCase → ye batata hai ki request kis workflow ka part hai
+Result → ye batata hai ki request ka final outcome kya hua.
+import sailpoint.object.Request;
+import sailpoint.object.WorkflowCase;
+
+public class RequestWorkflowExample {
+    public static void main(String[] args) {
+        Request request = new Request();
+
+        // Workflow case set
+        WorkflowCase workflowCase = new WorkflowCase();
+        workflowCase.setName("ProvisioningWorkflow");
+        request.setWorkflowCase(workflowCase);
+
+        // Workflow case get
+        System.out.println("Workflow Case: " + request.getWorkflowCase().getName());
+
+        // Result set
+        request.setResult("Success");
+        System.out.println("Request Result: " + request.getResult());
+    }
+}
+Output:-
+Workflow Case: ProvisioningWorkflow
+Request Result: Success
+--------------------------------------------------------------------------------------------------------------------
+3️⃣ Comments:-
+Comments approval/reject notes ya audit trail ke liye use hote hai
+import sailpoint.object.Request;
+import java.util.List;
+
+public class RequestCommentsExample {
+    public static void main(String[] args) {
+        Request request = new Request();
+
+        // Add comments
+        request.addComment("Approved by manager1");
+        request.addComment("Provisioning started");
+
+        // Get comments
+        List<String> comments = request.getComments();
+        System.out.println("Request Comments: " + comments);
+    }
+}
+Output:-
+Request Comments: [Approved by manager1, Provisioning started]
+---------------------------------------------------------------------------------------
+4️⃣ Utility / Clone / XML / Map
+Ye Request object ko serialize, duplicate ya map me convert karne ke liye use hote hai
+import sailpoint.object.Request;
+import java.util.Map;
+
+public class RequestUtilityExample {
+    public static void main(String[] args) throws Exception {
+        Request request = new Request();
+        request.setResult("Success");
+
+        // Clone
+        Request cloned = request.clone();
+        System.out.println("Cloned Result: " + cloned.getResult());
+
+        // Convert to XML
+        String xml = request.toXml();
+        System.out.println("XML: " + xml);
+
+        // Load from XML
+        Request fromXml = Request.fromXml(xml);
+        System.out.println("From XML Result: " + fromXml.getResult());
+
+        // Convert to Map
+        Map<String, Object> map = request.toMap();
+        System.out.println("Map: " + map);
+
+        // Load from Map
+        Request fromMap = Request.fromMap(map);
+        System.out.println("From Map Result: " + fromMap.getResult());
+    }
+}
+Output (simulate):-
+Cloned Result: Success
+XML: <Request><Result>Success</Result></Request>
+From XML Result: Success
+Map: {Result=Success}
+From Map Result: Success
+✅ Ye methods mostly serialization, duplication, aur programmatic manipulation ke liye useful hai.
+----------------------------------------------------------------------------------------------------------------
+()equals(Object obj):--------Do Request objects ko compare karta hai (agar same request hai ya nahi)
+()hashCode():----------------Request object ka hash code return karta hai (hash-based collections ke liye)
+()toString():----------------Request object ka string representation return karta hai
+()getErrorCount():-----------Request me kitni errors hui wo return karta hai (workflow/provisioning failures)
+()setErrorCount(int):--------Error count manually set karne ke liye
+()incrementErrorCount():-----Error count ko 1 se increment karta hai
+()getWarningCount():---------Request me kitni warnings hai wo return karta hai
+()setWarningCount(int):------Warning count set karne ke liye.
+()getPartition(),setPartition(String):-----------Request ka workflow partition (distributed workflow ke liye)
+()getHost(), setHost(String):--------------------Request ka execution host machine track karta hai
+()getThreadName(), setThreadName(String):--------Request ka workflow execution thread track karta hai
+()getRetryCount(), setRetryCount(int), incrementRetryCount():---------Request retry attempts ko track karta hai (failures ke case me).
+
+1️⃣ Warning (getWarningCount / setWarningCount):-
+Warning ka matlab hai request process ke dauran minor issues jo critical fail nahi hai, lekin attention require karte hai.
+Example:-
+User ka account already exist kar raha tha, par fir bhi request execute hui → warning generate ho sakti hai.
+Workflow me koi optional step skip hua → warning.monitoring ke liye useful.
+
+2️⃣ Partition (getPartition / setPartition):-
+Partition ka matlab hai workflow ke execution ka segment / bucket.
+Ye distributed workflows me use hota hai:-
+Agar system me multiple workflow engines / threads run ho rahe hai, to Request ko partition assign kiya jata hai.
+Partition decide karta hai ki kaunse workflow engine ya thread request ko execute karega.
+
+()Partition rules:-
+Partition XML me define ho sakta hai agar workflow configuration me set hai
+Ya workflow engine automatic assign kar sakta hai load balancing ke liye
+Partition ka value string hota hai, jaise "partition-1", "partition-2"
+Example XML snippet (simulated):-
+<Request>
+    <Target>Salesforce</Target>
+    <Requester>john.doe</Requester>
+    <Partition>partition-1</Partition>
+</Request>
+Matlab: ye request partition-1 workflow engine/thread ko assign hogi
+✅ Partition rules / XML configuration / engine logic pe depend karta hai.
+Daily approval workflow me usually manually set nahi karna padta.
+
+1️⃣ Retry Attempts (getRetryCount() / incrementRetryCount()):-
+Retry attempts ka matlab:-
+Kabhi kabhi request fail ho jati hai due to:-
+Network issue
+Target system down
+Provisioning step fail ho gaya
+Retry attempts track karte hai ki request ko kitni baar dobara execute karne ki koshish ki gayi.
+--Workflow me ye kaise kaam karta hai:-
+Request execute → fail ho gaya
+Workflow engine retryCount check karta hai
+Agar retryCount < maxRetries (system me configured) → fir se request execute
+RetryCount increment hota hai → incrementRetryCount().
+--------------------------------------------------------------------------------------------------------------------------------------------
+Real Code Example – Partition ke sath Request
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointFactory;
+import sailpoint.object.Request;
+import sailpoint.object.Identity;
+import sailpoint.object.Account;
+import sailpoint.object.ApprovalItem;
+import sailpoint.object.WorkflowCase;
+import java.util.ArrayList;
+import java.util.List;
+
+public class RequestPartitionExample {
+    public static void main(String[] args) throws Exception {
+        // 1️⃣ Get SailPoint context
+        SailPointContext context = SailPointFactory.getCurrentContext();
+
+        // 2️⃣ Create Request
+        Request request = new Request();
+
+        // 3️⃣ Set Requester
+        Identity requester = context.getObject(Identity.class, "john.doe");
+        request.setRequester(requester);
+
+        // 4️⃣ Set Target Account / Application
+        Account targetAccount = context.getObject(Account.class, "salesforce:john.doe");
+        request.setTarget(targetAccount);
+
+        // 5️⃣ Set Partition (example: "partition-1")
+        request.setPartition("partition-1");
+
+        // 6️⃣ Add Approval Items
+        ApprovalItem approval1 = new ApprovalItem();
+        approval1.setApprover(context.getObject(Identity.class, "manager1"));
+        approval1.setState("Pending");
+
+        List<ApprovalItem> approvalItems = new ArrayList<>();
+        approvalItems.add(approval1);
+        request.setApprovalItems(approvalItems);
+
+        // 7️⃣ Set Workflow Case
+        WorkflowCase wfCase = new WorkflowCase();
+        wfCase.setName("ProvisioningWorkflow");
+        request.setWorkflowCase(wfCase);
+
+        // 8️⃣ Save Request in SailPoint
+        context.saveObject(request);
+
+        // 9️⃣ Approve the Request (simulate)
+        approval1.setState("Approved");  // Manager approved
+        request.approve();               // Request state = Approved
+
+        context.saveObject(request);
+
+        // 10️⃣ Print details
+        System.out.println("Request ID: " + request.getId());
+        System.out.println("Requester: " + request.getRequester().getName());
+        System.out.println("Target Account: " + ((Account) request.getTarget()).getName());
+        System.out.println("Partition: " + request.getPartition());
+        System.out.println("Request State: " + request.getState());
+    }
+}
+🔹 Output (simulate)
+Request ID: 12345
+Requester: john.doe
+Target Account: salesforce:john.doe
+Partition: partition-1
+Request State: Approved
+
+🔹 Key Points:-
+Partition set karne se workflow engine ko pata chalta hai ki kaunse node/thread me request execute hogi.
+SailPointFactory.getCurrentContext() → ye SailPoint context provide karta hai, jisse objects (Identity, Account, Request) fetch/save karte hai.
+ApprovalItems ke through approval process simulate kiya gaya.
+request.approve() → workflow engine me state update + provisioning trigger.

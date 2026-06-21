@@ -1,0 +1,2556 @@
+()2. <Attributes> Kya Hai?
+Attributes basically ek Metadata Repository (Settings Box) hai. IdentityIQ me kai objects (jaise Form, Field, Section, Workflow) 
+ke paas apni kuch extra properties hoti hain jinhe control karne ke liye hum <Attributes> tag ka use karte hain. 
+Iske andar data hamesha <Map> aur <entry> ke form me hota hai.
+Kaam: Yeh user ko screen par koi input box nahi dikhata, balki us element ke behavior ya settings ko backend me store karta hai.
+Kiske andar hota hai: Yeh <Form> ke direct niche ho sakta hai, ya kisi <Field> ke andar bhi ho sakta hai.
+
+one line:-matlab jitne bhi object hai jo spt_table me save hai un sabka setting configure karne ka tag hai ye <Attributes>.
+
+Example 1: Form Level Par Attributes:-
+Agar aapko poore Form ka title badalna hai ya buttons ke naam badalone hain:
+XML
+<Form name="KKR_Form_Example">
+  <Attributes>
+    <Map>
+      <entry key="pageTitle" value="Special Onboarding Form"/>
+      <entry key="submitLabel" value="Proceed Next"/>
+      <entry key="cancelLabel" value="Abort"/>
+    </Map>
+  </Attributes>
+</Form>
+Yahan koi naya input field nahi bana, bas Form ke pure behavior aur look ko configure kiya gaya hai.
+
+Example 2: Field Level Par Attributes:-
+Kabhi-kabhi kisi <Field> ko special behavior dene ke liye uske andar bhi <Attributes> lagaya jata hai:
+XML
+<Field name="status" type="string" displayName="Account Status">
+  <Attributes>
+    <Map>
+      <entry key="readOnly" value="true"/> <!-- Field ko read-only banane ke liye --
+    </Map>
+  </Attributes>
+</Field>
+
+()SailPoint IdentityIQ me jin main objects ke behavior ko <Attributes> tag handle karta hai, unki direct list ye rahi:-
+()Application Object:-
+Connection URL / Host / Port settings
+Authentication credentials (Username / Encrypted Password)
+Search DN / Search Scope / Timeout / Page Size
+Delta Aggregation tracking parameters.
+
+()Task Definition Object (Aggregation, Refresh, Run Rule):-xml ko custom likh sakte hai.
+Target Filters (OU, Group, ya Sub-scoped identities)
+Execution checkboxes (e.g., refreshIdentityEntitlements, correlateEntitlements)
+Threshold alert limits aur error handling rules.
+
+()Workflow Object (Global & Step Level):-xml ko custom likh sakte hai.
+Workflow operational variables aur status flags
+Approver assignments (actor, approverDescription)
+Email notification templates (notificationEmail)
+Escalation routing aur timeout durations.
+
+()Form / Field Object:-xml ko custom likh sakte hai.
+UI text overrides (pageTitle, submitLabel, cancelLabel)
+Field state properties (readOnly, hidden)
+Input formatting masks aur validation overrides.
+
+()Identity Object (Identity Cube):-identity xml ko custom nahi likh sakte.
+Extended/Custom attributes mapping (e.g., costCenter, contractorEndDate)
+System administration capabilities aur execution rights
+Workgroup memberships data.
+
+()Bundle Object (Roles):-Role xml ko custom likh sakte hai.
+Inherent Risk Scoring values
+Permitted / Required sub-role relationships
+Role assignment profiles aur overlap inheritance rules.
+
+()Policy / IdentityPolicy Object:-ishko bhi custom likhte hai.
+Violation Severity classifications (e.g., Low, Medium, High)
+Remediation workflow action routing
+Exclusion list exceptions for specific users
+
+()Rule Object:-ishko bhi custom likhte hai.
+Argument definitions (Inputs jo rule ko runtime me chahiye)
+Rule execution context aur logging behavior.
+
+()Link Object (Account Object):-Links ko bhi tum bilkul haath se, apni marzi se custom XML me likh sakte ho.
+Account state flags (e.g., locked, disabled target system par)
+Custom attributes jo resource schema se aggregate huye hain par global identity me mapped nahi hain.
+
+()Certification Definition / Configuration Object:-Haan bhai, Certification ko tum 100% custom haath se XML me likh sakte ho.
+Access Review ke frequency parameters aur schedules
+Remediation durations (Kitne din me access hat jana chahiye)
+Challenging aur delegation behavior settings.
+
+()Correlation Config Object:-
+Account-to-Identity mapping expressions (Attribute priority lists)
+Fallback correlation rule references
+Haan bhai! Correlation Config Object (jise backend database me spt_correlation_config table kehte hain) 
+ko bilkul custom haath se XML me likha jata hai.
+Maan lo tumne Active Directory ya SAP application integrate kiya. Target system par accounts hain (Links), 
+aur SailPoint me employees hain (Identities). Ab account ko sahi identity ke sath jodna kaise hai (account matching logic क्या hoga), 
+us pure global rule matrix ko yeh Correlation Config Object hi handle karta hai.
+
+()Audit Config Object:-custom likhte hai.
+System events jinhe track/audit karna hai (e.g., Login, Password Change)
+Log retention aur maintenance settings
+
+()Identity Trigger Object:-custom likhte hai.
+Lifecycle event types (e.g., Mover event ki attribute change criteria)
+Trigger dependencies aur execution delay tracking.
+
+()Object Config Object:-custom likhte hai.
+Global Extended Schema configurations (Naye custom fields register karna)
+UI display priorities aur searchability toggles
+Haan bhai! Audit Config Object (jise backend database me spt_audit_config table kehte hain) ko bhi tum bilkul apne haath se custom XML me likh sakte ho.
+
+()UI Config Object:-
+Dashboard layouts, widget settings, aur standard color scheme preferences
+QuickLink category visibility mappings for specific user groups.
+
+()Managed Attribute Object (Entitlements Data):-
+Entitlement ki governance properties (e.g., Kya ye entitlement Requestable hai ya nahi)
+Owner assignment aur approval scheme overrides specific group/value ke liye
+
+()Target / Target Source Object:-
+Identity Authorization aur Access Governance Directives ke connection rules
+Target systems se permissions aur explicit access scopes ko read karne ki rules.
+
+()Capability Object;-
+Kisi specific Rights ya Permissions ke administrative scope ko limit karne ki settings.
+Naye UI modules ko capabilities ke sath tightly bind karne ke flags.
+
+()Message Template Object:-
+Localization aur Language settings (e.g., Kis locale/bhasha me kaun sa text template load hoga).
+SMS gateways ya external communication channels ke formatting constraints.
+
+()Group Definition / Factory Object:-
+Dynamic Grouping rules (e.g., Department aur Location ke combinations par automatic groups create karne ka logic).
+Group aggregation refresh frequencies aur processing indexes.
+
+()Provisioning Project Object (Runtime Object):-
+Compilation state flags (Workflow jab provisioning plan execute karta hai, toh runtime par conflicts, 
+evaluation steps aur targeting rules isme temporary save hoti hain).
+-------------------------------------------------------------------------------------------------------------------------------------
+()Application Object:-
+Connection URL / Host / Port settings
+Authentication credentials (Username / Encrypted Password)
+Search DN / Search Scope / Timeout / Page Size
+Delta Aggregation tracking parameters.
+
+()IdentityIQ me Application Object ke andar jab hum kisi target system (jaise Active Directory ya koi LDAP/Direct system) 
+se connect karte hain, toh <Attributes> tag ke andar ye saari settings ek <Map> ke roop me save hoti hain.
+ex:-
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Application PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Application name="KKR_Active_Directory" type="Active Directory">
+  
+  <Description>Financial Planning users ke liye Active Directory Application Object</Description>
+  
+  <!-- Actual Schema aur baaki mappings database columns me hoti hain -->
+  <!-- Lekin saari behavioral settings is <Attributes> tag ke andar hoti hain -->
+  <Attributes>
+    <Map>
+      
+      <!-- 1. Connection URL / Host / Port settings -->
+      <entry key="host" value="192.168.1.50"/>
+      <entry key="port" value="389"/> <!-- Standard LDAP Port, Secure ke liye 636 hoga -->
+      <entry key="useSSL" value="false"/>
+      <entry key="connectionTimeout" value="30000"/> <!-- Milliseconds me (30 seconds) -->
+
+      <!-- 2. Authentication credentials (Username / Encrypted Password) -->
+      <entry key="user" value="CN=iiq_service_acc,OU=ServiceAccounts,DC=kkr,DC=com"/>
+      <!-- Password hamesha IIQ ke backend se encrypt hokar save hota hai -->
+      <entry key="encryptedPassword" value="1:v84Nksj+Hj3lPqAsDwXqw==:A9jKm7xQ1LzP"/> 
+
+      <!-- 3. Search DN / Search Scope / Timeout / Page Size -->
+      <!-- Search DN: Kahan se users ko read karna shuru karna hai -->
+      <entry key="searchDn" value="OU=FinancialPlanning,OU=CorporateUsers,DC=kkr,DC=com"/>
+      <!-- Search Scope: SUBTREE (Yaani is OU ke andar ke saare child OUs bhi search honge) -->
+      <entry key="searchScope" value="SUBTREE"/>
+      <entry key="pageSize" value="100"/> <!-- Ek baar me 100 records ka batch fetch karega -->
+      <entry key="searchTimeout" value="60"/> <!-- Seconds me timeout -->
+
+      <!-- 4. Delta Aggregation tracking parameters -->
+      <!-- Delta Aggregation ka matlab hai sirf wahi accounts uthao jo kal se aaj tak badle hain -->
+      <entry key="deltaAggregation" value="true"/>
+      <!-- Underlying system (AD) ka tracking attribute (jaise uSNChanged ya modifyTimestamp) -->
+      <entry key="deltaAttribute" value="uSNChanged"/>
+      <!-- Last successful aggregation ka sequence/timestamp jo IIQ automatic track karta hai -->
+      <entry key="lastHighestUSN" value="1548293"/>
+
+    </Map>
+  </Attributes>
+
+</Application>
+//////////////*
+()Host aur Port (host, port): SailPoint jab background me Connector chalayega, toh wo 192.168.1.50 IP par 389 port ke zariye hit karega.
+()User aur Encrypted Password (user, encryptedPassword): Target AD me login karne ke liye system manual admin login nahi use karega, 
+balki is Service Account (iiq_service_acc) aur uske encrypted password ko use karke secure handshake karega.
+()Search DN aur Page Size (searchDn, pageSize): Poore AD me hazaron users ho sakte hain, par hume sirf Financial Planning ke bande chahiye.
+Toh searchDn ne scope freeze kar diya. Aur pageSize="100" ka matlab hai ki agar 1000 users hain, 
+toh system background me 100-100 ke 10 chakkar (batches) lagakar data layega taaki server par load na pade (Out of Memory Error na aaye).
+
+()Delta Aggregation:-
+1. Initial State (Pehli Baar Ka Aggregation):-
+Active Directory me har account ke paas ek Number hota hai jise USN (Update Sequence Number) kehte hain. 
+Jab bhi kisi user ka password, department, ya status badalta hai, AD uske USN ko badha deta hai.
+Jab SailPoint pehli baar Full Aggregation chalata hai, 
+toh wo sabhi users ko le aata hai aur dekhta hai ki AD me sabse bada (highest) USN kya chal raha hai. Maan lo wo number hai 1548293.
+SailPoint is number ko apne Application Object ke andar save kar leta hai: <entry key="lastHighestUSN" value="1548293"/>.
+
+2. Live Changes (Runtime par kya hua):-
+Agle din, pooray department me sirf 2 employees ka data badla (ek ka Manager change hua, ek ka Last Name change hua).
+AD ne un do users ka uSNChanged value badhakar 1548310 aur 1548325 kar diya. Baaki sabhi 99,998 users ka number purana hi raha.
+
+3. Delta Aggregation (Agli subah jab task chala):-
+Jab agle din Delta Task chalta hai, toh SailPoint AD se kehta hai:-
+"Mujhe saare users mat do. Mujhe sirf wo users do jinka uSNChanged number 1548293 (pichla saved number) se bada hai."
+AD query chala kar turant sirf un 2 users ka data SailPoint ko de deta hai.
+Task khatam hote hi SailPoint naya highest number (1548325) phir se apne pass save kar leta hai agle din ke liye.
+*/////////////
+---------------------------------------------------------------------------------------------------------------------------
+()Task Definition Object (Aggregation, Refresh, Run Rule):-
+Target Filters (OU, Group, ya Sub-scoped identities)
+Execution checkboxes (e.g., refreshIdentityEntitlements, correlateEntitlements)
+Threshold alert limits aur error handling rules.
+
+1. Account Aggregation Task Definition (Example Code):-
+Yeh ek standard Aggregation Task ka XML hai jo Active Directory se naye accounts uthane aur purano ko refresh karne ke liye use hota hai:-
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskDefinition name="KKR_AD_Account_Aggregation" type="AccountAggregation">
+  <Description>Active Directory accounts ko sync karne aur entitlements refresh karne ka task</Description>
+  
+  <Attributes>
+    <Map>
+      <!-- Target Application specify karna mandatory hai -->
+      <entry key="applications" value="KKR_Active_Directory"/>
+
+      <!-- 1. Target Filters (OU, Group, ya Sub-scoped identities) -->
+      <!-- Sirf isi specific HR aur Finance OU ke accounts aggregate honge -->
+      <entry key="accountFilterScope" value="OU=HR,OU=Users,DC=kkr,DC=com;OU=Finance,OU=Users,DC=kkr,DC=com"/>
+      <!-- Group Filter: Sirf wahi accounts uthao jo 'VIP-Users' group ke member hain -->
+      <entry key="groupFilter" value="CN=VIP-Users,OU=Groups,DC=kkr,DC=com"/>
+
+      <!-- 2. Execution Checkboxes (Backend Processing Toggles) -->
+      <!-- Correlate Entitlements: Aggregation ke waqt hi groups/roles ko map kar do -->
+      <entry key="correlateEntitlements" value="true"/>
+      <!-- Refresh Identity Entitlements: Aggregation ke baad identity ki profile immediately refresh karo -->
+      <entry key="refreshIdentityEntitlements" value="true"/>
+      <!-- Check Sibling Accounts: Agar user ke multiple accounts hain toh correlation verify karo -->
+      <entry key="checkSiblingAccounts" value="false"/>
+
+      <!-- 3. Threshold alert limits aur error handling rules -->
+      <!-- Task Tabhi stop hoga jab errors limit se bahar jayengi -->
+      <entry key="haltOnError" value="true"/>
+      <!-- Max Error Threshold: Agar 50 se zyada accounts fail huye, toh poora task terminate kar do -->
+      <entry key="maxErrors" value="50"/>
+      <!-- Threshold Percentage Alert: Agar pichli baar se 10% zyada accounts delete ho rahe hain, toh process rok do -->
+      <entry key="terminationThreshold" value="10"/>
+
+    </Map>
+  </Attributes>
+</TaskDefinition>
+/////////////////*
+()applications:-
+Kya karta hai: Yeh engine ko batata hai ki kis target application se data khinchkar laana hai.
+Backend Asar: SailPoint direct us application (e.g., KKR_Active_Directory) ke configuration settings(Host, IP, Credentials) 
+par jaata hai taaki connection bana sake.
+
+()accountFilterScope:-
+Kya karta hai: Yeh target system par ek boundary (scope) set karta hai.
+Backend Asar: Agar aap poore AD forest ka data nahi chahte, toh yahan defined OUs(jaise OU=HR aur OU=Finance) 
+ke andar maujood accounts ko hi SailPoint dhoondta hai, baaki OUs ko chhod deta hai.
+
+()groupFilter:-
+Kya karta hai: Yeh accounts ko filter karne ke liye ek extra condition lagata hai base on AD Groups.
+Backend Asar: Target system se sirf wahi accounts aggregate honge jo is specific group(e.g., VIP-Users) 
+ke andar mapped hain. Baaki users ignore ho jayenge.
+
+()correlateEntitlements:-
+Kya karta hai: Yeh check karta hai ki user ke paas target system par kaun-kaun se groups ya permissions hain 
+aur unhe SailPoint me map karta hai.Backend Asar: Agar ye true hai, 
+toh account ke sath-sath uske saare groups bhi fetch hote hain aur unhe SailPoint ke identity profile ke sath link kar diya jata hai.
+
+()refreshIdentityEntitlements:-
+Kya karta hai: Naye accounts aur permissions aane ke baad, 
+pooray Identity Cube ki state ko background me immediate refresh karne ka signal deta hai.
+Backend Asar: Jaise hi account aggregate hota hai, 
+ye backend engine ko bolta hai ki is user par saare Joiner/Mover rules aur dynamic roles dobara calculate karo 
+taaki data immediately accurate dikhe.
+
+()checkSiblingAccounts:-
+Kya karta hai:Yeh check karta hai ki kya ek hi insaan ke paas us application par ek se zyada accounts(Secondary/Admin accounts) toh nahi hain.
+Backend Asar: Agar yeh false hai, toh system ek identity ke liye sirf ek main account link karke aage badh jata hai, 
+sibling checking par time waste nahi karta.
+
+()haltOnError:-
+Kya karta hai: Yeh ek safety switch hai jo bataata hai ki agar task me koi error aaye toh kya karna hai.
+Backend Asar: Agar ye true hai aur task me koi badi dikkat aati hai (jaise network disconnect hona), 
+toh task turant ruk (halt) jata hai,जबरदस्ती aage nahi chalta.
+
+()maxErrors:-
+Kya karta hai: Yeh ek error counting limit (threshold) set karta hai.
+Backend Asar: Agar aggregate karte waqt single accounts fail ho rahe hain(jaise data corruption ki wajah se), 
+toh jaise hi failure count 50 tak pahuchega, SailPoint poore task ko terminate (band) kar dega taaki system par faaltu load na pade.
+
+()terminationThreshold:-
+Kya karta hai: Yeh Data Loss Prevention (DLP) ka kaam karta hai, jo percentage base par kaam karta hai.
+Backend Asar: Maan lo target system se pichli baar ke muqable is baar 10% se zyada accounts gayab (delete) milte hain. 
+SailPoint ko lagega ki kahin AD me bulk deletion toh nahi ho gayi? 
+Toh safety ke liye ye task ko wahin freeze kar deta hai taaki galati se SailPoint me bulk accounts delete na ho jayein.
+*/////////////////
+2. Identity Refresh Task Definition (Example Code):-
+Yeh dusra sabse important task hai jo identity ka risk score compute karne, manager hierarchy check karne,
+aur policy violations (jaise SOD) dhoondne me kaam aata hai. Isme checkboxes ka khel alag hota hai:-
+ex:-
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskDefinition name="KKR_Identity_Refresh_Task" type="IdentityRefresh">
+  <Description>Identities ka Risk Score, Manager Mapping aur Policy checking refresh karne ka task</Description>
+  
+  <Attributes>
+    <Map>
+      <!-- 1. Target Filters (Sub-scoped identities) -->
+      <!-- Pure organisation ko refresh karne ke bajaye sirf 'Mumbai' location ke users filter honge -->
+      <entry key="filter" value="location == &quot;Mumbai&quot;"/>
+
+      <!-- 2. Execution Checkboxes (Kya-Kya action perform karna hai) -->
+      <entry key="refreshManagerStatus" value="true"/> <!-- Manager changes update karo -->
+      <entry key="correlateEntitlements" value="true"/> <!-- Roles aur permissions link karo -->
+      <entry key="checkPolicies" value="true"/> <!-- Segregation of Duties (SOD) violations scan karo -->
+      <entry key="provisionCorrelations" value="true"/> <!-- Agar koi naya automatic role banta hai toh provision karo -->
+
+      <!-- 3. Error Handling and Optimization -->
+      <!-- Multithreading support taaki task fast chale (8 parallel threads ek sath kaam karenge) -->
+      <entry key="threads" value="8"/>
+      <entry key="haltOnBadPartition" value="true"/> <!-- Agar kisi ek partition me error aayi toh pure task ko hold par daal do -->
+    </Map>
+  </Attributes>
+</TaskDefinition> 
+///////////////////*
+()2. Identity Refresh Task ke Attributes
+Yeh task SailPoint ke andar pehle se maujood Identity Cubes par calculation chalata hai. 
+Iske attributes ye hain:-
+--filter:-Kya karta hai: Yeh is baat ka filter hai ki pooray system me se kis-kis employee ki profile ko refresh karna hai.
+Backend Asar: spt_identity table par query chalti hai. Jaise location == "Mumbai", toh engine baaki saare desh ke users ko chhod dega, 
+sirf Mumbai wale identities ko pick karke unka data process karega.
+
+--refreshManagerStatus:-
+Kya karta hai: Yeh employees ke manager ki hierarchy ko calculate aur update karta hai.
+Backend Asar: Agar backend HR data me kisi ka manager badla hai, 
+toh ye attribute true hone par SailPoint us user ki identity par naye manager ki ID mapping aur approvals routes ko automatic thik kar deta hai.
+
+--checkPolicies:-
+Kya karta hai: Yeh system ke andar security rules aur compliance check karne ka engine trigger karta hai.
+Backend Asar: true hone par, yeh har identity par jaakar check karta hai ki kahin is bande par koi Segregation of Duties (SOD) 
+policy violation toh hit nahi ho raha (jaise ek hi bande ke paas Requester aur Approver dono rights hona).
+
+--provisionCorrelations:-
+Kya karta hai: Agar refresh hone ke baad user par koi naya automatic ya business role assign hota hai, 
+toh usko target system par bhejne (provision karne) ka trigger hai.
+Backend Asar: Agar refresh task ne dekha ki user ka department badal gaya hai aur ab use naya access milna chahiye, 
+toh ye true hone par backend engine turant provisioning plan banakar target system par account update karne ka process start kar deta hai.
+
+--threads:-
+Kya karta hai: Performance badhane ke liye multithreading (parallel processing) configure karta hai.
+Backend Asar: Agar value 8 hai, toh SailPoint ka engine server ke CPU se 8 parallel threads allocate karega. 
+Isse 1-1 karke user refresh nahi hote, balki 8 users ka data ek sath parallel refresh hota hai, 
+jisse task 8 guna fast khatam ho jata hai.
+
+--haltOnBadPartition:-
+Kya karta hai: Multithreading ke waqt agar kisi ek hisse (partition) me error aaye, toh pure task ka behavior set karta hai.
+Backend Asar: Jab bade data ko alag-alag chunks me divide kiya jata hai, aur kisi ek chunk me koi severe database error aati hai, 
+toh ye true hone par poore task ki execution ko block kar diya jata hai taaki data corrupt na ho.
+
+()&quot;:-SailPoint me &quot; ka matlab double comma(") hota hai.
+*//////////////////
+--------------------------------------------------------------------------------------------------------------------------------------
+()Workflow Object (Global & Step Level);-
+Workflow operational variables aur status flags
+Approver assignments (actor, approverDescription)
+Email notification templates (notificationEmail)
+Escalation routing aur timeout durations.
+
+()Workflow me do levels hote hain: ek Global level aur step level kya hai?
+-->
+()1. Global Level (Workflow Level):-
+Ye poore workflow ke level par hota hai.
+Matlab:-
+Jo variable/attribute yaha define hoga workflow ke kisi bhi step me access ho sakta hai.
+<Workflow name="MyWorkflow">
+
+    <Variable name="department" input="true"/> //global level variable hai.
+
+    <Step name="Start">
+        <Script>
+            <Source>
+                System.out.println(department);
+            </Source>
+        </Script>
+    </Step>
+
+    <Step name="Approval">
+        <Script>
+            <Source>
+                System.out.println(department);
+            </Source>
+        </Script>
+    </Step>
+
+</Workflow>
+
+2. Step Level:-
+Ye sirf particular step ke andar hota hai.
+Matlab variable/value ek hi step tak limited hota hai.
+Example:-
+<Step name="CreatePlan">
+
+    <Arg name="dept" value="IT"/>    // ye Step level argument hai.
+
+    <Script>
+        <Source>
+            System.out.println(dept);
+        </Source>
+    </Script>
+
+</Step>
+
+------------------------------------
+///////////*
+()<Arg> step ke liye input parameter/variable hota hai.
+Ye value pass karta hai ek step ko.
+Value hardcode, workflow variable, SailPoint context, ya previous step output se aa sakti hai.
+*//////////
+-----------------------------------------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow name="KKR_Access_Request_Workflow" type="LCMProvisioning">
+  
+  <!-- ========================================== -->
+  <!-- 1. GLOBAL LEVEL ATTRIBUTES & VARIABLES      -->
+  <!-- ========================================== -->
+  <Attributes>
+    <Map>
+      <!-- Workflow Operational Variables & Status Flags -->
+      <entry key="trace" value="true"/> <!-- Pure workflow ke logs generate karne ke liye -->
+      <entry key="identityName" value="script:identity.getName()"/>
+      <entry key="provisioningStatus" value="pending"/> <!-- Global execution status flag -->
+      
+      <!-- Global Email Configuration -->
+      <entry key="notificationEmail" value="KKR_Global_Workflow_Notification_Template"/>
+    </Map>
+  </Attributes>
+
+  <!-- Workflow Ke Steps -->
+  <Step name="Start" icon="Start" x="50" y="50">
+    <Transition to="Manager Approval Step"/>
+  </Step>
+
+  <!-- ========================================== -->
+  <!-- 2. STEP LEVEL ATTRIBUTES (The Core Logic)  -->
+  <!-- ========================================== -->
+  <Step name="Manager Approval Step" icon="Approval" x="200" y="50">
+    
+    <!-- Approval structure jo runtime par rokega process ko -->
+    <Approval name="Manager Approval Action" owner="script:identity.getManager().getName()">
+      
+      <Attributes>
+        <Map>
+          <!-- 2. Approver Assignments -->
+          <!-- actor: Kis dynamic variable/insaan se kaam karwana hai -->
+          <entry key="actor" value="script:identity.getManager().getName()"/>
+          <!-- approverDescription: Workitem (Inbox) me dikhne wala custom message -->
+          <entry key="approverDescription" value="Please review and approve access request for $(identityDisplayName)"/>
+
+          <!-- 3. Email Notification Templates -->
+          <!-- Approver ko notification bhejni hai -->
+          <entry key="notificationEmail" value="KKR_Manager_Approval_Required_Template"/>
+
+          <!-- 4. Escalation Routing aur Timeout Durations -->
+          <!-- Timeout: Agar 2 din (2d) tak manager action na le -->
+          <entry key="timeoutDuration" value="2d"/>
+          <!-- Escalation Rule: Timeout hone par request kisko forward karni hai -->
+          <entry key="escalationRule" value="KKR_Escalate_To_Workgroup_Rule"/>
+          <!-- Escalation Notice Email: Escalation hone par purane manager aur naye owner ko email -->
+          <entry key="escalationEmail" value="KKR_Approval_Escalated_Notice_Template"/>
+        </Map>
+      </Attributes>
+      
+    </Approval>
+
+    <Transition to="End"/>
+  </Step>
+
+  <Step name="End" icon="Stop" x="400" y="50"/>
+</Workflow>
+/////////////*
+()Yeh poora XML code 100% chalega, lekin isme se kuch cheezein automatic chalengi 
+aur kuch cheezon ke liye tumhe background me supportive objects (jaise Rules aur Email Templates) pehle se bana kar rakhne padenge.
+*//////////////
+--------------------------------------------------------------------------------------------------------------------------------------
+()Form / Field Object:-
+UI text overrides (pageTitle, submitLabel, cancelLabel)
+Field state properties (readOnly, hidden)
+Input formatting masks aur validation overrides
+
+()IdentityIQ me jab hum kisi Form ya Field ke user interface (UI) ko customize karte hain, 
+toh <Attributes> tag ka sabse bada role hota hai. UI par dikhne wale buttons ke naam badalna, 
+kisi field ko gayab (hide) karna, ya user ke input par validation lagana—yeh sab kuch isi tag ke andar control hota hai.
+
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Form PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Form name="KKR_Financial_Form_CustomUI" type="Workflow">
+  
+  <!-- ========================================== -->
+  <!-- 1. FORM LEVEL ATTRIBUTES (UI Text Overrides) -->
+  <!-- ========================================== -->
+  <Attributes>
+    <Map>
+      <!-- Form ke default headers aur buttons ko override karna -->
+      <entry key="pageTitle" value="Financial Planning Access Request"/>
+      <entry key="submitLabel" value="Approve &amp; Assign"/>
+      <entry key="cancelLabel" value="Reject Request"/>
+    </Map>
+  </Attributes>
+
+  <Section name="section_employee_details" label="Employee Setup">
+    
+    <!-- ========================================== -->
+    <!-- 2. FIELD LEVEL ATTRIBUTES (Field States)   -->
+    <!-- ========================================== -->
+    <!-- Employee ID Box: Isko read-only rakhna hai taaki koi change na kare -->
+    <Field displayName="Employee ID" name="empId" type="string">
+      <Attributes>
+        <Map>
+          <entry key="readOnly" value="true"/>
+        </Map>
+      </Attributes>
+    </Field>
+
+    <!-- Hidden Box: Backend data transfer ke liye, user ko nahi dikhega -->
+    <Field displayName="Internal Risk Weight" name="riskWeight" type="string">
+      <Attributes>
+        <Map>
+          <entry key="hidden" value="true"/>
+        </Map>
+      </Attributes>
+    </Field>
+
+    <!-- ========================================== -->
+    <!-- 3. INPUT MASKS & VALIDATION OVERRIDES      -->
+    <!-- ========================================== -->
+    <!-- Input Masking: Cost Center code ka ek fixed format apply karna -->
+    <Field displayName="Cost Center Code" name="costCenter" type="string" required="true">
+      <Attributes>
+        <Map>
+          <!-- Format Rule: Pehle 3 letters uppercase, fir dash, fir 4 numbers (e.g., KKR-1234) -->
+          <entry key="inputMask" value="aaa-9999"/>
+        </Map>
+      </Attributes>
+    </Field>
+
+    <!-- Validation Override: Custom error message set karna jab field khali ho -->
+    <Field displayName="Corporate Email Address" name="corpEmail" type="string" required="true">
+      <Attributes>
+        <Map>
+          <!-- SailPoint ke standard error message ko override karke custom text dena -->
+          <entry key="validationErrorMessage" value="Bhai, company ka official email address daalna mandatory hai!"/>
+        </Map>
+      </Attributes>
+    </Field>
+
+  </Section>
+</Form>
+////////////*
+()1. UI Text Overrides (Form Level):-
+Jab IdentityIQ browser me is form ko render (load) karega, toh default global settings ko chhodkar is custom design ko uthayega:
+--pageTitle: Standard workflow screen par jo upar main heading hoti hai, use badalkar "Financial Planning Access Request" kar dega.
+--submitLabel: By default, SailPoint ke button par "Submit" ya "Next" likha hota hai. 
+Is entry se screen par Approver ko "Approve & Assign" likha hua green/blue button dikhega.
+--cancelLabel: Default "Cancel" button ka text badalkar "Reject Request" ho jayega, jo process ko terminate karne ke liye use hoga.
+
+()readOnly="true":-user value me backspace ya naya text type nahi kar payega.
+
+()hidden="true":-Yeh field screen par bilkul gayab (invisible) rahegi.Lekin iska data backend workflow engine me live travel karega.
+
+()validationErrorMessage: Standard SailPoint me agar koi required field khali chhodo, 
+toh generic error aata hai: "Field is required". 
+Is attribute ke jariye aap apna custom business-friendly message display karwa sakte ho jab data sheet validation rules se match nahi karta.
+
+()User se aane wale raw data ko clean aur structured rakhne ke liye ye attributes use hote hain:-
+inputMask: Yeh frontend level par validation lagata hai bina kisi complex code ke. Isme character codes hote hain:-
+a = Alphanumeric letter (A-Z, a-z)
+9 = Numeric digit (0-9)
+Jab user textbox me click karega, toh use automatic ___-____ ka prompt dikhega, aur system use galat syntax type hi nahi karne dega.
+--matlab ishka "aaa-9999" ka complete breakdown:-
+Pehle 3 characters sirf letters ho sakte hain (aaa).
+Beech me ek dash compulsory aayega (-).
+Aakhri ke 4 characters sirf numbers ho sakte hain (9999).
+*////////////
+---------------------------------------------------------------------------------------------------------------------------------
+()Identity Object (Identity Cube):-
+Extended/Custom attributes mapping (e.g., costCenter, contractorEndDate)
+System administration capabilities aur execution rights
+Workgroup memberships data.
+
+()Tum is poore identity XML ko manually 'Custom' (apne haath se) bilkul nahi likhoge, aur na hi iski koi zaroorat padti hai.
+
+()IdentityIQ me Identity Object(jise hum sabse main component Identity Cube kehte hain) har ek employee ya user ka 360-degree view hota hai.
+Jab SailPoint background me users ka data aggregate karta hai,toh har user ki internal setting aur permissions 
+isi spt_identity table ke <Attributes> tag ke andar store hoti hain.
+
+--Jab aap kisi Identity Cube ka XML database se nikaloge, toh uske andar ka <Attributes> map kuch aisa dikhai dega:-
+
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Identity PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Identity name="R012345" displayName="Rahul Kumar">
+  
+  <!-- Identity Cube ki core configurations aur system variables -->
+  <Attributes>
+    <Map>
+      
+      <!-- ======================================================= -->
+      <!-- 1. EXTENDED/CUSTOM ATTRIBUTES MAPPING                   -->
+      <!-- ======================================================= -->
+      <!-- Standard fields ke alawa custom HR mappings yahan hoti hain -->
+      <entry key="costCenter" value="FIN-4021"/>
+      <entry key="contractorEndDate" value="2026-12-31"/>
+      <entry key="location" value="Mumbai"/>
+      <entry key="department" value="Financial Planning"/>
+
+      <!-- ======================================================= -->
+      <!-- 2. SYSTEM ADMINISTRATION CAPABILITIES & RIGHTS         -->
+      <!-- ======================================================= -->
+      <!-- capabilities: Is user ke paas SailPoint me kya administrative power hai -->
+      <entry key="capabilities">
+        <List>
+          <!-- User ko SailPoint ka System Administrator access dene ke liye -->
+          <String>SystemAdministrator</String>
+          <!-- User UI par workflows ya tasks execute kar sake uske rights -->
+          <String>TaskExecutionRight</String>
+        </List>
+      </entry>
+
+      <!-- ======================================================= -->
+      <!-- 3. WORKGROUP MEMBERSHIPS DATA                           -->
+      <!-- ======================================================= -->
+      <!-- workgroups: Yeh user kis-kis backend team/workgroup ka member hai -->
+      <entry key="workgroups">
+        <List>
+          <!-- Approval ya notifications receive karne wali custom teams -->
+          <String>Financial_Approvers_Workgroup</String>
+          <String>Security_Remediation_Team</String>
+        </List>
+      </entry>
+
+      <!-- Internal Status Flags (Bonus System Behavior Control) -->
+      <entry key="assignedScope" value="Corporate-India"/>
+      <entry key="inactive" value="false"/> <!-- Identity Active state flag -->
+
+    </Map>
+  </Attributes>
+</Identity>
+///////////*
+()1. Extended/Custom Attributes Mapping:-
+By default, SailPoint me basic fields aate hain (jaise name, firstname, lastname, email). 
+Agar aapko HR system se extra fields laane hain (jaise costCenter ya contractorEndDate), toh unhe Extended Attributes bola jata hai.
+costCenter aur contractorEndDate: Jab aap ObjectConfig (Identity Schema) me naye fields custom register karte ho, 
+toh backend engine data aggregation ke waqt un fields ki exact dynamic values uthakar isi <Attributes> tag ke andar key-value form me save
+kar deta hai. Isse aap pooray IIQ me kahin bhi identity.getAttribute("costCenter") chala kar ise access kar sakte ho.
+
+()SailPoint IIQ me “(Identity Schema) me naye fields custom register karte ho” ka matlab hai:-
+Identity object/schema ke andar apna custom field add karna jisse Identity ke sath extra data store kar sako.
+Simple language me:-
+By default Identity ke kuch fields hote hain:
+firstname
+lastname
+email
+manager
+department
+displayName
+employeeNumber
+
+Agar tumhe inke alawa kuch aur data chahiye, jaise:-
+joiningDate
+bloodGroup
+locationCode
+vendorId
+costCenter
+projectName
+to tum custom field register/add karte ho.
+Example:-
+Tum company employee ka Blood Group rakhna chahte ho.
+Default Identity schema me bloodGroup field nahi hota.
+To tum custom field create karoge.
+Example XML:-
+<ObjectConfig name="Identity">
+    <ObjectAttribute
+        name="bloodGroup"
+        displayName="Blood Group"
+        type="string"
+        searchable="true"
+        editable="true"/>
+</ObjectConfig>
+Yaha:-
+name="bloodGroup" → actual field name
+displayName="Blood Group" → UI me dikhne wala naam
+type="string" → data type
+searchable="true" → search me use kar sakte ho
+editable="true" → edit ho sakta hai
+
+Ab Identity ke andar value store ho sakti hai:-
+Identity id = context.getObjectByName(Identity.class,"kishan");
+id.setAttribute("bloodGroup","B+");
+context.saveObject(id);
+context.commitTransaction();
+
+Value nikalna:-
+String bg = (String) id.getAttribute("bloodGroup");
+System.out.println(bg);
+Output:-B+
+*///////////
+/////////////*
+()SailPoint Console Access: Jab user http://localhost:8080/identityiq kholkar SailPoint ke andar login karega, 
+toh usko SailPoint ke dashboard par kya-kya dikhega aur wo kya-kya daba sakta hai (Yeh SailPoint platform par hota hai).
+--capabilities: Iske andar ek <List> hoti hai. Agar isme <String>SystemAdministrator</String> likha hai, 
+toh is user ko SailPoint ke saare tabs, debug pages, aur settings open dikhengi.
+--TaskExecutionRight: Yeh right backend me engine ko batata hai ki kya yeh identity kisi background 
+Task(jaise Account Aggregation ya Identity Refresh) ko manual button daba kar run kar sakti hai ya nahi. 
+Agar koi bina is capability ke task chalane ki koshish karega, toh system access denied error de dega.
+
+()SailPoint me single users ke alawa hum "Workgroups" (Teams) banate hain—jaise Helpdesk Team, Security Approvers, etc.—taaki jab individual manager chhutti par ho, toh approval poori team ke paas chala jaye.
+--workgroups: Yeh entry ek list maintain karti hai jo backend engine ko batati hai ki yeh specific Identity kis-kis group ke andar 
+shamil(mapped) hai.
+--Runtime Behavior: Jab bhi koi workflow chalega aur usme approver ka naam Financial_Approvers_Workgroup hoga, 
+toh SailPoint ka engine database me query chalayega aur dekhega ki kis-kis identity cube ke <entry key="workgroups"> ke andar is group ka 
+naam likha hai. Un sabhi users ke dashboard par wo approval workitem dikhna shuru ho jayega.
+*////////////
+---------------------------------------------------------------------------------------------------------------------------------------
+()Bundle Object (Roles):-Role xml ko custom likh sakte hai.
+Inherent Risk Scoring values
+Permitted / Required sub-role relationships
+Role assignment profiles aur overlap inheritance rules.
+
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Bundle PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Bundle name="KKR_Financial_Planning_Lead_IT_Role" type="it">
+  <Description>Custom IT Role tracking application access entitlements and inheritance</Description>
+  
+  <Attributes>
+    <Map>
+      <!-- ======================================================= -->
+      <!-- 1. INHERENT RISK SCORING VALUES                         -->
+      <!-- ======================================================= -->
+      <!-- inherentRisk: Classification level jo UI par audit me dikhegi -->
+      <entry key="inherentRisk" value="High"/>
+      <!-- riskWeight: Actual number (0-5) jo composite risk algorithm me use hoga -->
+      <entry key="riskWeight" value="4"/>
+
+      <!-- ======================================================= -->
+      <!-- 3. ROLE ASSIGNMENT PROFILES & OVERLAP INHERITANCE RULES -->
+      <!-- ======================================================= -->
+      <!-- mergeTemplates: Agar do roles me same app ka access ho, toh single account plan banega -->
+      <entry key="mergeTemplates" value="true"/>
+      <!-- allowMultipleAssignments: Ek hi bande ko ye role double assign nahi ho sakta -->
+      <entry key="allowMultipleAssignments" value="false"/>
+    </Map>
+  </Attributes>
+
+  <!-- ======================================================= -->
+  <!-- 2. PERMITTED / REQUIRED SUB-ROLE RELATIONSHIPS          -->
+  <!-- ======================================================= -->
+  <!-- Requirements: Is role ke active hote hi ye sub-roles target target target honge -->
+  <Requirements>
+    <!-- Agar ye main role mila, toh niche waala base access role hona hi chahiye (Mandatory Connection) -->
+    <Reference class="sailpoint.object.Identity" name="KKR_Financial_Base_Platform_IT_Role"/>
+  </Requirements>
+
+  <!-- Permits: Optional/Additional roles jo is role ke sath allow ho jaate hain -->
+  <Permits>
+    <!-- Is main role ke sath user ye extra reporting access manually request kar sakta hai -->
+    <Reference class="sailpoint.object.Identity" name="KKR_Financial_AdHoc_Reporting_Access_Role"/>
+  </Permits>
+
+</Bundle>
+//////////////*
+()<Bundle name="KKR_Financial_Planning_Lead_IT_Role" type="it">:-
+Engine Behavior: Jab SailPoint ka parser is file ko read karta hai, toh use pata chal jata hai ki ye data kisi Identity ya Application ka
+nahi hai,balki ek Role ka hai.Engine immediately database ke spt_bundle table me ek naya record insert ya update karne ki tayaari karta hai.
+
+()name Attribute: Ye is role ka globally unique legal name set karta hai. Pure IIQ me isi naam se is role ko call kiya jayega.
+
+()type Attribute: Iska value it (IT Role) ya business (Business Role) ho sakta hai.
+*/////////////
+//////////////*
+()<entry key="inherentRisk" value="High"/>:-
+<entry key="inherentRisk">:-
+Behavior: Yeh ek Compliance Display Flag hai. Jab end-user ya manager SailPoint portal par access review (certification) kar raha hota hai, 
+toh is tag ki wajah se use screen par ek bada sa "High" ka red color ka classification label dikhta hai taaki use pata rahe ki ye dangerous ya sensitive role hai.
+
+()<entry key="riskWeight" value="4"/>:-
+<entry key="riskWeight">:-
+Behavior: Yeh pure Mathematical Mathematical algorithm input hai. Iska value 0 se 5 tak hota hai. 
+Jab aap identity refresh task chalate ho, toh background engine user ke paas maujood saare roles ke is riskWeight score ko uthata hai 
+aur ek custom scoring formula chala kar user ke Identity Cube ka total composite risk score automatic badha deta hai.
+
+()<Requirements>
+  <Reference class="sailpoint.object.Bundle" name="KKR_Financial_Base_Platform_IT_Role"/>
+</Requirements>
+Aasan Bhasha Me: Yeh ek Hard Dependency Gate hai. Iska matlab hai: "Agar tumko bada bhai (Main Role) chahiye, 
+toh chote bhai (Base Role) ka hona 100% zaroorat hai."
+Backend Runtime Logic: Maan lo tumne kisi user ko KKR_Financial_Planning_Lead_IT_Role assign kiya. 
+SailPoint ka provisioning engine sabse pehle is <Requirements> tag ko check karega. 
+Wo user ke Identity Cube me jhaank kar dekhega ki kya uske paas pehle se KKR_Financial_Base_Platform_IT_Role hai?
+Agar nahi hai, toh engine automatic provisioning plan me badlaav karega aur pehle is Base Role ko user ke liye provision (create) karega,
+uske baad hi Main Role assign hoga.Ise hum SailPoint me Birthright Inheritance Chain bolte hain. 
+
+()<Permits>
+  <Reference class="sailpoint.object.Bundle" name="KKR_Financial_AdHoc_Reporting_Access_Role"/>
+</Permits>:-
+Aasan Bhasha Me: Yeh ek Loose Bundle/Optional Access hai. Iska matlab hai: "Agar tumhare paas Main Role hai, 
+toh tum is optional access ko maangne ke haqdaar ho."
+Backend Runtime Logic: <Requirements> ki tarah ye user ko automatic nahi mil jata. 
+Iska khel tab chalta hai jab user Lifecycle Manager (LCM) dashboard par jaakar "Request Access" search karta hai.
+Normal security ya scoping rules ki wajah se shayad har user ko KKR_Financial_AdHoc_Reporting_Access_Role access catalog me dikhe hi na. 
+Lekin agar kisi user ke paas tumhara main role pehle se hai, toh SailPoint ka Access Request Engine is <Permits> tag ko padhte hi 
+ushe wo reporting access catalog me show kar dega aur ushe request karne ki permission de dega, 
+bina kisi custom security exception rule ko tode.
+
+()<entry key="allowMultipleAssignments" value="false"/>:-
+Aasan Bhasha Me: Yeh database and allocation ka ek Security Check hai. 
+Iska matlab hai: "Ek bande ko ek hi role ek se zyada baar assign nahi kiya ja sakta."
+Backend Runtime Logic: Maan lo ek user ke paas pehle se hi ye role maujood hai. 
+Ab galti se kisi doosre manager ne LCM dashboard se ya piche se chalne wali kisi automatic Beanshell script ne dobara usi user ke liye
+yahi role request kar diya.Kyunki tumne custom code me iski value false rakhi hai, 
+toh database level (spt_bundle mapping association rows) par is role ka naya duplicate row ya instance create nahi hoga. 
+SailPoint ka engine request ko runtime par hi drop kar dega aur validation warning message throw kar dega ki 
+"User already has this role assigned."
+
+()<entry key="mergeTemplates" value="true"/> :-
+--Maan lo ek user ko do alag-alag roles assign huye:-
+->Role A (Base Access): Yeh bolta hai ki Active Directory me account banao aur user ko Base-Group access do.
+->Role B (Manager Access): Yeh bolta hai ki usi Active Directory me account banao aur user ko Manager-Group access do.
+
+-->Agar SailPoint me mergeTemplates ki value false hai,Wo background me do alag-alag plans banayega:-
+Plan 1: Active Directory Connector ko connection request bhejega aur bolega—"Naya account banao aur Base-Group do."
+Plan 2: Turant baad doosra connection request bhejega aur bolega—"Naya account banao aur Manager-Group do."
+Jab ye line true hoti hai (value="true"):-background memory me hi dono plans ko aapas me merge (jod) dega.
+Single Network Transmission: SailPoint target Active Directory Domain Controller (ya kisi bhi endpoint) par sirf ek single connection call bhejega.
+Atomic Execution: AD connector ko jo provisioning plan milega, usme saaf likha hoga: "Create Account with attributes: groups = [Base-Group, Manager-Group]".
+Zero Conflict & Errors: Target system par koi duplicate identity entity creation ka clash nahi hoga.
+*/////////////
+--------------------------------------------------------------------------------------------------------------------------------------
+()Policy / IdentityPolicy Object:-
+Violation Severity classifications (e.g., Low, Medium, High)
+Remediation workflow action routing
+Exclusion list exceptions for specific users.
+
+-->Beanshell rule sirf ye batata hai ki violation hai ya nahi.Lekin violation milne ke baad uski severity kya hogi, 
+use theek karne ke liye kaun sa workflow chalega, aur kis user ko is policy se chhut(exempt) rakhna hai—ye sab is Policy Object ke 
+<Attributes> aur structural tags ke andar custom likha jata hai.
+
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Policy PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<!-- type="Advanced" hume custom compliance rule chalane ki azaadi deta hai -->
+<Policy name="KKR_Financial_Data_Access_Policy" type="Advanced">
+  <Description>Custom Policy for checking critical financial access segregation</Description>
+  
+  <!-- ======================================================= -->
+  <!-- 1. VIOLATION SEVERITY CLASSIFICATIONS                   -->
+  <!-- ======================================================= -->
+  <!-- Is policy ke hit hote ji total compliance risk score aur matrix par kya asar padega -->
+  <Attributes>
+    <Map>
+      <!-- Severity options: Low, Medium, High, ya Critical -->
+      <entry key="severity" value="High"/>
+      <!-- Base Score aur Severity Weight jo Identity ke Composite Risk me jodta hai -->
+      <entry key="violationScoreWeight" value="30"/>
+    </Map>
+  </Attributes>
+
+  <!-- ======================================================= -->
+  <!-- 2. REMEDIATION WORKFLOW ACTION ROUTING                  -->
+  <!-- ======================================================= -->
+  <!-- Remediation: Violation pakde jaane par automatically kis workflow ko trigger karna hai -->
+  <RemediationWorkflow>
+    <Reference class="sailpoint.object.Workflow" name="KKR_Policy_Violation_Remediation_Workflow"/>
+  </RemediationWorkflow>
+
+  <!-- Policy ke andar ka actual constraint check -->
+  <AdvancedConstraint name="Financial Segregation Constraint">
+    
+    <!-- Pichla custom banaya hua policy rule yahan bind hota hai -->
+    <ConstraintRuleReference class="sailpoint.object.Rule" name="KKR_Financial_Planning_Policy_Rule"/>
+    
+    <!-- ======================================================= -->
+    <!-- 3. EXCLUSION LIST EXCEPTIONS FOR SPECIFIC USERS         -->
+    <!-- ======================================================= -->
+    <!-- IdentitySelector ke andar hum un logo ki list daalte hain jinpar ye rule kabhi apply nahi hoga -->
+    <Exclusions>
+      <IdentitySelector>
+        <MatchExpression>
+          <!-- Enterprise Auditor aur CFO ko is policy se bahar (exempt) rakha gaya hai -->
+          <MatchTerm attribute="name" value="CFO_User01"/>
+          <MatchTerm attribute="capabilities" value="EnterpriseAuditor"/>
+        </MatchExpression>
+      </IdentitySelector>
+    </Exclusions>
+
+  </AdvancedConstraint>
+</Policy>
+//////////*
+()1. Violation Severity Classifications (severity, violationScoreWeight):-
+Jab IdentityIQ ka engine kisi user par violation dhoond nikalta hai, 
+toh is configuration ke aadhar par dashboard par uska rang aur khatra (alert level) tai hota hai.
+
+()<entry key="severity" value="High"/>: Yeh direct UI aur manager ke inbox me alert ka dashboard behavior control karta hai. 
+Agar value High hai, toh dashboard par red icon chamkega aur compliance managers ko high priority alert alert trigger ho jayega.
+
+()<entry key="violationScoreWeight" value="30"/>: Yeh variable user ke Identity Cube ke total risk score calculation score calculation me
+daala jata hai.Jaise hi user par ye violation open hogi,Identity Refresh Task user ke permanent risk score me automatic 30 points aur add 
+kar dega, jisse user immediate high-risk category me chala jata hai.
+
+()2. Remediation Workflow Action Routing (<RemediationWorkflow>):-
+Standard cases me jab koi violation aati hai, toh system use bas screen par dikha kar chhod deta hai jab tak koi manager use manually 
+resolve na kare. Lekin aap is tag se use automate kar sakte ho:
+Engine Behavior: Jaise hi Identity Refresh Task me koi violation pakdi jayegi, 
+policy engine is tag ko read karega. Yeh bina koi manual wait kiye, 
+direct background me KKR_Policy_Violation_Remediation_Workflow ko fire (start) kar dega.
+Action: Yeh custom workflow automatic user ke manager ke paas ya compliance team ke paas ek ticket (Workitem) bhej dega 
+jisme options honge: "Ya toh is bande ka access turant chhino (Remediate), ya fir isko kuch dino ke liye allow karo (Mitigate)."
+
+()<Exclusions>:-
+Socho agar ek company ka CFO ya koi senior Security Auditor testing ya emergency ke waqt Finance application aur
+Risk management dono ka access ek sath le le, toh system unpar immediate Violation throw kar dega. 
+Is problem se bachne ke liye hum custom XML me <Exclusions> tag lagate hain.
+
+-><Exclusions> ka matlab sod violated user ko violation se azad kar diya jaye ushpe koi access remove ka operation na chale.
+<Exclusions> ka asar wahi hota hai jo tumne bataya: sod violated Ush bande par koi violation alert nahi dikhega 
+aur na hi uske access ko chhedne ya remove karne ka koi operation chalega.
+
+1. Pehla Block: Rule-Based Match (AND Condition):-
+XML
+<Exclusions>
+  <IdentitySelector>
+    <MatchExpression>
+      <MatchTerm attribute="name" value="CFO_User01"/>
+      <MatchTerm attribute="capabilities" value="EnterpriseAuditor"/>
+    </MatchExpression>
+  </IdentitySelector>
+</Exclusions>
+Matlab: Yeh check lagata hai ki jab tak dono chizein match nahi hongi, tab tak chhut nahi milegi.
+Backend Khel: Jab SailPoint ka engine kisi user par jaayega, toh wo check karega:
+Kya is user ki ID/Name exactly CFO_User01 hai?
+AUR (AND) kya uske paas EnterpriseAuditor ki capability hai?
+Natija: Agar koi aisa user hai jiska naam toh CFO_User01 hai par uski capability chhini ja chuki hai, 
+toh uspar policy chal jayegi (violation aa sakti hai). Chhut sirf tabhi milegi jab uske paas ye dono cheezein ek sath maujood hongi.
+
+2. Dusra Block: Script-Based Dynamic Match (Advanced Logic):-
+XML
+<Exclusions>
+  <IdentitySelector>
+    <Script>
+      <Source>
+        // Agar user ka 'isExempted' flag HR data me 'true' hai
+        return "true".equals(identity.getAttribute("isExempted"));
+      </Source>
+    </Script>
+  </IdentitySelector>
+</Exclusions>
+Backend Khel: Engine jab user ke Identity Cube par pahunchega, toh wo is chote se Java code ko run karega.
+Code user ki profile me jaakar check karega ki kya uske custom attributes me isExempted naam ka flag true set hai? 
+(Yeh data ho sakta hai direct HR system se aggregate hokar aaya ho).
+Natija: Agar code true return karta hai, toh user ko immediate chhut mil jayegi.
+
+3. Tisra Block: Department-Based Bulk Match (Group Category)
+XML
+<Exclusions>
+  <IdentitySelector>
+    <MatchExpression>
+      <MatchTerm attribute="department" value="Global Compliance and Audit"/>
+    </MatchExpression>
+  </IdentitySelector>
+</Exclusions>
+Matlab: Yeh kisi single insaan ko nahi, balki ek poore Department (Bulk Users) ko ek jhatke me policy se azaad kar deta hai.
+Backend Khel: Engine user ka Identity Cube uthayega aur uski core details me department attribute check karega. 
+Agar department ka naam exactly "Global Compliance and Audit" likha hua mila, toh engine aage ka koi check nahi chalayega.
+Natija: Is department ke andar chahe 50 log kaam karte hon ya 500 log, un sab par se compliance ka danda hat jayega. 
+Unhe manually ek-ek karke list me add karne ki koi zaroorat nahi hai.
+*//////////
+-----------------------------------------------------------------------------------------------------------------------------------
+()Rule Object:-ishko bhi custom likhte hai.
+Argument definitions (Inputs jo rule ko runtime me chahiye)
+Rule execution context aur logging behavior
+
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<!-- type="Correlation" batata hai ki ye engine aggregation ke waqt chalega -->
+<Rule name="KKR_Active_Directory_Custom_Correlation_Rule" type="Correlation">
+  <Description>Custom rule to correlate AD accounts using employeeID or secondary email</Description>
+  
+  <!-- ======================================================= -->
+  <!-- 1. ARGUMENT DEFINITIONS (Runtime Inputs)                 -->
+  <!-- ======================================================= -->
+  <Signature returnType="sailpoint.object.Identity">
+    <Inputs>
+      <!-- Target application ka object -->
+      <Argument name="application" type="sailpoint.object.Application">
+        <Description>The application object being aggregated.</Description>
+      </Argument>
+      <!-- Target system se aaya hua raw account data (Link/ResourceObject) -->
+      <Argument name="account" type="sailpoint.object.ResourceObject">
+        <Description>The resource object holding target account attributes.</Description>
+      </Argument>
+    </Inputs>
+  </Signature>
+
+  <!-- ======================================================= -->
+  <!-- 2. RULE EXECUTION CONTEXT & LOGGING BEHAVIOR            -->
+  <!-- ======================================================= -->
+  <Source>
+    <![CDATA[
+      import sailpoint.object.Identity;
+      import sailpoint.object.ResourceObject;
+      import org.apache.commons.logging.Log;
+      import org.apache.commons.logging.LogFactory;
+
+      // Custom Logger initialize karna exact rules ke mutabik
+      Log logger = LogFactory.getLog("sailpoint.custom.kkr.correlation");
+
+      if (account == null) {
+          logger.error("Bhai, rule me account object hi NULL aaya hai! Aggregation check karo.");
+          return null;
+      }
+
+      // Context utilization: Target account se data nikalna
+      String targetEmpId = account.getString("employeeID");
+      String targetEmail = account.getString("mail");
+
+      logger.info("Processing correlation context for Account ID: " + account.getIdentity() + " | EmpID: " + targetEmpId);
+
+      Identity matchedIdentity = null;
+
+      // Asli Core Logic
+      if (targetEmpId != null) {
+          // Internal context ka use karke database me search chalana
+          matchedIdentity = context.getObjectByName(Identity.class, targetEmpId);
+      }
+
+      if (matchedIdentity != null) {
+          logger.info("SUCCESS: Account mapped directly to Identity: " + matchedIdentity.getName());
+          return matchedIdentity; // Engine account ko is user se link kar dega
+      } else {
+          logger.warn("WARNING: No direct match found for EmpID: " + targetEmpId + ". Sending to orphan accounts bucket.");
+      }
+
+      return null;
+    ]]>
+  </Source>
+</Rule>
+///////////////*
+()1. Argument Definitions (Runtime Inputs):-
+Jab SailPoint ka aggregation pipeline chalta hai, toh wo is <Inputs> block ko read karta hai.
+Engine Behavior: Aapko application aur account variables ko code ke andar manually create ya query nahi karna padta. 
+SailPoint ka automatic rule framework target application aur target account ka live instance in arguments me lapet kar 
+aapke rule ko gift ki tarah pass kar deta hai.
+*//////////////
+-----------------------------------------------------------------------------------------------------------------------------------
+()Link Object (Account Object):-Links ko bhi tum bilkul haath se, apni marzi se custom XML me likh sakte ho.
+Account state flags (e.g., locked, disabled target system par)
+Custom attributes jo resource schema se aggregate huye hain par global identity me mapped nahi hain.
+-->Account State Flags (jaise locked/disabled status) aur Custom Application Attributes (jo identity cube me nahi jaate)
+—isi XML ke <Attributes> block ke andar store hote hain.
+
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Link PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<!-- nativeIdentity: Target SAP system par user ki unique ID (username) -->
+<!-- application: Jis target app se ye account belong karta hai -->
+<Link nativeIdentity="rkumar_sap" displayName="Rahul Kumar (SAP)" application="Financial_SAP_App">
+  
+  <Attributes>
+    <Map>
+      <!-- ======================================================= -->
+      <!-- 1. ACCOUNT STATE FLAGS (Target System Status)           -->
+      <!-- ======================================================= -->
+      <!-- IIQ_Disabled: SailPoint ka global standard flag account status ke liye -->
+      <entry key="IIQ_Disabled" value="false"/>
+      <!-- Target system ke specific lock/disable flags jo custom read hote hain -->
+      <entry key="sapAccountLocked" value="true"/>
+      <entry key="passwordExpired" value="false"/>
+
+      <!-- ======================================================= -->
+      <!-- 2. CUSTOM APPLICATION SCHEMA ATTRIBUTES                  -->
+      <!-- ======================================================= -->
+      <!-- Yeh attributes sirf SAP Application Schema me register hain, Identity Cube me mapped NAHI hain -->
+      <entry key="sapTerminalID" value="TERM-MUM-901"/>
+      <entry key="sapLicenseType" value="Professional_User"/>
+      <entry key="accountingArea" value="APAC-IND"/>
+      <entry key="userSubGroup" value="FIN-ANALYST-SG"/>
+    </Map>
+  </Attributes>
+
+  <!-- IDENTITY REFERENCE: Yeh account kis Identity Cube se juda rahega -->
+  <IdentityRef>
+    <Reference class="sailpoint.object.Identity" name="R012345"/>
+  </IdentityRef>
+
+</Link>
+//////////////*
+()IIQ_Disabled="false": Yeh SailPoint ka Universal Account Flag hai. Chahe target system Active Directory ho, 
+Linux ho ya SAP—SailPoint isi flag ko padhkar UI par dikhata hai ki account Enabled hai ya Disabled. 
+Agar tum ise manually true kar doge,toh SailPoint ke dashboard par is account ke aage ek red color ka lock ya disabled icon ban kar aa jayega.
+
+()sapAccountLocked="true": Yeh target application ka apna Native Flag hai (jo resource schema se aata hai). 
+Iska matlab hai ki account target system par locked hai (shayaad teen baar galat password dalne ki wajah se).
+
+()The Isolation Behavior: Hum Identity Object Configuration me sirf 10-15 main fields map karte hain 
+(jaise email, department, manager). Lekin ek target application (jaise SAP ya Active Directory) me 50-60 extra fields ho sakte hain 
+(jaise terminal ID, proxyAddresses, license type).
+Storage Engine Logic: SailPoint ka connector aggregation ke waqt un saare 50 fields ko uthakar lata hai. 
+Kyunki wo global identity me mapped nahi hain, isliye wo user ke main profile page par nahi dikhenge. 
+Wo chupchaap isi Link XML ke <Attributes> map ke andar isolated (alag se) save ho jaate hain.
+Developer Advantage: Bhale hi ye global identity me nahi hain, lekin jab tum koi Provisioning Policy Rule ya Workflow Script likhoge, 
+toh tum direct is link object ko call karke data nikal sakte ho:-ye attributes account me dala jata hai.
+Java
+// Link object se application-specific custom attribute nikalna
+String license = link.getAttribute("sapLicenseType"); // Output: Professional_User
+*/////////////
+----------------------------------------------------------------------------------------------------------------------------------------
+()Certification Definition / Configuration Object:-Haan bhai, Certification ko tum 100% custom haath se XML me likh sakte ho.
+Access Review ke frequency parameters aur schedules
+Remediation durations (Kitne din me access hat jana chahiye)
+Challenging aur delegation behavior settings.
+
+--Jab koi auditor kisi company ke access reviews ko tight karna chahta hai, 
+toh developer inhi parameters ko custom XML me manually configure karta hai.
+
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE CertificationDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<CertificationDefinition name="KKR_Financial_HighRisk_SOX_Review" certificationType="Identity">
+  <Description>Custom SOX Compliance Review with Challenge, Delegation, and Auto-Remediation Controls</Description>
+  
+  <Attributes>
+    <Map>
+      <!-- ======================================================= -->
+      <!-- 1. ACCESS REVIEW FREQUENCY & SCHEDULES                  -->
+      <!-- ======================================================= -->
+      <!-- duration: Reviewer ke paas decision lene ke liye kitne din hain -->
+      <entry key="duration" value="20"/>
+      <!-- automaticSignOff: Agar time khatam ho jaye, toh kya campaign automatic close ho jaye? -->
+      <entry key="automaticSignOff" value="true"/>
+
+      <!-- ======================================================= -->
+      <!-- 2. REMEDIATION DURATIONS (Access Revocation Timeline)   -->
+      <!-- ======================================================= -->
+      <!-- autoRevoke: Revoke decision par direct target par automation chalana -->
+      <entry key="autoRevoke" value="true"/>
+      <!-- remediationDuration: Manager ke 'Revoke' dabane ke baad target system se access hatne ka max buffer (in days) -->
+      <entry key="remediationDuration" value="5"/>
+      <!-- Operational ticketing status tracking -->
+      <entry key="requireRemediationCompletion" value="true"/>
+
+      <!-- ======================================================= -->
+      <!-- 3. CHALLENGING & DELEGATION BEHAVIOR SETTINGS          -->
+      <!-- ======================================================= -->
+      <!-- allowDelegation: Kya manager ye ticket kisi aur subordinate ko pass kar sakta hai? -->
+      <entry key="allowDelegation" value="true"/>
+      <!-- allowChallenge: Kya end-user manager ke 'Revoke' decision ko challenge (appeal) kar sakta hai? -->
+      <entry key="allowChallenge" value="true"/>
+      <!-- challengeDuration: User ke paas appeal darj karne ke liye kitne din ka time hai -->
+      <entry key="challengeDuration" value="7"/>
+    </Map>
+  </Attributes>
+
+  <!-- Target Audience Selection (Scoping Filter) -->
+  <SelectionCriteria>
+    <IdentitySelector>
+      <MatchExpression>
+        <MatchTerm attribute="department" value="Financial Planning"/>
+      </MatchExpression>
+    </IdentitySelector>
+  </SelectionCriteria>
+
+</CertificationDefinition>
+//////////////*
+()duration: Reviewer ke paas decision lene ke liye kitne din hain-><entry key="duration" value="20"/>
+
+()automaticSignOff="true": Agar 20 din poore ho gaye aur manager ne alass me aakar ticket ko touch bhi nahi kiya, 
+toh engine waiting state me nahi rahega. Wo poore campaign ko automatic Freeze (Sign-off) kar dega aur incomplete items ko auditor ke 
+escalation log me daal dega.
+
+()autoRevoke="true":-Iska matlab hai ki jaise hi manager "Revoke" dabayega, SailPoint ka provisioning engine active ho jayega.
+
+()remediationDuration="5":-Yeh ek SLA (Service Level Agreement) Timer Guardrail hai. Manager ne bola access hatao, 
+par target system (jaise Active Directory) temporary down hai ya uspar ticketing workflow chal raha hai. 
+Yeh tag backend engine ko instructions deta hai ki "Mujhe 5 din ke andar target application se success confirmation response chahiye". 
+Agar 5 din me access nahi hata,toh system ise SLA violation maankar security operations team ko direct alert escalations trigger kar dega.
+
+()allowDelegation="true": Kai baar bada director bohot busy hota hai, 
+use nahi pata ki uske niche ke entry-level analyst ko kya access chahiye. 
+Is tag ke true hone se director ke dashboard par ek "Delegate" button aa jata hai. 
+Wo us specific ticket ko team ke tech-lead ko forward kar sakta hai decision lene ke liye. 
+Backend engine is transaction ko pura audit trail me record karta hai.
+
+()allowChallenge="true" aur challengeDuration="7": Yeh sabse mast corporate feature hai. 
+Maan lo manager ne galti se Rahul Kumar ka ek zaroori access "Revoke" kar diya. 
+Jaise hi manager sign-off karega, access turant delete nahi hoga! Rahul Kumar ke paas ek notifications jayega aur 
+uske paas 7 din ka temporary time (Challenge Period) hoga apna paksh rakhne ka. 
+Rahul dashboard se appeal karega: "Bhai, ye access mat chhino, mera live production release chal raha hai". 
+Agar appeal accept hoti hai, toh access bach jata hai, varna 7 din baad engine final deletion call fire kar deta hai.
+*/////////////
+---------------------------------------------------------------------------------------------------------------------------------
+()Correlation Config Object:-
+-->Account-to-Identity mapping expressions (Attribute priority lists)
+-->Fallback correlation rule references
+Haan bhai! Correlation Config Object (jise backend database me spt_correlation_config table kehte hain) 
+ko bilkul custom haath se XML me likha jata hai.
+Maan lo tumne Active Directory ya SAP application integrate kiya. Target system par accounts hain (Links), 
+aur SailPoint me employees hain (Identities). Ab account ko sahi identity ke sath jodna kaise hai (account matching logic क्या hoga), 
+us pure global rule matrix ko yeh Correlation Config Object hi handle karta hai.
+
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE CorrelationConfig PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<!-- name: Iska naam standard custom convention ke mutabik rakha jata hai -->
+<CorrelationConfig name="Financial_SAP_App_Correlation_Config">
+  
+  <Attributes>
+    <Map>
+      <!-- Mode setting: Standard attribute match rules -->
+      <entry key="mode" value="AttributeMatch"/>
+    </Map>
+  </Attributes>
+
+  <!-- ======================================================= -->
+  <!-- 1. PRIMARY CORRELATION RULE (First Preference Match)    -->
+  <!-- ======================================================= -->
+  <!-- AttributeAssignment: Pehla check jo engine lagaega -->
+  <AttributeAssignment identityAttribute="employeeNumber" accountAttribute="SAP_EMP_ID"/>
+
+  <!-- ======================================================= -->
+  <!-- 2. FALLBACK/SECONDARY CORRELATION RULE (OR Condition)   -->
+  <!-- ======================================================= -->
+  <!-- Agar pehla rule fail ho gaya, toh engine is doosre rule par aayega -->
+  <AttributeAssignment identityAttribute="email" accountAttribute="SAP_MAIL_ID"/>
+
+</CorrelationConfig>
+
+///////////////////*
+()1. Root Element aur Binding:-
+name="Financial_SAP_App_Correlation_Config": Jab tum Application XML likhte ho, toh wahan is config object ka reference de dete ho:
+-<CorrelationConfigRef><Reference class="sailpoint.object.CorrelationConfig" name="Financial_SAP_App_Correlation_Config"/>
+</CorrelationConfigRef>. Isse engine ko pata chal jata hai ki kis app par ye logic chalana hai.
+
+()2. Primary Match Logic (identityAttribute="employeeNumber"):-
+--Engine Behavior: Maan lo target SAP system se ek account aggregate hua jisme SAP_EMP_ID = "E9901" likha hai. 
+Engine sabse pehle is primary <AttributeAssignment> ko padhega.
+--Database Query: Engine piche database (spt_identity table) me ek direct query chalayega:-
+"Dhoondo kis Identity Cube ka employeeNumber == 'E9901' hai?"
+--Match Found: Agar ek unique employee mil gaya, toh engine wahin ruk jayega aur 
+account ko us user ke Identity Cube ke sath Link (correlate) kar dega.
+
+()3. Fallback Match Logic (identityAttribute="email"):-
+--Engine Behavior: Maan lo SAP account par SAP_EMP_ID khali (null) hai ya wo number SailPoint ke kisi employee se match nahi hua.
+--Fallback Routing: Engine ghabraayega nahi aur direct fail nahi karega. Wo niche aakar doosra <AttributeAssignment> padhega.
+--Secondary Query: Ab engine dobara query chalayega: "Achha employee number nahi mila, 
+toh check karo kya kisi user ka global email target account ke SAP_MAIL_ID se match hota hai?"
+--Orphan Status Control: Agar ye secondary check bhi fail ho jata hai, 
+tab engine is account ko "Orphan Account" (unmatched account) ghoshit karke alag bucket me daal deta hai, 
+taaki baad me administrator ise manually chhed sake.
+
+()Correlation Config (XML Matrix): Yeh ekदम saaf aur fast No-Code configuration template hai. 
+Jab data ekdum sidha aur saaf ho (jaise ID se ID match karna), toh hum chupchaap custom Correlation Config XML likhte hain. 
+Isse performance bohot fast hoti hai kyunki piche Beanshell Java engine load nahi hota, direct database query chalti hai.
+()Correlation Rule (Beanshell Script): Agar logic tedha ho, jaise: "Target account se FirstName aur LastName uthao, 
+dono ko aapas me concatenate (jodo) karo, fir use lowercase badlo,
+aur tab jaakar global identity ke name se match karo"—tab tum Correlation Rule likhte ho.
+*/////////////
+---------------------------------------------------------------------------------------------------------------------------------
+
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE AuditConfig PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<AuditConfig name="KKR_Enterprise_Audit_Configuration">
+  <Description>Custom Audit Security Matrix for SOX Compliance tracking</Description>
+  
+  <!-- ======================================================= -->
+  <!-- 1. AUDIT ACTIONS & CLASSES (Core Event Trappers)        -->
+  <!-- ======================================================= -->
+  <!-- AuditActions: Kis type ka transaction hone par filter activate hoga -->
+  <AuditActions>
+    <!-- Jab bhi koi dynamic capability, role, ya policy state modify hogi -->
+    <String>update</String>
+    <String>delete</String>
+    <String>remediate</String>
+    <String>mitigate</String>
+  </AuditActions>
+
+  <!-- AuditClasses: Kis object metadata type par nazar rakhni hai -->
+  <AuditClasses>
+    <String>sailpoint.object.Bundle</String> <!-- Roles modification tracking -->
+    <String>sailpoint.object.PolicyViolation</String> <!-- Compliance violation tracking -->
+    <String>sailpoint.object.Identity</String> <!-- Administrative power changes -->
+  </AuditClasses>
+
+  <!-- ======================================================= -->
+  <!-- 2. APPLICATION-SPECIFIC OPERATION LOGGING FILTER       -->
+  <!-- ======================================================= -->
+  <!-- AuditApplications: Kis specific integrated source par aggregation/provisioning audit ho -->
+  <AuditApplications>
+    <Reference class="sailpoint.object.Application" name="Financial_SAP_App"/>
+    <Reference class="sailpoint.object.Application" name="Active_Directory_App"/>
+  </AuditApplications>
+
+  <!-- Attributes: Internal engine performance parameters -->
+  <Attributes>
+    <Map>
+      <!-- Enable/Disable global toggle -->
+      <entry key="enabled" value="true"/>
+      <!-- Prune/Purge threshold: Kitne din baad audit rows database se delete ho jani chahiye (Performance guardrail) -->
+      <entry key="auditPurgeAge" value="365"/>
+    </Map>
+  </Attributes>
+</AuditConfig>
+----------------------------------------------------------------------------------
+()()Object Config Object:-
+Global Extended Schema configurations (Naye custom fields register karna)
+UI display priorities aur searchability toggles
+Naye custom fields register karna, unki UI priorities, aur searchability set karna—ye sara khel ObjectConfig ka hai!
+Maan lo tum HR system se data la rahe ho, aur tumhe pata chala ki SailPoint ke default template me isExempted ya costCenter 
+jaisa koi field hi nahi hai. Toh tum kya karoge? Tum direct ObjectConfig XML ko custom haath se likhoge aur 
+pure SailPoint ke framework me wo naya custom field register kar doge!
+
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ObjectConfig PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<!-- name: Kis Core Object ko extend karna hai? (e.g., Identity, Bundle, Link) -->
+<ObjectConfig name="Identity">
+  
+  <ObjectAttribute category="General" displayName="Cost Center" name="costCenter" type="string">
+    <!-- ======================================================= -->
+    <!-- 1. UI DISPLAY PRIORITIES & SEARCHABILITY TOGGLES        -->
+    <!-- ======================================================= -->
+    <!-- searchability: Kya is field par Advanced Search page par filter lagaya ja sakta hai? -->
+    <Attributes>
+      <Map>
+        <!-- User Interface controls -->
+        <entry key="searchable" value="true"/>
+        <entry key="gridWidth" value="150"/>
+        <!-- groupSelectable: Kya Certification campaign banate waqt is field se filter scoping kar sakte hain? -->
+        <entry key="groupSelectable" value="true"/>
+      </Map>
+    </Attributes>
+    <Description>Custom cost center code extended for Financial Mapping</Description>
+  </ObjectAttribute>
+
+  <!-- ======================================================= -->
+  <!-- 2. GLOBAL EXTENDED SCHEMA CONFIGURATIONS (New Custom Field) -->
+  <!-- ======================================================= -->
+  <!-- Ek naya Boolean flag register karna jo humne policy exclusions me use kiya tha -->
+  <ObjectAttribute category="General" displayName="Is Policy Exempted?" name="isExempted" type="boolean">
+    <Attributes>
+      <Map>
+        <entry key="searchable" value="true"/>
+        <!-- Required: UI par iske bina profile save nahi hogi -->
+        <entry key="required" value="false"/>
+      </Map>
+    </Attributes>
+    <Description>Flag to bypass policy and compliance checks for VIP users</Description>
+  </ObjectAttribute>
+
+</ObjectConfig>
+////////////////*
+()1. Global Extended Schema Configurations (Registering Fields):-
+Engine Behavior: SailPoint me default table structure me limited columns hote hain (name, firstname, lastname). 
+Lekin jaise hi engine is XML me tumhara naya <ObjectAttribute ... name="costCenter"> dekhta hai, 
+wo database mapping engine ko order deta hai.
+Hibernate Layer Level Change: SailPoint background me bina database schema ko physically kharab kiye, 
+is naye field ko unke standard mapping slots (extended1, extended2, etc.) se link kar deta hai. 
+Ab se poore system me (chahe Workflow ho, Rules ho, ya HR Aggregation), tum direct identity.getAttribute("costCenter") 
+likh kar data nikal ya daal sakte ho. Yeh field pure enterprise me Legal Global Field ban jata hai.
+
+()2. UI Display Priorities (gridWidth, category):-
+Engine Behavior: Jab tum kisi user ka Identity Cube page kholte ho SailPoint UI par, 
+toh wo page kaise banta hai? SailPoint ka frontend engine isi ObjectConfig XML ko padhta hai.
+UI Render Logic: Tumne code me category="General" likha hai, 
+toh ye field user profile ke "General Details" wale section me dikhega. gridWidth="150" batata hai ki jab saare users ki report table 
+screen par khulegi, toh is cost center wale column ki physical width exactly 150 pixels generate hogi.
+
+()3. Searchability Toggles (searchable="true"):-
+Engine Behavior: Yeh tumhare database indexes aur search filters ko control karta hai.
+Runtime Logic: SailPoint UI par ek "Advanced Search" ka tab hota hai jahan HR managers users ko filter karte hain. 
+Agar tumne custom XML me entry key="searchable" value="true" set kiya hai, 
+toh Advanced Search ke dropdown menu me automatic "Cost Center" aur "Is Policy Exempted?" ka filter option bankar chamakne lagega.
+Managers direct search maar sakenge: "Dhoondo un sabko jinka Cost Center 'FIN-4021' hai".
+*////////////////
+-----------------------------------------------------------------------------------------------------------------------------
+()Identity Trigger Object:-
+--Lifecycle event types (e.g., Mover event ki attribute change criteria)
+--Trigger dependencies aur execution delay tracking.
+--SailPoint ke andar Identity Trigger ka matlab hota hai "Lifecycle Engine ka Radar". 
+Yeh radar har waqt chalte rehte hain aur check karte hain ki user ke Identity Cube me koi badlaav (Lifecycle Event) hua ya 
+nahi—jaise kisi employee ka department change hona (Transfer), job chhutna (Termination), ya naya join karna (Joiner).
+--Jab UI se standard configurations kaam nahi aati, toh developer custom XML likh kar apne hisab se trigger condition design karta hai.
+
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE IdentityTrigger PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<!-- name: Trigger ka unique identification name -->
+<IdentityTrigger name="KKR_Financial_Planning_Transfer_Trigger" type="IdentityAttributeChange">
+  <Description>Custom trigger to detect department changes to Financial Planning</Description>
+  
+  <Attributes>
+    <Map>
+      <!-- ======================================================= -->
+      <!-- 1. TRIGGER SOURCE ATTRIBUTE SELECTION                  -->
+      <!-- ======================================================= -->
+      <!-- attributeName: Kis global identity attribute par radar lagana hai -->
+      <entry key="attributeName" value="department"/>
+
+      <!-- ======================================================= -->
+      <!-- 2. CORE FILTER LOGIC (Old Value vs New Value Check)    -->
+      <!-- ======================================================= -->
+      <!-- Hum check kar rahe hain ki user naye department me aaya hai ya nahi -->
+      <entry key="attributeValue" value="Financial Planning"/>
+      
+      <!-- operation: Kya attribute ki sirf value badalni chahiye, ya specific value aani chahiye -->
+      <entry key="operation" value="ChangedTo"/>
+
+      <!-- ======================================================= -->
+      <!-- 3. DETAILED BEHIND-THE-SCENE BEHNSHELL SCRIPTING        -->
+      <!-- ======================================================= -->
+      <!-- Agar direct attribute match se kaam na chale, toh custom selector script -->
+      <entry key="selectorScript">
+        <value>
+          <Script>
+            <Source>
+              // Engine runtime par 'previousIdentity' (purana data) aur 'newIdentity' (naya data) dono deta hai
+              if (previousIdentity != null &amp;&amp; newIdentity != null) {
+                  String oldDept = previousIdentity.getAttribute("department");
+                  String newDept = newIdentity.getAttribute("department");
+                  
+                  // Strict Check: Agar banda pehle se HR me tha aur ab Finance me aaya hai, toh hi trigger fire karo
+                  if ("Human Resources".equals(oldDept) &amp;&amp; "Financial Planning".equals(newDept)) {
+                      return true; // Radar match found! Trigger fired.
+                  }
+              }
+              return false;
+            </Source>
+          </Script>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+</IdentityTrigger>
+///////////////////*
+()1. attributeName:-
+XML
+<entry key="attributeName" value="department"/>
+Yeh kya karta hai: Yeh engine ko tumhara Target Field (Radar Area) batata hai.
+Backend Logic: Identity Cube me 50 tarah ke data hote hain—jaise mobile number, email, manager, title, etc. 
+Agar tum ye line nahi likhoge, toh user ka phone number badalne par bhi ye trigger faltu me chal jayega aur 
+system slow ho jayega.Yeh entry engine ko bolti hai:"Baaki sab chhodo,sirf aur sirf department attribute ke badlaav par nazar rakho."
+
+2. attributeValue:-
+XML
+<entry key="attributeValue" value="Financial Planning"/>
+Yeh kya karta hai: Yeh tumhara Target Destination (Nayi Value) set karta hai.
+Backend Logic: Yeh engine ko batata hai ki user ka department badal kar kuch bhi ho jaye toh mujhe matlab nahi hai, 
+mujhe sirf tab matlab hai jab nayi value exactly "Financial Planning" ban jaye.
+
+3. operation:-
+XML
+<entry key="operation" value="ChangedTo"/>
+Yeh kya karta hai: Yeh comparison ka Trigger Point (Action Mode) tai karta hai.
+Backend Logic: SailPoint me alag-alag operations hote hain (jaise EQ matlab barabar, NE matlab alag). 
+ChangedTo ka matlab hai ek strict state change check: "Banda pehle is department me NAHI tha, 
+lekin ab badal kar is department me AA GAYA hai."
+Iska fayda ye hai ki agar koi banda pehle se hi Financial Planning me hai aur uska sirf phone number badla, 
+toh ye trigger dubara nahi chalega. Yeh sirf tabhi chalega jab sach me department ka badlaav is value par aakar ruka ho.
+
+4. selectorScript:-
+XML
+<entry key="selectorScript">
+  <value>
+    <Script>
+      <Source> ... </Source>
+    </Script>
+  </value>
+</entry>
+Yeh kya karta hai: Yeh tumhara Advanced Custom Filter (Ultimate Decision Maker) hai.
+Backend Logic: Upar ke jo teen attributes hain (attributeName, attributeValue, operation), 
+wo sirf itna pehchan sakte hain ki banda "Financial Planning" me aaya hai. 
+Lekin wo ye nahi pehchan sakte ki banda kahan se aaya hai (IT se aaya hai, Admin se aaya hai, ya HR se aaya hai).
+Jab basic attributes pass ho jaate hain, toh engine is selectorScript ke andar ka Beanshell code chalata hai. 
+Yeh code memory me user ka kal tak ka department (previousIdentity) aur aaj ka department (newIdentity) dono uthata hai 
+aur strict check lagata hai: "Agar kal tak department 'Human Resources' tha AUR aaj 'Financial Planning' hai, 
+toh hi return true karo."
+
+()Bhai, jaise hi yeh saare attributes true (match) hote hain,
+ toh SailPoint ka core platform background me ek Lifecycle Event trigger karta hai,
+jo turant ek Provisioning aur Governance Workflow ko active kar deta hai.
+Technically, IdentityIQ me sirf trigger akele kaam nahi karta. 
+Yeh trigger ek Lifecycle Event Object (spt_lifecycle_event) ke andar mapped hota hai.
+
+Trigger ke true hote hi kya-kya action fire hota hai?
+()Lifecycle Event Capture
+()Workflow Launch
+()Purana Access Deprovisioning(revoke) (Custom Workflow Step)
+()Naya Access Provisioning
+()Auditing & Notifications(Custom Reporting & Email beanshell)inko bhi custom banana padta hai:-
+
+()()Lifecycle Event Capture:-
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE LifecycleEvent PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<!-- name: Custom lifecycle event ka naam -->
+<LifecycleEvent name="KKR_HR_To_Finance_Transfer_Event" type="Subprocess">
+  
+  <!-- Humne pichle custom banaye huye Trigger ko yahan link kar diya -->
+  <TriggerRef>
+    <Reference class="sailpoint.object.IdentityTrigger" name="KKR_Financial_Planning_Transfer_Trigger"/>
+  </TriggerRef>
+
+  <!-- LAUNCH LOGIC: Trigger true hote hi ye specific custom workflow chalega -->
+  <WorkflowRef>
+    <Reference class="sailpoint.object.Workflow" name="KKR_Custom_Transfer_Provisioning_Workflow"/>
+  </WorkflowRef>
+
+</LifecycleEvent>
+---------------------------------------------------Workflow Launch:-
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow name="KKR_Custom_Transfer_Provisioning_Workflow" type="IdentityLifecycle">
+  
+  <Variable name="identity" input="true" required="true">
+    <Description>The Identity object undergoing the transfer event.</Description>
+  </Variable>
+
+  <!-- START STEP -->
+  <Step icon="Start" name="Start" x="50" y="50">
+    <Transition to="Execute Custom Provisioning Plan"/>
+  </Step>
+
+  <!-- ====== TUMHARA CUSTOM PROVISIONING STEP ====== -->
+  <Step icon="Provision" name="Execute Custom Provisioning Plan" x="220" y="50">
+    <Script>
+      <Source>
+        <![CDATA[
+          import sailpoint.object.ProvisioningPlan;
+          import sailpoint.object.ProvisioningPlan.AccountRequest;
+          import sailpoint.object.ProvisioningPlan.AttributeRequest;
+          import sailpoint.object.Identity;
+
+          if (identity == null) {
+              return;
+          }
+
+          // 1. Ek naya custom provisioning plan taiyar karo
+          ProvisioningPlan plan = new ProvisioningPlan();
+          plan.setIdentity(identity);
+
+          // ==========================================
+          // STAGE 3: PURANA ACCESS DEPROVISION (REVOKE)
+          // ==========================================
+          AccountRequest hrRequest = new AccountRequest();
+          hrRequest.setApplication("Active_Directory_App");
+          hrRequest.setOperation(AccountRequest.Operation.Modify);
+          
+          // Remove Request: Purana Active Directory group chheen lo
+          hrRequest.add(new AttributeRequest("memberOf", ProvisioningPlan.Operation.Remove, "CN=HR-Admin-Group,OU=Groups,DC=kkr,DC=com"));
+          plan.add(hrRequest);
+
+          // ==========================================
+          // STAGE 4: NAYA ACCESS PROVISIONING
+          // ==========================================
+          AccountRequest finRequest = new AccountRequest();
+          finRequest.setApplication("Financial_SAP_App");
+          finRequest.setOperation(AccountRequest.Operation.Modify);
+          
+          // Add Request: Naya SAP role automatic de do
+          finRequest.add(new AttributeRequest("roles", ProvisioningPlan.Operation.Add, "SAP_FIN_LEDGER_VIEW"));
+          plan.add(finRequest);
+
+          // 2. SailPoint ke core Provisioner Engine ko compile karke call maro
+          sailpoint.api.Provisioner provisioner = new sailpoint.api.Provisioner(context);
+          provisioner.compile(plan);
+          provisioner.execute(); // Target systems par direct hits!
+        ]]>
+      </Source>
+    </Script>
+    <Transition to="Call Custom Audit Rule"/>
+  </Step>
+
+  <!-- STEP TO HOOK THE BEANSHELL RULE -->
+  <Step icon="Analysis" name="Call Custom Audit Rule" x="420" y="50">
+    <Script>
+      <Source>
+        <![CDATA[
+          // Workflow se direct custom rule call karne ka tarika
+          java.util.HashMap ruleArgs = new java.util.HashMap();
+          ruleArgs.put("identity", identity);
+          context.runRule("KKR_Lifecycle_Custom_Audit_Rule", ruleArgs);
+        ]]>
+      </Source>
+    </Script>
+    <Transition to="Stop"/>
+  </Step>
+
+  <!-- STOP STEP -->
+  <Step icon="Stop" name="Stop" x="600" y="50"/>
+
+</Workflow>
+-----------------------------------------------------------------------Custom Auditing Object (Pure Beanshell Rule:-
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="KKR_Lifecycle_Custom_Audit_Rule" type="Validation">
+  <Description>Custom Beanshell Rule to inject SOX lifecycle compliance logs into the spt_audit_event table</Description>
+  <Signature returnType="void">
+    <Inputs>
+      <Argument name="identity" type="sailpoint.object.Identity">
+        <Description>The identity that triggered the LCM event.</Description>
+      </Argument>
+    </Inputs>
+  </Signature>
+  <Source>
+    <![CDATA[
+      import sailpoint.server.Auditor;
+      import sailpoint.object.AuditEvent;
+      import org.apache.commons.logging.Log;
+      import org.apache.commons.logging.LogFactory;
+
+      Log logger = LogFactory.getLog("sailpoint.custom.kkr.audit");
+
+      if (identity == null) {
+          logger.error("Audit Rule Fail: Identity object context is missing!");
+          return;
+      }
+
+      try {
+          // Check karo ki kya system me is category ki auditing active hai
+          if (Auditor.isAuditEnabled("KKR_Lifecycle_Audit")) {
+              
+              AuditEvent event = new AuditEvent();
+              event.setAction("Custom_LCM_Transfer");
+              event.setTarget(identity.getName());
+              event.setSource("Lifecycle_Event_Engine");
+              event.setAttribute("departmentChange", "HR_To_Finance");
+              event.setAttribute("interfaceUsed", "Beanshell_Provisioner_Pipeline");
+              
+              // Database session me pass karke permanent save karna
+              context.saveObject(event);
+              context.commitTransaction(); 
+              
+              logger.info("AUDIT SUCCESS: Successfully logged transfer event for user: " + identity.getName());
+          } else {
+              logger.warn("AUDIT WARNING: 'KKR_Lifecycle_Audit' action is currently disabled in Global Audit Config!");
+          }
+      } catch (Exception e) {
+          logger.error("Fatal exception during custom auditing operation: " + e.getMessage());
+      }
+    ]]>
+  </Source>
+</Rule>
+-------------------------------email template;----------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE EmailTemplate PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<EmailTemplate name="KKR_Transfer_Notification_Template">
+  
+  <!-- Email Subject Matrix -->
+  <Inputs>
+    <Argument name="identity" type="sailpoint.object.Identity"/>
+  </Inputs>
+  
+  <Subject>Alert: [LCM] ${identity.displayName} ka Transfer Process Complete Ho Gaya Hai</Subject>
+  
+  <!-- Email Body HTML / Plain Text Metadata -->
+  <Body>
+    <![CDATA[
+      Dear Team,
+      
+      Enterprise automated alert engine ne user "${identity.displayName}" (Emp ID: ${identity.name}) ka role-transfer pipeline successfully complete kar diya hai.
+      
+      Change Summary Log Details:
+      --------------------------------------------------
+      1. Source State: Department changed from Human Resources.
+      2. Destination State: Successfully moved to Financial Planning.
+      
+      Target Provisioning Status:
+      - Active Directory App: Old access group [CN=HR-Admin-Group] has been REMOVED (Revoked).
+      - Financial SAP App: New transactional role [SAP_FIN_LEDGER_VIEW] has been PROVISIONED (Active).
+      
+      Security Compliance Audit Row: Generated and saved in system log.
+      
+      Note: This is a system-generated governance notification via SailPoint Lifecycle Engine. No manual intervention required.
+      
+      Regards,
+      IdentityIQ Compliance Governance Team
+      KKR Global Enterprise Security
+    ]]>
+  </Body>
+</EmailTemplate>
+*/////////////////////
+---------------------------------------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE IdentityTrigger PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<!-- type="IdentityAttributeChange": Yeh batata hai ki hum ek classic Mover event scan kar rahe hain -->
+<Rule name="IdentityTriggerRule" type="IdentityTrigger"> <!-- Note: Native trigger structures handle internal type validations natively -->
+<IdentityTrigger name="KKR_Global_Mover_Delayed_Trigger" type="IdentityAttributeChange">
+  <Description>Custom Mover Trigger with upstream dependencies and a 48-hour execution buffer delay.</Description>
+  
+  <!-- ======================================================= -->
+  <!-- 1. MOVER EVENT TYPE & ATTRIBUTE CHANGE CRITERIA        -->
+  <!-- ======================================================= -->
+  <Attributes>
+    <Map>
+      <!-- Target Attribute: Jis field par radar lagana hai -->
+      <entry key="attributeName" value="jobTitle"/>
+      <!-- Action Mode: Jab value badle, tab trigger ko active karo -->
+      <entry key="operation" value="Changed"/>
+
+      <!-- ======================================================= -->
+      <!-- 2. TRIGGER DEPENDENCIES (Sequential Gatekeeper)         -->
+      <!-- ======================================================= -->
+      <!-- DependentTriggers: Yeh trigger tab tak fire nahi hoga jab tak HR Master Data sync na ho jaye -->
+      <entry key="dependentTriggers">
+        <value>
+          <List>
+            <String>KKR_HR_Workday_Master_Sync_Trigger</String>
+          </List>
+        </value>
+      </entry>
+
+      <!-- ======================================================= -->
+      <!-- 3. EXECUTION DELAY TRACKING (Time-Buffer Processing)    -->
+      <!-- ======================================================= -->
+      <!-- executionDelay: Duration in seconds (172800 seconds = Exactly 48 Hours) -->
+      <!-- Banda transfer aaj hua hai, par access 2 din baad badlega taaki hand-over complete ho sake -->
+      <entry key="executionDelay" value="172800"/>
+      <!-- trackDelayInIdentityRequest: Kya is delay state ke timer ko access request lifecycle me track karna hai? -->
+      <entry key="trackDelayInIdentityRequest" value="true"/>
+
+      <!-- Advanced Validation Logic via Beanshell Selector -->
+      <entry key="selectorScript">
+        <value>
+          <Script>
+            <Source>
+              <![CDATA[
+                // System validation: Ensure this is a vertical promotion/mover event
+                if (previousIdentity != null && newIdentity != null) {
+                    String oldTitle = previousIdentity.getAttribute("jobTitle");
+                    String newTitle = newIdentity.getAttribute("jobTitle");
+                    
+                    if (oldTitle != null && !oldTitle.equals(newTitle)) {
+                        return true; // Match confirmed, push to delayed execution queue
+                    }
+                }
+                return false;
+              ]]>
+            </Source>
+          </Script>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+</IdentityTrigger>
+</Rule>
+////////////////////*
+()<entry key="attributeName" value="department"/>
+Yeh kya karta hai: Yeh engine ko tumhara Target Field (Radar Area) batata hai.
+Backend Logic: Identity Cube me 50 tarah ke data hote hain—jaise mobile number, email, manager, title, etc. 
+Agar tum ye line nahi likhoge, toh user ka phone number badalne par bhi ye trigger faltu me chal jayega aur 
+system slow ho jayega.Yeh entry engine ko bolti hai:"Baaki sab chhodo,sirf aur sirf department attribute ke badlaav par nazar rakho."
+
+()<entry key="operation" value="Changed"/>
+Firing Point kya hai: Yeh state change ka behavior fixed karta hai.
+Backend Kaam: SailPoint me alag-alag operations hote hain jaise ChangedTo (ek specific value banna). 
+Lekin yahan humne likha hai Changed. Iska matlab hai ki job title badal kar kuch bhi ho jaye 
+(chahe banda Analyst se Manager bane, ya Manager se Director).
+
+()<entry key="executionDelay" value="172800"/>
+Timer/Buffer Control: Yeh event processing me temporary hold (countdown) lagata hai.
+Backend Kaam: Yeh value hamesha seconds me hoti hai ($172800 \text{ seconds} = 48 \text{ Hours}$). 
+Jaise hi saari conditions match hoti hain, engine immediate action nahi leta. 
+Wo is pure event ko uthakar SailPoint ke pending background queue me phenk deta hai aur 
+ek 48 ghante ka reverse timer chalu kar deta hai, taaki employee ko 2 din ka hand-over time mil sake.
+
+()<entry key="trackDelayInIdentityRequest" value="true"/>
+Backend Kaam: Agar ye false hoga, toh backend par timer toh chalega par administrator ko pata nahi chalega ki user par 
+koi action bacha hai ya nahi. Jab hum ise true karte hain, toh SailPoint is delay processing ko ek Access Request Tracker ID de
+deta hai. Ab agar koi manager user ka profile check karega, 
+toh use wahan dashboard par saaf dikhega: "Mover workflow scheduled after 48 hours."
+
+()<entry key="selectorScript">
+  <value>
+    <Script> ... </Script>
+  </value>
+</entry>:-
+Backend Kaam: Upar ke attributes sirf itna pehchan sakte hain ki jobTitle badla hai. 
+Lekin agar kisi user ka title galti se "Seftware Engineer" se badalkar typo fix karne ke liye "Software Engineer" kiya gaya,
+ toh wo koi real transfer ya promotion nahi hai!
+Yeh Beanshell script previousIdentity (kal ka data) aur newIdentity (aaj ka data) uthati hai aur strict comparison karti hai. 
+Agar sach me title ka badlaav valid hai, tabhi ye final approval (return true) deti hai countdown queue me jaane ke liye.
+
+()<!-- 1. Kaun-kaun se parent triggers par rukhna hai -->
+<entry key="dependentTriggers">
+  <value>
+    <List>
+      <String>KKR_HR_Workday_Master_Sync_Trigger</String>
+    </List>
+  </value>
+</entry>
+-->1. dependentTriggers (Rasta Rokna):-
+Karta kya hai: Yeh system me Silsila (Sequence) set karta hai. Yeh engine ko bolta hai: "Bhale hi Rahul Kumar ka department
+ aaj badal gaya hai, par abhi workflow mat chalana. Pehle line me lagao aur check karo ki kya Workday_Master_Sync ho chuka hai?"
+
+<!-- 2. Kya saare triggers ka pass hona compulsory hai? -->
+<entry key="requireAllDependentTriggers" value="true"/>
+-->2. requireAllDependentTriggers (Strict Rules):-
+Karta kya hai: Yeh decide karta hai ki Condition AND hogi ya OR.
+Jab yeh true hota hai, toh iska matlab hai strict AND Condition. 
+Agar tumne upar list me 2 triggers diye hain, toh jab tak dono ke dono success return nahi karenge, 
+tab tak engine aage nahi badhega. (Agar yeh false hota, toh koi ek bhi pass hone par kaam chal jata).
+
+<!-- 3. Max kitni der tak wait karna hai? (1 Din) -->
+<entry key="dependentTriggerTimeout" value="86400"/>:-
+-->Agar parent trigger kisi technical crash ya application down hone ki wajah se fail ho jaye, 
+toh SailPoint ka engine zindagi bhar memory hold karke nahi baithega. Yeh value seconds me hoti hai 
+($86400 \text{ seconds} = 24 \text{ Hours}$). Agar 24 ghante me parent se positive response nahi aaya, 
+toh engine is process ko automatic terminate karke system admin ke dashboard par warning ticket generate kar dega: 
+"Upstream Dependency Timeout Blocked!"
+*///////////////////
+()KKR_HR_Workday_Master_Sync_Trigger bhi bilkul ek core Identity Trigger Object hi hai jise developer custom XML me design 
+karta hai.Yeh tab chalte hain jab tumhare Workday application ka HR data poori tarah se aggregate hokar system me settle 
+(sync) ho jata hai. Chalo dekhte hain ki back-end par is Master Sync Trigger ka custom XML blueprint kaise dikhta hai 
+aur yeh kaise system ko safe rakhta hai:-
+
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE IdentityTrigger PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<!-- type="Rule": Yeh trigger direct field badalne par nahi, balki ek strict backend rule logic par chalta hai -->
+<IdentityTrigger name="KKR_HR_Workday_Master_Sync_Trigger" type="Rule">
+  <Description>Master HR Sync Trigger - Validates if Workday data aggregation is 100% complete and verified</Description>
+  
+  <Attributes>
+    <Map>
+      <!-- ======================================================= -->
+      <!-- 1. CORE TRIGGER RULE REFERENCE                          -->
+      <!-- ======================================================= -->
+      <!-- Is trigger ko check karne ke liye ek custom Rule call hoga -->
+      <entry key="triggerRule" value="KKR_Workday_Sync_Validation_Rule"/>
+
+      <!-- ======================================================= -->
+      <!-- 2. MEMORY FILTER SCRIPT (The Sync Status Checker)       -->
+      <!-- ======================================================= -->
+      <entry key="selectorScript">
+        <value>
+          <Script>
+            <Source>
+              <![CDATA[
+                import sailpoint.object.Identity;
+                
+                // Engine check karega ki kya Workday application ka HR reconciliation complete hua?
+                if (identity != null) {
+                    String syncStatus = identity.getAttribute("hrSyncState"); // Custom Extended field
+                    
+                    // Agar employee ka master data pooray tarike se verify ho chuka hai
+                    if ("READY_COMPLETED".equals(syncStatus)) {
+                        return true; // Parent Trigger PASS ho gaya! Green light activated.
+                    }
+                }
+                return false;
+              ]]>
+            </Source>
+          </Script>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+</IdentityTrigger>
+////////////////////*
+()B. <entry key="selectorScript">
+Karta kya hai: Yeh is pure XML ka Asli Dimaag (Inline Brain) hai. Agar upar ka trigger rule pass bhi ho jaye, toh aakhri decision isi block ke haath me hota hai.
+Engine Level Kaam: Yeh pure XML text ke andar ek live executable programmatic container banta hai. Jab tak iske andar ka Beanshell runtime logic return true; nahi phekkega, tab tak SailPoint engine is trigger ko false (inactive) hi manega.
+
+()Engine Level Kaam: hrSyncState ek custom schema attribute hai (jo humne ObjectConfig me padha tha). 
+Yeh line current database row se check karegi ki user ke profile par Workday connector ne aggregation ke waqt kya status 
+stamp mara hai—PROCESSING, FAILED, ya READY_COMPLETED.
+
+()if ("READY_COMPLETED".equals(syncStatus)) { return true; }:-
+Karta kya hai: Yeh pooray automation pipeline ka Green Light Switch hai.
+Engine Level Kaam: Agar database se nikla hua status ekdum strictly "READY_COMPLETED" match ho jata hai, 
+toh engine turant memory me flag set kar deta hai: Trigger Status = True.
+*///////////////////
+------------------------------------------()A. <entry key="triggerRule" value="KKR_Workday_Sync_Validation_Rule"/>:-
+-->triggerRule ek tarah ka Global System Switch hai aur selectorScript ek Local User Switch hai. 
+Yeh dono milkar yeh ensure karte hain ki pehle poora platform aur connector level check safe ho (triggerRule), 
+AUR uske baad user ka individual data bhi sahi ho (selectorScript), tabhi jaakar lifecycle ka bomb trigger ho!
+
+()<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<!-- name: Iska naam exact wahi hona chahiye jo trigger me call kiya hai -->
+<Rule name="KKR_Workday_Sync_Validation_Rule" type="IdentityTrigger">
+  <Description>External Trigger Rule to validate overall application health before firing</Description>
+  <Signature returnType="boolean">
+    <Inputs>
+      <!-- Engine automatically ye variables rule ke andar pass karega -->
+      <Argument name="context" type="sailpoint.api.SailPointContext"/>
+      <Argument name="identity" type="sailpoint.object.Identity"/>
+    </Inputs>
+  </Signature>
+  <Source>
+    <![CDATA[
+      import sailpoint.object.Application;
+      
+      // AUR ka asli khel: Pura system verification yahan hota hai
+      if (identity != null) {
+          // Check karo ki kya Workday application ka connector live aur up hai?
+          Application app = context.getObjectByName(Application.class, "HR_Workday_App");
+          if (app != null && !app.isMaintenanceMode()) {
+              
+              // Agar application healthy hai, toh return true karke control inline script ko de do
+              return true; 
+          }
+      }
+      return false; // Agar app down hai, toh poora trigger यहीं block ho jayega
+    ]]>
+  </Source>
+</Rule>
+------------------------------------------------------------------------------------------------------------------------------
+()UI Config Object:-
+Dashboard layouts, widget settings, aur standard color scheme preferences
+QuickLink category visibility mappings for specific user groups.
+Haan bhai, 100% sahi baat hai! UI Config Object (jise backend database me spt_ui_config table kehte hain) 
+ko bhi developer bilkul custom haath se XML me likhta hai.
+SailPoint UI par dropdown me kya dikhega, dashboards par kaun se widgets chamkenge, 
+Identity Cube ke tabs ka order kya hoga, aur navigation menu me custom plugins kahan dikhenge—ye sab kuch 
+isi single global XML object se control hota hai.
+
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE UIConfig PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<UIConfig name="UIConfig">
+  
+  <Attributes>
+    <Map>
+      <!-- ======================================================= -->
+      <!-- 1. IDENTITY CUBE TABS ORDER & VISIBILITY PROPS         -->
+      <!-- ======================================================= -->
+      <!-- identityCubeTabs: User profile kholte hi tabs ka silsila kya hoga -->
+      <entry key="identityCubeTabs">
+        <value>
+          <List>
+            <String>attributes</String>   <!-- Pehle basic details dikhao -->
+            <String>entitlements</String> <!-- Phir saare permissions/groups -->
+            <String>roles</String>        <!-- Phir assigned business roles -->
+            <String>history</String>      <!-- Aakhri me audit/lifecycle log -->
+          </List>
+        </value>
+      </entry>
+
+      <!-- ======================================================= -->
+      <!-- 2. MANAGER DASHBOARD WIDGETS CONFIGURATION             -->
+      <!-- ======================================================= -->
+      <!-- dashboardWidgets: Manager ke home screen par kaun se analytics cards dikhenge -->
+      <entry key="managerDashboardWidgets">
+        <value>
+          <List>
+            <String>ApprovalsWidget</String>        <!-- Pending approval list -->
+            <String>CertificationStatusWidget</String> <!-- Compliance campaign chart -->
+            <String>PolicyViolationsWidget</String>    <!-- High risk SOX alerts card -->
+          </List>
+        </value>
+      </entry>
+
+      <!-- ======================================================= -->
+      <!-- 3. ADVANCED GLOBAL FILTER DISPLAY MAX RECORES          -->
+      <!-- ======================================================= -->
+      <!-- navigationMaxResults: Dropdown ya search suggestions me max kitne rows dikhane hain -->
+      <entry key="navigationMaxResults" value="15"/>
+      
+      <!-- enableCustomTheme: Kya custom styling variables active karne hain? -->
+      <entry key="enableCustomTheme" value="true"/>
+    </Map>
+  </Attributes>
+</UIConfig>
+///////////////*
+()1. Identity Cube Tab Silsila (identityCubeTabs):-
+Engine Behavior: Jab bhi koi administrator ya manager SailPoint par kisi employee ka Identity Cube (Profile Page) kholta hai,
+ toh system frontend render karne se pehle is UIConfig XML ko read karta hai.
+UI Render Logic: Tumne <List> ke andar jis sequence me strings likhi hain (attributes -> entitlements -> roles), 
+SailPoint ka UI browser par tab cards ko isi exact order me left-to-right generate karega. 
+Agar tum history ko uthakar sabse upar daal do, toh user ka audit trail page open hote hi sabse pehle chamkne lagega.
+
+()2. Manager Dashboard Widgets Control (managerDashboardWidgets):-
+Runtime Customization: Yeh settings managers ke dashboard ko clutter-free (saaf) rakhne ke liye use hoti hain. 
+Jaise hi koi Manager login karega, browser home state load hote hi backend engine query chalayega aur is list ke mutabik unke 
+samne strictly teen widgets render karega: Pending Approvals, Active Certifications, aur Policy Violations. 
+Baaki ke faltu generic stock elements automatic hide ho jayenge.
+
+()3. Navigation Controls & Guardrails (navigationMaxResults):-
+Engine Behavior (Performance Guardrail): Maan lo tum system me kisi user ko search kar rahe ho dropdown ke andar. 
+Agar dropdown search chalte hi ek sath 500 records niche khol dega, toh browser tab lag (hang) ho jayega.
+The Filter Guard: value="15" likhne se engine frontend asynchronous REST call ko strictly instruct karta hai ki 
+search suggestion list me top 15 records se zyada data populate nahi hona chahiye. 
+Yeh browser aur UI ki speed ko bohot fast rakhta hai.
+
+()Jab ek developer <entry key="enableCustomTheme" value="true"/> likhta hai, toh wo SailPoint ko ye batata hai ki:-
+Default generic design system ka gala ghot do (kill it).
+Server par deploy ki gayi custom brand matrix sheet (custom-theme.less) ko dynamic memory me read karo.
+Poore application ka rang-roop, top header, buttons aur alerts ko company ke official corporate aesthetic identity me dhaal do!
+
+<!-- Custom Theme enable karne ke baad, ye metadata parameters dene hote hain -->
+<!--<entry key="enableCustomTheme" value="true"/> ishke sath niche ke charo line ko likhna padta hai.-->
+<!-- 1. Company Logo Asset Path -->
+<entry key="customThemeLogoPath" value="/images/custom/kkr-logo-white.png"/>
+
+<!-- 2. Primary Navigation Header Color (Hex Code) -->
+<entry key="customThemeHeaderColor" value="#1A365D"/> <!-- Deep Corporate Blue -->
+
+<!-- 3. Active Selection Highlights -->
+<entry key="customThemeActiveColor" value="#FF6B6B"/> <!-- Highlight Salmon Coral -->
+
+<!-- 4. Login Page Background Text/Disclaimer -->
+<entry key="customLoginDisclaimer" value="Authorized KKR Personnel Only. All sessions are audited."/>
+*//////////////
+------------------------------------------------------------------------------------------------------------------------
+()Managed Attribute Object (Entitlements Data):-
+Entitlement ki governance properties (e.g., Kya ye entitlement Requestable hai ya nahi)
+Owner assignment aur approval scheme overrides specific group/value ke liye.
+Jab hum kisi application se hazaron groups aggregate karte hain,toh default mode me wo sirf ek khali permission string hote hain. 
+Lekin developer manually custom XML design karke ya programmatic rule se un permissions ko ek powerful governance asset bana deta hai.
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ManagedAttribute PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<!-- application: Kis target connected app ka entitlement hai -->
+<!-- attribute: App schema ka kaun sa attribute hai (e.g., memberOf, roles, groups) -->
+<!-- value: Target system par us permission ki asli raw value kya hai -->
+<ManagedAttribute application="Active_Directory_App" attribute="memberOf" type="string" value="CN=Enterprise-Core-Admins,OU=Groups,DC=kkr,DC=com">
+  
+  <Description>High-Privilege Domain Infrastructure Administrative Access Group</Description>
+  
+  <!-- ======================================================= -->
+  <!-- 1. ENTITLEMENT GOVERNANCE PROPERTIES                   -->
+  <!-- ======================================================= -->
+  <!-- Requestable Toggle: Kya end-user ise Access Request catalog me dhoondh sakta hai? -->
+  <Attributes>
+    <Map>
+      <!-- requestable: true matlab catalog me dikhega, false matlab sirf role se ya automatic milega -->
+      <entry key="requestable" value="true"/>
+      
+      <!-- icicCardDisplay: Dashboard filter tagging (Custom metadata properties) -->
+      <entry key="classification" value="Privileged_Access"/>
+    </Map>
+  </Attributes>
+
+  <!-- ======================================================= -->
+  <!-- 2. OWNER ASSIGNMENT & APPROVAL SCHEME OVERRIDES        -->
+  <!-- ======================================================= -->
+  <!-- Owner: Is specific group ka permanent business owner/approver kaun hai -->
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="Shiva"/>
+  </Owner>
+
+  <!-- Custom Approval Scheme Override for this high-risk entitlement -->
+  <ApprovalConfiguration>
+    <ApprovalScheme>
+      <!-- OwnerApproval: Standard request pipeline ko bypass karke approval direct upar diye gaye Owner (Shiva) ke paas bhejega -->
+      <entry key="approvalScheme" value="owner"/>
+      <!-- errorOnTimeout: Agar approver ne 3 din me approve nahi kiya, toh request automatic reject (fail-safe) ho jayegi -->
+      <entry key="errorOnTimeout" value="true"/>
+    </ApprovalScheme>
+  </ApprovalConfiguration>
+
+</ManagedAttribute>
+////////////////////*
+()<ManagedAttribute application="Active_Directory_App" attribute="memberOf" type="string" value="CN=Enterprise-Core-Admins,OU=Groups,DC=kkr,DC=com">
+-->application="Active_Directory_App":-
+Karta kya hai: Yeh batata hai ki yeh permission kis target system (connected application) ki hai. 
+SailPoint engine isko padh kar samajhta hai ki jab bhi is permission ka ticket approve hoga, 
+toh use Active Directory wale connector pipeline ke paas hi jaana hai, SAP ya Workday ke paas nahi.
+
+attribute="memberOf":-
+Karta kya hai: Target system ke application schema ka exact field name batata hai. 
+AD ke andar groups ko memberOf ke andar track kiya jata hai, 
+isliye engine samajhta hai ki account modification ke waqt isi attribute key par modification query chalani hai.
+
+type="string":-
+Karta kya hai: Data type define karta hai. 
+SailPoint engine ko batata hai ki target database me is value ka structure string format me evaluate karna hai.
+
+value="CN=Enterprise-Core-Admins,OU=Groups,DC=kkr,DC=com":-
+Karta kya hai: Target Active Directory server par us group ka exact Distinguished Name (DN) ya asli unique string value hai.
+
+()<Description>:-manager ko pata rahe ki wo kis cheez ko approve kar raha hai.
+
+()3. <Attributes> aur <Map> Tag Layer
+XML
+<Attributes>
+  <Map>
+    <entry key="requestable" value="true"/>
+    <entry key="classification" value="Privileged_Access"/>
+  </Map>
+</Attributes>:-
+(()<entry key="requestable" value="true"/>:-
+Karta kya hai: Catalog Visibility Switch. Agar yeh true hai, toh end-user is group ko search karke request raise kar sakta hai.
+ if developer ise false kar de,toh ye catalog se poori tarah hide ho jata hai aur sirf automatic rule ya role se hi mil sakta hai.
+ 
+()<entry key="classification" value="Privileged_Access"/>:-
+classification attribute ki value = Privileged_Access,toh system is classification tag ke basis par high-risk elements ko filter karega.
+ 
+()<Owner>
+  <Reference class="sailpoint.object.Identity" name="Shiva"/>
+</Owner>:-
+Jab bhi is group par Annual Certification Campaign (Access Review) chalegi, 
+toh system automatic Shiva ko email bhejega ki "Aap is group ke owner hain, 
+kripya check karein ki kis-kis ke paas ye access rehna chahiye."
+
+()<ApprovalConfiguration>
+  <ApprovalScheme>
+    <entry key="approvalScheme" value="owner"/>
+    <entry key="errorOnTimeout" value="true"/>
+  </ApprovalScheme>
+</ApprovalConfiguration>:-
+
+-->1. <ApprovalConfiguration>:-Ye batata hai:-
+Approval process ka configuration kya hoga.
+Example:-
+approval kaun karega
+timeout pe kya hoga
+manager approval ya owner approval.
+
+-->3. approvalScheme = owner
+<entry key="approvalScheme"
+       value="owner"/>
+Meaning:-
+Approval Owner karega.Yani requested access/entitlement ka owner approver banega.
+
+-->4. errorOnTimeout = true
+<entry key="errorOnTimeout"
+       value="true"/>
+Meaning:-
+Approval timeout hone par error/failure treat karo.
+Example:-
+Approval request bheji gayi.
+Approver ne 5 din tak action nahi liya.
+Timeout ho gaya.
+
+Agar:-
+errorOnTimeout=true:-
+to result:-
+Workflow Error
+Request Failed
+
+Agar:-
+errorOnTimeout=false:-toh workflow continue ho sakta hai,aur escalation pe chala jayega bina error generate kiye.
+*/////////////////////
+------------------------------------------------------------------------------------------------------------------------
+()()Target / Target Source Object:-
+Identity Authorization aur Access Governance Directives ke connection rules
+Target systems se permissions aur explicit access scopes ko read karne ki rules.
+Target / Target Source Object (SailPoint IIQ)
+Ye terms workflow, provisioning, mapping, integration me aate hain.
+Simple language me:-
+Target = Jis object/system par action hona hai
+Target Source Object = Jis source object se target ki value/data aa rahi hai.
+
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TargetSource PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<!-- name: Is target governance model ka unique identifier -->
+<TargetSource name="KKR_ActiveDirectory_Governance_Target">
+  <Description>Advanced Target Source for mapping AD Administrative Directives and Explicit Scopes</Description>
+  
+  <!-- Target Application Reference: Kis core application se rules link karne hain -->
+  <ApplicationRef>
+    <Reference class="sailpoint.object.Application" name="Active_Directory_App"/>
+  </ApplicationRef>
+
+  <Attributes>
+    <Map>
+      <!-- ======================================================= -->
+      <!-- 1. IDENTITY AUTHORIZATION & ACCESS GOVERNANCE DIRECTIVES-->
+      <!-- ======================================================= -->
+      <!-- authorizationRule: Yeh custom rule user ki identity ko padh kar target authorization level set karega -->
+      <entry key="authorizationRule" value="KKR_AD_Target_Authorization_Directive_Rule"/>
+      
+      <!-- enforceStrictGovernance: True matlab bina complete match ke access pass nahi ho sakta -->
+      <entry key="enforceStrictGovernance" value="true"/>
+
+      <!-- ======================================================= -->
+      <!-- 2. EXPLICIT ACCESS SCOPES & PERMISSION RECON RULES     -->
+      <!-- ======================================================= -->
+      <!-- scopeReadRule: Target system se nested/explicit scopes read karne ka dimaag -->
+      <entry key="scopeReadRule" value="KKR_AD_Scope_Resolution_Rule"/>
+
+      <!-- targetType: Kis tarah ke explicit structure ko read karna hai -->
+      <entry key="targetType" value="Administrative_Domain_Scope"/>
+      
+      <!-- Max target depth to parse nested group structures -->
+      <entry key="maxHierarchyDepth" value="5"/>
+    </Map>
+  </Attributes>
+</TargetSource>
+////////////////*
+()<TargetSource name="KKR_ActiveDirectory_Governance_Target">
+Meaning:-
+Ek TargetSource object create/define ho raha hai.
+name=KKR_ActiveDirectory_Governance_Target.
+
+()<ApplicationRef>Meaning:-Kis Application se ye TargetSource linked hai.
+
+()<ApplicationRef>
+    <Reference class="sailpoint.object.Application" name="Active_Directory_App"/>
+  </ApplicationRef>:-"Ye TargetSource Active_Directory_App Application ke liye hai."
+
+()<entry key="authorizationRule" value="KKR_AD_Target_Authorization_Directive_Rule"/>:-
+"Authorization logic chalane ke liye is Rule ko use karo."
+
+()<entry
+key="enforceStrictGovernance"
+value="true"/>:-Rules ko sakhti se follow karo.Koi mismatch hua to access allow mat karo.
+
+()<entry
+key="scopeReadRule"
+value="KKR_AD_Scope_Resolution_Rule"/>:-ye rule hai aur rule me likha hai ki user agar india se hai toh access dedo.
+//scope(location)
+
+()<entry
+key="targetType"
+value="Administrative_Domain_Scope"/>:-
+Administrative Domain Scope type handle karo.
+
+()ye sare location ko seprate karne ka jariya hai charo.
+Example:-
+System me target types ho sakte hain:-
+Role_Target
+OU_Target
+Application_Target
+Administrative_Domain_Scope
+
+()<entry key="maxHierarchyDepth" value="5"/>
+Matlab kya hai?
+maxHierarchyDepth
+matlab:-
+Nested hierarchy kitni level tak read karni hai.
+
+ex:-nested groups:-
+Group1
+ └─ Group2
+     └─ Group3
+         └─ Group4
+             └─ Group5
+                 └─ Group6// toh group 6 ignore ho jayegi ishka data nahi ayega.
+				 
+*////////////////
+----------------------------------------------------------------------------------------------------------------------
+()Capability Object;-
+Kisi specific Rights ya Permissions ke administrative scope ko limit karne ki settings.
+Naye UI modules ko capabilities ke sath tightly bind karne ke flags.
+
+-->SailPoint ke andar kisi bhi user, developer, ya administrator ka kya power level hoga—
+wo kya dekh sakta hai aur kya button daba sakta hai—wo isi object se control hota hai.
+
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Capability PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<!-- name: Is custom permission level ka unique identifier -->
+<Capability name="KKR_Regional_Finance_Auditor_Capability">
+  <Description>Custom administrative capability for Finance Auditors with regional boundaries and custom UI module locks.</Description>
+  
+  <!-- ======================================================= -->
+  <!-- 1. RIGHT ASSIGNMENT (Asli Access Power)                 -->
+  <!-- ======================================================= -->
+  <!-- Rights: Yeh user ko system me specific functions run karne ka access dete hain -->
+  <Rights>
+    <Reference class="sailpoint.object.Right" name="ViewIdentity"/>
+    <Reference class="sailpoint.object.Right" name="ViewReports"/>
+    <Reference class="sailpoint.object.Right" name="FullAuditComplianceRight"/>
+  </Rights>
+
+  <!-- ======================================================= -->
+  <!-- 2. ADMINISTRATIVE SCOPE LIMIT SETTINGS                  -->
+  <!-- ======================================================= -->
+  <Attributes>
+    <Map>
+      <!-- scoper: Scope Control Rule Reference -->
+      <!-- Yeh user ke hath baandh deta hai taaki wo puri duniya ka data na dekh sake -->
+      <entry key="scoper" value="KKR_Finance_Regional_Scope_Control_Rule"/>
+      
+      <!-- defaultScopeRestriction: True matlab bina authorization ke data visibility block -->
+      <entry key="defaultScopeRestriction" value="true"/>
+
+      <!-- ======================================================= -->
+      <!-- 3. NEW UI MODULE BINDING FLAGS                          -->
+      <!-- ======================================================= -->
+      <!-- restrictedUiModules: Kaun se naye custom UI modules is capability ke sath locked hain -->
+      <entry key="restrictedUiModules">
+        <value>
+          <List>
+            <String>KKR_Custom_Finance_Audit_Dashboard</String>
+            <String>KKR_SOX_Violation_Analytics_Widget</String>
+          </List>
+        </value>
+      </entry>
+      
+      <!-- uiModuleAssignmentStrict: Strict check toggle for front-end rendering -->
+      <entry key="uiModuleAssignmentStrict" value="true"/>
+    </Map>
+  </Attributes>
+</Capability>
+/////////////*
+()<entry key="scoper" value="KKR_Finance_Regional_Scope_Control_Rule"/>:-
+Karta kya hai: Dynamic Boundary Rule Trigger. Yeh engine ko ek custom parameter deta hai. 
+Jab is capability wala user kisi ka profile dhoondhne jayega, 
+toh system is key par mapped Beanshell code (KKR_Finance_Regional_Scope_Control_Rule) ko chala dega. 
+Wo code user ke location attribute ko check karega aur strict filter laga dega ki "Bhai,
+tum right toh rakhte ho dekhne ka, par tum sirf 'APAC region' ke employees ka data hi dekh sakte ho, 
+baki pure global corporate user database ko tum touch nahi kar sakte."
+
+()<entry key="defaultScopeRestriction" value="true"/>:-
+Karta kya hai: Strict Isolation Switch. Agar iski value true hai, 
+toh engine bina upar wale scope filter pass huye user ko kisi bhi data query ka access nahi phekega (Green light nahi dega).
+
+()<entry key="restrictedUiModules">:-ye dono tab ushi ko dikhenge jisse ye oject capibility(KKR_Regional_Finance_Auditor_Capability) mili hai.
+()2. <String>KKR_Custom_Finance_Audit_Dashboard</String>
+Karta kya hai: Custom Page Identity. Yeh tumhare us naye full-screen UI module ya component ka exact layout code 
+reference ID hai jahan finance audit ki reports padi hain. Yeh page ab strictly lock ho chuka hai.
+()3. <String>KKR_SOX_Violation_Analytics_Widget</String>
+Karta kya hai: Custom Widget Identity. Home page par jo analytics tiles ya summary cards dikhte hain,
+ yeh us specific custom widget ka reserved name hai. Yeh card bhi normal users se ab chup gaya hai.
+ 
+()<entry key="uiModuleAssignmentStrict" value="true"/>:-
+Agar koi shatir user (jaise Rahul) direct browser ke URL path me jaakar type kar de:-
+https://sailpoint-url/ui/KKR_Custom_Finance_Audit_Dashboard.
+If Value is true: SailPoint ka server frontend rendering ko thukra dega.aur rahul ko 403 errorr dega 
+kyuki ushke pass main capability object(KKR_Regional_Finance_Auditor_Capability) nahi hai.
+*/////////////
+-------------------------------------------------------------------------------------------------------------
+()Real-world project me jab koi event hota hai (jaise abhi humne Mover ya Access Request padha), 
+toh system ko user ya manager ko notify karna hota hai.Lekin dikkat ye hai ki ek global company me US wale bande ko English me
+mail chahiye, Germany wale ko German me, aur agar emergency alert hai toh SMS gateway par short alphanumeric text chahiye bina 
+kisi complex HTML tag ke.Yeh sab kuch MessageTemplate handle karta hai.
+
+-><Subject> ka matlab hota hai Email / Notification ka title (heading).
+Example:-
+<Subject>
+Action Required: Profile Update for $identity.displayName
+</Subject>
+
+-->2. Body Start
+<Body>
+Matlab:-
+Notification / Email ka main message content.
+
+-->3. CDATA
+<![CDATA[
+...
+]]>
+CDATA ka matlab:-
+XML parser andar ke text ko normal text treat kare.
+Special characters safely likhne ke liye use hota hai.
+
+-->entry key="locales" (Multi-Language Registry Card)
+Karta kya hai: Yeh system ke andar Language Dictionary Container kholta hai.abb subject ko har bhasha me badal sakta hai.
+
+-->2. entry key="de_DE" aur entry key="es_ES" (Desh Ke Code)
+Karta kya hai: Yeh specific Country/Locale Identification Slots hain (de_DE = German, es_ES = Spanish).in bhasha me badal jayega subject.
+
+-->1. smsEnabled:-
+<entry key="smsEnabled" value="true"/>
+Matlab kya hai?
+smsEnabled = SMS feature ON/OFF
+value="true"
+matlab:-
+Notification SMS ke through bhejne ki permission hai.
+<entry key="smsEnabled" value="false"/>:-SMS disabled toh Sirf email/other channel chalega.
+
+
+-->2. smsTemplate
+<entry
+key="smsTemplate"
+value="
+Alert: Mover event detected for
+$identity.displayName.
+Please approve in SailPoint portal immediately."/>
+Matlab kya hai?
+Ye SMS ka message template hai.
+Yani:-
+SMS bhejna ho to kya text bhejna hai.
+ex->Alert:
+Mover event detected
+for Rahul Sharma.
+
+Please approve
+in SailPoint portal immediately.
+
+-->3. stripHtmlForSms
+<entry
+key="stripHtmlForSms"
+value="true"/>
+Matlab kya hai?
+stripHtmlForSms
+= SMS bhejte waqt HTML formatting hatao ya nahi.
+*////////////
+----------------------------------------------------------------------------------------------------
+()Group Definition / Factory Object:-
+Dynamic Grouping rules (e.g., Department aur Location ke combinations par automatic groups create karne ka logic).
+Group aggregation refresh frequencies aur processing indexes.
+
+-->2. GroupFactory kya hai?
+Simple meaning:-
+Group create/produce karne wala component/class.
+Factory word programming me usually matlab:-
+Object banane wala helper/builder.
+
+-->1. GroupDefinition Object kya hai?
+Simple meaning:-
+Group ka definition/configuration object
+Ye batata hai:-
+group kaise banega
+kis rule/logic se members aayenge
+grouping criteria kya hai
+Matlab “group banane ka formula/definition”.
+
+/////////////*
+()<entry key="autoRefresh" value="true"/>:-
+Karta kya hai: Maintenance Scan Engine Switch. Jab har subah global Identity Refresh Task chalega, 
+toh engine is factory ko re-evaluate karega. Agar koi employee IT-Mumbai se transfer ho kar HR-Mumbai me gaya, 
+toh is auto-refresh switch ke chalte system user ko purane group se fenkega bahar aur naye group me automatic inject kar dega.
+Agar tum ise false kar doge, toh group sirf ek baar ban kar freeze ho jayega. 
+Naye join karne wale employees ya transfer hone wale log is dynamic group me kabhi automatic add nahi honge 
+jab tak tum manually task nahi chalaoge. true hone par ye automatic har scheduling cycle me sync hota hai.
+
+()2. entry key="processingIndexPriority" value="10" (Execution Sequence Controller)
+Karta kya hai: Yeh pooray server background tasks ka VIP Pass (Priority Index) hai.
+Engine Level Logic: SailPoint me low integer numbers (jaise 5, 10, 20) ko high priority mana jata hai.
+value="10" ka matlab hai ki server ke memory threads baki faltu reports aur lower-priority group mappings ko hold par daal denge,
+aur is group factory ke processing indexes ko sabse pehle compile karenge taaki access allocation me delay na ho.
+
+()4. <GroupFilter> Tag Block (The Master Gatekeeper)Karta kya hai:-Yeh tumhare automatic combinations par ek strict Global 
+Security Filter lagata hai.operation="AND": Iska matlab hai ki is block ke andar likhi saari conditions ka pass hona zaroori hai
+,<Filter operation="EQ" property="identityStatus" value="Active"/>: EQ ka matlab hota hai Equal To ($=$). 
+Yeh line strictly engine ko bolti hai ki tum combination chahe jitne bana lo (IT-Mumbai, HR-Bangalore, etc.), 
+lekin un groups ke andar sirf aur sirf wahi log jayenge jinka identityStatus ekdum strictly "Active" chal raha hai. 
+Suspended, Terminated ya Leave-of-Absence wale employees ko is membership se door rakha jaye.
+"AND" ka matlab upar conditions locaion wale aur ye filter ka condition status wale dono match tabhi user ko group me inject karo.
+
+()<entry key="optimizedIndexQuery" value="true"/>:-
+Maan lo tumhari company me 50,000 employees hain aur unka data ek badi register (database table spt_identity) me likha hai. 
+Tumne system ko bola: "Mujhe un sab logo ko dhoondh kar do jo Mumbai location ke hain."
+
+Agar yeh FALSE (ya missing) hai: SailPoint ka engine register ka pehla panna kholega aur aakhri panne tak ek-of-a-kind line ko
+padhega (Isse technical language me Full Table Scan kehte hain). Agar 50,000 rows hain, toh engine 50,000 baar database par 
+search karega. Isse tumhara database server bohot slow ho jayega.
+Agar yeh TRUE hai: SailPoint ka engine database ko bolta hai: "Mujhe poori table line-by-line nahi padhni.
+ Humne jo upar se 'Location' aur 'Department' ke indexes bana rakhe hain, tum seedhe un par jump karo" (Isse Index Scan kehte hain).
+toh engine bina baki 49,000 rows ko chhue, seedhe un 1,000 Mumbai wale employees par hit karega.
+*//////////
+------------------------------------------------------------------------------------------------------------
+()Provisioning Project Object (Runtime Object):-
+Compilation state flags (Workflow jab provisioning plan execute karta hai, toh runtime par conflicts, 
+evaluation steps aur targeting rules isme temporary save hoti hain).
+
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningProject PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<!-- identityName: Kis employee ke liye ye provisioning runtime engine chal raha hai -->
+<ProvisioningProject identityName="shiva.kumar">
+  
+  <!-- ======================================================= -->
+  <!-- 1. COMPILATION STATE FLAGS & TARGETING RULES            -->
+  <!-- ======================================================= -->
+  <Attributes>
+    <Map>
+      <!-- compiled: true batata hai ki provisioning plans successfully compile ho chuke hain -->
+      <entry key="compiled" value="true"/>
+      
+      <!-- optimizable: Engine check karta hai ki kya requests ko batch kiya ja sakta hai -->
+      <entry key="optimizable" value="true"/>
+
+      <!-- conflictDetected: Runtime evaluation step me agar koi Access Policy break ho rahi ho -->
+      <entry key="conflictDetected" value="false"/>
+
+      <!-- targetSystemStatus: Backend validation state tracker before push -->
+      <entry key="targetSystemStatus" value="VERIFIED_ONLINE"/>
+    </Map>
+  </Attributes>
+
+  <!-- ======================================================= -->
+  <!-- 2. EVALUATION STEPS & PROVISIONING PLANS                -->
+  <!-- ======================================================= -->
+  <!-- ProvisioningPlan: Asli physical changes jo target system par bhejne hain -->
+  <ProvisioningPlan minimal="true">
+    <AccountRequest application="Active_Directory_App" op="Modify" nativeIdentity="CN=Shiva Kumar,OU=Users,DC=kkr,DC=com">
+      <!-- Evaluation Step: Directives mapping rules on attribute level -->
+      <AttributeRequest name="memberOf" op="Add" value="CN=Enterprise-Core-Admins,OU=Groups,DC=kkr,DC=com">
+        <Attributes>
+          <Map>
+            <!-- Tracking evaluation assignment origin -->
+            <entry key="assignmentId" value="0a0a0a0a-7c8b-11e9-b27a-1234567890ab"/>
+          </Map>
+        </Attributes>
+      </AttributeRequest>
+    </AccountRequest>
+  </ProvisioningPlan>
+
+</ProvisioningProject>
+///////////////////////*
+()SailPoint ke back-end par yeh jo <AccountRequest> aur uske andar ka <AttributeRequest> hai na, 
+isi poore structure ko milakar Payload bola jata hai. Java engine ki bhasha me ise ProvisioningPlan Payload kehte hain.
+->apke code me payload ye hai:-
+<!-- YAHAN SE PAYLOAD SHURU HOTA HAI -->
+<AccountRequest application="Active_Directory_App" op="Modify" nativeIdentity="CN=Shiva Kumar,OU=Users,DC=kkr,DC=com">
+  
+  <!-- Yeh hai asli payload ka data item (Action) -->
+  <AttributeRequest name="memberOf" op="Add" value="CN=Enterprise-Core-Admins,OU=Groups,DC=kkr,DC=com"/>
+
+</AccountRequest>
+<!-- YAHAN PAYLOAD KHATAM HOTA HAI -->
+
+--------------------------------------------
+()<entry key="compiled" value="true"/>:-
+Engine ko green signal deta hai ki plan compile ho chuka hai, koi structural code syntax error nahi hai.
+
+4. <entry key="optimizable" value="true"/>:-
+Provisioner ko bolta hai ki agar is user ke aur bhi tickets hain toh unhe merge karke ek single payload bana lo.
+
+5. <entry key="conflictDetected" value="false"/>:-
+Radar toggle confirmation deta hai ki background evaluation me koi SoD (Separation of Duties) policy break nahi hui hai.
+
+()1. entry key="targetSystemStatus" value="VERIFIED_ONLINE" (The Gateway Guard)
+Is single line ka backend database aur implementation me sabse critical role hai. Jab hum SailPoint se kisi target application (jaise Active Directory, SAP, ya Workday) par koi provisioning request push karne wale hote hain, toh system blind hit (andhadhundh transaction) nahi marta.
+The Connection Verification (Handshake): SailPoint ka core Provisioner Engine plan execute karne se just pehle target application connector ke internal testConnection() method ko trigger karta hai.
+Engine Level State Machine:-
+Jaise hi remote Active Directory domain controller respond karta hai, engine is parameter ki value ko temporary memory me VERIFIED_ONLINE mark kar deta hai.
+Iska matlab hai ki rasta ekdum saaf hai, connection pipelines responsive hain, aur payload push kiya ja sakta hai.
+
+()<ProvisioningPlan minimal="true">
+Engine Level Operation: Jab user request generate karta hai, 
+toh Java code internally ProvisioningPlan plan = new ProvisioningPlan(); call karta hai.
+minimal="true" Ka Khel: Yeh attribute batata hai ki is plan me user ka poora data 
+(jaise uski reporting hierarchy, manager identity, manager name etc.) nahi bhejna hai. 
+Sirf aur sirf wahi data bhejenge jo badalna hai, jisse dynamic payload ka size chhota rehta hai aur execution speed fast ho jaati hai.
+
+()<AccountRequest application="Active_Directory_App" op="Modify" nativeIdentity="CN=Shiva Kumar,OU=Users,DC=kkr,DC=com">
+Yeh line target application connector ke liye "Search and Lock Warrant" hai:
+application: System directly target directory context ko check karta hai ki mujhe is process ke liye kis application ke driver (connector class) ko call karna hai.
+op="Modify": Iski value Modify, Create, Delete, Enable, ya Disable ho sakti hai. Modify batata hai ki target user account pahle se hi Active Directory tree par zinda hai, hamein naya account nahi banana hai, bas usi me badlaav karna hai.
+nativeIdentity: Yeh target system par us user ka unique identity address (Distinguished Name - DN) hai. AD Connector is pure string ko target LDAP filter me inject karta hai taaki direct usi employee ke object boundary ko fetch kiya ja sake.
+
+()<AttributeRequest name="memberOf" op="Add" value="CN=Enterprise-Core-Admins,OU=Groups,DC=kkr,DC=com">
+Yeh line target account ke properties page par chalne wala Asli Action Operation hai:
+name="memberOf": Connector framework ko target column ya field specific structure lock milta hai. AD me group membership ko memberOf kehte hain.
+op="Add": Iski value Add, Remove, ya Set ho sakti hai. Add batata hai ki user ke paas jo purani groups hain unhe touch nahi karna hai, bas unke sath is naye administrative group ko parallel me append (jod) dena hai.
+value: Jo group user ko access me milna hai, uska exact deployment value string.
+
+()<entry key="assignmentId" value="0a0a0a0a-7c8b-11e9-b27a-1234567890ab"/>
+Engine Level Operation: Jab ye provisioning transaction successfully target AD par complete ho jata hai, toh SailPoint ka Identity Refresh engine database table spt_identity_entitlement me entry save karta hai.
+Asli Kaam: Yeh unique assignment token (GUID) us record ke sath permanent link ho jata hai. Kal ko agar audit team poochegi ki "Shiva Kumar ke account me yeh group kisne joda?", toh SailPoint is audit key (assignmentId) ko read karega aur batayega ki "Yeh kisi manager ne request nahi kiya tha, yeh piche chal rahe ek LCM automatic lifecycle rule ke zariye system me provision hua tha."
+*///////////////////////
+-----------------------------------------------------------------------------------------------------------------
+()attributes tag in quicklink:-
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE QuickLink PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<QuickLink action="workflow" category="SelfService" label="Dynamic Survey Portal" message="Click here to launch the dynamic questionnaire" name="Dynamic Survey Portal Link">
+  <Attributes>
+    <Map>
+	<!-- Yeh line bata rahi hai ki button dabte hi kaunsa workflow chalana hai -->
+      <entry key="workflowName" value="Sample Workflow"/>
+	<!-- Isse yeh button user ke "My Services" ya dashboard par dikhne lagega -->
+      <entry key="allowEveryone" value="true"/>
+    </Map>
+  </Attributes>
+</QuickLink>

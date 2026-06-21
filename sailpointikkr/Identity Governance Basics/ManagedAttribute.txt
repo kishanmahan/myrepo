@@ -1,0 +1,122 @@
+1️⃣ ManagedAttribute kya hai?
+ManagedAttribute basically real-world application ya target system me attribute ka representation hai.
+Jab IdentityIQ kisi external system (jaise Active Directory, HR system, database) ke attribute ko manage karta hai,
+tab ManagedAttribute use hota hai.
+Matlab:-
+AttributeDefinition → metadata/rules define karta hai
+ManagedAttribute → actual mapping + value handling external system ke liye.
+
+2️⃣ ManagedAttribute ke andar kya hota hai:-
+ManagedAttribute ke key fields aur methods ye hote hain:-
+Property / Method	                            Kaam
+getName() / setName(String name):-----------------------------------Attribute ka naam
+getValue() / setValue(Object value):---------------------------Attribute ka actual value
+getType() / setType(Class type):------------------------------Data type define karta hai
+getApplication() / setApplication(Application app):----------Ye attribute kis application/system se belong karta hai
+isReadOnly() / setReadOnly(boolean):--------------------------Read-only hai ya editable
+isRequired() / setRequired(boolean):--------------------------Mandatory hai ya optional
+getFormat() / setFormat(String format):---------------------Format rules (jaise date format)
+getDefaultValue() / setDefaultValue(Object value):-----------Default value agar system me value nahi hai
+clone():------------------------------------------------------Attribute ka exact copy banata hai
+equals() / hashCode():---------------------------------------Object comparison aur hashing ke liye.
+
+3️⃣ ManagedAttribute ka kaam:-
+()External System Integration:-
+Ye attribute external app (HR, AD, ERP) se map hota hai.
+
+()Value Handling:-
+Isme actual value store hoti hai jo AttributeDefinition ke rules follow karti hai.
+DB me direct nahi, runtime me value ManagedAttribute ke object me store hoti hai, provisioning/reconciliation ke time use hoti hai.
+
+()Validation & Rules:-
+Read-only, required, format, aur default value check karta hai.
+
+()Provisioning / Reconciliation:-
+Jab IdentityIQ user ke data ko sync karta hai external system ke saath,
+ManagedAttribute ka value aur mapping use hota hai.
+
+AttributeDefinition	           ManagedAttribute
+Metadata/rules:--------------Actual value + mapping
+DB me definition store:------Value in memory / during provisioning / reconciliation
+Example: required, format:---Example: John, 25, john@example.com
+
+2️⃣ Key Methods & Usage:-
+1. getName() / setName(String name):-
+Kya karta hai: Attribute ka naam set/get karta hai
+Value storage: Internal field name me store hota hai
+ManagedAttribute attr = new ManagedAttribute();
+attr.setName("firstName");
+System.out.println(attr.getName());  // Output: firstName
+
+2. getValue() / setValue(Object value):-
+Kya karta hai: Attribute ka actual value set/get karta hai
+Value storage: Internal field value me store hoti hai
+Ye value provisioning/reconciliation ke liye use hoti hai
+attr.setValue("John");
+System.out.println(attr.getValue());  // Output: John
+
+3. getType() / setType(Class type):-
+Kya karta hai: Data type set/get karta hai
+Value storage: Internal field type me store hoti hai, type ke validation ke liye
+attr.setType(String.class);
+System.out.println(attr.getType());  // Output: class java.lang.String
+
+4. getApplication() / setApplication(Application app):-
+Kya karta hai: Attribute kis application/system ka hai set/get karta hai
+Value storage: Internal reference application me store hota hai
+Application app = new Application();
+app.setName("HRSystem");
+attr.setApplication(app);
+System.out.println(attr.getApplication().getName());  // Output: HRSystem
+
+5. isReadOnly() / setReadOnly(boolean):-
+Kya karta hai: Attribute editable hai ya read-only
+Value storage: Boolean field internally store hoti hai
+attr.setReadOnly(true);
+System.out.println(attr.isReadOnly());  // Output: true
+
+6. isRequired() / setRequired(boolean):-
+Kya karta hai: Attribute mandatory hai ya optional
+Value storage: Boolean field required me store hoti hai
+attr.setRequired(true);
+System.out.println(attr.isRequired());  // Output: true
+
+7. getFormat() / setFormat(String format):-
+Kya karta hai: Format rule set/get karta hai (jaise date/email format)
+Value storage: String field format me store hoti hai
+attr.setFormat("text");
+System.out.println(attr.getFormat());  // Output: text
+
+8. getDefaultValue() / setDefaultValue(Object value):-
+Kya karta hai: Agar attribute value empty ho, default value provide karta hai
+Value storage: Internal field defaultValue me store hoti hai
+Note: Agar value null ho, getValue() call karne pe default return ho sakta hai
+attr.setDefaultValue("Unknown");
+System.out.println(attr.getDefaultValue());  // Output: Unknown
+
+9. clone():-
+Kya karta hai: Attribute ka exact copy banata hai
+Value storage: Naya object create hota hai, saare fields copy ho jate hain
+ManagedAttribute cloneAttr = attr.clone();
+System.out.println(cloneAttr.getName());   // Output: firstName
+System.out.println(cloneAttr.getValue());  // Output: John
+
+10. equals(Object obj):-
+Kya karta hai: Do ManagedAttribute objects compare karta hai (name + value + type usually)
+Value storage: Comparison ke liye internal fields use hoti hain
+ManagedAttribute attr2 = new ManagedAttribute();
+attr2.setName("firstName");
+attr2.setValue("John");
+System.out.println(attr.equals(attr2));  // Output: true
+
+11. hashCode():-
+Kya karta hai: Object ka unique integer return karta hai (hash-based collections me use hota hai)
+Value storage: Internal fields ke combination se calculate hota hai
+System.out.println(attr.hashCode());  // Output: e.g., 12345678
+
+12. toString():-
+Kya karta hai: Object ka string representation return karta hai
+Value storage: Internal fields ko concatenate karke string banata hai
+System.out.println(attr.toString());  
+// Output: ManagedAttribute{name='firstName', value='John', type=class java.lang.String, required=true, ...}
+

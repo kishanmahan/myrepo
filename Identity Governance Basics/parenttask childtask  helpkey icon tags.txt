@@ -1,0 +1,116 @@
+🏷️ 1️⃣ Tags kya hote hain?
+👉 Tags = labels / keywords jo task ko identify aur filter karne me help karte hain
+
+💡 Example:-
+Tags:-
+aggregation
+daily
+critical
+
+👉 UI me tu filter kar sakta hai:-
+sirf “aggregation” wale tasks
+sirf “critical” tasks
+
+💻 Code:-
+td.addTag("aggregation");
+td.addTag("daily");
+System.out.println(td.getTags());
+Output:-
+[aggregation, daily]
+
+🎨 2️⃣ Icon kya hota hai?
+👉 Icon = UI me task ka chhota image/symbol
+💡 Example:-
+Aggregation Task → 🔄 icon
+Provisioning Task → ⚙️ icon
+Report Task → 📊 icon
+👉 Sirf UI me dikhane ke liye hota hai
+
+💻 Code:-
+td.setIcon("aggregation-icon");
+System.out.println(td.getIcon());
+Output:-
+aggregation-icon
+
+❓ 3️⃣ HelpKey kya hota hai?
+👉 HelpKey = help/documentation ka reference key
+👉 Jab user UI me help click karega → system iss key se help text dikhata hai
+💡 Example:-
+HelpKey: aggregation.help
+👉 Ye kisi help file ya message se linked hota hai
+
+💻 Code:-
+td.setHelpKey("aggregation.help");
+System.out.println(td.getHelpKey());
+Output:-
+aggregation.help
+----------------------------------------------------------------------------------------
+🌳 2️⃣ Parent kya hota hai?
+👉 Parent = main/master task
+
+👉 Ye decide karta hai:-
+kaunse child tasks chalenge
+kis order me chalenge
+
+💡 Example:-
+Parent Task: Daily Job
+👉 Iske andar multiple tasks honge
+
+🌿 3️⃣ Child kya hota hai?
+👉 Child = sub-task (parent ka part)
+👉 Parent ke andar run hota hai.
+
+💡 Example:-
+Parent: Daily Job
+   ↓
+   ├── Child 1: Aggregation
+   ├── Child 2: Identity Refresh
+   ├── Child 3: Provisioning
+-------------------------------------
+🔥 Real Flow:-
+Parent Task start
+   ↓
+Child Task 1 run
+   ↓
+Child Task 2 run
+   ↓
+Child Task 3 run
+   ↓
+Parent complete
+--------------------------
+💻 Code Example:-
+TaskDefinition parent = new TaskDefinition();
+parent.setName("Main Task");
+
+TaskDefinition child = new TaskDefinition();
+child.setName("Sub Task");
+
+parent.addChild(child);
+
+System.out.println(parent.getChildren());
+
+Output:-
+[Sub Task]
+-------------------------------------------------------------------------------------------------------------------------
+🚀 TaskDefinition Common Task Tags + Meaning:-
+Tag	                                    Meaning / Use
+aggregation:-----------------------Task kisi system se data fetch/aggregate karta hai
+provisioning:----------------------Task accounts create/update/delete karta hai
+identity-refresh:------------------Identity ke attributes, roles, entitlements update karta hai
+certification:---------------------Access review / approval ke liye task
+report:----------------------------Report generate karne ke liye task
+workflow:--------------------------Workflow start/run karta hai
+rule:------------------------------Custom logic / validation run karta hai
+maintenance:-----------------------Cleanup / maintenance task
+system:----------------------------System-level operation task
+import:----------------------------Data import ke liye
+export:----------------------------Data export ke liye
+daily:-----------------------------Daily schedule wale tasks
+weekly:----------------------------Weekly schedule wale tasks
+critical:--------------------------High priority task
+optional:--------------------------Low priority task
+manual:----------------------------Manual trigger required
+automatic:-------------------------Automated run ke liye
+test:------------------------------Testing / sandbox environment task
+production:------------------------Production environment task
+template:--------------------------Ye reusable task template hai

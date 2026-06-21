@@ -1,0 +1,293 @@
+📘 IDENTITY & ACCOUNT MANAGEMENT – Complete Chapters
+🟢 CHAPTER 1: Identity Fundamentals
+
+Identity kya hoti hai
+
+Digital Identity concept
+
+Authoritative source (HR system)
+
+Identity attributes (static vs dynamic)
+
+Identity type (Employee / Contractor / Service account)
+
+Identity status (Active / Inactive)
+
+🟢 CHAPTER 2: Identity Lifecycle Management (JML)
+1️⃣ Joiner Process
+
+Identity creation
+
+Birthright role assignment
+
+Auto provisioning
+
+2️⃣ Mover Process
+
+Department change
+
+Role recalculation
+
+Access revoke + grant
+
+3️⃣ Leaver Process
+
+Identity disable
+
+Account deprovision
+
+Certification trigger
+
+🟢 CHAPTER 3: Identity Cube
+
+Identity cube structure
+
+Attributes section
+
+Accounts tab
+
+Entitlements tab
+
+Roles tab
+
+Risk score
+
+Policy violations
+
+Certifications history
+
+Identity cube = Central governance object
+
+🟢 CHAPTER 4: Identity Refresh
+
+Identity refresh task
+
+Role recalculation
+
+Policy re-evaluation
+
+Risk recalculation
+
+Attribute synchronization
+
+Event trigger
+
+🟢 CHAPTER 5: Account Fundamentals
+
+Account kya hota hai
+
+Identity vs Account difference
+
+Native identity
+
+Account attributes
+
+Account status
+
+🟢 CHAPTER 6: Application Onboarding
+
+Application creation
+
+Connector configuration
+
+Schema mapping
+
+Attribute mapping
+
+Aggregation setup
+
+🟢 CHAPTER 7: Account Aggregation
+
+Full aggregation
+
+Delta aggregation
+
+Correlation process
+
+Uncorrelated accounts
+
+Orphan accounts detection
+
+🟢 CHAPTER 8: Correlation Rules
+
+Default correlation
+
+Rule-based correlation
+
+Matching attributes (EmpID / Email)
+
+Manual correlation
+
+🟢 CHAPTER 9: Account Linking & Unlinking
+
+Manual linking
+
+Automatic linking
+
+Merge accounts
+
+Remove account link
+
+🟢 CHAPTER 10: Provisioning Engine
+
+Provisioning plan
+
+Provisioning workflow
+
+Connector execution
+
+Success / Failure handling
+
+Retry logic
+
+🟢 CHAPTER 11: Deprovisioning
+
+Role removal trigger
+
+Certification revoke trigger
+
+Leaver auto deprovision
+
+Disable vs Delete account
+
+🟢 CHAPTER 12: Role-Based Access Control (RBAC)
+
+Business roles
+
+IT roles
+
+Role hierarchy
+
+Birthright roles
+
+Role assignment rules
+
+🟢 CHAPTER 13: Access Request Management
+
+Self-service access request
+
+Approval workflow
+
+Manager approval
+
+Application owner approval
+
+Auto provisioning
+
+🟢 CHAPTER 14: Certification (Access Review)
+
+Manager certification
+
+Application owner certification
+
+Role certification
+
+Revoke access
+
+Evidence storage
+
+🟢 CHAPTER 15: Policy & Compliance
+
+Segregation of Duties (SoD)
+
+Policy violation detection
+
+Risk scoring
+
+Risk-based certification
+
+🟢 CHAPTER 16: Risk Management
+
+Identity risk score
+
+Account risk score
+
+Role risk
+
+Policy impact
+
+Risk calculation logic
+
+🟢 CHAPTER 17: Orphan & Dormant Accounts
+
+Orphan detection
+
+Dormant account detection
+
+Remediation workflow
+
+🟢 CHAPTER 18: Service Account Management
+
+Non-human identity
+
+Shared accounts
+
+Governance challenges
+
+Manual attestation
+
+🟢 CHAPTER 19: Identity Events
+
+Lifecycle events
+
+Attribute change trigger
+
+Event-based provisioning
+
+🟢 CHAPTER 20: Reports & Audit
+
+Identity reports
+
+Account reports
+
+Access reports
+
+Certification reports
+
+Compliance export
+
+🟢 CHAPTER 21: Customization
+
+Correlation rule writing
+
+Provisioning rule
+
+Before/After provisioning rule
+
+Workflow customization
+
+Identity trigger rules
+
+🟢 CHAPTER 22: Performance & Monitoring
+
+Identity refresh performance tuning
+
+Aggregation tuning
+
+Log monitoring
+
+Task scheduling
+
+🟢 CHAPTER 23: Troubleshooting
+
+Provisioning failure debug
+
+Correlation failure
+
+Identity not created issue
+
+Account not linked issue
+
+Policy false positive issue
+
+🟢 CHAPTER 24: Advanced Concepts
+
+Multi-authoritative source
+
+Multi-account per application
+
+Account merge strategy
+
+Identity warehouse concept
+
+Hybrid cloud integration

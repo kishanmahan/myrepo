@@ -1,0 +1,17 @@
+1️⃣ Core Identity Objects:-
+Object/Class	                              Description
+Identity:---------------------------------Main user object, jo employee ya contractor ko represent karta hai
+IdentityAttribute:------------------------Identity ke attributes store karta hai (email, manager, department, etc.)
+IdentityAttributeDefinition:--------------Attribute ka metadata define karta hai (type, required, read-only, etc.)
+IdentityRole:-----------------------------User ke assigned roles ka representation
+IdentityGroup:----------------------------User ke groups ka representation
+IdentityAccount:--------------------------User ke linked accounts across systems (like AD, SAP, etc.)
+IdentityCertification:--------------------User ke certification info (access review / approval status)
+IdentityRequest:--------------------------User ke access requests ya provisioning requests
+2️⃣ Related/Utility Objects:-
+Object	                              Description
+IdentityEntitlement:-------------Specific entitlements / permissions user ke paas
+IdentityRelationship:------------Manager, mentor, deputy relationships define karta hai
+IdentityHistory:-----------------Past actions aur events ke liye audit trail
+IdentityPolicyViolation:---------Policy ke against identity actions ko track karta hai.
+

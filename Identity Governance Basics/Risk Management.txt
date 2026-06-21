@@ -1,0 +1,24 @@
+()1️⃣ Risk kya hota hai?
+Risk matlab uncertainty jo loss ya problem la sakti hai.
+Example:-
+Company ka server crash ho sakta hai → data loss ka risk.
+Stock market me invest karna → paisa lose karne ka risk.
+
+2️⃣ Risk Management ka process:-
+Risk management generally 4 main steps me hota hai:-
+
+()Risk Identification (Risk pehchanna):-
+Sabse pehle ye check karte hain ki kaunse areas me problems ya losses ho sakte hain.
+Example: IT system, finance, human resources, projects
+
+()Risk Analysis (Risk ka analysis karna):-
+Risk ke impact aur probability ko samjhte hain
+Example: Agar server crash hua → company ka loss ₹1 crore ho sakta hai
+
+()Risk Evaluation (Risk ko rank karna):-
+Kaunsa risk sabse zyada dangerous hai, kaunsa kam dangerous
+High, Medium, Low risk me categorize karte hain
+
+()Risk Treatment / Mitigation (Risk ko control karna):-
+Risk ko avoid, reduce, share, ya accept karna
+Example: Backup servers lagana → data loss ka risk kam ho jata hai.

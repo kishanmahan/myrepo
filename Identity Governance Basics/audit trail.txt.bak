@@ -1,0 +1,28 @@
+1️⃣ Audit Trail kya hai?
+Definition:-
+Audit Trail ek record ya log hota hai jo track karta hai ki system me kya hua, kab hua, aur kisne kiya.
+IAM / SaaS Governance me, ye user actions aur system events ka record hota hai taaki:
+Security issues detect kiye ja sake
+Compliance rules follow ho rahe hain ya nahi pata chal sake
+Future me investigation ke liye proof mile.
+
+2️⃣ Audit Trail ke Key Components:-
+Who (Kaun):-
+Action karne wala user ya system
+Example: Rahul, Admin, System Bot
+
+What (Kya):-
+Action jo perform hua
+Example: Login, Access Request, Role Assign, Access Revoke
+
+When (Kab):-
+Action ka timestamp
+Example: 15 March 2026, 10:15 AM
+
+Where / Source (Kahan):-
+System ya application jahan action hua
+Example: Salesforce, Slack, HR System
+
+Result / Outcome (Result):-
+Action ka status ya result
+Example: Approved, Failed, Access Removed

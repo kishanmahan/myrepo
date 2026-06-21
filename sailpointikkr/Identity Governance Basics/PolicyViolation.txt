@@ -1,0 +1,666 @@
+🔥 PolicyViolation kya hai?
+👉 PolicyViolation = jab koi user company ki security policy tod deta hai
+
+➡️ Matlab:-
+User ke paas aisa access aa gaya jo allowed nahi hai
+
+💡 Simple Example:-
+👉 Company rule:-
+Developer + Production Access ❌ (allowed nahi)
+
+👉 User ke paas:-
+Developer role + Production access
+➡️ 🔥 Ye ho gaya Policy Violation.
+
+🔥 SailPoint me PolicyViolation kya karta hai?
+👉 Ye ek object hota hai jo:-
+violation detect karta hai
+violation ka detail store karta hai
+report / audit me show hota hai
+
+🔥 PolicyViolation me kya kya hota hai?
+👉 Typical fields:-
+user (Identity)
+violated policy name
+risk level (High / Medium / Low)
+description
+conflicting access
+
+🔥 🔥 1️⃣ Core PolicyViolation Methods
+getPolicyName()
+setPolicyName(String name)
+
+getPolicyId()
+setPolicyId(String id)
+
+getDescription()
+setDescription(String desc)
+
+getRiskLevel()
+setRiskLevel(String level)
+
+getStatus()
+setStatus(String status)
+
+isActive()
+setActive(boolean val)
+🔥 2️⃣ Identity & Access Related
+getIdentity()
+setIdentity(Identity identity)
+
+getIdentityName()
+setIdentityName(String name)
+
+getApplication()
+setApplication(String app)
+
+getAccountName()
+setAccountName(String name)
+🔥 3️⃣ Violation Details (Important 🔥)
+getViolationItems()
+setViolationItems(List items)
+
+addViolationItem(Object item)
+
+getConflictingAccess()
+setConflictingAccess(List access)
+
+getConstraintName()
+setConstraintName(String name)
+👉 Ye batata hai kaun sa access conflict kar raha hai
+
+🔥 4️⃣ Time & Audit Info
+getCreated()
+setCreated(Date date)
+
+getModified()
+setModified(Date date)
+
+getLastDetected()
+setLastDetected(Date date)
+
+getResolvedDate()
+setResolvedDate(Date date)
+🔥 5️⃣ Resolution / Action Methods
+isResolved()
+setResolved(boolean val)
+
+getResolution()
+setResolution(String resolution)
+
+getMitigation()
+setMitigation(String mitigation)
+
+getOwner()
+setOwner(String owner)
+🔥 6️⃣ Severity / Risk
+getSeverity()
+setSeverity(String severity)
+
+getRiskScore()
+setRiskScore(int score)
+🔥 7️⃣ Comments / Notes
+getComments()
+setComments(String comments)
+
+addComment(String comment)
+🔥 8️⃣ Generic SailPointObject Methods (Inherited)
+getId()
+setId(String id)
+
+getName()
+setName(String name)
+
+toXml()
+fromXml(String xml)
+
+toMap()
+fromMap(Map map)
+
+validate()
+
+clone()
+
+equals(Object obj)
+
+hashCode()
+
+toString()
+--------------------------------------------------------------------------------------------------
+🔥1️⃣ getPolicyName() / setPolicyName(String name):-
+👉 Policy ka naam set aur get karta hai.
+💡 Kya hota hai?
+Kaunsi policy violate hui (SoD, Access Policy, etc.)
+
+pv.setPolicyName("SoD Policy");
+System.out.println(pv.getPolicyName());
+✅ Output:-
+SoD Policy
+
+🔥 2️⃣ getPolicyId() / setPolicyId(String id):-
+👉 Policy ka unique ID handle karta hai.
+💡 Kya hota hai?
+Backend me har policy ka ek unique ID hota hai
+
+pv.setPolicyId("POL123");
+System.out.println(pv.getPolicyId());
+✅ Output:-
+POL123
+
+🔥 3️⃣ getDescription() / setDescription(String desc):-
+👉 Violation ka reason batata hai.
+💡 Kya hota hai?
+Kyu violation hua, detail explanation
+
+pv.setDescription("Developer should not have Production access");
+System.out.println(pv.getDescription());
+✅ Output:-
+Developer should not have Production access.
+
+🔥 4️⃣ getRiskLevel() / setRiskLevel(String level):-
+👉 Violation kitna dangerous hai wo batata hai
+💡 Values:-
+HIGH
+MEDIUM
+LOW
+
+pv.setRiskLevel("HIGH");
+System.out.println(pv.getRiskLevel());
+
+🔥 5️⃣ getStatus() / setStatus(String status):-
+👉 Violation ka current status batata hai
+💡 Possible status:-
+OPEN
+CLOSED
+IN_PROGRESS
+
+pv.setStatus("OPEN");
+System.out.println(pv.getStatus());
+
+🔥 6️⃣ isActive() / setActive(boolean val):-
+👉 Check karta hai violation abhi active hai ya nahi
+💡 Kya hota hai?
+true → violation abhi exist karta hai
+false → resolve ho gaya
+
+pv.setActive(true);
+System.out.println(pv.isActive());
+----------------------------------------------------------------------------------------------------
+🔥 1️⃣ getIdentity() / setIdentity(Identity identity):-
+👉 Ye method poora Identity object handle karta hai.
+
+💡 Kya hota hai Identity?
+➡️ SailPoint me user ka full object (naam, email, roles, etc.)
+
+📌 Code:-
+Identity id = new Identity();
+id.setName("john");
+pv.setIdentity(id);
+
+Identity result = pv.getIdentity();
+System.out.println(result.getName());
+🧠 Use:-
+Full user details chahiye ho
+Rule / policy me deep access karna ho
+-------
+🔥 2️⃣ getIdentityName() / setIdentityName(String name):-
+👉 Ye method sirf user ka naam handle karta hai
+
+📌 Code:-
+pv.setIdentityName("john");
+System.out.println(pv.getIdentityName());
+--------
+🔥 3️⃣ getApplication() / setApplication(String app):-
+👉 Ye method kaunsi application me violation hua wo batata hai
+💡 Example:-
+Salesforce
+SAP
+Active Directory
+
+📌 Code:-
+pv.setApplication("Salesforce");
+System.out.println(pv.getApplication());
+
+🧠 Use:-
+ye identify karna ki Kis system me problem hai
+Multi-app environment me tracking.
+--------
+🔥 4️⃣ getAccountName() / setAccountName(String name):-
+👉 Ye method user ka account name handle karta hai (application ke andar)
+
+💡 Example:-
+Identity Name → john
+Account Name → john123 (AD / SAP login)
+📌 Code:-
+pv.setAccountName("john123");
+System.out.println(pv.getAccountName());
+---------
+🔥 1️⃣ getViolationItems() / setViolationItems(List items):-
+👉 Ye method violation ke andar ke items (details) handle karta hai.
+💡 ViolationItems kya hote hain?
+
+➡️ Wo specific objects / access / roles jo violation bana rahe hain
+📌 Example:-
+List<String> items = new ArrayList<>();
+items.add("Developer Role");
+items.add("Production Access");
+
+pv.setViolationItems(items);
+System.out.println(pv.getViolationItems());
+✅ Output:-
+[Developer Role, Production Access]
+
+🧠 Real use:-
+Kaun kaun se roles conflict kar rahe hain
+Detailed violation show karna
+------------
+🔥 2️⃣ addViolationItem(Object item):-
+👉 Ye method ek ek karke violation item add karta hai
+
+📌 Code:-
+pv.addViolationItem("Developer Role");
+pv.addViolationItem("Production Access");
+
+System.out.println(pv.getViolationItems());
+✅ Output:-
+[Developer Role, Production Access]
+🧠 Use:-
+Dynamic add karna (loop me, rule ke andar)
+------------
+🔥 3️⃣ getConflictingAccess() / setConflictingAccess(List access):-
+👉 Ye method exact conflicting permissions / access list deta hai.
+💡 Difference:-
+ViolationItems → general info
+ConflictingAccess → actual conflict access
+
+📌 Example:-
+List<String> access = new ArrayList<>();
+access.add("APP:PROD_READ");
+access.add("APP:PROD_WRITE");
+
+pv.setConflictingAccess(access);
+
+System.out.println(pv.getConflictingAccess());
+✅ Output:-
+[APP:PROD_READ, APP:PROD_WRITE]
+
+🧠 Real use:-
+Exact permission identify karna
+Fix karne me help
+----------------------
+🔥 4️⃣ getConstraintName() / setConstraintName(String name):-
+👉 Ye method kaunsi specific policy rule (constraint) break hui batata hai
+
+💡 Constraint kya hota hai?
+➡️ Policy ke andar ek specific rule
+Example:-
+Policy: SoD Policy
+Constraint: Dev vs Prod Access Conflict
+
+📌 Code:-
+pv.setConstraintName("Dev-Prod Conflict Rule");
+System.out.println(pv.getConstraintName());
+✅ Output:-
+Dev-Prod Conflict Rule
+-----------------------
+🔥 1️⃣ getCreated() / setCreated(Date date):-
+👉 Ye method violation kab create hua wo batata hai.
+💡 Kya hota hai?
+➡️ Jab first time violation detect hota hai.
+
+📌 Code:-
+import java.util.Date;
+
+pv.setCreated(new Date());
+
+System.out.println(pv.getCreated());
+✅ Output:-
+Tue Mar 17 10:30:00 IST 2026
+
+🧠 Real use:-
+Audit logs
+“Violation kab start hua?”
+----------------------
+🔥 2️⃣ getModified() / setModified(Date date):-
+👉 Ye method last time violation kab update hua batata hai.
+💡 Kya hota hai?
+➡️ Jab violation me koi change hota hai.
+status change
+comment add
+resolution update
+
+📌 Code:-
+pv.setModified(new Date());
+
+System.out.println(pv.getModified());
+✅ Output:-
+Tue Mar 17 11:00:00 IST 2026
+
+🧠 Real use:-
+Track changes
+Latest update kab hua
+-----------------------------
+🔥 3️⃣ getLastDetected() / setLastDetected(Date date):-
+👉 Ye method last time violation detect hua wo batata hai
+
+💡 Kya hota hai?
+➡️ System baar-baar scan karta hai.
+agar violation still exist karta hai → detect hota rehta hai.
+
+📌 Code:-
+pv.setLastDetected(new Date());
+
+System.out.println(pv.getLastDetected());
+✅ Output:-
+Tue Mar 17 11:15:00 IST 2026
+
+🧠 Real use:-
+Continuous monitoring
+“Abhi bhi violation hai kya?”
+------------------------------
+🔥 4️⃣ getResolvedDate() / setResolvedDate(Date date):-
+👉 Ye method violation kab fix (resolve) hua batata hai.
+💡 Kya hota hai?
+➡️ Jab access remove / fix ho jata hai.
+
+📌 Code:-
+pv.setResolvedDate(new Date());
+
+System.out.println(pv.getResolvedDate());
+✅ Output:-
+Tue Mar 17 12:00:00 IST 2026
+
+🧠 Real use:-
+Audit proof
+Compliance reports
+------------------------------
+🔥 1️⃣ isResolved() / setResolved(boolean val):-
+👉 Ye method check karta hai violation fix hua ya nahi.
+
+💡 Meaning:-
+true → violation fix ho gaya ✅
+false → abhi bhi issue hai ❌
+
+📌 Code:-
+pv.setResolved(false);
+System.out.println(pv.isResolved());
+
+🧠 Real use:-
+Dashboard me show hota hai
+“Open vs Closed violations”
+-------------
+🔥 2️⃣ getResolution() / setResolution(String resolution):-
+👉 Ye batata hai violation kaise fix hua.
+💡 Example resolution:-
+Access remove kiya
+Role revoke kiya
+Policy change ki
+
+📌 Code:-
+pv.setResolution("Removed Production Access");
+System.out.println(pv.getResolution());
+✅ Output:-
+Removed Production Access
+
+🧠 Real use:-
+Audit proof
+“Fix ka reason kya tha?”
+--------------
+()🔥 3️⃣ getMitigation() / setMitigation(String mitigation):-
+👉 Ye batata hai temporary solution (risk accept ya control apply).
+
+📌 Code:-
+pv.setMitigation("Approved temporary access for 7 days");
+
+System.out.println(pv.getMitigation());
+✅ Output:-
+Approved temporary access for 7 days
+
+🧠 Real use:-
+Jab turant fix possible nahi ho
+Business approval ke saath risk accept
+///////////////*
+()🔥 1️⃣ Resolution (kya hota hai?)
+👉 Resolution ka matlab hai problem ko poori tarah solve kar dena (final fix)
+
+✅ Kya karta hai:-
+Root cause ko fix karta hai
+Issue permanently close kar deta hai
+
+📌 Example:-
+User ko galti se Admin access mil gaya
+👉 Resolution:-
+Admin access remove kar diya
+Correct role assign kar diya
+
+🎯 Result:-
+✔ Problem completely fix
+✔ Future me same issue nahi aayega
+
+⚡ 2️⃣ Mitigation (kya hota hai?)
+👉 Mitigation ka matlab hai risk ko temporarily control ya reduce karna.
+
+✅ Kya karta hai:-
+Problem ko turant control karta hai
+Lekin permanent fix nahi hota
+
+📌 Example:-
+User ke paas risky access hai (remove nahi kar sakte immediately)
+👉 Mitigation:-
+Monitoring enable kar di
+Approval mandatory kar diya
+Time-based access laga diya
+
+🎯 Result:-
+✔ Risk kam ho gaya
+❌ Problem fully solve nahi hui
+*///////////////
+---------------------------------
+🔥 4️⃣ getOwner() / setOwner(String owner):-
+👉 Ye batata hai kaun responsible hai violation fix karne ke liye
+
+💡 Owner kaun ho sakta hai?
+Manager
+Application owner
+Security team
+
+📌 Code:-
+pv.setOwner("Manager_Rahul");
+
+System.out.println(pv.getOwner());
+✅ Output:-
+Manager_Rahul
+
+🧠 Real use:-
+Accountability
+Task assign karna
+--------------------------------------
+🔥 1️⃣ getSeverity() / setSeverity(String severity):-
+👉 Ye batata hai violation kitna dangerous hai (level)
+
+💡 Common Severity Levels:-
+LOW
+MEDIUM
+HIGH
+CRITICAL
+📌 Code:-
+pv.setSeverity("HIGH");
+System.out.println(pv.getSeverity());
+
+🧠 Real use:-
+Dashboard me color coding (Red = High 🔴)
+Priority decide karna
+Audit report
+
+😎 Example:-
+Dev + Prod access = HIGH
+Minor policy issue = LOW
+----------------------------------
+🔥 2️⃣ getRiskScore() / setRiskScore(int score):-
+👉 Ye numeric value me risk measure karta hai
+
+💡 Example Range:-
+0 – 100
+0–30 → Low
+31–70 → Medium
+71–100 → High
+
+📌 Code:-
+pv.setRiskScore(85);
+System.out.println(pv.getRiskScore());
+
+🧠 Real use:-
+Automated decision making
+Risk-based access control
+Sorting violations (highest risk first)
+-------------------------------------------
+()👉 getComments() / setComments(String comments):-
+➡️ Ye violation ke notes / remarks store karta hai
+📌 Code:-
+pv.setComments("User has temporary exception approval");
+
+System.out.println(pv.getComments());
+✅ Output:-
+User has temporary exception approval
+
+🧠 Real use:-
+Audit trail
+Manager / security team remarks
+---------
+()👉 getComments() / setComments(String comments):-
+➡️ Ye violation ke notes / remarks store karta hai.
+
+📌 Code:-
+pv.setComments("User has temporary exception approval");
+
+System.out.println(pv.getComments());
+✅ Output:-
+User has temporary exception approval
+
+🧠 Real use:-
+Audit trail
+Manager / security team remarks
+-----------------
+🔥 2️⃣ Basic Info Methods:-
+
+👉 getId() / setId(String id):-
+➡️ Unique ID of violation
+
+pv.setId("VIOL-101");
+System.out.println(pv.getId());
+
+✅ Output:-
+VIOL-101
+
+👉 getName() / setName(String name):-
+➡️ Violation ka naam
+
+pv.setName("Dev-Prod Conflict");
+System.out.println(pv.getName());
+
+✅ Output:-
+Dev-Prod Conflict
+-----------------------
+🔥 3️⃣ Conversion Methods (Important 💥):-
+👉 toXml():-
+➡️ Object ko XML me convert karta hai
+
+📌 Code:-
+String xml = pv.toXml();
+System.out.println(xml);
+
+✅ Output:-
+<PolicyViolation>
+   <id>VIOL-101</id>
+   <name>Dev-Prod Conflict</name>
+</PolicyViolation>
+
+👉 fromXml(String xml):-
+➡️ XML ko object me convert karta hai
+
+📌 Code:-
+String xml = "<PolicyViolation><id>VIOL-101</id></PolicyViolation>";
+
+pv.fromXml(xml);
+System.out.println(pv.getId());
+✅ Output:-
+VIOL-101
+
+👉 toMap():-
+➡️ Object → Map
+
+Map map = pv.toMap();
+System.out.println(map);
+✅ Output:
+{id=VIOL-101, name=Dev-Prod Conflict}
+
+👉 fromMap(Map map):-
+➡️ Map → Object
+
+Map map = new HashMap();
+map.put("id", "VIOL-200");
+
+pv.fromMap(map);
+
+System.out.println(pv.getId());
+✅ Output:
+VIOL-200
+
+🧠 Real use:-
+API integration
+JSON/XML conversion
+Database mapping
+--------------------------------------
+()🔥 4️⃣ Validation Method:-
+
+👉 validate():-
+➡️ Check karta hai object valid hai ya nahi
+
+📌 Code:-
+pv.setId("VIOL-101");
+pv.validate();
+✅ Output:-
+No error (valid object)
+
+❌ Agar missing ho:-
+Exception: ID is required
+------------------------------------
+🔥 5️⃣ Clone Method:-
+👉 clone():-
+➡️ Object ka exact copy banata hai
+
+📌 Code:-
+PolicyViolation copy = (PolicyViolation) pv.clone();
+
+System.out.println(copy.getId());
+✅ Output:-
+VIOL-101
+
+🧠 Real use:-
+Backup
+Temporary modification
+--------------------------------------------------------
+🔥 6️⃣ equals(Object obj):-
+➡️ Check karta hai 2 objects same hain ya nahi
+
+📌 Code:-
+PolicyViolation pv2 = new PolicyViolation();
+pv2.setId("VIOL-101");
+System.out.println(pv.equals(pv2));
+----------------------------------------------------------
+🔥 7️⃣ hashCode():-
+➡️ Object ka unique numeric code generate karta hai
+
+📌 Code:-
+System.out.println(pv.hashCode());
+✅ Output:-
+12345678
+----------------------------------------------------------
+🔥 8️⃣ toString():-
+➡️ Object ko readable string me convert karta hai
+
+📌 Code:-
+System.out.println(pv.toString());
+✅ Output:-
+PolicyViolation{id=VIOL-101, name=Dev-Prod Conflict}
+----------------------------------------------------------

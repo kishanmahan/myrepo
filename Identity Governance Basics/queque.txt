@@ -1,0 +1,27 @@
+()Queue kya hai?
+Queue ek data structure ya system mechanism hai jisme items order me store hote hain,
+aur first-in-first-out (FIFO) principle follow hota hai.
+FIFO (First In First Out) → jo item pehle add hota hai, wo pehle process hota hai.
+Matlab line me khade logon jaise – jo pehle line me aaya, wo pehle serve hoga.
+
+import java.util.LinkedList;
+import java.util.Queue;
+
+public class QueueExample {
+    public static void main(String[] args) {
+        Queue<String> queue = new LinkedList<>();
+
+        // Add items
+        queue.add("John");
+        queue.add("Alice");
+        queue.add("Bob");
+
+        System.out.println("Queue: " + queue);
+
+        // Process items
+        System.out.println("Processing: " + queue.poll()); // John
+        System.out.println("Processing: " + queue.poll()); // Alice
+
+        System.out.println("Queue after processing: " + queue);
+    }
+}

@@ -1,0 +1,1063 @@
+1️⃣ RuleContext kya hai?
+Ye SailPoint me rule execution ka context hai.
+Matlab, jab bhi koi rule run hota hai (jaise provisioning rule, workflow rule, validation rule),
+tab SailPoint system automatically RuleContext create karta hai.
+Ye temporary / local context hai sirf us rule ke execution ke liye.
+--------------------------------------------------------------------------------------------------------------
+2️⃣ RuleContext kya karta hai?
+RuleContext ka main kaam hai:-
+
+()Input arguments provide karna:-
+Rule ke andar agar kuch data chahiye (jaise user name, role name), to RuleContext ke through milega.
+Example:-
+Map<String, Object> args = ruleContext.getArguments();
+String userName = (String) args.get("userName");
+----------------------------------------------------------
+()Output/result set karna:-
+Rule ke end me agar result return karna ho, to ye RuleContext me set hota hai.
+ruleContext.setResult("Success");
+---------------------------------------------------
+()SailPointContext provide karna:-
+Agar rule ke andar system objects ko access ya modify karna hai, to RuleContext se SailPointContext milega:-
+
+SailPointContext context = ruleContext.getSailPointContext();
+Identity id = context.getObjectByName(Identity.class, "john.doe");
+----------------------------------------------
+()Rule execution ke state ka handle:-
+Ye rule ke local state ko manage karta hai, lekin transaction commit/rollback ka kaam nahi karta.
+Transaction ka control SailPointContext ke paas hota hai.
+--------------------------------------------------------------------------------------------------------------
+public void execute(RuleContext ruleContext) {
+    // 1️⃣ Input fetch
+    Map<String, Object> args = ruleContext.getArguments();
+    String userName = (String) args.get("userName");
+
+    // 2️⃣ System access
+    SailPointContext context = ruleContext.getSailPointContext();
+    Identity id = context.getObjectByName(Identity.class, userName);
+
+    // 3️⃣ Rule logic
+    id.setDisplayName(userName.toUpperCase());
+    context.saveObject(id);
+    context.commitTransaction();  // commit changes
+
+    // 4️⃣ Output set
+    ruleContext.setResult("User updated successfully");
+}
+----------------------------------------------------------------------------------------------------------------
+()RuleContext ke andar kya kya hota hai?
+Input Arguments (arguments)
+Ye map/dictionary hota hai jo rule ko input parameters deta hai.
+Example:-username, role, account info, approval decision, etc.
+
+Access karne ke liye:-
+Map<String, Object> args = ruleContext.getArguments();
+String userName = (String) args.get("userName");
+
+Effect: Rule me ye values read karke logic execute kar sakte ho.
+------------------------------------------------------------------------
+()2️⃣ Output / Result (result):-
+Rule ke execution ka output yahan store hota hai.
+Ye result workflow ya provisioning process me wapas use hota hai.
+
+ruleContext.setResult("Success");
+Object res = ruleContext.getResult();
+
+Effect: Rule ka output system ke workflow ya caller ko milega.
+-------------------------------------------------------------------------
+3️⃣ SailPointContext (sailPointContext):-
+Ye core system objects ka access deta hai.
+
+Identity, Account, Role, Policy objects ko fetch, update, save kar sakte ho.
+
+SailPointContext context = ruleContext.getSailPointContext();
+Identity id = context.getObjectByName(Identity.class, "john.doe");
+Effect: Rule ke andar actual system objects pe changes kar sakte ho.
+--------------------------------------------------------------------------------
+(4)Current Object / Target Object:-
+Kuch rules me ek current object hota hai jiske upar rule operate kar raha hai.
+Example: Identity, Role, Account, Entitlement
+
+Object target = ruleContext.getTarget();
+
+Kaam: Rule ko pata hota hai ki ye kaunse identity, role ya account ke liye execute ho raha hai.
+---------------------------------------------------------------------------------------------------
+5️⃣ Metadata / Execution Info:-
+Rule ka execution context store hota hai:-
+Rule name
+Rule type(ProvisioningRule, WorkflowRule)
+Timestamp
+
+Example:-
+String ruleName = ruleContext.getRuleName();
+Kaam: Logging aur debugging me help karta hai.
+-----------------------------------------------------------------------------------------------------
+(6)Arguments Manipulation:-
+RuleContext ke andar arguments ko modify bhi kar sakte ho, taaki workflow me changes propagate ho jaye.
+args.put("roleAssigned", true);
+---------------------------------------------------------------------------------------------------------
+()7️⃣ Exception / Error Handling:-
+Rule ke andar error aane par handle kar sakte ho:-
+try {
+    // rule logic
+} catch(Exception e) {
+    ruleContext.setResult("Failed: " + e.getMessage());
+}
+Kaam: Rule failure ko system me inform karta hai.
+----------------------------------------------------------------------------------------
+✅ RuleContext me values kaun daalta hai?
+👉 SailPoint system automatically values daalta hai jab rule execute hota hai.
+Developer manually RuleContext create ya fill nahi karta.
+
+🔥 Kaise values aati hain RuleContext me?
+1️⃣ Workflow / Provisioning / Event se
+Jab koi process start hota hai (jaise provisioning, approval, aggregation),
+SailPoint us process ke data ko RuleContext ke arguments me daal deta hai
+Example:-
+Map<String, Object> args = ruleContext.getArguments();
+
+Yaha args me already values hongi jaise:
+
+userName = "john.doe"
+role = "Admin"
+operation = "Create"
+👉 Ye sab SailPoint ne auto inject kiya hai
+
+2️⃣ Target Object bhi SailPoint set karta hai
+Object target = ruleContext.getTarget();
+Ye object ho sakta hai:-
+Identity
+Account
+Role
+👉 Ye bhi SailPoint decide karta hai ki rule kis object pe chal raha hai
+
+3️⃣ SailPointContext bhi SailPoint deta hai
+SailPointContext context = ruleContext.getSailPointContext();
+👉 Ye bhi system hi inject karta hai, taaki tum DB objects access kar sako
+
+4️⃣ Result tum set karte ho
+ruleContext.setResult("Success");
+👉 Ye sirf developer set karta hai, SailPoint nahi.
+-----------------------------------------------------------------------------------------------------------------------------------
+🔥 RuleContext – Full Methods List (No Skip)
+🔹 1️⃣ Context / Object Access Methods
+getContext()
+setContext(SailPointContext context)
+
+getObjectById(Class clazz, String id)
+getObjectByName(Class clazz, String name)
+
+getObjects(Class clazz)
+getUniqueObject(Class clazz, Filter filter)
+
+👉 Use:-
+DB se object nikalne ke liye (Identity, Application, Role, etc.)
+
+🔹 2️⃣ Arguments Handling
+getArguments()
+setArguments(Map<String,Object> arguments)
+
+getArgument(String name)
+setArgument(String name, Object value)
+
+👉 Use:-
+Rule me jo input aata hai (XML ya workflow se), usko handle karna
+
+🔹 3️⃣ Logging / Debugging
+log(String message)
+debug(String message)
+error(String message)
+warn(String message)
+
+👉 Use:-
+Rule execution ke time logs dekhne ke liye
+
+🔹 4️⃣ Execution Info Methods
+getExecutionTime()
+getExecutionResult()
+getLastExecutionStatus()
+
+👉 Use:-
+Rule kitna time liya
+Success / Failure check karna
+
+🔹 5️⃣ Identity / User Related
+getIdentity()
+setIdentity(Identity identity)
+
+getUserName()
+
+👉 Use:-
+Current user ka data
+
+🔹 6️⃣ Application / Source Related
+getApplication()
+setApplication(Application app)
+
+👉 Use:-
+Kis application ke liye rule run ho raha hai
+
+🔹 7️⃣ Provisioning Related
+getProvisioningPlan()
+setProvisioningPlan(ProvisioningPlan plan)
+
+👉 Use:-
+Account create / update / delete ke waqt
+
+🔹 8️⃣ Workflow / Task Related
+getTaskResult()
+setTaskResult(TaskResult result)
+
+getWorkflowCase()
+setWorkflowCase(WorkflowCase wfCase)
+
+👉 Use:-
+Workflow ya task execution me data lena
+
+🔹 9️⃣ Transaction Control
+commitTransaction()
+rollbackTransaction()
+
+👉 Use:-
+DB changes save ya undo karna
+
+🔹 🔟 Cache / Utility Methods
+clearCache()
+decache(Object obj)
+
+👉 Use:-
+Performance aur fresh data ke liye
+
+🔹 1️⃣1️⃣ Messaging / Output
+setResult(Object result)
+getResult()
+
+👉 Use:-
+Rule ka final output dena
+
+🔹 1️⃣2️⃣ Custom Data Store
+put(String key, Object value)
+get(String key)
+containsKey(String key)
+
+👉 Use:-
+Temporary data store during execution
+
+🔹 1️⃣3️⃣ Locale / Environment
+getLocale()
+getTimeZone()
+
+👉 Use:-
+Region-based logic
+------------------------------------------------------------------------------------------
+()🔥 RuleContext Methods:-
+👉 getContext() & setContext()
+
+🔹 1️⃣ getContext()
+SailPointContext getContext():-
+👉 Ye method **SailPoint IdentityIQ ka main DB context return karta hai.
+
+💡 Simple samajh:-
+👉 getContext() =
+SailPoint ka database + objects access karne ka gate
+
+🔥 Use kya hai?
+Isse tu:-
+Identity nikal sakta hai
+Application nikal sakta hai
+Role / Entitlement fetch kar sakta hai
+Query run kar sakta hai
+
+✅ Example:-
+SailPointContext spContext = context.getContext();
+
+Identity user = spContext.getObjectByName(Identity.class, "john");
+
+context.log("User Name: " + user.getName());
+⚡ Real meaning:-
+👉 RuleContext ek wrapper hai
+👉 SailPointContext actual engine hai (DB + ORM)
+------------
+🔹 2️⃣ setContext(SailPointContext context):-
+void setContext(SailPointContext context)
+👉 Ye method context set karta hai (inject karta hai)
+
+❗ Reality (Important):-
+👉 99% cases me developer isko use nahi karta
+Kyu?
+
+SailPoint khud hi RuleContext me context set karta hai,
+Ye internal lifecycle ka part hai.
+-------------------------------------------------------------------------------
+🔥 Full Real Rule Code (Complete – No Confusion):-
+<Rule name="Sample Identity Rule" type="Identity">
+
+    <Description>Get Identity using RuleContext</Description>
+
+    <Source>
+
+        import sailpoint.object.Identity;
+        import sailpoint.api.SailPointContext;
+        import sailpoint.server.RuleContext;
+
+        // 🔥 Ye line samajh le:
+        // context already available hai (RuleContext ka object)
+
+        RuleContext rc = context;   // optional (just for clarity)
+
+        // SailPointContext nikal rahe hain
+        SailPointContext spContext = rc.getContext();
+
+        // Identity fetch kar rahe hain
+        Identity identity = spContext.getObjectByName(Identity.class, "spadmin");
+
+        // Log
+        rc.log("Identity Name: " + identity.getName());
+
+        return identity;
+
+    </Source>
+
+</Rule>
+--------------------------------------------------------------------------------------------------
+🔥 1️⃣ getObjectById(Class clazz, String id):-
+✅ Signature
+<T> T getObjectById(Class<T> clazz, String id) throws GeneralException
+💡 Kya karta hai?
+Kisi bhi SailPoint object ko ID se fetch karta hai.
+ID = SailPoint internal object ID (unique string)
+
+🟢 Real Example:-
+import sailpoint.object.Identity;
+import sailpoint.api.SailPointContext;
+
+// RuleContext ka object: context
+
+SailPointContext spContext = context.getContext();
+
+// Identity fetch by ID
+Identity user = spContext.getObjectById(Identity.class, "1234567890abcdef");
+
+context.log("User Name: " + user.getName());
+
+✅ Output Example:-
+User Name: spadmin
+-------------------------
+🔥 2️⃣ getObjectByName(Class clazz, String name):-
+✅ Signature
+<T> T getObjectByName(Class<T> clazz, String name) throws GeneralException
+💡 Kya karta hai?
+
+Object fetch karta hai uske name ke basis pe,
+
+Name = unique name like “spadmin” or “HR Application”
+
+🟢 Real Example:-
+import sailpoint.object.Application;
+import sailpoint.api.SailPointContext;
+
+SailPointContext spContext = context.getContext();
+
+// Application fetch by name
+Application app = spContext.getObjectByName(Application.class, "HR_Application");
+
+context.log("Application Display Name: " + app.getDisplayName());
+
+✅ Output Example:-
+Application Display Name: HR_Application
+-----------------------------
+🔥 3️⃣ getObjects(Class clazz):-
+✅ Signature
+<T> List<T> getObjects(Class<T> clazz) throws GeneralException
+💡 Kya karta hai?
+Class ke sabhi objects list me return karta hai.
+
+🟢 Real Example:-
+import sailpoint.object.Role;
+import sailpoint.api.SailPointContext;
+import java.util.List;
+
+SailPointContext spContext = context.getContext();
+
+// Sabhi roles fetch kar rahe hain
+List<Role> roles = spContext.getObjects(Role.class);
+
+for (Role r : roles) {
+    context.log("Role: " + r.getName());
+}
+
+✅ Output Example:-
+Role: Manager
+Role: Developer
+Role: HR
+-----------------
+🔥 4️⃣ getUniqueObject(Class clazz, Filter filter):-
+✅ Signature
+<T> T getUniqueObject(Class<T> clazz, Filter filter) throws GeneralException
+💡 Kya karta hai?
+Filter ke basis pe exactly 1 object return karta hai,
+Agar 0 ya >1 match mile → exception throw ho sakta hai.
+
+🟢 Real Example:-
+import sailpoint.object.Identity;
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Filter;
+
+SailPointContext spContext = context.getContext();
+
+// Filter create karte hain
+Filter filter = Filter.eq("firstName", "John");
+
+// Exact match identity fetch
+Identity user = spContext.getUniqueObject(Identity.class, filter);
+
+context.log("User Full Name: " + user.getName());
+
+✅ Output Example:-
+User Full Name: John Doe
+------------------------------------------------------------------------------------------------------------
+🔥 1️⃣ getArguments():-
+✅ Signature
+Map<String, Object> getArguments()
+💡 Kya karta hai?
+Rule me saare input arguments ka map return karta hai
+Key = argument name, Value = argument value.
+
+🔥 2️⃣ setArguments(Map<String,Object> arguments):-
+✅ Signature
+void setArguments(Map<String,Object> arguments)
+💡 Kya karta hai?
+Rule ke input arguments replace/set karne ke liye,
+Mostly workflow ya provisioning rule me use hota hai.
+
+🔥 3️⃣ getArgument(String name):-
+✅ Signature
+Object getArgument(String name)
+💡 Kya karta hai?
+Specific argument value return karta hai.
+
+🔥 4️⃣ setArgument(String name, Object value):-
+✅ Signature
+void setArgument(String name, Object value)
+💡 Kya karta hai?
+Rule ke ek argument ko update/set karne ke liye.
+
+🔥 Real Rule Code – Arguments Handling
+<Rule name="Identity Arguments Example" type="Identity">
+
+    <Description>Fetch and use RuleContext arguments</Description>
+
+    <Source>
+
+        import sailpoint.object.Identity;
+        import sailpoint.api.SailPointContext;
+
+        // context = RuleContext object, automatically injected by SailPoint
+
+        // 1️⃣ Get SailPointContext
+        SailPointContext spContext = context.getContext();
+
+        // 2️⃣ Get all arguments (Map<String, Object>)
+        Map<String, Object> args = context.getArguments();
+
+        context.log("All Arguments: " + args);
+
+        // 3️⃣ Get single argument by name
+        String identityName = (String) context.getArgument("identityName");
+
+        // 4️⃣ Fetch Identity object using the argument
+        Identity id = spContext.getObjectByName(Identity.class, identityName);
+
+        context.log("Fetched Identity: " + id.getName());
+
+        // 5️⃣ Update a single argument
+        context.setArgument("role", "Manager");
+
+        // 6️⃣ Optional: Replace all arguments
+        Map<String, Object> newArgs = new java.util.HashMap<>();
+        newArgs.put("identityName", "jdoe");
+        newArgs.put("application", "HR_Application");
+        context.setArguments(newArgs);
+
+        context.log("Updated Arguments: " + context.getArguments());
+
+        // 7️⃣ Return the Identity object
+        return id;
+
+    </Source>
+
+</Rule>
+/////*yaha RuleContext ka object sailpoint automatically inject karta hai,in context.*////////
+------------------------------------------------------------------------------------------------------
+🔹 Real Production Style Code
+<Rule name="Identity Logging Example" type="Identity">
+
+    <Description>Using RuleContext logging methods</Description>
+
+    <Source>
+
+        import sailpoint.object.Identity;
+        import sailpoint.api.SailPointContext;
+
+        // context = RuleContext object (auto-injected)
+
+        SailPointContext spContext = context.getContext();
+
+        try {
+            // Example: Get identity by name
+            String identityName = (String) context.getArgument("identityName");
+            Identity id = spContext.getObjectByName(Identity.class, identityName);
+
+            // 1️⃣ General log
+            context.log("Fetched Identity: " + id.getName());
+
+            // 2️⃣ Debug log
+            context.debug("Identity ID: " + id.getId());
+
+            // 3️⃣ Warning example
+            if (id.getManager() == null) {
+                context.warn("Identity " + id.getName() + " has no manager assigned!");
+            }
+
+            // 4️⃣ Error example (simulate error)
+            if (id.getEmail() == null) {
+                context.error("Identity " + id.getName() + " has no email configured!");
+            }
+
+            return id;
+
+        } catch (Exception e) {
+            context.error("Exception while fetching identity: " + e.getMessage());
+            throw e;  // Rethrow exception
+        }
+
+    </Source>
+
+</Rule>
+🔹 Output Example (IdentityIQ Log Console):-
+INFO: Fetched Identity: spadmin
+DEBUG: Identity ID: 1234567890abcdef
+WARN: Identity John Doe has no manager assigned!
+ERROR: Identity Jane Doe has no email configured!
+
+//////////*
+()Jab hum context.getArgument("identityName") likhte hain:-
+
+🔹 "identityName" ka matlab:-
+Ye koi hard-coded value nahi hai
+Ye argument/parameter ka key hai jo rule ke input map me pass hota hai
+RuleContext ke getArgument() method se us key ka value nikalte hain.
+
+🔹 Example – Real Production Flow:-
+Suppose workflow ya provisioning rule me arguments pass ho rahe hain:-
+{
+    "identityName": "Rahul",
+    "role": "Manager",
+    "application": "HR_Application"
+}
+"identityName" = key
+"Rahul" = value
+
+Java me:-
+String name = (String) context.getArgument("identityName");
+context.log("Identity Name: " + name);
+
+✅ Output in log:-
+Identity Name: Rahul
+Agar workflow ne "identityName": "Ram" diya:
+Identity Name: Ram
+-------------------------------------
+*///////////////
+//////////////////*
+🔥 1️⃣ log(String message) – General Info:-
+Kya karta hai?
+Ye basic info log karta hai.
+Mostly normal workflow messages ke liye use hota hai.
+Use Case:-
+Jab tu rule ke flow me standard information dekhna chahta hai.
+Example: Identity fetch ho gaya ya process start/complete hua.
+Real Example:-
+context.log("INFO: Identity Rahul fetched successfully");
+
+🔥 2️⃣ debug(String message) – Detailed Debug Info:-
+Kya karta hai?
+Detailed message log karta hai jo troubleshooting ke liye hota hai.
+Usually internal variable values, IDs, state info log karte hain.
+Use Case:-
+Jab rule fail ho raha hai ya complex workflow debug karna hai.
+Production me debug logs mostly off hote hain, sirf developer/debug mode me on hota hai.
+
+Real Example:-
+context.debug("DEBUG: identityName = Rahul, ID = 1234567890abcdef, Email = rahul@example.com");
+
+✅ Output:-
+DEBUG: identityName = Rahul, ID = 1234567890abcdef, Email = rahul@example.com
+
+💡 Notes:-
+Severity = DEBUG
+System ka flow interrupt nahi hota.
+
+
+🔥 3️⃣ warn(String message) – Warning:-
+Kya karta hai?
+Jab potential issue ho, ya data incomplete ho lekin process run ho sakta hai.
+Warning indicate karta hai ki kuch expected nahi hai.
+
+Use Case:-
+Identity ka manager missing hai.
+Optional field missing hai jo critical nahi hai.
+
+🔥 4️⃣ error(String message) – Critical Error:-
+Kya karta hai?
+Jab serious problem ho ya required data missing ho.
+Error usually indicate karta hai ki rule fail ho sakta hai ya exception throw hoga.
+
+Use Case:-
+Identity ka email null ho, aur email required hai.
+Rule execution me critical failure aaye.
+✅ Output:-
+ERROR: Identity Rahul has no email configured!
+
+💡 Notes:-
+Severity = ERROR
+Process fail ho sakta hai, alert to admins/devs.
+-----------------------------------------------------------------------------------------------------------------------
+🔥 1️⃣ getExecutionTime():-
+✅ Signature
+long getExecutionTime()
+💡 Kya karta hai?
+Rule execute hone me kitna time laga ye return karta hai (milliseconds me)
+Mostly performance monitoring / logging ke liye use hota hai
+
+🟢 Real Example:-
+long execTime = context.getExecutionTime();
+context.log("Execution time for this rule: " + execTime + " ms");
+
+✅ Output Example:-
+Execution time for this rule: 152 ms
+------------------------------------------------
+🔥 2️⃣ getExecutionResult():-
+✅ Signature
+Object getExecutionResult()
+💡 Kya karta hai?
+Rule ka last executed result return karta hai,
+Return type Object hota hai → cast karke actual type use karte hain.
+
+🟢 Real Example:-
+Identity result = (Identity) context.getExecutionResult();
+if (result != null) {
+    context.log("Last execution returned identity: " + result.getName());
+}
+✅ Output Example:-
+Last execution returned identity: Rahul
+-----------------------------------------------------------------------------------
+🔥 3️⃣ getLastExecutionStatus():-
+✅ Signature
+String getLastExecutionStatus()
+💡 Kya karta hai?
+Rule ka last execution status return karta hai
+Status values me mostly:-
+"SUCCESS" → last execution successful
+"FAILED" → last execution failed
+"SKIPPED" → last execution skip hua
+
+🟢 Real Example:-
+String status = context.getLastExecutionStatus();
+context.log("Last execution status: " + status);
+
+✅ Output Example:-
+Last execution status: SUCCESS
+💡 Notes:-
+Monitoring aur auditing ke liye,
+Rule history check karne ke liye useful.
+----------------------------------------------------------------------------------------
+🔹 Full Example (Production Style):-
+// RuleContext context already available
+context.log("INFO: Starting rule execution");
+
+// Rule logic here
+String identityName = (String) context.getArgument("identityName");
+Identity id = spContext.getObjectByName(Identity.class, identityName);
+
+// Save execution result for next tracking (optional)
+context.setArgument("lastFetchedIdentity", id);
+
+context.log("INFO: Fetched Identity: " + id.getName());
+
+// Track execution info
+context.log("Execution Time: " + context.getExecutionTime() + " ms");
+context.log("Last Execution Result: " + context.getExecutionResult());
+context.log("Last Execution Status: " + context.getLastExecutionStatus());
+
+✅ Output Example:-
+INFO: Starting rule execution
+INFO: Fetched Identity: Rahul
+Execution Time: 120 ms
+Last Execution Result: Identity@123abc
+Last Execution Status: SUCCESS
+------------------------------------------------------------------------------------------------
+//////////*“rule fire ho” ka matlab hai ki SailPoint me koi Rule execute ho gaya ya trigger ho gaya.
+Matlab jis condition ya event ke liye rule banaya tha, wo satisfy ho gaya aur uska code chal gaya.*////////
+🔹 RuleContext – Current Identity ka matlab:-
+getIdentity() / getUserName() → ye us identity ka data deta hai jiske liye rule execute ho raha hai, rule banane wale ka nahi.
+Example: Agar koi access request me rule fire ho raha hai, aur request submit ki gayi hai Rahul ke liye,
+to getIdentity() → Rahul ka object return karega.
+Rule Creator ka data → RuleContext me nahi aata.
+Matlab, rule jisne banaya, uske liye koi automatic method nahi hai.
+
+🔹 1️⃣ getIdentity():-
+✅ Signature
+Identity getIdentity()
+💡 Kya karta hai?
+Rule ke current identity object ko return karta hai,
+ye us identity ka data deta hai jiske liye rule execute ho raha hai, rule banane wale ka nahi.
+
+🟢 Real Example:-
+Identity currentUser = context.getIdentity();
+context.log("Current Identity Name: " + currentUser.getName());
+context.log("Current Identity Email: " + currentUser.getEmail());
+
+✅ Output Example:-
+Current Identity Name: Rahul
+Current Identity Email: rahul@example.com
+
+💡 Notes:-
+Mostly access request / workflow rules me use hota hai
+Current logged-in identity ke liye
+---------------------------------------------------------------
+()getUserName():-
+Username jispe rule execute ho raha hai.
+Current identity ka username return karta hai.
+
+🟢 Real Example:-
+String username = context.getUserName();
+context.log("Current Username: " + username);
+
+✅ Output Example:-
+Current Username: rahul
+-----------------------------------------------------------------
+🔹 4️⃣ getApplication():-
+✅ Signature
+Application getApplication()
+💡 Kya karta hai?
+Rule ke current application object ko return karta hai,
+Mostly provisioning / source-related rules me use hota hai.
+
+🟢 Real Example:-
+Application app = context.getApplication();
+context.log("Current Application Name: " + app.getName());
+
+✅ Output Example:-
+Current Application Name: HR_Application
+--------------------------------------------------------------------
+🔹 1️⃣ setIdentity(Identity identity):-
+✅ Signature
+void setIdentity(Identity identity)
+💡 Kya karta hai?
+Ye RuleContext ke current identity object ko update/set karta hai
+Matlab, rule ab naye identity object ke liye operate karega
+Mostly intermediate processing ya custom logic me use hota hai.
+
+🟢 Real Example:-
+// Current identity fetch (rule ke liye run ho raha hai)
+Identity currentUser = context.getIdentity();
+context.log("Current Identity: " + currentUser.getName()); // Rahul
+
+// New identity set karna
+Identity newUser = spContext.getObjectByName(Identity.class, "Ram");
+context.setIdentity(newUser);
+
+// Log updated identity
+context.log("Updated Identity: " + context.getIdentity().getName());
+
+✅ Output Example:
+
+Current Identity: Rahul
+Updated Identity: Ram
+
+💡 Notes:-
+Rule ab Ram identity ke liye operate karega,
+Ye workflow / provisioning me optional hai, agar rule ko runtime me kisi aur identity pe run karna ho.
+--------------------------------------------------------------------------------------------------------------
+🔹 2️⃣ setApplication(Application app):-
+✅ Signature
+void setApplication(Application app)
+💡 Kya karta hai?
+Ye RuleContext me current application object ko update/set karta hai
+Mostly provisioning / source-related rules me use hota hai.
+
+🟢 Real Example:-
+// Current application fetch
+Application app = context.getApplication();
+context.log("Current Application: " + app.getName()); // HR_Application
+
+// New application set
+Application newApp = spContext.getObjectByName(Application.class, "Payroll_Application");
+context.setApplication(newApp);
+
+// Log updated application
+context.log("Updated Application: " + context.getApplication().getName());
+
+✅ Output Example:-
+Current Application: HR_Application
+Updated Application: Payroll_Application
+
+💡 Notes:-
+Rule ab Payroll_Application ke context me execute hoga.
+------------------------------------------------------------------------------------------------------------------------
+🔹 1️⃣ getProvisioningPlan():-
+✅ Kya hai?
+RuleContext me current provisioning plan object ko return karta hai.
+ProvisioningPlan → identity ke liye saare account, role, application changes ka plan hold karta hai.
+
+💡 Use Case:-
+Rule me check karna ki current plan me kya changes hai
+Example: Kitne roles assign hone wale hai, kaunse accounts create ya delete hone wale hai
+
+🟢 Real Example:-
+ProvisioningPlan plan = context.getProvisioningPlan();
+if (plan != null) {
+    context.log("Current provisioning plan contains " + plan.getRequests().size() + " requests.");
+}
+✅ Output Example:-
+Current provisioning plan contains 2 requests.
+--------------------------------------------------------------------------------------------------------------
+🔹 2️⃣ setProvisioningPlan(ProvisioningPlan plan):-
+✅ Kya hai?
+RuleContext me provisioning plan ko update ya set karta hai
+Mostly dynamic changes apply karne ke liye use hota hai.
+
+💡 Use Case:-
+Rule me runtime pe plan me new role/account add karna,
+Existing plan ko modify karke next workflow stage me pass karna.
+----------------------------------------------------------------------------
+// 1️⃣ RuleContext se SailPointContext le rahe ho
+SailPointContext spContext = context.getContext();
+
+// 2️⃣ Current provisioning plan fetch
+ProvisioningPlan plan = context.getProvisioningPlan();
+
+// 3️⃣ Fetch identity & entitlement objects using SailPointContext
+Identity target = spContext.getObjectByName(Identity.class, "Rahul");
+Entitlement role = spContext.getObjectByName(Entitlement.class, "Manager_Role");
+
+// 4️⃣ Create new provisioning plan request
+ProvisioningPlanRequest request = new ProvisioningPlanRequest();
+request.setType(ProvisioningPlanRequest.Type.ADD);
+request.setTargetIdentity(target);
+request.setTargetEntitlement(role);
+
+// 5️⃣ Add request to plan
+plan.add(request);
+
+// 6️⃣ Update plan in RuleContext
+context.setProvisioningPlan(plan);
+
+// 7️⃣ Log updated plan size
+context.log("Updated provisioning plan now has " + plan.getRequests().size() + " requests.");
+////////*
+spContext = SailPointContext object
+Ye RuleContext se liya jata hai:-
+SailPointContext spContext = context.getContext();
+Matlab RuleContext ke andar jo current SailPoint session/context hai, usko use kar rahe ho.
+
+Object	                                              Purpose
+context (RuleContext):----------Rule execution ke liye current state, arguments, logs, provisioning plan handle karta hai.
+spContext (SailPointContext):---Database operations, Identity / Application / Entitlement fetch/update, transaction handle.
+*//////////
+✅ Output Example:-
+Updated provisioning plan now has 3 requests.
+--------------------------------------------------------------------
+🔹 1️⃣ getTaskResult():-
+✅ Signature
+TaskResult getTaskResult()
+💡 Kya karta hai?
+Ye current workflow/task execution ka result object return karta hai.
+TaskResult me mostly status, messages, execution data hota hai.
+
+🟢 Real Example:-
+TaskResult result = context.getTaskResult();
+context.log("Task Status: " + result.getStatus());
+context.log("Task Messages: " + result.getMessages());
+
+✅ Output Example:-
+Task Status: SUCCESS
+Task Messages: Identity processed successfully
+-----------------------------------------------------------------------------
+🔹 2️⃣ setTaskResult(TaskResult result):-
+✅ Signature
+void setTaskResult(TaskResult result)
+💡 Kya karta hai?
+Rule me task result ko update/set karta hai,
+Mostly custom logic ke baad status update / messages add karne ke liye.
+
+🟢 Real Example:-
+TaskResult result = context.getTaskResult();
+result.setStatus(TaskResult.Status.SUCCESS);
+result.addMessage("Provisioning completed for Rahul");
+context.setTaskResult(result);
+context.log("Updated Task Result: " + result.getStatus());
+
+✅ Output Example:-
+Updated Task Result: SUCCESS
+--------------------------------------------------------------------------------
+🔹 3️⃣ getWorkflowCase():-
+✅ Signature
+WorkflowCase getWorkflowCase()
+💡 Kya karta hai?
+RuleContext me current workflow case object return karta hai,
+WorkflowCase → workflow execution ka state, arguments, tasks hold karta hai.
+
+🟢 Real Example:-
+WorkflowCase wfCase = context.getWorkflowCase();
+context.log("Workflow Case Name: " + wfCase.getName());
+context.log("Workflow Status: " + wfCase.getStatus());
+
+✅ Output Example:-
+Workflow Case Name: AccessRequest_123
+Workflow Status: IN_PROGRESS
+-------------------------------------------------------------------------------------
+🔹 4️⃣ setWorkflowCase(WorkflowCase wfCase):-
+✅ Signature
+void setWorkflowCase(WorkflowCase wfCase)
+💡 Kya karta hai?
+Rule me workflow case object update/set karta hai,
+Mostly dynamic changes / task updates ke liye.
+
+🟢 Real Example:-
+WorkflowCase wfCase = context.getWorkflowCase();
+wfCase.addNote("Identity Rahul approved manually");
+context.setWorkflowCase(wfCase);
+
+context.log("Updated Workflow Case with new note");
+
+✅ Output Example:-
+Updated Workflow Case with new note.
+-------------------------------------------------------------------------------------------
+🔹 5️⃣ Transaction Control:-
+5️⃣a commitTransaction()
+RuleContext me current transaction commit karta hai
+Database me saare changes permanent kar deta hai.
+Example:-
+context.commitTransaction();
+context.log("Transaction committed successfully");
+
+✅ Output:-
+Transaction committed successfully
+
+5️⃣b rollbackTransaction():-
+Agar rule me koi error ya failure hai, to transaction rollback kar deta hai
+Saare pending changes undo ho jate hain.
+Example:-
+try {
+    // Some provisioning logic
+    throw new RuntimeException("Simulated error");
+    context.commitTransaction();
+} catch(Exception e) {
+    context.rollbackTransaction();
+    context.error("Transaction rolled back due to error: " + e.getMessage());
+}
+✅ Output:-
+ERROR: Transaction rolled back due to error: Simulated error.
+-----------------------------------------------------------------------------------------------------------------------
+()1️⃣ clearCache():-
+Kya karta hai: RuleContext ke internal caches ko clear karta hai → next fetch hamesha fresh data le.
+Use Case: Performance aur data accuracy ke liye, jab system me stale objects ho sakte hain.
+
+context.clearCache();
+context.log("Cache cleared to fetch fresh data");
+
+✅ Output:-
+Cache cleared to fetch fresh data
+
+///////////*
+Stale Cache → Jab:-
+Cache me data purana ho jaye
+Original source (database, API, etc.) me update ho gaya ho
+Lekin cache me woh update reflect nahi hua
+→ Ab cache stale ho gaya.
+*///////////
+-------------------------------------------------------------------------------------------------------------------------
+2️⃣ decache(Object obj):-
+Kya karta hai: Specific object ko cache se remove karta hai → next fetch fresh from DB
+Use Case: Agar Identity / Application / Entitlement update hua ho aur cache stale ho
+
+Identity id = spContext.getObjectByName(Identity.class, "Rahul");
+context.decache(id);
+context.log("Identity 'Rahul' removed from cache for fresh fetch");
+
+✅ Output:-
+Identity 'Rahul' removed from cache for fresh fetch.
+--------------------------------------------------------------------------------------------
+1️⃣ setResult(Object result):-
+Kya karta hai: Rule ka final output set karta hai,
+Ye workflow / task ko return value provide karta hai.
+
+2️⃣ getResult():-
+Kya karta hai: Rule ka last set output fetch karta hai
+
+context.setResult("Access request approved for Rahul");
+String output = (String) context.getResult();
+context.log("Rule Output: " + output);
+
+✅ Output:-
+Rule Output: Access request approved for Rahul.
+------------------------------------------------------------------------------------------------
+1️⃣ getLocale():-
+Kya karta hai: Current locale fetch karta hai (language/region)
+Use Case: Multi-lingual messages / formatting.
+
+Locale locale = context.getLocale();
+context.log("Current Locale: " + locale.toString());
+
+✅ Output:-
+Current Locale: en_US
+
+2️⃣ getTimeZone():-
+Kya karta hai: Current time zone fetch karta hai
+Use Case: Date/Time formatting in workflows.
+
+TimeZone tz = context.getTimeZone();
+context.log("Current TimeZone: " + tz.getID());
+
+✅ Output:-
+Current TimeZone: Asia/Kolkata
+------------------------------------------------------------------------------------------------------------------------------------
+1️⃣ put(String key, Object value):-
+Kya karta hai: Rule execution ke dauran temporary key-value data store karta hai
+Use Case: Jab kisi intermediate calculation ya object ko baar-baar fetch karna ho
+Example:-
+
+// Identity object ko temporary store karna
+Identity tempIdentity = spContext.getObjectByName(Identity.class, "Rahul");
+context.put("tempIdentity", tempIdentity);
+
+context.log("Temporary identity stored for this execution");
+
+✅ Output:-
+Temporary identity stored for this execution.
+-----------------
+2️⃣ get(String key):-
+Kya karta hai: Store ki gayi value fetch karta hai using key
+
+Use Case: Previous put ke data ko reuse karna.
+
+if(context.containsKey("tempIdentity")) {
+    Identity id = (Identity) context.get("tempIdentity");
+    context.log("Fetched temporary Identity: " + id.getName());
+}
+✅ Output:-
+Fetched temporary Identity: Rahul
+-----------------
+3️⃣ containsKey(String key):-
+Kya karta hai: Check karta hai ki key exist karti hai ya nahi
+Use Case: Null pointer avoid karne ke liye
+
+if(context.containsKey("tempIdentity")) {
+    context.log("Key exists in custom data store");
+} else {
+    context.log("Key not found");
+}
+✅ Output:-
+Key exists in custom data store.
+-----------------------------------------------------------------------------------------------------------------------------------------

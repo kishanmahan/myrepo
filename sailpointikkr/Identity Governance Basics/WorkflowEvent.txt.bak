@@ -1,0 +1,15 @@
+🚀 WorkflowEvent kya hai?
+👉 WorkflowEvent SailPoint me ek concept hai, na ki commonly use hone wali direct class (like Identity, Task, etc.)
+👉 Iska matlab:-
+Workflow ke andar hone wale events / actions / state changes.
+
+🔥 Workflow ke andar kaun-kaun se events hote hain:-
+Event	                  Condition	                       Method (kis object ka)
+Workflow Started	wfCase.getState().equals("Running")	    WorkflowCase
+Workflow Completed	wfCase.getState().equals("Completed")	WorkflowCase
+Workflow Rejected	wfCase.getState().equals("Rejected")	WorkflowCase
+Step Entered	    step execute hua	                    WorkflowCase
+Step Completed	    step finish hua	                        WorkflowCase
+Approval Triggered	approval step aaya	                     WorkItem
+WorkItem Created	workItem != null	                     WorkItem
+

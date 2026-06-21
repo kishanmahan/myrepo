@@ -1,0 +1,4 @@
+🔹 Common role Inheritance Types:-
+Type	       Meaning
+static:------Role ke andar jo roles set hain → wo fixed hain
+dynamic:-----Role automatically decide hota hai selector / rule ke basis pe

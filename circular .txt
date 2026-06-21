@@ -1,0 +1,113 @@
+()3. Compatible:-
+👉 Jab do systems/libraries ek dusre ke saath smoothly kaam karein,
+👉 Jab do cheezein saath me sahi se kaam kar sakti hain.
+Example:-
+Java 17 + Spring Boot latest → compatible ✅
+Old library + new system → incompatible ❌
+💡 Matlab: match hona / support karna.
+
+()4. Expression Syntax:-
+👉 Kisi language me expression likhne ka sahi format/rules.
+Example (Java):-
+int sum = 10 + 20; // correct syntax
+
+
+()1. Data Conflict:-
+👉 Jab same data ke multiple versions milte hain aur decide nahi hota kaunsa correct hai
+Example:-
+User ka address:-
+DB1: Delhi
+DB2: Mumbai
+→ System confuse → data conflict
+Real Problem:-
+Wrong data show hoga
+Business decision galat ho sakta hai
+
+💡 Cause:-
+Multiple systems update kar rahe hain
+Sync delay
+
+5. Circular Dependency:-
+👉 Jab do ya zyada components ek dusre pe depend karte hain (loop ban jata hai),
+Jab execution ya dependency loop me chala jaye jiska end nahi ho.
+Example:-
+Class A → Class B pe depend
+Class B → Class A pe depend
+→ Ye circular dependency hai ❌
+
+class A {
+    B b;
+
+    A() {
+        b = new B();
+    }
+}
+
+class B {
+    A a;
+
+    B() {
+        a = new A();
+    }
+}
+///////////////////*
+()🔁 2. Circular Dependency Code (Har line samjho)
+class A { 
+    B b;
+
+    A() {
+        b = new B();
+    }
+}
+🔍 Class A:
+🔹 B b;
+
+👉 A ke andar ek object reference hai B ka
+
+🔹 A() { b = new B(); }
+
+👉 Jab bhi A ka object banega
+👉 Wo turant B ka object banayega
+
+class B {
+    A a;
+
+    B() {
+        a = new A();
+    }
+}
+🔍 Class B:
+🔹 A a;
+
+👉 B ke andar A ka reference
+
+🔹 B() { a = new A(); }
+
+👉 Jab B ka object banega
+👉 Wo A ka object banayega
+
+--------------------------------------------------------
+🔥 Ab main execution samjho (Most Important):-
+🧠 Step-by-step:-
+---------------------------------------
+👉 Step 1:-
+new A()
+→ A constructor call
+------------------------
+👉 Step 2:-
+A ke andar:-
+b = new B();
+→ B object banega
+-----------------------
+👉 Step 3:-
+B constructor call:-
+a = new A();
+→ fir se A banega
+-------------------------
+👉 Step 4:-
+Naya A fir:
+b = new B();
+
+👉 Loop:-
+A → B → A → B → A → B → ...
+*//////////////////

@@ -1,0 +1,11 @@
+version: 1
+
+dn: CN=kishan,CN=Users,DC=kkriiq,DC=com
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: user
+cn: kishan
+sAMAccountName: kishan
+userAccountControl: 512
+objectCategory: CN=Person,CN=Schema,CN=Configuration,DC=kkriiq,DC=com

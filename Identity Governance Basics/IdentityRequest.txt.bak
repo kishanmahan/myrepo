@@ -1,0 +1,291 @@
+🔹 1️⃣ IdentityRequest kya hai?
+👉 IdentityRequest = user ka access request object
+Matlab:-
+Jab koi user access maangta hai (role, entitlement, account)
+Ya koi admin kisi user ke liye access request create karta hai
+➡ Wo sab ek IdentityRequest object me store hota hai.
+
+🔹 2️⃣ Kya ye DB me store hota hai?
+✅ Haan bhai, 100% database me store hota hai
+Kyun?
+Audit ke liye (kisne kya request kiya)
+Tracking ke liye (pending / approved / rejected)
+Compliance ke liye
+
+📦 DB me ye info hoti hai:-
+Kisne request kiya
+Kiske liye request hai
+Kya request hai (role / access)
+Status kya hai
+
+🔹 3️⃣ Ye kya karta hai?
+👉 Ye pura access request lifecycle manage karta hai
+Flow:-
+User ne request ki
+System ne IdentityRequest object banaya
+Approval process start hua
+Manager/Admin approve ya reject karta hai
+Provisioning system me access apply hota hai.
+
+🔹 4️⃣ IdentityRequest ke andar kya hota hai (Fields)?
+Bhai ye sab important cheeze hoti hain 👇
+Field	               Meaning
+id:---------------Unique request ID
+requestor:--------Kisne request kiya
+targetIdentity:---Kiske liye request hai
+requestedItems:---Kya access maanga gaya (role / entitlement)
+status:-----------Pending / Approved / Rejected
+createdDate:------Kab request bani
+completedDate:----Kab complete hui
+approvalSet:------Approval ka flow (manager / admin)
+comments:---------Notes ya justification
+priority:---------High/Medium/Low
+
+🔥 1️⃣ Basic Methods (ID / Name / Type):-
+Method	                 Kya karta hai
+getId():------------Request ka unique ID deta hai
+setId(String id):---ID set karta hai
+getName():----------Request ka naam deta hai
+setName(String name):----Request ka naam set karta hai
+getType():----------Request ka type (Access / Role / etc.)
+setType(String type):------Type set karta hai
+
+🔥 2️⃣ Request Info Methods:-
+Method	                            Kya karta hai
+getRequestor():--------------------Kisne request ki
+setRequestor(String requestor):----Requestor set karta hai
+getTargetIdentity():---------------Kiske liye request hai
+setTargetIdentity(String identity):----Target identity set karta hai
+
+🔥 3️⃣ Status Methods:-
+Method	                                  Kya karta hai
+getStatus():----------------Current status (Pending / Approved / Rejected)
+setStatus(String status):---Status set karta hai
+isCompleted():--------------Check karta hai complete hua ya nahi
+setCompleted(boolean completed):----------Completion flag set karta hai
+
+🔥 4️⃣ Requested Items Methods:-
+Method	                              Kya karta hai
+getRequestedItems():------------Requested access items list deta hai
+setRequestedItems(List items):--Items set karta hai
+addRequestedItem(Object item):--Ek item add karta hai
+
+🔥 5️⃣ Approval Methods:-
+Method	                                          Kya karta hai
+getApprovalSet():------------------------------Approval flow deta hai                   
+setApprovalSet(Object approvalSet):----------Approval flow set karta hai
+approve():------------------------------------Request approve karta hai
+reject():--------------------------------------Request reject karta hai
+
+🔥 6️⃣ Date Methods:-
+Method	                       Kya karta hai
+getCreatedDate():-------------Kab request bani
+setCreatedDate(Date date):----Created date set karta hai
+getCompletedDate():------------Kab complete hui
+setCompletedDate(Date date):---Completed date set karta hai
+
+🔥 7️⃣ Comments / Metadata:-
+Method	                       Kya karta hai
+getComments():----------------Comments deta hai
+setComments(String comments):-Comments set karta hai
+getPriority():-----------------Priority deta hai
+setPriority(String priority):--Priority set karta hai
+
+🔥 8️⃣ Utility Methods:-
+Method	                  Kya karta hai
+toString():----------Object ko readable string me convert karta hai
+equals(Object obj):--Compare karta hai do objects ko
+hashCode():----------Hash value generate karta hai
+-------------------------------------------------------------------------------------------------------------------------------
+🔹 1️⃣ getRequestedItems() kya karta hai?
+👉 Simple Meaning:-
+Ye method batata hai ki user ne kya-kya access maanga hai
+
+📦 Iske andar kya hota hai?
+Ye usually ek List return karta hai jisme har item ek request hota hai:-
+Role request
+Entitlement request
+Account create / delete request
+
+✅ Example:-
+List items = req.getRequestedItems();
+System.out.println(items);
+
+📤 Output (example):-
+[Role: Admin, Entitlement: SAP_WRITE, Account: AD_CREATE]
+
+🔥 Real Flow:-
+👉 User bolta hai:-
+“Mujhe Admin role chahiye”
+“Mujhe SAP write access chahiye”
+➡ Ye sab items ban ke requestedItems me store ho jata hai.
+------------------------------------------------------------------------------------
+🔹 2️⃣ getApprovalSet() kya karta hai?
+👉 Simple Meaning:-
+Ye method batata hai ki request ko approve kaun karega aur kaise karega
+
+📦 Iske andar kya hota hai?
+Ye ek ApprovalSet object return karta hai jisme hota hai:-
+Approvers (Manager, Admin)
+Approval steps
+Status (Pending / Approved / Rejected)
+✅ Example:-
+ApprovalSet approval = req.getApprovalSet();
+System.out.println(approval);
+📤 Output (example):-
+Manager Approval → Pending
+Security Team → Not Started
+----------------------------------------------------------------------------------------------------------------
+IdentityRequest req = new IdentityRequest();
+req.setId("REQ101");
+req.setName("Access Request");
+req.setType("Role");
+
+System.out.println(req.getId());
+System.out.println(req.getName());
+System.out.println(req.getType());
+
+📤 Output:-
+REQ101
+Access Request
+Role
+----------------------------------------------------
+req.setRequestor("Rahul");
+req.setTargetIdentity("Amit");
+System.out.println(req.getRequestor());
+System.out.println(req.getTargetIdentity());
+
+📤 Output:-
+Rahul
+Amit
+---------------------------------------------------
+req.setStatus("Pending");
+req.setCompleted(false);
+System.out.println(req.getStatus());
+System.out.println(req.isCompleted());
+📤 Output:-
+Pending
+false
+-----------------------------------------------------
+List<String> items = new ArrayList<>();
+items.add("Admin Role");
+items.add("SAP Access");
+req.setRequestedItems(items);
+
+// add one more item
+req.addRequestedItem("AD Account");
+System.out.println(req.getRequestedItems());
+📤 Output:-
+[Admin Role, SAP Access, AD Account]
+--------------------------------------------------------
+Date now = new Date();
+req.setCreatedDate(now);
+req.setCompletedDate(now);
+System.out.println(req.getCreatedDate());
+System.out.println(req.getCompletedDate());
+📤 Output:-
+Thu Mar 27 12:00:00 IST 2026
+Thu Mar 27 12:00:00 IST 2026
+-----------------------------------------------------
+req.setComments("Urgent access needed");
+req.setPriority("High");
+System.out.println(req.getComments());
+System.out.println(req.getPriority());
+📤 Output:-
+Urgent access needed
+High
+--------------------------------------------------------
+IdentityRequest req2 = new IdentityRequest();
+req2.setId("REQ101");
+
+// toString
+System.out.println(req.toString());
+
+// equals
+System.out.println(req.equals(req2));
+
+// hashCode
+System.out.println(req.hashCode());
+
+📤 Output (example):-
+IdentityRequest[id=REQ101, name=Access Request]
+true
+12345678
+-----------------------------------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointFactory;
+import sailpoint.object.IdentityRequest;
+import sailpoint.object.ApprovalSet;
+
+public class ApprovalExample {
+
+    public static void main(String[] args) throws Exception {
+
+        // 🔹 1️⃣ Get SailPoint Context (Entry Point)
+        SailPointContext context = SailPointFactory.getCurrentContext();
+
+        // 🔹 2️⃣ Fetch IdentityRequest from DB
+        IdentityRequest req = context.getObjectByName(IdentityRequest.class, "REQ101");
+
+        if (req != null) {
+
+            // 🔹 3️⃣ Print Basic Info
+            System.out.println("Request ID: " + req.getId());
+            System.out.println("Requestor: " + req.getRequestor());
+            System.out.println("Target User: " + req.getTargetIdentity());
+            System.out.println("Current Status: " + req.getStatus());
+
+            // 🔹 4️⃣ Requested Items (Kya maanga gaya)
+            System.out.println("Requested Items: " + req.getRequestedItems());
+
+            // 🔹 5️⃣ Approval Flow (Kaun approve karega)
+            ApprovalSet approvalSet = req.getApprovalSet();
+            System.out.println("Approval Flow: " + approvalSet);
+
+            // ===========================
+            // 🔥 APPROVE FLOW
+            // ===========================
+            req.setStatus("Approved");
+            req.setCompleted(true);
+
+            if (approvalSet != null) {
+                approvalSet.setState("Approved");
+                context.saveObject(approvalSet);
+            }
+
+            context.saveObject(req);
+            context.commitTransaction();
+
+            System.out.println("✅ Request Approved Successfully");
+
+            // ===========================
+            // 🔥 REJECT FLOW (Example)
+            // ===========================
+            req.setStatus("Rejected");
+            req.setCompleted(true);
+
+            if (approvalSet != null) {
+                approvalSet.setState("Rejected");
+                context.saveObject(approvalSet);
+            }
+
+            context.saveObject(req);
+            context.commitTransaction();
+
+            System.out.println("❌ Request Rejected Successfully");
+        } else {
+            System.out.println("⚠️ Request Not Found");
+        }
+    }
+}
+📤 🔥 Output Example
+Request ID: REQ101
+Requestor: Rahul
+Target User: Amit
+Current Status: Pending
+Requested Items: [Admin Role, SAP Access]
+Approval Flow: Manager -> Security
+
+✅ Request Approved Successfully
+❌ Request Rejected Successfully
+----------------------------------------------------------------------------------------------

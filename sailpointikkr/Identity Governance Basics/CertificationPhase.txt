@@ -1,0 +1,86 @@
+()CertificationPhase kya hota hai?
+👉 CertificationPhase = Certification ka ek stage / step
+Matlab:-
+Certification process ek hi baar me nahi hota, wo multiple phases me chalta hai.
+
+🔹 CertificationPhase kya karta hai?
+👉 Ye control karta hai:-
+Certification abhi kis stage me hai
+Next kya action hona chahiye
+Reviewer kya kar sakta hai ya nahi.
+
+🔸 Example:-
+👉 Agar phase = Active
+Reviewer approve/revoke kar sakta hai ✅
+👉 Agar phase = Completed
+Kuch change nahi kar sakta ❌
+
+🔹 Kya DB me store hota hai?
+👉 ❌ Direct “CertificationPhase” naam ka alag object/table usually nahi hota
+👉 ✅ Lekin:-
+Phase ki value Certification object ke andar store hoti hai
+🔸 Table:-
+spt_certification
+🔸 Column:-
+phase (ya state related field)
+--------------------------------------------------------------------------------------------
+🔹 CertificationPhase ke Types/stages:-
+Common phases 👇
+
+🔸 1. Staged / Created:-
+Certification ban gaya hai
+Abhi start nahi hua
+
+🔸 2. Active:-
+Review chal raha hai
+Reviewer kaam kar raha hai
+
+🔸 3. Remediation:-
+Revoke wale access remove kiye ja rahe hain
+
+🔸 4. Completed:-
+Sab finish ho gaya
+
+🔸 5. Archived:-
+Old certification store ho gaya
+------------------------------------------------------------------------------------------------------------------
+🔹 CertificationPhase ke andar kya hota hai?
+👉 Ye koi heavy object nahi hota,
+👉 Mostly ek state/enum type concept hota hai.
+
+🔸 Internally contain karta hai:-
+phase name (Active, Completed etc.)
+allowed actions
+timing (start/end)
+transition rules (next phase kya hoga)
+
+🔹 Real Flow samajh le (🔥 important):-
+Create Certification
+        ↓
+Phase = STAGED
+        ↓
+Start Certification
+        ↓
+Phase = ACTIVE
+        ↓
+Reviewer decisions
+        ↓
+Phase = REMEDIATION
+        ↓
+Access remove
+        ↓
+Phase = COMPLETED
+-------------------------------------------------------
+🔹 Real SailPoint me kya hota hai?
+👉 CertificationPhase generally aise hota hai:-
+public enum CertificationPhase {
+    Staged,
+    Active,
+    Remediation,
+    Completed,
+    Archived
+}
+👉 Matlab:-
+Ye sirf values/state define karta hai
+Koi heavy getter/setter class nahi hoti.
+----------------------------------------------------------------

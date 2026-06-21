@@ -1,0 +1,96 @@
+()1. Util.listToCsv(ops):-
+Ye method:-
+List ko CSV (Comma Separated String) me convert karta hai.
+Example:-
+List ops = ["Modify", "Delete"];
+
+()Common Util Methods:-
+import sailpoint.tools.Util;
+Common methods:-
+Method	                      Kaam
+Util.otob()	             object to boolean
+Util.otoi()	             object to int
+Util.isEmpty()	         empty check
+Util.isNotNullOrEmpty()	 null/empty check
+Util.listToCsv()	     list → csv
+Util.csvToList()	     csv → list
+Util.nullSafeEq()	     safe equals
+Util.size()	             collection size
+Util.flushIterator()	 iterator clear
+
+()2. </Script>:-
+Ye XML closing tag hai.
+Matlab:-
+Script block yaha khatam
+Example:-
+<Script>
+   Java/Beanshell code
+</Script>
+
+()4. event:-
+Ye workflow variable hai:-
+<Variable input="true" name="event"/>
+Type
+Usually:-
+sailpoint.object.IdentityChangeEvent
+
+Meaning:-
+Identity change ka complete event object.
+Example:-
+Isme ho sakta hai:-
+Data
+native changes
+identity
+account changes
+operations
+attributes
+*///////////
+////////////*
+5. event.getNativeChanges():-Ye method native detected changes laata hai.
+Return Type:-
+List<NativeChangeDetection>
+Example:-
+[
+ Add Finance Group,
+ Remove HR Group
+]
+Meaning:-
+Target system me jo direct changes detect hue.
+
+6. NativeChangeDetection Class hai.
+Import:-
+import sailpoint.object.NativeChangeDetection;
+Meaning:-
+Native/direct account change object.
+
+Example:-
+Agar AD me directly group add hua:-
+Finance_Group
+
+toh uska object:-
+NativeChangeDetection
+
+()Common Methods of NativeChangeDetection:-
+Method	                Kaam
+getOperation()	     operation type
+getApplication()	 application
+getNativeIdentity()	 native account
+getAttribute()	     changed attribute
+getValue()	         changed value
+getOldValue()	     old value
+getNewValue()	     new value
+toXml()	             xml output
+toString()	         string output
+*////////////
+//////////////*
+7. event ke Common Methods:-
+IdentityChangeEvent ke common methods:-
+Method	                Kaam
+getNativeChanges()	native changes
+getIdentityName()	identity name
+getApplications()	applications
+getSource()	        source
+getAttributes()	    attributes
+toXml()	            xml
+toString()	        string
+

@@ -1,0 +1,40 @@
+IIQ me ye time-based activation/deactivation concept hai.
+
+1. Sunrise ☀️
+
+Sunrise = kab access/role/entitlement start (active) hoga.
+
+Matlab:
+
+Effective From Date / Start Date
+
+Example:
+
+Aaj 22 May hai.
+
+Tumne role assign kiya:
+
+Role = HR_Access
+Sunrise = 01 June 2026
+
+Meaning:
+
+01 June se pehle role inactive
+01 June ko role automatically active
+
+2. Sunset 🌙
+
+Sunset = kab access/role/entitlement expire/inactive hoga.
+
+Matlab:
+
+End Date / Expiry Date
+
+Example:
+
+Role = Contractor_Access
+Sunset = 30 June 2026
+
+Meaning:
+
+30 June ke baad access automatically remove/expire

@@ -1,0 +1,109 @@
+1️⃣ Dashboard Metrics kya hote hain?
+Dashboard Metrics = system ke security aur access data ke important counts.
+Example dashboard:-
+Total Users : 120
+Active Users : 110
+High Risk Users : 5
+Policy Violations : 3
+Admin Users : 8
+Ye sab metrics hain.
+
+2️⃣ IAM Dashboard me common metrics:-
+()User Metrics
+Total Users
+Active Users
+Inactive Users
+
+()Risk Metrics:-
+High Risk Users
+Medium Risk Users
+Low Risk Users
+
+()Security Metrics:-
+Policy Violations
+Sensitive Access Users
+Admin Users
+
+()Access Metrics:-
+Total Roles
+Entitlements
+Applications
+
+3️⃣ Context Based Dashboard Metrics Project:-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.QueryOptions;
+import sailpoint.tools.GeneralException;
+
+import java.util.Iterator;
+
+public class DashboardMetricsService {
+
+    public void generateMetrics(SailPointContext context) throws GeneralException {
+
+        QueryOptions qo = new QueryOptions();
+
+        Iterator<Identity> identities = context.search(Identity.class, qo);
+
+        int totalUsers = 0;
+        int adminUsers = 0;
+        int highRiskUsers = 0;
+        int violations = 0;
+
+        while (identities.hasNext()) {
+
+            Identity id = identities.next();
+
+            totalUsers++;
+
+            String roles = String.valueOf(id.getAssignedRoles());
+
+            int riskScore = 0;
+
+            if (roles.contains("Admin")) {
+                adminUsers++;
+                riskScore += 30;
+            }
+
+            if (roles.contains("DatabaseAdmin")) {
+                riskScore += 40;
+            }
+
+            if (roles.contains("Finance") && roles.contains("Audit")) {
+                violations++;
+                riskScore += 50;
+            }
+
+            if (riskScore >= 60) {
+                highRiskUsers++;
+            }
+        }
+
+        System.out.println("===== DASHBOARD METRICS =====");
+
+        System.out.println("Total Users : " + totalUsers);
+        System.out.println("Admin Users : " + adminUsers);
+        System.out.println("High Risk Users : " + highRiskUsers);
+        System.out.println("Policy Violations : " + violations);
+
+    }
+}
+4️⃣ Rule / Task jo dashboard metrics run karega:-
+import sailpoint.api.SailPointContext;
+
+public Object execute(SailPointContext context) throws Exception {
+
+    DashboardMetricsService service = new DashboardMetricsService();
+
+    service.generateMetrics(context);
+
+    return "Dashboard Metrics Generated";
+
+}
+5️⃣ Example Output:-
+===== DASHBOARD METRICS =====
+
+Total Users : 20
+Admin Users : 3
+High Risk Users : 2
+Policy Violations : 1

@@ -1,0 +1,94 @@
+()IdentityGroup kya karta hai?
+--🔹 1️⃣ IdentityGroup kya hai?
+👉 IdentityGroup = users ka group / collection
+Matlab:-
+multiple users ko ek group me daal dete hain
+group ke through access manage karte hain
+✅ Example:-
+Group: IT Team
+Members:-
+Rahul
+Amit
+Neha
+➡ Ye pura IdentityGroup object se represent hota hai
+
+🔹 2️⃣ Ye kya karta hai?
+👉 Ye manage karta hai:-
+users ka grouping
+group-based access
+bulk assignment (ek saath access dena)
+
+🔥 Use:-
+ek group ko access do → sab users ko mil jata hai
+easy management
+large organizations me useful
+
+🔹 3️⃣ Kya ye DB me store hota hai?
+✅ Haan bhai, DB me store hota hai
+📦 Structure:-
+IdentityGroup (IT Team)
+   ↓
+Members → Rahul, Amit, Neha
+
+🔹 4️⃣ IdentityGroup ke andar kya hota hai?
+Field	          Meaning
+name	         group ka naam
+description	     group ka detail
+members	          users list
+owner	         group ka responsible person
+type	         group type (IT / Business)
+
+🔹 5️⃣ Important Methods:-
+🔸 Basic:-
+getName() → group ka naam deta hai
+setName(String name) → group ka naam set karta hai
+getDescription() → group ka description deta hai
+setDescription(String description) → description set karta hai
+🔸 Members:-
+getMembers() → group ke sare users return karta hai
+addMember(Object member) → group me user add karta hai
+removeMember(Object member) → group se user remove karta hai
+🔸 Owner:-
+getOwner() → group ka owner deta hai
+setOwner(String owner) → group ka owner set karta hai
+🔸 Type:-
+getType() → group ka type deta hai
+setType(String type) → type set karta hai
+🔸 Utility:-
+toString() → readable format me object print karta hai
+equals(Object obj) → do groups same hain ya nahi check karta hai
+hashCode() → unique hash generate karta hai.
+
+🚀 🔥 Simple Code Example:-
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointFactory;
+import sailpoint.object.IdentityGroup;
+import java.util.ArrayList;
+import java.util.List;
+public class GroupExample {
+    public static void main(String[] args) throws Exception {
+
+        SailPointContext context = SailPointFactory.getCurrentContext();
+
+        IdentityGroup group = new IdentityGroup();
+
+        group.setName("IT Team");
+        group.setDescription("All IT users");
+
+        List<String> members = new ArrayList<String>();
+        members.add("Rahul");
+        members.add("Amit");
+
+        group.addMember("Neha");
+
+        System.out.println(group.getName());
+        System.out.println(group.getMembers());
+
+        context.saveObject(group);
+        context.commitTransaction();
+    }
+}
+📤 Output:-
+IT Team
+[Rahul, Amit, Neha]
+

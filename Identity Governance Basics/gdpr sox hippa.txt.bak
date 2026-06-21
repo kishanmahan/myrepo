@@ -1,0 +1,92 @@
+2️⃣ GDPR (General Data Protection Regulation, 2018):-
+Origin: European Union (EU):-
+Purpose: EU citizens ke personal data privacy ko protect kare.
+Focus: Data privacy, consent aur transparency.
+Key Principles:-
+Lawfulness, Fairness, Transparency: Data collect karne se pehle clear reason aur consent chahiye.
+Purpose Limitation: Data sirf declared purpose ke liye use ho.
+Data Minimization: Sirf zaruri data collect kare.
+Storage Limitation: Data sirf required duration tak rakha jaye.
+Integrity & Confidentiality: Data secure aur accurate ho.
+Example: Agar kisi EU citizen ka email address collect ho raha hai,
+to unke consent ke bina use karna GDPR violation hai.
+
+3️⃣ HIPAA (Health Insurance Portability and Accountability Act, 1996);-
+Origin: USA
+Purpose: Patient ke health data privacy aur security ko protect kare.
+Focus: Protected Health Information (PHI) ka confidentiality aur integrity.
+Key Points:-
+PHI ka unauthorized access, use, aur disclosure illegal hai.
+Hospitals, clinics aur unke business partners ko security rules follow karne hote hain.
+Data encryption, access control, audit logs, aur backup policies zaruri hain.
+Example: Hospital me patient ke medical records ko sirf authorized staff hi access kar sakta hai.
+Unauthorized email ya cloud me share karna HIPAA violation hai.
+
+1️⃣ SOX kya hai?
+Full Form: Sarbanes-Oxley Act
+Year: 2002
+Country: USA
+Purpose: Companies ke financial reporting aur accounting ko fraud-free, transparent aur reliable banaye.
+Target: Mainly public companies (jo stock market me listed hain).
+
+3️⃣ SOX ke main principles (IT aur business dono):-
+Internal Controls:-
+Company ke financial systems me proper checks & balances ho.
+Example: Accounting software me unauthorized changes prevent ho.
+
+Financial Reporting:-
+Accurate aur complete financial statements.
+Management aur auditors dono responsible hain.
+
+Data Integrity & Security:-
+Sab financial records secure, tamper-proof aur traceable hone chahiye.
+Logs aur audit trails maintain karna zaruri hai.
+
+Access Control:-
+Sirf authorized log hi sensitive financial data access kar saken.
+
+Audit Trails & Logging:-
+Har transaction record ho aur easily trackable ho.
+
+Backup & Recovery:-
+Financial data ka regular backup aur disaster recovery plan.
+
+Change Management:-
+System me koi bhi change approved aur documented ho.
+//////////*
+()Log / Auditor = वो व्यक्ति जो data verify karta hai.
+Ye check karte hain ki financial statements sach hain ya nahi.
+Errors, frauds, ya misstatements ko detect karte hain.
+Example:-
+Company ke CFO ne revenue report banayi.
+Independent auditor aata hai aur verify karta hai ki report me koi galat number ya fraud nahi hai.
+Agar sab sahi hai → report approve ho jati hai.
+Agar galat hai → auditor report me highlight karta hai aur management accountable hota hai.
+
+1️⃣ Reliable:-
+Matlab विश्वसनीय ya dependable.
+SOX me iska matlab: Financial reports aur accounting data itna accurate ho ki log uspe bharosa kar saken.
+
+2️⃣ Management aur Auditors:-
+Management: Company ke top bosses, jaise CEO, CFO, finance team head. Ye log financial statements banate aur approve karte hain.
+Auditors: Independent log ya firm jo check karte hain ki financial statements sach hai ya nahi.
+Dono ka role important hai: Management prepare karta hai, auditor verify karta hai.
+
+3️⃣ Accountable:-
+Matlab जिम्मेदार.
+SOX me iska matlab: Agar financial fraud ya error hota hai,
+management aur auditors dono legally responsible hote hain.
+Example: Agar CFO ne false profit report file ki → unko penalty aur jail tak ho sakta hai.
+
+4️⃣ Financial Data Integrity:-
+Matlab financial data ki सटीकता aur सुरक्षितness.
+SOX me iska matlab: Data accurate, complete aur tamper-proof ho.
+Example: Revenue, expenses aur balance sheet ka data secure ho, koi unauthorized change na ho.
+
+5️⃣ 2️⃣ SOX kyun important hai?
+Financial fraud aur corporate scandals (jaise Enron, WorldCom) ke baad USA ne SOX banaya.
+Purpose:-
+Transparency → Investors aur public ko sach pata chale.
+Accountability → Management aur auditors responsible ho.
+Data Integrity → Financial data accurate aur secure ho.
+*/////////////////

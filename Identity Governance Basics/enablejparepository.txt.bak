@@ -1,0 +1,14 @@
+()@EnableJpaRepositories Spring Data JPA ko batata hai ki repository interfaces ko scan karke unka bean
+create karo.
+Simple language me 👇:-
+👉 Ye annotation Repository interfaces ko detect karke automatically implementation bana deta hai.
+
+2️⃣ Ye internally kya karta hai?
+Jab Spring Boot start hota hai:-
+1️⃣ Package scan karta hai
+2️⃣ JpaRepository wale interfaces dhundta hai
+3️⃣ Unka proxy implementation create karta hai
+4️⃣ Unhe Spring Bean bana deta hai.
+
+ex-
+@EnableJpaRepositories(basePackages = "com.flowdesk")

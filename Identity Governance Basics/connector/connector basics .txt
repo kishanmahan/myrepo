@@ -1,0 +1,63 @@
+1️⃣ Connector kya hota hai?
+Connector = IAM system aur external application ke beech connection banane wala component.
+
+()Connector ki help se:-
+✔ users fetch hote hain
+✔ access import hota hai
+✔ provisioning hota hai
+
+()3️⃣ Connector kya kya karta hai:-
+Connector mainly 3 kaam karta hai.
+
+1️⃣ Aggregation:-
+Application se users aur access IAM me import karta hai.
+Example:-
+Application Users
+Rahul
+Amit
+Neha
+IAM me aa jayenge.
+
+2️⃣ Provisioning:-
+IAM se application me access create / remove karta hai.
+Example:-
+IAM → Rahul ko SAP Admin access do,
+Connector SAP me access create karega.
+
+3️⃣ Reconciliation:-
+Reconciliation ka matlab hai application ke users aur unke access ko SailPoint me laana aur compare karna.
+update karna.
+--Reconciliation kya kya import karta hai
+
+1️⃣ Accounts:-
+Application ke users
+Example:-
+Rahul
+Amit
+Priya
+
+2️⃣ Entitlements:-
+Application ke permissions ya groups
+Example:-
+FinanceGroup
+AdminGroup
+HRGroup
+Reconciliation ka purpose
+Application aur SailPoint ka data same rakhna
+Access track karna
+Security maintain karna.
+
+------------------------------------------------------------------------------------
+()Aggregation kya hai?
+Aggregation ka matlab hai application se data collect (import) karna.
+SailPoint connector ke through application se:-
+Accounts
+Groups
+Permissions
+sab data read karta hai.
+
+Example:-
+Application me data:-
+Rahul → FinanceGroup
+Amit → HRGroup
+Aggregation run hone ke baad SailPoint me bhi ye data aa jata hai.

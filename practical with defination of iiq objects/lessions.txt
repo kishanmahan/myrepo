@@ -1,0 +1,98 @@
+⚙️ QuickLink Rule kya hai?
+👉 QuickLink Rule = custom logic jo decide karta hai:-
+QuickLink ka behavior kya hoga
+Kaun use kar sakta hai
+Kaunsa workflow run hoga
+Kaunsa data pass hoga
+
+-----------------------------
+()sailpoint ko teen part me batenge aur un teeno me kya kya padhna hai:-
+(a)development:-configure custom workflows,configure lyfecycle events,custom rules,customization.
+(b)administration:-application onboarding,configuration certification,policy violations,installation,patching.
+(c)support:-troubleshoting,reporting,advance analytics,and handling incident who required whole product knowledge.
+----------------------------------------------------------------------------------------------------------------------
+->benifits of sailpoint,lifecycle manager,complience manager,account group aggregation,customization,identity iq group->bundle of identity.
+external application,web browser interface,application server,database server,email server,scim and rest,object model,quartz schedular,
+integration modules,identity iq tables.
+--------------------------------------------------------------------------------
+()identity iq preview:-
+->identity iq business purpose 
+->identity iq common components
+->identity iq overview
+->overview of an identity iq project
+
+()product architecture installation:-
+->understanding the product architecture for identity iq
+->understanding the installation procedure for identity iq
+
+()identity cube:-
+->identity cube and identity refresh cube
+
+()application onboarding,correlation:-
+->onboarding application
+->account correlation
+->application configuration
+
+()risk and policies:-
+->identity iq policy overview
+->policy types:-sod,account policy,custom logic policy of companies.
+->discovery and handling policies
+->identity risk model->use cases->entitlements,policy violations and certification risk configuration
+->refreshing and interaction with riskscores->use cases->entitlements,policy violations and certification risk configuration
+
+()certifications:-
+->certification and access review->use case->pam application access review certification,manager application certification,
+group poowner certification.
+->types of certifications->use case->pam application access review certification,manager application certification,
+group poowner certification.
+->certification lifecycle:->use case->pam application access review certification,manager application certification,
+group poowner certification.
+->certification configuration->use case->pam application access review certification,manager application certification,
+group poowner certification.
+->certification making->use case->pam application access review certification,manager application certification,
+group poowner certification.
+certification decisions->use case->pam application access review certification,manager application certification,
+group poowner certification.
+
+()roles:-
+->role definition->use cases->trakk application role management,business role creation,
+it role creation,role hierarchy and role base provissioning.
+->role management benefits:-->use cases->trakk application role management,business role creation,
+it role creation,role hierarchy and role base provissioning.
+->role model overview->use cases->trakk application role management,business role creation,
+it role creation,role hierarchy and role base provissioning.
+->role minning->use cases->trakk application role management,business role creation,
+it role creation,role hierarchy and role base provissioning.
+->role management pointers->use cases->trakk application role management,business role creation,
+it role creation,role hierarchy and role base provissioning.
+
+()troubleshoting,debug,console:-
+->factors in successful troubleshoting and debbuging->use cases->logging and trouble shoting demonstration and exercise beneral.
+->debug page->use cases->logging and trouble shoting demonstration and exercise beneral.
+->best practices->use cases->logging and trouble shoting demonstration and exercise beneral.
+
+()reporting:-
+->reporting architecture of sailpoint iiq->use cases->creating a capability report and customising capabiliy report.
+->defining data sources->use cases->logging and trouble shoting demonstration and exercise beneral.
+->report column configuration->use cases->logging and trouble shoting demonstration and exercise beneral.
+->query configuration->use cases->logging and trouble shoting demonstration and exercise beneral.
+
+()lifecycle management:-
+->change lifecycle->use case->lcm configuration and access control,provissioning policy,access provissioning to ldap and 
+lyfecycle events(leaver,mover,joiner).
+->key features and considerations->use case->lcm configuration and access control,provissioning policy,access provissioning to ldap and 
+lyfecycle events(leaver,mover,joiner).
+->access request process->use case->lcm configuration and access control,provissioning policy,access provissioning to ldap and 
+lyfecycle events(leaver,mover,joiner).
+->additional access and identity management options->use case->lcm configuration and access control,provissioning policy,access provissioning to ldap and 
+lyfecycle events(leaver,mover,joiner).
+->lcm configuration->use case->lcm configuration and access control,provissioning policy,access provissioning to ldap and 
+lyfecycle events(leaver,mover,joiner).
+additional lcm functionality->use case->lcm configuration and access control,provissioning policy,access provissioning to ldap and 
+lyfecycle events(leaver,mover,joiner).
+
+()workflow:-
+->workflow in identity iq->ue case->custom workflow creation for starting automatic certification process upon department change.
+-> key workflow concepts->ue case->custom workflow creation for starting automatic certification process upon department change.
+->workflow case,variables,steps and approvals->ue case->custom workflow creation for starting automatic certification process upon department change.
+->workflow troubleshoting->ue case->custom workflow creation for starting automatic certification process upon department change.

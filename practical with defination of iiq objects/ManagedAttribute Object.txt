@@ -1,0 +1,40 @@
+()ManagedAttribute Object SailPoint IIQ me ek object hota hai jo Application ke entitlement/permission values ko represent karta hai.
+Simple language me:-
+ManagedAttribute = Entitlement ka object representation
+Jaise AD, SAP, Database, LDAP etc. me jo roles/groups/permissions hote hain, 
+unko IIQ me ManagedAttribute object ke form me store kiya ja sakta hai.
+
+Example:-
+Maan lo Active Directory me groups hain:-
+IT_Admin
+HR_User
+Finance_Read
+
+IIQ me ye groups ManagedAttribute objects ban sakte hain.
+Common Fields / Properties
+ManagedAttribute ma = new ManagedAttribute();
+
+Kuch common properties:-
+Method	                        Kaam
+getName()	              Entitlement ka naam
+getDisplayName()	        Display name
+getType()	               Entitlement type
+getApplication()	Kis application ka entitlement hai
+getOwner()	               Owner kaun hai
+getValue()	               Actual entitlement value
+isRequestable()        	Request kiya ja sakta hai ya nahi
+
+
+Example 1 — ManagedAttribute fetch karna
+import sailpoint.api.SailPointContext;
+import sailpoint.object.ManagedAttribute;
+
+ManagedAttribute ma =
+    context.getObjectByName(
+        ManagedAttribute.class,
+        "IT_Admin"
+    );
+
+System.out.println(ma.getName());
+Output
+IT_Admin

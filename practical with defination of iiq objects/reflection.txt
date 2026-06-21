@@ -1,0 +1,461 @@
+Reflection se kya kar sakte hain?
+✅ Class ka naam nikal sakte ho
+✅ Saare methods dekh sakte ho
+✅ Saare fields dekh sakte ho
+✅ Constructors dekh sakte ho
+✅ Runtime par object create kar sakte ho
+✅ Private methods aur private variables ko bhi access kar sakte ho
+Example 1: Class Information
+Java
+Copy code
+class Student {
+    int id;
+    String name;
+}
+
+public class Test {
+    public static void main(String[] args) {
+
+        Student s = new Student();
+
+        Class c = s.getClass();
+
+        System.out.println(c.getName());
+    }
+}
+Output
+Plain text
+Copy code
+Student
+
+()Example 2: Methods Dekhna:-
+Java
+Copy code
+import java.lang.reflect.Method;
+
+class Student {
+
+    public void show() {}
+
+    public void display() {}
+}
+
+public class Test {
+
+    public static void main(String[] args) {
+
+        Class c = Student.class;
+
+        Method[] methods = c.getDeclaredMethods();
+
+        for(Method m : methods) {
+            System.out.println(m.getName());
+        }
+    }
+}
+Output
+Plain text
+Copy code
+show
+display
+
+()Example 3: Fields Dekhna:-
+Java
+Copy code
+import java.lang.reflect.Field;
+
+class Student {
+
+    int id;
+    String name;
+}
+
+public class Test {
+
+    public static void main(String[] args) {
+
+        Class c = Student.class;
+
+        Field[] fields = c.getDeclaredFields();
+
+        for(Field f : fields) {
+            System.out.println(f.getName());
+        }
+    }
+}
+Output
+Plain text
+Copy code
+id
+name
+
+()Example 4: Private Field Access Karna:-
+Java
+Copy code
+import java.lang.reflect.Field;
+
+class Student {
+
+    private String name = "Rahul";
+}
+
+public class Test {
+
+    public static void main(String[] args) throws Exception {
+
+        Student s = new Student();
+
+        Field f = Student.class.getDeclaredField("name");
+
+        f.setAccessible(true);
+
+        System.out.println(f.get(s));
+    }
+}
+Output:-
+Plain text
+Copy code
+Rahul
+Yahan private field ko bhi access kar liya.
+
+()Example 5: Runtime Par Method Call Karna:-
+Java
+Copy code
+import java.lang.reflect.Method;
+
+class Student {
+
+    public void show() {
+        System.out.println("Hello Reflection");
+    }
+}
+
+public class Test {
+
+    public static void main(String[] args) throws Exception {
+
+        Student s = new Student();
+
+        Method m = Student.class.getMethod("show");
+
+        m.invoke(s);
+    }
+}
+Output:-
+Plain text
+Copy code
+Hello Reflection
+Reflection API ke Important Classes
+Java
+Copy code
+Class
+Method
+Field
+Constructor
+Modifier
+
+--------------------------
+Constructor ke Important Methods
+Maan lo class:
+Java
+Copy code
+class Student {
+
+    private int id;
+    private String name;
+
+    public Student() {
+        System.out.println("Default Constructor");
+    }
+
+    public Student(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+}
+1. Saare Constructors Dekhna
+Java
+Copy code
+import java.lang.reflect.Constructor;
+
+public class Test {
+    public static void main(String[] args) {
+
+        Constructor[] cons =
+                Student.class.getDeclaredConstructors();
+
+        for(Constructor c : cons) {
+            System.out.println(c);
+        }
+    }
+}
+Output:
+Plain text
+Copy code
+public Student()
+public Student(int,java.lang.String)
+2. Constructor Count
+Java
+Copy code
+Constructor[] cons =
+        Student.class.getDeclaredConstructors();
+
+System.out.println(cons.length);
+3. Constructor Name
+Java
+Copy code
+Constructor c =
+        Student.class.getConstructor();
+
+System.out.println(c.getName());
+Output:
+Plain text
+Copy code
+Student
+4. Constructor Parameters
+Java
+Copy code
+Constructor c =
+        Student.class.getConstructor(
+                int.class,
+                String.class);
+
+Class[] params =
+        c.getParameterTypes();
+
+for(Class p : params) {
+    System.out.println(p.getName());
+}
+Output:
+Plain text
+Copy code
+int
+java.lang.String
+5. Runtime Par Object Create Karna
+Default Constructor
+Java
+Copy code
+Constructor c =
+        Student.class.getConstructor();
+
+Student s =
+        (Student)c.newInstance();
+Equivalent hai:
+Java
+Copy code
+Student s = new Student();
+Parameterized Constructor
+Java
+Copy code
+Constructor c =
+        Student.class.getConstructor(
+                int.class,
+                String.class);
+
+Student s =
+        (Student)c.newInstance(
+                101,
+                "Rahul");
+Equivalent:
+Java
+Copy code
+Student s =
+        new Student(101,"Rahul");
+Private Constructor Access
+Java
+Copy code
+class Student {
+
+    private Student() {
+        System.out.println("Private Constructor");
+    }
+}
+Normal way:
+Java
+Copy code
+Student s = new Student();
+Error.
+Reflection se:
+Java
+Copy code
+Constructor c =
+        Student.class.getDeclaredConstructor();
+
+c.setAccessible(true);
+
+Student s =
+        (Student)c.newInstance();
+Output:
+Plain text
+Copy code
+Private Constructor
+
+_---------------------
+Student.java
+Java
+Copy code
+package com.test;
+
+public class Student {
+
+    private int id;
+    private String name;
+
+    public Student() {
+        System.out.println("Default Constructor Called");
+    }
+
+    public Student(int id, String name) {
+        this.id = id;
+        this.name = name;
+        System.out.println("Parameterized Constructor Called");
+    }
+
+    private Student(String name) {
+        this.name = name;
+        System.out.println("Private Constructor Called");
+    }
+
+    public void display() {
+        System.out.println("Id : " + id);
+        System.out.println("Name : " + name);
+    }
+}
+ReflectionDemo.java
+Java
+Copy code
+package com.test;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
+
+public class ReflectionDemo {
+
+    public static void main(String[] args) {
+
+        try {
+
+            // Class Object
+            Class<Student> cls = Student.class;
+
+            System.out.println("Class Name : "
+                    + cls.getName());
+
+            System.out.println("\n===== ALL CONSTRUCTORS =====");
+
+            Constructor<?>[] constructors =
+                    cls.getDeclaredConstructors();
+
+            for (Constructor<?> c : constructors) {
+
+                System.out.println("Constructor Name : "
+                        + c.getName());
+
+                System.out.println("Parameter Count : "
+                        + c.getParameterCount());
+
+                System.out.println("Modifiers : "
+                        + Modifier.toString(c.getModifiers()));
+
+                Class<?>[] params =
+                        c.getParameterTypes();
+
+                System.out.print("Parameters : ");
+
+                for (Class<?> p : params) {
+                    System.out.print(
+                            p.getSimpleName() + " ");
+                }
+
+                System.out.println();
+                System.out.println("-------------------");
+            }
+
+            System.out.println("\n===== DEFAULT CONSTRUCTOR =====");
+
+            Constructor<Student> c1 =
+                    cls.getConstructor();
+
+            Student s1 =
+                    c1.newInstance();
+
+            s1.display();
+
+            System.out.println("\n===== PARAMETERIZED CONSTRUCTOR =====");
+
+            Constructor<Student> c2 =
+                    cls.getConstructor(
+                            int.class,
+                            String.class);
+
+            Student s2 =
+                    c2.newInstance(
+                            101,
+                            "Rahul");
+
+            s2.display();
+
+            System.out.println("\n===== PRIVATE CONSTRUCTOR =====");
+
+            Constructor<Student> c3 =
+                    cls.getDeclaredConstructor(
+                            String.class);
+
+            c3.setAccessible(true);
+
+            Student s3 =
+                    c3.newInstance(
+                            "Aman");
+
+            s3.display();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+Output
+Plain text
+Copy code
+Class Name : com.test.Student
+
+===== ALL CONSTRUCTORS =====
+
+Constructor Name : com.test.Student
+Parameter Count : 0
+Modifiers : public
+Parameters :
+
+-------------------
+
+Constructor Name : com.test.Student
+Parameter Count : 2
+Modifiers : public
+Parameters : int String
+
+-------------------
+
+Constructor Name : com.test.Student
+Parameter Count : 1
+Modifiers : private
+Parameters : String
+
+-------------------
+
+===== DEFAULT CONSTRUCTOR =====
+
+Default Constructor Called
+Id : 0
+Name : null
+
+===== PARAMETERIZED CONSTRUCTOR =====
+
+Parameterized Constructor Called
+Id : 101
+Name : Rahul
+
+===== PRIVATE CONSTRUCTOR =====
+
+Private Constructor Called
+Id : 0
+Name : Aman

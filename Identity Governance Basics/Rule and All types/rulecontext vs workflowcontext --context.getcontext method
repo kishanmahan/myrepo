@@ -1,0 +1,19 @@
+()🔹 RuleContext me:-
+SailPointContext spContext = context.getSailPointContext();
+Rule run ho raha hota hai (jaise Identity Rule, Provisioning Rule)
+
+Yaha se tu:-
+Identity fetch karega
+Role fetch karega
+DB operations karega
+👉 Matlab: Rule → backend data access
+
+🔹 WorkflowContext me:-
+SailPointContext spContext = context.getSailPointContext();
+Workflow run ho raha hota hai (approval, provisioning flow)
+
+Yaha bhi tu:-
+Identity fetch karega
+Task launch karega
+Policy check karega
+👉 Matlab: Workflow → backend + process control

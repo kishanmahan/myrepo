@@ -1,0 +1,25 @@
+()Normalization kya hota hai?
+Normalization ek process hai jisme hum data ko proper structure me organize karte hain, taki:
+Data duplicate na ho
+Data clean aur consistent rahe
+Database efficient ho jaaye
+
+🔥 Easy Example:-
+❌ Without Normalization (Galat way)
+Student	Course	Teacher
+Rahul	Java	Amit
+Rahul	Python	Amit
+
+👉 Problem:-
+Rahul ka naam baar-baar repeat ho raha hai
+Teacher bhi duplicate ho raha hai
+✅ After Normalization (Sahi way)
+
+Table 1: Students:-
+ID	    Name
+1	    Rahul
+
+Table 2: Courses:-
+ID	Course
+1	Java
+2	Python

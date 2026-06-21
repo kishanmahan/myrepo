@@ -1,0 +1,353 @@
+<!--
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Custom Multi-Attribute Correlation Rule" type="Correlation">
+  <Description>
+    Ye rule account ko Identity se correlate karta hai using EmployeeID ya Email.
+  </Description>
+  <Source>                                   -->
+  import sailpoint.object.*;
+  import sailpoint.api.IdentityService;
+  import sailpoint.tools.Util;
+  import java.util.HashMap;
+  import java.util.Map;
+  import org.apache.commons.logging.Log;
+  import org.apache.commons.logging.LogFactory;
+
+  // 1. Logging Setup
+  Log logger = LogFactory.getLog("custom.rule.correlation");
+  Map returnMap = new HashMap();
+
+  try {
+      // Account attributes jo source system se aa rahe hain
+      String accountEmpId = account.getStringAttribute("EMPLOYEE_NUMBER");
+      String accountEmail = account.getStringAttribute("MAIL");
+
+      logger.debug("Correlating account: " + account.getNativeIdentity());
+
+      // 2. Logic A: Employee ID se Match karna (Primary Match)
+      if (Util.isNotNullOrEmpty(accountEmpId)) {
+          QueryOptions qo = new QueryOptions();
+          qo.addFilter(Filter.eq("name", accountEmpId)); // Identity ka 'name' aksar EmpID hota hai
+          
+          int count = context.countObjects(Identity.class, qo);
+          if (count == 1) {
+              Identity match = context.getUniqueObject(Identity.class, qo);
+              if (match != null) {
+                  returnMap.put("identity", match);
+                  logger.info("Match mil gaya via EmployeeID: " + accountEmpId);
+                  return returnMap;
+              }
+          }
+      }
+
+      // 3. Logic B: Email se Match karna (Secondary Match - Fallback)
+      if (Util.isNotNullOrEmpty(accountEmail)) {
+          QueryOptions qoEmail = new QueryOptions();
+          qoEmail.addFilter(Filter.eq("email", accountEmail));
+          
+          int emailCount = context.countObjects(Identity.class, qoEmail);
+          if (emailCount == 1) {
+              Identity match = context.getUniqueObject(Identity.class, qoEmail);
+              if (match != null) {
+                  returnMap.put("identity", match);
+                  logger.info("Match mil gaya via Email: " + accountEmail);
+                  return returnMap;
+              }
+          } else if (emailCount > 1) {
+              logger.warn("Duplicate Email mila: " + accountEmail + ". Manual correlation zaroori hai.");
+          }
+      }
+
+  } catch (Exception e) {
+      logger.error("Correlation Rule Error: " + e.getMessage());
+  }
+
+  // Agar koi match nahi mila, toh empty map return karega (Account Uncorrelated rahega)
+  return returnMap;
+  </Source>
+</Rule>
+
+/////*
+1. account Object Kaha Se Aa Raha Hai?
+Jab aap Account Aggregation (ya Refresh) task chalate hain,
+toh SailPoint target application (jaise Active Directory, SAP, ya JDBC) se data fetch karta hai.
+Aggregation ke dauran, har ek entry (row/record) ek ResourceObject banti hai.
+SailPoint us ResourceObject ko account variable ke naam se aapke Correlation Rule ke andar "inject" kar deta hai.
+Isliye aapko code mein Account account = ... likhne ki zaroorat nahi padti, wo pehle se waha implicit object ke roop mein maujood hota hai.
+
+2. Kis Source Se Aa Raha Hai?
+Ye us Application source se aata hai jiske liye aapne rule likha hai.
+Agar aap Active Directory aggregate kar rahe hain, toh account.getStringAttribute("distinguishedName") kaam karega.
+Agar aap Database (JDBC) source use kar rahe hain, toh account.getStringAttribute("EMPLOYEE_ID")
+(jo aapne SQL query mein column name diya hoga) waha se aayega.
+
+3. Ek Advanced Example (Logic Clear karne ke liye)
+Aapne jo code pucha, usme ye data flow aise kaam karta hai:
+Java
+// Ye 'account' object SailPoint ne ResourceObject se convert karke diya hai
+String accountEmpId = account.getStringAttribute("EMPLOYEE_NUMBER"); 
+// 'EMPLOYEE_NUMBER' wahi attribute hona chahiye jo Application Schema mein 'Identity Attribute' ya 'Attribute' define hai.
+
+()Correlation Rule ke Important Implicit Objects:-
+Jab ye rule chalta hai, toh SailPoint aapko ye 4 cheezein deta hai:-
+context: SailPoint API se baat karne ke liye (SailPointContext).
+account: Target system ka wo account jo abhi process ho raha hai (Link object ka raw form).
+application: Jis application (source) se data aa raha hai uski details.
+environment: Current environment ki settings ka map.
+*//////
+-----------------------------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Custom Environment-Aware Correlation Rule" type="Correlation">
+  <Description>
+    Ye rule 'environment' map ka use karke check karta hai ki task 'Full' hai ya 'Delta'
+    aur uske hisaab se correlation logic badalta hai.
+  </Description>
+  <Source>
+  import sailpoint.object.*;
+  import sailpoint.api.IdentityService;
+  import sailpoint.tools.Util;
+  import java.util.HashMap;
+  import java.util.Map;
+  import org.apache.commons.logging.Log;
+  import org.apache.commons.logging.LogFactory;
+
+  // 1. Logging Setup
+  Log logger = LogFactory.getLog("custom.rule.EnvCorrelation");
+  Map returnMap = new HashMap();
+
+  try {
+      // Account attributes fetching
+      String accountEmpId = account.getStringAttribute("EMPLOYEE_NUMBER");
+      String accountEmail = account.getStringAttribute("MAIL");
+      
+      boolean isFullAggregation = false;
+
+      // 2. ENVIRONMENT CHECK: Task ki details nikalna
+      if (environment != null &amp;&amp; environment.containsKey("taskDefinition")) {
+          TaskDefinition task = (TaskDefinition) environment.get("taskDefinition");
+          String taskName = task.getName();
+          
+          logger.debug("Rule running under Task: " + taskName);
+
+          // Agar task ke naam mein 'Full' word hai (Live systems pe aksar yahi naming convention hoti hai)
+          if (taskName != null &amp;&amp; taskName.contains("Full")) {
+              isFullAggregation = true;
+              logger.info("ENVIRONMENT DETECTED: Full Aggregation mode active.");
+          }
+      }
+
+      // 3. CORRELATION LOGIC
+      
+      // Case A: Strict Correlation (Sirf Emp ID se - Full Aggregation ke waqt)
+      if (isFullAggregation) {
+          if (Util.isNotNullOrEmpty(accountEmpId)) {
+              Identity match = context.getUniqueObject(Identity.class, Filter.eq("name", accountEmpId));
+              if (match != null) {
+                  returnMap.put("identity", match);
+                  logger.info("Full Aggregation Match: Found by EmpID " + accountEmpId);
+                  return returnMap;
+              }
+          }
+      } 
+      
+      // Case B: Normal/Flexible Correlation (Emp ID ya Email - Delta ya normal refresh ke waqt)
+      else {
+          // Pehle EmpID check karein
+          Identity match = context.getUniqueObject(Identity.class, Filter.eq("name", accountEmpId));
+          if (match != null) {
+              returnMap.put("identity", match);
+              return returnMap;
+          }
+
+          // Agar EmpID nahi mili, toh Email fallback (Flexible logic)
+          if (Util.isNotNullOrEmpty(accountEmail)) {
+              Identity emailMatch = context.getUniqueObject(Identity.class, Filter.eq("email", accountEmail));
+              if (emailMatch != null) {
+                  returnMap.put("identity", emailMatch);
+                  logger.info("Delta/Normal Match: Found by Email " + accountEmail);
+                  return returnMap;
+              }
+          }
+      }
+
+  } catch (Exception e) {
+      logger.error("Correlation Rule Error: " + e.getMessage(), e);
+  }
+
+  // Kuch nahi mila toh Uncorrelated rahega
+  return returnMap;
+  </Source>
+</Rule>
+
+///////////*
+()Zyadatar live systems mein, hum Employee ID ya Network ID (AD Username) ko hi Identity ka name banate hain.
+toh yaha name aek keyword hai.ish code me:-Filter.eq("name", accountEmpId).
+
+()3. &amp;&amp; ka kya matlab hai?
+Aapne code mein &amp;&amp; dekha hoga. Ye XML ka tarika hai && (Logical AND) likhne ka.
+XML files (jo SailPoint Rules hoti hain) mein hum direct && nahi likh sakte kyunki XML parser use error samajhta hai.
+Isliye hum Escape Character use karte hain: &amp;&amp;.
+Matlab: Agar "Condition A" SAHI hai AUR "Condition B" bhi SAHI hai, tabhi aage badho.
+
+()environment: Current environment ki settings ka map. kya?
+--environment ek Map type ka object hota hai jo current system ka runtime environment represent karta hai.
+👉 Simple line:-
+System abhi kis condition / setup me chal raha hai — uska data = environment.
+()Identity management ka behavior bhi environment se control hota hai.
+
+
+1️⃣ “runtime configuration container”:-
+System start → environment banta hai
+System stop → environment khatam
+ye environment object RAM me store hota hai.
+
+2️⃣ “Map form me”:-
+Data key-value pair me store hota hai
+Example:-
+"env" → "PROD"
+"debug" → "false"
+
+3️⃣ “current execution context”:-
+Ye bahut important hai ⚠️
+Execution context = system abhi kya kar raha hai + kis condition me kar raha hai.
+👉 Example:-
+Kaunsa task run ho raha hai
+Kaunsa user trigger kar raha hai
+Kaunsa environment (DEV/PROD)
+👉 environment me ye context indirectly ya directly available hota hai.
+
+4️⃣ “operational settings”:-
+Ye wo settings hain jo system ka behavior control karti hain:
+Logging ka level kya ho
+Debugging ON/OFF
+Timeout kitna ho
+Kaunsa server use ho
+👉 Matlab:-
+System ka operation kaise chalega — ye define hota hai.
+
+5️⃣ “behavior-controlling parameters”:-
+Ye sabse powerful part hai 💥
+environment ke values decide karte hain:-
+✔ Kaunsa code chalega
+✔ Kaunsa skip hoga
+✔ Kaunsa resource use hoga
+
+🧠 Example:-
+if (env.equals("PROD")) {
+    connectRealDatabase();
+} else {
+    connectTestDatabase();
+}
+👉 Same code, alag behavior
+👉 Sirf environment change se.
+
+7️⃣ “application dynamically control aur adapt kare”:-
+Dynamic ka matlab:-
+👉 Code change kiye bina behavior change
+🧠 Example:-
+env value	      Behavior
+DEV:-------------testing logic
+PROD:------------real logic
+👉 Developer ko code change nahi karna,
+👉 Sirf config change.
+
+8️⃣ “based on environment conditions”
+Conditions kya ho sakti hain:-
+Environment type (DEV/PROD),
+Server location
+Logging level
+Runtime flags
+👉 System in sab ke basis pe decision leta hai.
+-------------------------------------------------
+🔹 Iske andar kya hota hai?
+Depends system pe, but generally:-
+Common keys:-
+environment.put("env", "PROD");
+environment.put("debug", "false");
+environment.put("logLevel", "INFO");
+environment.put("timeout", "30");
+environment.put("applicationName", "SailPoint");
+environment.put("server", "localhost");
+👉 Simple language:-
+System ke liye rules / settings set ki ja rahi hain jisse wo decide karega kaise behave karna hai.
+
+🔹 Ye actual me kya karta hai?
+👉 Ye system ko control instructions deta hai
+Jaise:-
+Kahan run ho raha hai
+Kitni logging karni hai
+Kitna wait karna hai
+Kis server pe kaam karna hai
+👉 Matlab:-
+System ka poora behavior in values pe depend karta hai.
+
+🔹TaskDefinition Kab hoti hai environment me?
+✅ Jab koi Task run ho raha ho,
+Jaise:-
+Identity Refresh
+Aggregation Task
+Custom Task
+👉 Tab SailPoint internally environment me daal deta hai:-
+"taskDefinition" → TaskDefinition object
+👉 Matlab:-
+➡ current running task ki info available hoti hai
+
+()🔥 1️⃣ env = PROD:-
+env ek environment identifier hai jo system ke execution mode ko define karta hai,
+jaise DEV, TEST ya PROD. Jab value PROD hoti hai,iska matlab system live production environment me chal raha hai
+jahan real users ka data process hota hai aur saare operations actual business impact create karte hain.
+Isliye production mode me security, performance aur accuracy sabse zyada important hoti hai.
+
+🔥 2️⃣ debug = false:-
+debug ek control flag hai jo decide karta hai ki system apni internal processing details
+(jaise variable values, flow steps, API calls) ko log kare ya nahi.prodme off rakhte hai.
+
+🔥 3️⃣ logLevel = INFO:-
+yani system kitni detail me apni execution information record karega.
+INFO level ka matlab hai ki system sirf important aur high-level operational messages log karega
+(jaise process start/end, major events), bina unnecessary internal debug details ke.
+
+🔥 4️⃣ timeout = 30:-
+timeout ek time constraint parameter hai jo define karta hai ki system kisi operation
+(jaise API call, database query, external service request) ke response ke liye maximum kitni der tak wait karega.
+Yahan 30 seconds ka matlab hai ki agar operation specified time ke andar complete nahi hota,
+to system usse fail maan lega aur aage badh jayega, jisse system hang ya indefinitely wait nahi karta.
+
+🔥 5️⃣ applicationName = SailPoint:-
+applicationName system ya application ki identity represent karta hai,
+jiska use logging, monitoring, debugging aur multi-application environments me differentiation ke liye hota hai.
+Jab logs generate hote hain, to ye naam unhe identify karne me help karta hai ki kaunsa application kis event ke liye responsible hai.
+
+🔥 6️⃣ server = localhost:-
+server ek configuration parameter hai jo batata hai ki application kis machine ya host environment par run ho raha hai.
+----------------------------------------------------------------
+🔹 “Current environment ki settings ka map” ka matlab?
+Is line ko tod ke samajh:-
+✅ Current environment:-
+Matlab:-
+Abhi system DEV me hai ya TEST ya PROD
+Kaunse server pe chal raha hai
+Debug mode ON hai ya OFF
+
+✅ Settings:-
+Matlab:-
+Configurations / parameters / flags
+Jo system ka behavior control karte hain
+
+✅ Map:-
+Matlab:-
+Data key-value format me store hota hai
+👉 Final meaning:-
+👉 Current system ke sare runtime configurations ek jagah Map me stored hain.
+-------------------------------------------------------
+()Real flow samajh:-
+1. DB / config files me settings stored hoti hain.
+2. System start hota hai.
+3. Wo settings load hoti hain.
+4. Environment Map me daal di jati hain.
+5. Code us Map se values read karta hai.
+-----------------------------------------------
+
+*///////////

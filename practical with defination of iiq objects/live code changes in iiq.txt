@@ -1,0 +1,131 @@
+C:\Users\kishan kumar\Desktop\sailpointikkr\img\sailpoint changes code live
+ye image me likha hua hai ki kaise changes onboard ya live kare in iiq?
+--
+🔥 🔹 1. Overall Flow Samajh (Big Picture):-
+👉 Jab tu SailPoint me kaam karega, toh process aisa hota hai:
+Code Server pe hota hai → Tu usse apne system me laata hai → Change karta hai → Wapas push karta hai → Team approve karti hai → UI me reflect hota hai
+🔹 2. Tools ka Role (Important 💡)
+🟢 Visual Studio / VS Code
+👉 Code clone karne aur dekhne ke liye
+🟢 Eclipse
+👉 SailPoint IIQ ka main development tool
+(yahi pe tu rules, workflows, XML edit karega)
+🟢 GitHub Desktop / Git
+👉 Code upload/download (push/pull)
+🟢 CMD (Command Prompt)
+👉 Build run karne ke liye (build.bat)
+
+🔹 3. Step-by-Step Detailed Flow 🔥
+🧩 STEP 1: Repo Clone karna
+👉 Repo matlab project ka code (company server pe hota hai)
+Kaise kare:
+GitHub Desktop open kar
+"Clone repository" pe click kar
+URL paste kar (company degi)
+Local folder me save ho jayega
+👉 Ab pura SailPoint project tere system me aa gaya ✅
+🧩 STEP 2: Project Open karna
+👉 Eclipse open kar
+👉 "Import Project" → existing project select kar
+👉 Jo clone kiya tha wo folder choose kar
+👉 Ab SailPoint project Eclipse me ready hai
+🧩 STEP 3: Build Run karna (build.bat)
+👉 CMD open kar
+👉 Project folder me ja:
+Bash
+Copy code
+cd C:\SailPointProject
+👉 Run kar:
+Bash
+Copy code
+build.bat
+Ye kya karta hai?
+Project compile karta hai
+Dependencies set karta hai
+Server ready karta hai
+👉 Agar error nahi aaya → setup sahi ✅
+🧩 STEP 4: Branch banana (MOST IMPORTANT 🔥)
+👉 Direct main/dev branch pe kaam nahi karte ❌
+👉 Always new branch banate hain
+Example:
+Copy code
+
+Base branch: dev
+New branch: ruthie/feature/bug10101
+👉 Matlab:
+dev → main working branch
+tumhari branch → tumhara kaam
+🧩 STEP 5: Code Change karna
+👉 Eclipse me jaake:
+application.xml
+Rules
+Workflows
+Config files
+👉 Example:
+koi attribute add kiya
+UI me field change ki
+rule modify ki
+🧩 STEP 6: Changes Commit karna
+👉 GitHub Desktop me:
+Changes dikhenge
+Message likh:
+Copy code
+
+Fixed bug 10101
+Commit kar
+🧩 STEP 7: Push karna (Server pe bhejna)
+👉 Click:
+Copy code
+
+Push origin
+👉 Ab tera code GitHub pe chala gaya ✅
+🧩 STEP 8: Pull Request (PR) banana 🔥
+👉 Browser me GitHub open kar
+👉 "Create Pull Request"
+PR kya hota hai?
+👉 Tum bol rahe ho:
+"Maine code change kiya hai, please check karo aur merge karo"
+🧩 STEP 9: Reviewer Assign karna
+👉 Senior developer / lead ko assign karo
+👉 Wo check karega:
+code sahi hai ya nahi
+bug toh nahi
+standards follow hue ya nahi
+🧩 STEP 10: Merge karna
+👉 Agar approve ho gaya:
+Copy code
+
+Merge Pull Request
+👉 Ab tera code dev branch me aa gaya 🎯
+🧩 STEP 11: UI me Reflect hona
+👉 Jab project deploy hoga / refresh hoga
+👉 Jo tu change kiya tha:
+UI me dikhega
+SailPoint me reflect hoga
+🔥 🔹 4. Real Example (Samajh pakka ho jayega)
+👉 Maan le tu:
+ek new field add karta hai application.xml me
+Flow:
+Clone repo
+Branch banai
+XML edit ki
+Push kiya
+PR banaya
+Approve hua
+Merge hua
+👉 Result: ➡️ SailPoint UI me new field dikhega
+🔹 5. SVN / Git / TFS Difference (Simple)
+Tool
+Type
+Use
+SVN
+Old
+Kam use hota
+TFS
+Microsoft old
+Azure DevOps ka old version
+Git
+Modern 🔥
+Most used
+👉 Aaj kal: 👉 Git + GitHub / Azure DevOps = standard
+

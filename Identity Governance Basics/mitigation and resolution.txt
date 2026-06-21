@@ -1,0 +1,34 @@
+()🔥 1️⃣ Resolution (kya hota hai?)
+👉 Resolution ka matlab hai problem ko poori tarah solve kar dena (final fix)
+
+✅ Kya karta hai:-
+Root cause ko fix karta hai
+Issue permanently close kar deta hai
+
+📌 Example:-
+User ko galti se Admin access mil gaya
+👉 Resolution:-
+Admin access remove kar diya
+Correct role assign kar diya
+
+🎯 Result:-
+✔ Problem completely fix
+✔ Future me same issue nahi aayega
+
+⚡ 2️⃣ Mitigation (kya hota hai?)
+👉 Mitigation ka matlab hai risk ko temporarily control ya reduce karna.
+
+✅ Kya karta hai:-
+Problem ko turant control karta hai
+Lekin permanent fix nahi hota
+
+📌 Example:-
+User ke paas risky access hai (remove nahi kar sakte immediately)
+👉 Mitigation:-
+Monitoring enable kar di
+Approval mandatory kar diya
+Time-based access laga diya
+
+🎯 Result:-
+✔ Risk kam ho gaya
+❌ Problem fully solve nahi hui

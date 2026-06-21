@@ -1,0 +1,231 @@
+()1️⃣ Risk kya hota hai?
+Risk matlab uncertainty jo loss ya problem la sakti hai.
+Example:-
+Company ka server crash ho sakta hai → data loss ka risk.
+Stock market me invest karna → paisa lose karne ka risk.
+
+2️⃣ Risk Management ka process:-
+Risk management generally 4 main steps me hota hai:-
+
+()Risk Identification (Risk pehchanna):-
+Sabse pehle ye check karte hain ki kaunse areas me problems ya losses ho sakte hain.
+Example: IT system, finance, human resources, projects
+
+()Risk Analysis (Risk ka analysis karna):-
+Risk ke impact aur probability ko samjhte hain
+Example: Agar server crash hua → company ka loss ₹1 crore ho sakta hai
+
+()Risk Evaluation (Risk ko rank karna):-
+Kaunsa risk sabse zyada dangerous hai, kaunsa kam dangerous
+High, Medium, Low risk me categorize karte hain
+
+()Risk Treatment / Mitigation (Risk ko control karna):-
+Risk ko avoid, reduce, share, ya accept karna
+Example: Backup servers lagana → data loss ka risk kam ho jata hai.
+
+()Risk scoring kya hai?
+--1️⃣ Risk Scoring ka matlab:-
+Risk ko quantify karna (number me convert karna)
+Ye score risk ke probability × impact se nikalta hai
+Formula:-
+Risk Score=Probability of Risk×Impact of Risk
+Risk Score=Probability of Risk×Impact of Risk
+
+Example:-
+Server crash hone ka probability = 0.2 (20%)
+Impact = ₹1,00,000
+Risk Score = 0.2 × 1,00,000 = ₹20,000
+Matlab ye risk moderate hai, zyada nahi.
+
+////////*
+probability basically ye batati hai ki koi particular risk kitni chances hai ki actually ho jaye.
+Medium Probability → Risk ka chance moderate.
+Data Breach ka matlab hai ki sensitive ya confidential data unauthorized logon ke haath lag jana. Ye company, users, ya organizations ke liye kaafi bada risk hai.
+
+Key Points:-
+
+Data Types Affected:-
+Personal information (name, address, phone)
+Financial data (credit card, bank info)
+Login credentials (username, passwords)
+Business secrets (trade secrets, internal documents)
+
+Causes:-
+Hacking ya cyber attacks
+Phishing emails ya social engineering
+Weak passwords ya unsecured systems
+Insider threats (employees se leak)
+Lost/stolen devices
+
+Consequences:-
+Financial loss
+Reputation damage
+Legal penalties (jaise GDPR violations)
+Customer trust loss
+
+Prevention:kaise roke:-
+Strong passwords & multi-factor authentication(mfa)
+Data encryption
+Regular security audits
+Employee training
+Limited access (least privilege principle)
+
+Example:-
+Maan lo, ek company ke 100 projects me 10 projects ke database me unauthorized access hua, to Data Breach probability = 10/100 = 0.1 ya 10%.
+*//////////
+
+2️⃣ Risk Scoring ke steps:-
+-Risk identify karna:-
+Example: Data leak, server down, project delay
+
+-Probability assign karna:-
+High → 0.7-1
+Medium → 0.4-0.6
+Low → 0.1-0.3
+
+-Impact assign karna:-
+High → ₹1,00,000+
+Medium → ₹50,000-₹1,00,000
+Low → ₹10,000-₹50,000
+
+-Score calculate karna:-
+Risk Score = Probability × Impact
+
+-Prioritize karna:-
+High score wale risk pe pehle kaam karo
+Low score wale risk baad me handle kar sakte ho.
+
+3️⃣ Risk Score Example Table:-
+Risk Type	    Probability	   Impact (₹)	     Risk Score (₹)	 Priority
+Server Crash--------0.2--------1,00,000------------20,000---------Medium
+Data Leak-----------0.5--------2,00,000------------1,00,000-------High
+Project Delay-------0.3--------50,000--------------15,000---------Low
+
+Example:-
+Maan lo, ek company me 100 projects hote hain aur pichle 10 projects me 5 me data breach hua.
+To probability hogi:-
+𝑃=5/10=0.5 ya 50%
+
+()Java Project: Risk Management with Risk Scoring:-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+// Risk class
+class Risk {
+    private String name;
+    private double probability; // 0.0 to 1.0
+    private double impact;      // in currency
+    private double score;
+    private String priority;
+
+    // Constructor
+    public Risk(String name, double probability, double impact) {
+        this.name = name;
+        this.probability = probability;
+        this.impact = impact;
+        calculateScore();
+        assignPriority();
+    }
+
+    // Score calculation
+    private void calculateScore() {
+        this.score = this.probability * this.impact;
+    }
+
+    // Priority assignment
+    private void assignPriority() {
+        if (score >= 75000) {
+            this.priority = "High";
+        } else if (score >= 25000) {
+            this.priority = "Medium";
+        } else {
+            this.priority = "Low";
+        }
+    }
+
+    // Display Risk
+    public void displayRisk() {
+        System.out.println("Risk Name   : " + name);
+        System.out.println("Probability : " + probability);
+        System.out.println("Impact      : " + impact);
+        System.out.println("Risk Score  : " + score);
+        System.out.println("Priority    : " + priority);
+        System.out.println("--------------------------");
+    }
+}
+
+// Main class
+public class RiskManagementProject {
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        List<Risk> riskList = new ArrayList<>();
+
+        System.out.println("=== Risk Management & Scoring Project ===");
+
+        while (true) {
+            System.out.println("\n1. Add Risk");
+            System.out.println("2. Show All Risks");
+            System.out.println("3. Exit");
+            System.out.print("Choose option: ");
+            int choice = sc.nextInt();
+            sc.nextLine(); // Consume newline
+
+            if (choice == 1) {
+                System.out.print("Enter Risk Name: ");
+                String name = sc.nextLine();
+
+                System.out.print("Enter Probability (0.0 - 1.0): ");
+                double prob = sc.nextDouble();
+
+                System.out.print("Enter Impact (₹): ");
+                double impact = sc.nextDouble();
+
+                Risk r = new Risk(name, prob, impact);
+                riskList.add(r);
+                System.out.println("✅ Risk added successfully!");
+
+            } else if (choice == 2) {
+                if (riskList.isEmpty()) {
+                    System.out.println("No risks added yet.");
+                } else {
+                    System.out.println("\n--- All Risks ---");
+                    for (Risk r : riskList) {
+                        r.displayRisk();
+                    }
+                }
+            } else if (choice == 3) {
+                System.out.println("Exiting... Bye!");
+                break;
+            } else {
+                System.out.println("Invalid choice! Try again.");
+            }
+        }
+
+        sc.close();
+    }
+}
+Output Example:-
+=== Risk Management & Scoring Project ===
+
+1. Add Risk
+2. Show All Risks
+3. Exit
+Choose option: 1
+Enter Risk Name: Server Crash
+Enter Probability (0.0 - 1.0): 0.2
+Enter Impact (₹): 100000
+✅ Risk added successfully!
+
+1. Add Risk
+2. Show All Risks
+3. Exit
+Choose option: 2
+
+--- All Risks ---
+Risk Name   : Server Crash
+Probability : 0.2
+Impact      : 100000.0
+Risk Score  : 20000.0
+Priority    : Low

@@ -1,0 +1,22 @@
+()log print kaha kare in iiq to csv?
+
+-> अब windows में CMD खोल के ये लिख -> cd c:\apache-tomcat-9.0.XX\webapps\identityiq\WEB-INF\bin
+
+-> (XX ko apne version se replace kar)Yahan aapko Apache Tomcat ka version likhna hai.->>9.0
+
+-> Ab ye run kar:- iiq console लिख <-
+
+-> देख कि log Print हुआ या नहीं अगर नहीं तो जा tomcat में जा -> apache-tomcat-7.0.53 में जा जो (kata hua) c: Drive के sailpoint मे है।
+
+-> फिर webapps -> identityiq ->
+
+-> (kata hua) WEB-INF -> classes
+
+-> log4j को Edit with notepad++
+
+-> और यहाँ #log4j.appender.stdout के सारे # हटाये । -> और इसी file में निचे आए देखे कि log4j.appender.file.file = c:/Training/SS Training notes/Rama_Deepika_and_Sunil/Sailpoint.log.
+
+-> इसमें location हैं कि sailpoint log कहाँ है तो (kata hua) c: Drive के Training file के Rama_Deepika_and_Sunil के अंदर sailpoint में जाके देखें कि log Print हुआ identities का ।
+
+-> Application -> Application Definition में जाओं।
+

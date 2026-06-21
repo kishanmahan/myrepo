@@ -1,0 +1,193 @@
+()Log kya hai?
+--🔹 Log kya hai?
+Log = record / history / likha hua data
+👉 System me jo bhi kaam hota hai (error, success, process), uska record store hota hai → usko log bolte hai.
+📌 Example:-
+User login kiya
+Password galat dala
+Account create hua
+API call fail hua
+👉 Ye sab info file ya system me store hota hai = log.
+
+🔹 Log kya karta hai?
+Log ka main kaam:-
+
+1. 🛠 Debugging:-
+Error kaha aaya → easily pata chalta hai
+👉 Developer log dekh ke issue fix karta hai
+
+2. 🔍 Monitoring:-
+System ka behaviour track karte hai
+👉 Kaun login kar raha hai, kya ho raha hai
+
+3. 🔐 Security:-
+Suspicious activity detect karte hai
+👉 Jaise multiple failed login attempts
+
+4. 📊 Audit / Tracking:-
+Kisne kya change kiya → pura record milta hai
+👉 Especially SailPoint me audit logs important hai.
+-------------------------------------------------------------------------------
+🔹 Log ke andar kya kya hota hai?
+Ek typical log entry me ye sab hota hai:-
+[Timestamp] [Log Level] [Class/Module] - Message
+📌 Example:-
+2026-03-30 10:15:23 INFO UserService - User created successfully
+2026-03-30 10:16:10 ERROR LoginService - Invalid password
+-------------------------------------------------------------------------------
+🔹 Log ke parts samajh:-
+1. 🕒 Timestamp:-
+👉 Kab event hua
+2026-03-30 10:15:23
+
+2. ⚠ Log Level:-
+👉 Kis type ka message hai
+Level	Meaning
+INFO	Normal info
+DEBUG	Developer debugging
+WARN	Warning
+ERROR	Error
+TRACE	Detailed step
+
+3. 🧩 Class / Module:-
+👉 Kis class ya service se log aaya
+Example: UserService
+
+4. 💬 Message:-
+👉 Kya hua system me
+Example: User created successfully
+----------------------------------------------------------------------------------
+🔹 SailPoint me log ka use:-
+👉 SailPoint me log bahut important hai:-
+Provisioning fail hua → log me dikhega
+Identity create/update → log me record
+Rule execution → log track hota hai
+Debugging → rule ka output log me print
+
+📌 Example (Rule me):-
+log.debug("Identity name: " + identity.getName());
+log.error("Provisioning failed for user: " + identity.getName());
+------------------------------------------------------------------------------------------------------
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class DemoService {
+
+    private static final Logger log = LoggerFactory.getLogger(DemoService.class);
+
+    public void createUser() {
+        log.info("User creation started");
+
+        try {
+            // logic
+            log.info("User created successfully");
+        } catch (Exception e) {
+            log.error("Error while creating user", e);
+        }
+    }
+}
+-------------------------------------------------------------------------------------------------------
+🔹 Important Log Methods:-
+1. INFO:-
+log.info("User created");
+👉 Normal information
+
+2. DEBUG:-
+log.debug("Value of x: " + x);
+👉 Developer debugging
+
+3. ERROR:-
+log.error("Something went wrong");
+👉 Jab error aaye
+
+4. WARN:-
+log.warn("Memory is low");
+👉 Warning
+
+5. TRACE:-
+log.trace("Step by step execution");
+👉 Bohot detailed log
+--------------------------------------------------------------
+🔥 1. log.info():-
+👉 Kya hai?
+👉 Normal information ke liye use hota hai
+👉 System me sab sahi chal raha hai — ye batata hai
+
+📌 Kab use kare?
+User create hua
+Process start / end
+Important steps
+
+💻 Example:-
+log.info("User creation started");
+log.info("User created successfully: " + identity.getName());
+🧠 Real meaning:-
+👉 “Sab normal hai, bas info de raha hoon”
+---------------------------------------------------------------
+🔥 2. log.debug():-
+👉 Kya hai?
+👉 Developer debugging ke liye use hota hai
+👉 Variable values, flow check karne ke liye
+
+📌 Kab use kare?
+Value check karni ho
+Code flow samajhna ho
+Issue debug karna ho
+
+💻 Example:-
+log.debug("Identity name: " + identity.getName());
+log.debug("Account status: " + account.getStatus());
+🧠 Real meaning:-
+👉 “Developer bhai, ye andar kya ho raha hai dekh le”
+-----------------------------------------------------------------
+🔥 3. log.error():-
+👉 Kya hai?
+👉 Jab error / exception aaye tab use hota hai.
+
+📌 Kab use kare?
+Exception catch hua
+Provisioning fail hua
+API fail
+
+💻 Example:-
+try {
+    // provisioning logic
+} catch (Exception e) {
+    log.error("Provisioning failed for user: " + identity.getName(), e);
+}
+🧠 Real meaning:-
+👉 “Bhai problem ho gayi hai ⚠️”
+--------------------------------------------------------------------
+🔥 4. log.warn():-
+👉 Kya hai?
+👉 Warning ke liye use hota hai (error nahi hai, but risky hai).
+
+📌 Kab use kare?
+Data missing hai
+Unexpected situation
+Future me issue ho sakta hai
+
+💻 Example:-
+if (identity.getEmail() == null) {
+    log.warn("Email is missing for user: " + identity.getName());
+}
+🧠 Real meaning:-
+👉 “Abhi thik hai, par dikkat aa sakti hai ⚠️”
+-------------------------------------------------------------------
+🔥 5. log.trace():-
+👉 Kya hai?
+👉 Sabse detailed logging
+👉 Step-by-step execution track karta hai
+
+📌 Kab use kare?
+Deep debugging
+Flow tracking
+Complex logic
+
+💻 Example:-
+log.trace("Entering method createUser()");
+log.trace("Before saving user to DB");
+log.trace("After saving user");
+🧠 Real meaning:-
+👉 “Ek ek step ka full CCTV footage 📹”
+--------------------------------------------------------------------

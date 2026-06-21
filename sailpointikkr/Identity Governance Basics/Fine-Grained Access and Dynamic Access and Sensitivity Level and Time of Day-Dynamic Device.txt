@@ -1,0 +1,132 @@
+()1️⃣ Fine-Grained Access:-
+Meaning: Access control itna detailed hai ki har chhoti permission ko control kiya ja sakta hai.
+Example:-
+Rahul ko Finance folder me read access, lekin write access sirf Manager ko.
+Employee ko leave portal access, lekin salary details HR ko hi dikhe.
+Ek line me: Small, specific permissions per user/resource control.
+
+()2️⃣ Dynamic Access:-
+Meaning: Access real-time conditions aur attributes ke basis pe decide hota hai, na ki static roles se.
+Example:-
+Rahul Finance system me sirf office hours (9am–6pm) me access le sakta hai.
+Agar Rahul VPN ya unknown device se login karta → Access deny.
+Ek line me: Access automatically change hota hai based on rules or conditions.
+
+()3️⃣ Sensitivity Level:-
+Meaning: Resource ka criticality/importance level define karta hai.
+Example:-
+Resource	             Sensitivity Level	    Access Allowed
+Public HR Policies-----------Low-----------------All Employees
+Payroll Data-----------------High----------------HR + Finance Manager
+Top Secret Financial Report--Very High-----------CFO only
+SailPoint me ABAC policy me use hota hai, taaki only authorized users hi sensitive data access kare.
+
+()4️⃣ Time of Day:-
+Meaning: Access sirf specified time window me allow hota hai.
+Example:-
+Rahul ka SAP access: 9am – 6pm
+Payroll reports: 10am – 4pm
+After hours: Access denied
+
+()1️⃣ Fine-Grained Access (Detailed Permission Control):-
+import sailpoint.object.Identity;
+import sailpoint.object.Role;
+import sailpoint.object.Application;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+
+Identity identity = context.getObjectByName(Identity.class, "rahul");
+
+Application app = context.getObjectByName(Application.class, "FinanceApp");
+
+ProvisioningPlan plan = new ProvisioningPlan();
+plan.setIdentity(identity);
+
+AccountRequest accReq = new AccountRequest();
+accReq.setApplication(app.getName());
+accReq.setOperation(AccountRequest.Operation.Modify);
+
+AttributeRequest readAccess = new AttributeRequest();
+readAccess.setName("folderPermission");
+readAccess.setValue("READ");
+readAccess.setOperation(ProvisioningPlan.Operation.Add);
+
+accReq.add(readAccess);
+plan.add(accReq);
+
+context.saveObject(plan);
+//////////*
+()1️⃣ setName("folderPermission") me folderPermission kya hai
+attr.setName("folderPermission");
+Yaha folderPermission ek attribute name hai.
+Matlab:-
+Target system me jo permission field hai uska naam
+SailPoint me AttributeRequest ke through hum target system ke attribute ko modify karte hain.
+
+()2️⃣ Calendar.getInstance(); kya hai:-
+Ye Java ka method hai jo current date aur time ka object return karta hai.
+
+()3️⃣ Calendar.HOUR_OF_DAY:-
+Ye 24 hour format me current hour return karta hai.
+
+()java.util.Calendar ek class hai jo date aur time ko manage karne ke liye use hoti hai. Isse hum:
+date get kar sakte hain
+date set kar sakte hain
+date add kar sakte hain
+week / month / year calculate kar sakte hain.
+
+()1️⃣ getInstance():-
+Current system date aur time ke saath Calendar object create karta hai.
+
+()2️⃣ get(int field):-
+Specific field ka value return karta hai.
+Fields example:-
+YEAR
+MONTH
+DATE
+HOUR
+MINUTE
+SECOND
+
+Code:-
+Calendar cal = Calendar.getInstance();
+int year = cal.get(Calendar.YEAR);
+int month = cal.get(Calendar.MONTH);
+int day = cal.get(Calendar.DATE);
+
+*//////////
+
+3️⃣ Dynamic Device / Location Check:-
+Example:-
+Unknown device → Access deny
+VPN → Allow
+Example Rule
+String device = request.getHeader("Device-Type");
+
+if(device != null && device.equals("Corporate-Laptop")){
+    return true;
+}else{
+    return false;
+}
+-----------
+import java.util.Date;
+import java.util.Calendar;
+import sailpoint.object.Identity;
+
+Identity identity = context.getObjectByName(Identity.class, "rahul");
+
+Calendar cal = Calendar.getInstance();
+int hour = cal.get(Calendar.HOUR_OF_DAY);
+
+boolean accessAllowed = false;
+
+if(hour >= 9 && hour <= 18) {
+    accessAllowed = true;
+}
+
+if(accessAllowed){
+    System.out.println("Access Granted");
+}else{
+    System.out.println("Access Denied");
+}

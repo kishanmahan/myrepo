@@ -1,0 +1,104 @@
+1️⃣ Account kya hai?
+Account = External system user account
+Ye represent karta hai konsa user kis application me hai aur uske entitlements / groups.
+
+()Account Class Full Methods List:-
+1️⃣ Basic                                       Identity Methods
+Method	                                         Description
+setName(String name)----------------------Account ka username set kare
+getName()---------------------------------Account ka username return kare
+setApplicationName(String appName)--------Account ka application name set kare
+getApplicationName()----------------------Account ka application name return kare
+setIdentity(Identity identity)------------Account ke linked SailPoint Identity set kare
+getIdentity()-----------------------------Linked identity return kare
+
+2️⃣ Attributes / Custom Data:-
+Method	                                          Description
+setAttribute(String key, Object value)--------Custom attribute set kare
+getAttribute(String key)----------------------Attribute value return kare
+getAttributes()-------------------------------Saare attributes map me return kare
+setAttributes(Map<String, Object> attrs)------Multiple attributes ek saath set kare
+
+3️⃣ Status / Management:-
+Method	                                Description
+setManaged(Boolean flag)--------------Account managed hai ya nahi set kare
+isManaged()---------------------------True/False return kare
+setStatus(String status)--------------Account status set kare (Active/Disabled/Locked)
+getStatus()---------------------------Account status return kare
+
+4️⃣ Entitlements / Roles / Groups:-
+Method	                                               Description
+setEntitlements(List<String> entitlements)-------Account ke roles/groups set kare
+getEntitlements()--------------------------------Roles/groups return kare
+addEntitlement(String entitlement)---------------Single role add kare
+removeEntitlement(String entitlement)------------Single role remove kare
+
+5️⃣ Account Lifecycle / Provisioning:-
+Method	                                                   Description
+setOperation(ProvisioningPlan.Operation op)------------Provisioning operation set kare (Add/Remove/Modify)
+getOperation()-----------------------------------------Provisioning operation return kare
+setSource(String source)-------------------------------Account source (e.g., workflow, connector) set kare
+getSource()--------------------------------------------Account source return kare
+
+6️⃣ Metadata / Extra Info:-
+Method	                                  Description
+setCreated(Date date)------------Account creation date set kare
+getCreated()---------------------Account creation date return kare
+setModified(Date date)-----------Last modified date set kare
+getModified()--------------------Last modified date return kare
+setNativeIdentity(String nativeId)----------Application ka native user ID set kare
+getNativeIdentity()-------------------------Native user ID return kare
+
+1️⃣ setParent(String parent):-
+Ye method Account object ka parent set karne ke liye use hota hai.
+Matlab Account ke upar ka object ya hierarchy specify karna.
+Ye generally complex applications ya nested accounts me use hota hai.
+
+Example:-
+Account account = new Account();
+account.setName("rahul123");
+
+// Parent object set karna
+account.setParent("FinanceDepartment");
+
+System.out.println("Parent set to: " + account.getParent());
+
+Output:-
+Parent set to: FinanceDepartment
+Matlab ye account FinanceDepartment ke under hai.
+-----------------
+1️⃣ setOperation(ProvisioningPlan.Operation op):-
+Ye method account ke upar ka provisioning operation set karta hai.
+Possible operations:-
+ProvisioningPlan.Operation.Add → New access/account create karna
+ProvisioningPlan.Operation.Modify → Existing account ya access update karna
+ProvisioningPlan.Operation.Remove → Access ya account remove karna.
+
+1️⃣ setOperation(ProvisioningPlan.Operation op):-
+Ye method account ke upar ka provisioning operation set karta hai.
+Possible operations:-
+ProvisioningPlan.Operation.Add → New access/account create karna
+ProvisioningPlan.Operation.Modify → Existing account ya access update karna
+ProvisioningPlan.Operation.Remove → Access ya account remove karna.
+
+3️⃣ setSource(String source):-
+Ye method account ka source set karta hai, jaha se ye account aa raha hai:-
+Example: "Workflow", "Connector", "Manual", "API"
+Ye audit aur logging ke liye important hai.
+Example:-
+account.setSource("Workflow");
+System.out.println("Account source: " + account.getSource());
+
+Output:-
+Account source: Workflow
+
+4️⃣ getSource():-
+Ye method account ka source return karta hai.
+Workflow ya provisioning me check karne ke liye useful hota hai ki account kahan se aya.
+Example:-
+String src = account.getSource();
+System.out.println("Account source is: " + src);
+
+Output:-
+Account source is: Workflow
+

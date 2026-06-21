@@ -1,0 +1,47 @@
+1. Global Variables (Workflow Level Variables):-
+Pure workflow me accessible.
+Workflow ke top level pe define hote hain.
+Example:-
+<Variable name="identityName"/>
+<Variable name="approvalSet"/>
+Use:-
+Har step me use ho sakta hai.
+
+2. Step Variables (Step Level Variables):-
+Sirf particular step ke andar kaam karte hain.
+Example:-
+<Step name="Approval">
+   <Variable name="isApproved"/>
+</Step>
+isApproved normally us step ke context me use hoga.
+
+3. Input Variables:-
+Workflow ko bahar se value milti hai.
+Example:-
+<Variable name="identityName" input="true"/>
+Matlab:-
+Workflow start hote waqt value pass hogi.sailpoint ya koi caller ishe value deta hai.
+
+4. Output Variables:-
+Workflow ke end me value return karne ke liye.
+Example:-
+<Variable name="result" output="true"/>
+Matlab workflow apna result bahar bhej sakta hai.kishi caller ko value bhejta hai.
+
+5. Argument Variables (<Arg>):-
+Step ko value pass karne ke liye.
+Example:-
+<Arg name="identityName" value="ref:identityName"/>:-
+Argument Variables current workflow ke Global variable ki value ko step ke andar call:method/call:workflow ko value bhejta hai.
+ex:-
+<Arg name="identityName" value="identityName"/>:-ye sirf current workflow ke global variable ko value bhejta hai.
+
+6. Return Variables (<Return>):-
+step ke call:method/call:workflow ke andar variable(name="approvalSet") jab call:method/call:workflow value return karega to output 
+current workflow ke global variable(to="approvalSet") me save hoga.
+ex:-
+<Return name="approvalSet" to="approvalSet"/>
+Matlab:-
+Step result → workflow variable
+
+/////agar aache se samjhna hai toh practical ke andar workflow ko padho jo 1300 line ka hai.

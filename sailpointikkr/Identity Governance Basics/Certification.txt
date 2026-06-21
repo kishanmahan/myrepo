@@ -1,0 +1,386 @@
+()🔥 1️⃣ Certification KYA HAI?
+👉 Certification = ek review assignment
+✔️ Simple language:-
+Kisi reviewer (manager / app owner) ko diya gaya kaam ki wo check kare
+“user ka access sahi hai ya nahi”
+
+🧠 Real Example:-
+User: Rahul
+Access: SAP Admin
+👉 Manager ko task milega:-
+"Rahul ko SAP Admin access rehna chahiye ya remove?"
+👉 Ye jo task hai = Certification.
+
+🔥 2️⃣ Certification KYA KARTA HAI?
+👉 Ye kaam karta hai:-
+Access review karwana
+Approve / Revoke decision lena
+Compliance maintain karna
+Audit ke liye record banana.
+
+🔥 3️⃣ Certification ANDAR KYA HOTA HAI?
+👉 Important fields (real structure):-
+Certification {
+    String id;
+    String name;
+    String reviewer;        // kaun review karega
+    String type;            // kis type ka review
+    String status;          // current state
+    Date createdDate;
+    Date dueDate;
+    List<AccessReviewItem> items; // actual access list
+}
+
+🔥 4️⃣ DB ME KYA STORE HOTA HAI?
+👉 DB (SailPoint IdentityIQ) me Certification ek table me store hota hai:-
+spt_certification
+👉 Example record:-
+ID: 101
+NAME: Q1 Access Review
+REVIEWER: Manager1
+TYPE: Manager Certification
+STATUS: InProgress
+CREATED: 2026-03-26
+👉 Aur items alag table me:-
+spt_cert_item
+----------------------------------------------------------------------------------------------------------------------------
+🔥 5️⃣ Certification STATUS:-
+👉 Ye sab statuses aate hain:-
+Status	                        Meaning
+Staged:---------------Campaign ready but start nahi hua
+Active/InProgress:----Review chal raha hai
+Completed:------------Review complete ho gaya
+SignedOff:------------Officially approve ho gaya
+Expired:--------------Time khatam ho gaya
+Revoked:--------------Access remove kar diya
+Closed:---------------Final close
+------------------------------------------------------------------------------------------------
+🔥 6️⃣ Certification TYPES:-
+👉 Ye sab common types hain:-
+🔹 1. Manager Certification:-
+👉 Manager apne team ka access review karta hai
+
+🔹 2. Application Owner Certification:-
+👉 App owner check karta hai (SAP, DB, etc.)
+
+🔹 3. Role Certification:-
+👉 Roles ka review hota hai
+
+🔹 4. Identity Certification:-
+👉 Specific user ka full access review
+
+🔹 5. Account Group Certification:-
+👉 Group level access review
+
+🔹 6. Entitlement Certification:-
+👉 Specific permissions review
+-------------------------------------------------------------------------------------------------------
+🔥 7️⃣ REAL FLOW (INTERVIEW GOLD 🔥):-
+Step 1: Campaign create hota hai
+Step 2: System multiple Certifications banata hai
+Step 3: Har Certification ek reviewer ko assign hota hai
+Step 4: Reviewer access approve/revoke karta hai
+Step 5: Status update hota hai
+Step 6: Campaign close hota hai
+------------------------------------------------------------------------------------------------------------------------
+🔹 Basic Fields Methods:-
+getId()
+setId(String id)
+hasId()
+getName()
+setName(String name)
+hasName()
+getType()
+setType(String type)
+hasType()
+getStatus()
+setStatus(String status)
+hasStatus()
+
+🔹 Reviewer Methods:-
+getReviewer()
+setReviewer(String reviewer)
+hasReviewer()
+
+🔹 Date Methods:-
+getCreatedDate()
+setCreatedDate(Date createdDate)
+hasCreatedDate()
+getDueDate()
+setDueDate(Date dueDate)
+hasDueDate()
+getCompletedDate()
+setCompletedDate(Date completedDate)
+hasCompletedDate()
+
+🔹 Decision / Summary Methods:-
+getDecision()
+setDecision(String decision)
+hasDecision()
+getComments()
+setComments(String comments)
+hasComments()
+
+🔹 Progress Methods:-
+getCompletedCount()
+setCompletedCount(Integer count)
+hasCompletedCount()
+getTotalCount()
+setTotalCount(Integer count)
+hasTotalCount()
+getProgress()
+setProgress(Integer progress)
+hasProgress()
+
+🔹 Campaign Relation:-
+getCampaign()
+setCampaign(CertificationCampaign campaign)
+hasCampaign()
+
+🔹 System Metadata:-
+getCreatedBy()
+setCreatedBy(String createdBy)
+hasCreatedBy()
+getModifiedBy()
+setModifiedBy(String modifiedBy)
+hasModifiedBy()
+
+🔹 Utility Methods:-
+toString()
+equals(Object o)
+hashCode()
+
+🔹 Owner Methods:-
+getOwner()
+setOwner(String owner)
+hasOwner()
+
+🔹 Access Review Items:-
+getItems()
+setItems(List<AccessReviewItem> items)
+hasItems()
+addItem(AccessReviewItem item)
+removeItem(AccessReviewItem item)
+---------------------------------------------------------------------------------------------------------------------------
+()Owner ka role:-
+Certification ka responsible person
+Escalation / monitoring karega
+Ensure karega review complete ho.
+
+🧠 Create aur Close kaun karta hai?
+Action	                       Kaun karta hai
+Create:--------------------System/Admin(createdBy)
+Review(Approve/Revoke):----Reviewer
+Close/Sign-off:------------Reviewer / System / Admin
+Owner:---------------------Responsible banda (monitoring)
+
+ex:-
+Certification cert = new Certification();
+cert.setOwner("SecurityAdmin");
+cert.setCreatedBy("System");
+cert.setReviewer("Manager1");
+System.out.println(cert.getOwner());
+✔️ Output:-
+SecurityAdmin
+-------------------------------------------------------------------------------------------------------
+()AccessReviewItem = ek record jisme user ka ek specific access hota hai.
+🔥 Methods ka use:-
+✅ addItem():-
+👉 ek access add karta hai
+
+✅ getItems():-
+👉 sab items return karta hai
+
+✅ removeItem():-
+👉 kisi access ko hata deta hai
+
+✅ hasItems():-
+👉 check karta hai items hain ya nahi.
+
+🔥 Code Example:-
+Certification cert = new Certification();
+
+AccessReviewItem item1 = new AccessReviewItem();
+item1.setName("SAP Admin");
+
+AccessReviewItem item2 = new AccessReviewItem();
+item2.setName("DB Access");
+
+// add items
+cert.addItem(item1);
+cert.addItem(item2);
+
+// get items
+System.out.println(cert.getItems());
+
+✔️ Output:-
+[SAP Admin, DB Access]
+------------------------------------------------------------------------------------------------------------------------------
+🔹 Basic Fields Methods:-
+getId() → object ka ID return karta hai
+setId(String id) → object ka ID set karta hai
+hasId() → check karta hai ID set hai ya nahi
+getName() → certification ka naam return karta hai
+setName(String name) → certification ka naam set karta hai
+hasName() → check karta hai naam set hai ya nahi
+getType() → certification ka type return karta hai
+setType(String type) → certification ka type set karta hai
+hasType() → check karta hai type set hai ya nahi
+getStatus() → current status return karta hai
+setStatus(String status) → status set karta hai
+hasStatus() → check karta hai status set hai ya nahi
+
+🔹 Reviewer Methods:-
+getReviewer() → reviewer ka naam return karta hai
+setReviewer(String reviewer) → reviewer assign karta hai
+hasReviewer() → check karta hai reviewer set hai ya nahi
+
+🔹 Date Methods:-
+getCreatedDate() → creation date return karta hai
+setCreatedDate(Date createdDate) → creation date set karta hai
+hasCreatedDate() → check karta hai creation date set hai ya nahi
+getDueDate() → due date return karta hai
+setDueDate(Date dueDate) → due date set karta hai
+hasDueDate() → check karta hai due date set hai ya nahi
+getCompletedDate() → completion date return karta hai
+setCompletedDate(Date completedDate) → completion date set karta hai
+hasCompletedDate() → check karta hai completion date set hai ya nahi
+
+🔹 Decision / Summary Methods:-
+getDecision() → final decision return karta hai (approve/revoke)
+setDecision(String decision) → decision set karta hai
+hasDecision() → check karta hai decision set hai ya nahi
+getComments() → reviewer ke comments return karta hai
+setComments(String comments) → comments set karta hai
+hasComments() → check karta hai comments set hai ya nahi
+
+🔹 Progress Methods:-
+getCompletedCount() → completed items ka count return karta hai
+setCompletedCount(Integer count) → completed count set karta hai
+hasCompletedCount() → check karta hai completed count set hai ya nahi
+getTotalCount() → total items ka count return karta hai
+setTotalCount(Integer count) → total count set karta hai
+hasTotalCount() → check karta hai total count set hai ya nahi
+getProgress() → progress percentage return karta hai
+setProgress(Integer progress) → progress set karta hai
+hasProgress() → check karta hai progress set hai ya nahi
+
+🔹 Campaign Relation:-
+getCampaign() → linked campaign return karta hai
+setCampaign(CertificationCampaign campaign) → campaign assign karta hai
+hasCampaign() → check karta hai campaign set hai ya nahi
+
+🔹 System Metadata:-
+getCreatedBy() → creator ka naam return karta hai
+setCreatedBy(String createdBy) → creator set karta hai
+hasCreatedBy() → check karta hai creator set hai ya nahi
+getModifiedBy() → last modifier ka naam return karta hai
+setModifiedBy(String modifiedBy) → last modifier set karta hai
+hasModifiedBy() → check karta hai modifier set hai ya nahi
+
+🔹 Utility Methods:-
+toString() → object ko readable string me convert karta hai
+equals(Object o) → do objects same hain ya nahi check karta hai
+hashCode() → object ka unique hash number generate karta hai.
+
+example code:-
+Certification c = new Certification();
+c.setId("101");
+c.setName("Access Review");
+c.setType("Manager");
+c.setStatus("InProgress");
+System.out.println(c.getId());
+System.out.println(c.getName());
+System.out.println(c.getType());
+System.out.println(c.getStatus());
+✔️ Output:-
+101
+Access Review
+Manager
+InProgress
+
+example:-
+c.setReviewer("Manager1");
+System.out.println(c.getReviewer());
+System.out.println(c.hasReviewer());
+✔️ Output:-
+Manager1
+true
+
+example:-
+👉 Kya karte hain?
+Kab bana, kab due hai, kab complete hua
+Date now = new Date();
+c.setCreatedDate(now);
+c.setDueDate(now);
+c.setCompletedDate(now);
+System.out.println(c.getCreatedDate());
+System.out.println(c.hasDueDate());
+✔️ Output:-
+Wed Mar 26 ...
+true
+
+example:-
+c.setDecision("Approve");
+c.setComments("All good");
+System.out.println(c.getDecision());
+System.out.println(c.getComments());
+✔️ Output:-
+Approve
+All good
+
+example:-
+👉 Kya karte hain?
+Kitna kaam complete hua track karte hain
+c.setTotalCount(100);
+c.setCompletedCount(40);
+c.setProgress(40);
+System.out.println(c.getProgress());
+✔️ Output:-
+40
+
+example:-
+👉 Kya karta hai?
+Certification kis campaign ka part hai
+CertificationCampaign campaign = new CertificationCampaign();
+campaign.setName("Q1 Review");
+c.setCampaign(campaign);
+System.out.println(c.getCampaign());
+✔️ Output:-
+CertificationCampaign@123
+
+example:-
+👉 Kya karta hai?
+System tracking (kisne banaya, kisne modify kiya)
+c.setCreatedBy("System");
+c.setModifiedBy("Admin");
+System.out.println(c.getCreatedBy());
+System.out.println(c.getModifiedBy());
+✔️ Output:-
+System
+Admin
+
+Example:-
+👉 toString():-
+👉 Object ko readable string me convert karta hai
+System.out.println(c.toString());
+✔️ Output:-
+Certification{id=101, name=Access Review, status=InProgress}
+
+Example:-
+👉 equals(Object o):-
+👉 Do objects same hain ya nahi check karta hai
+Certification c1 = new Certification();
+Certification c2 = new Certification();
+System.out.println(c1.equals(c2));
+✔️ Output:-
+false
+👉 Same data ho toh:
+true
+
+Example:-
+👉 hashCode():-
+👉 Object ka unique number generate karta hai (memory identity)
+System.out.println(c.hashCode());
+✔️ Output:-
+45876231

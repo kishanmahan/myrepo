@@ -1,0 +1,123 @@
+4️⃣ Email Templates kya hai?
+Email Template = Predefined email format,
+Isme email ka subject, body, variables already defined hote hain.
+Workflow ya rule se jab email bhejna hota hai tab template call kiya jata hai.
+
+Example template:-
+Subject: Access Request Approved
+
+Hello ${identityName},
+
+Your access request has been approved.
+
+Thanks,
+IAM Team
+
+Yaha ${identityName} dynamic variable hai.
+
+1️⃣ EmailTemplate FULL XML
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE EmailTemplate PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+
+<EmailTemplate name="Welcome Email"
+               subject="Welcome to Company"
+               from="iam@company.com"
+               description="New employee welcome email template"
+               type="HTML">
+
+    <Body>
+
+Hello $identity.displayName,
+
+Welcome to our company.
+
+Your SailPoint identity has been created successfully.
+
+Employee ID : $identity.name
+Email       : $identity.email
+
+You can now login to company systems.
+
+Regards
+IAM Team
+
+    </Body>
+
+</EmailTemplate>
+
+2️⃣ Java Rule (Email Send)
+
+Ye SailPoint Rule code hota hai.
+
+import sailpoint.api.SailPointContext;
+import sailpoint.object.EmailTemplate;
+import sailpoint.object.EmailOptions;
+import sailpoint.object.Identity;
+
+public class WelcomeEmailSender {
+
+    public static void sendEmail(
+            SailPointContext context,
+            Identity identity) throws Exception {
+
+        EmailTemplate template =
+                context.getObject(
+                        EmailTemplate.class,
+                        "Welcome Email");
+
+        EmailOptions options =
+                new EmailOptions(
+                        identity.getEmail(),
+                        null);
+
+        context.sendEmailNotification(
+                template,
+                options);
+
+        System.out.println(
+        "Email sent to " + identity.getEmail());
+    }
+}
+///////////*
+()<!DOCTYPE EmailTemplate>:-
+SailPoint ko batata hai ki ye EmailTemplate object hai.
+
+()<EmailTemplate>
+Main object.
+
+Example:-
+<EmailTemplate name="Welcome Email">
+()name:-
+name="Welcome Email"
+Template ka unique name.
+Java code me isi name se fetch karte hain.
+
+()subject:-
+subject="Welcome to Company"
+Email subject line.
+
+()from:-
+from="iam@company.com"
+Sender email address.
+
+()description:-
+Template ka purpose.
+type="HTML"
+Email format.
+
+2 types:-
+TEXT
+HTML
+
+<Body>
+Email ka message.
+
+Example variables:-
+$identity.displayName
+$identity.name
+$identity.email
+Runtime me replace ho jayenge.
+
+
+*//////////

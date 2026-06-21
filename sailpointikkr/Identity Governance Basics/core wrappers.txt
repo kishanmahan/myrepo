@@ -1,0 +1,39 @@
+1️⃣ Core Wrappers – Definition:-
+Core wrappers SailPoint me basically pre-built high-level interfaces hote hain jo core engine ke low-level calls ko wrap (encapsulate) karte hain, taaki developer ko direct engine se interact na karna pade.
+Matlab ye core engine ka wrapper hote hain.
+Ye mostly common repetitive tasks ko simplify karne ke liye banaye jaate hain.
+Ye internally core engine ko call karte hain, lekin extra safety, validation aur convenience methods provide karte hain.
+
+2️⃣ Kyon use hota hai?
+()Safe interface: Developer directly engine call karne se bach jata hai, aur system crash ka risk kam hota hai.
+
+()Code reuse: Common operations ke liye baar-baar core engine call likhne ki zarurat nahi.
+
+()1️⃣ Consistency: Har module me core engine calls ek hi tarike se use hote hain.
+Problem without wrappers: Agar hum directly core engine call karein, to har module me log alag tarike se call likh sakte hain.
+Example: Workflow launch karna.
+Module A: workflowService.launchWorkflow(workflow, args).
+Module B: workflowService.startWorkflowById(workflowId, args).
+Issue: Agar engine me changes aate hain ya validation add karna ho, to har module ko individually update karna padega → risk of errors.
+Solution (Core wrapper):-
+Core wrapper ek single method provide karta hai, jaise WorkflowHelper.launch(workflowName, args).
+Har module ye wrapper use karega → same interface across all modules.
+Agar engine me kuch change hota hai, sirf wrapper update karna hai, modules safe rahenge.
+Example:-
+WorkflowHelper workflowHelper = new WorkflowHelper(context);
+workflowHelper.launch("UserOnboarding", args);  // Sab modules me ye same method use hoga.
+
+()2️⃣ Simplification: UI ya API se workflow/task/identity operations simple ho jate hain.
+Problem without wrappers: UI ya API se directly core engine call karna complex hota hai.
+Need multiple steps: fetch workflow, validate inputs, execute, handle exceptions, logging
+Solution (Core wrapper):-
+Wrapper internally ye saare steps handle karta hai,
+UI/API developer ko bas workflow name aur arguments dena hota hai.
+Wrapper automatically validation, logging, error handling karta hai.
+
+3️⃣ Examples of Core Wrappers in SailPoint:-
+Wrapper Name	                                        What it wraps / does
+WorkflowHelper / WorkflowWrapper	          Workflow launch, resume, cancel, with argument validation
+TaskHelper / TaskWrapper	                        Task execution, scheduling, logging
+IdentityHelper / IdentityWrapper	                Identity creation/update/deactivation
+ProvisioningHelper	                                     Account provisioning operations

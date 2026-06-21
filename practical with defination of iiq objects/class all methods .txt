@@ -1,0 +1,1477 @@
+()class ke sare methods:-
+--Part 1 — Class basics:-
+Class.forName()
+getName()
+getSimpleName()
+getCanonicalName()
+getPackage()
+
+--Part 2 — Constructors:-
+getConstructor()
+getConstructors()
+getDeclaredConstructor()
+getDeclaredConstructors()
+Constructor.newInstance()
+
+Part 3 — Methods
+getMethod()
+getMethods()
+getDeclaredMethod()
+getDeclaredMethods()
+Method.invoke()
+
+Part 4 — Fields
+getField()
+getFields()
+getDeclaredField()
+getDeclaredFields()
+Field.get()
+Field.set()
+
+Part 5 — Type information
+getSuperclass()
+getInterfaces()
+isInterface()
+isArray()
+isPrimitive()
+isEnum()
+isAnnotation()
+
+Part 6 — Object creation
+newInstance()
+Reflection object creation
+
+Part 7 — Class[] constructorArgs:-
+Deep dive:-
+Class[] constructorArgs =
+new Class[] {
+    SailPointContext.class
+};
+
+
+Part 8 — Advanced reflection
+cast()
+isAssignableFrom()
+getModifiers()
+getDeclaredClasses()
+getAnnotations()
+etc.
+-----------------------------------------------------------------
+()Class.forName():-Java ka ek bahut hi powerful method hai jo runtime par kisi class ko dynamically load karne ke kaam aata hai.
+->Class.forName("package.ClassName") likhte hain, toh Java Virtual Machine (JVM) ye teen bade kaam karta hai:-
+Class ko search karta hai:-
+Class ko load karta hai:-
+Class ko Initialize karta hai:-Yeh sabse important point hai. 
+Class load hote hi uska static block execute ho jata hai aur static variables initialize ho jate hain (agar pehle se loaded na ho).
+ex of beanshell:-
+try {
+    // MySQL driver class ko dynamically load aur initialize karna
+    Class.forName("com.mysql.cj.jdbc.Driver");
+    System.out.println("Driver successfully loaded!");
+} catch (ClassNotFoundException e) {
+    System.out.println("Driver class nahi mili: " + e.getMessage());
+}
+------------------------------------
+()Code example ke sath samajho:-
+package com.test;
+public class Student {
+}
+Ab use karte hain:-
+package com.test;
+public class Demo {
+    public static void main(String[] args) {
+        Class<?> c = Student.class;
+        System.out.println("getName() = " + c.getName());
+        System.out.println("getSimpleName() = " + c.getSimpleName());
+        System.out.println("getCanonicalName() = " + c.getCanonicalName());
+        System.out.println("getPackage() = " + c.getPackage());
+		}}
+		
+1. getName():-
+Kya karta hai?
+Class ka fully qualified name deta hai.
+Means:-
+package name + class name
+Code
+System.out.println(c.getName());
+Output:-
+com.test.Student
+
+2. getSimpleName():-
+Kya karta hai?
+Sirf class ka chota/simple naam deta hai.
+Package nahi deta.
+Code
+System.out.println(c.getSimpleName());
+Output:-
+Student
+
+3. getCanonicalName():-
+Kya karta hai?
+Class ka official/standard full name deta hai.
+Mostly normal class me ye getName() jaisa dikhta hai.
+Code
+System.out.println(c.getCanonicalName());
+Output:-
+com.test.Student
+
+()Difference: getName() vs getCanonicalName():-
+Example:-
+public class Demo {
+    static class Inner {
+    }
+    public static void main(String[] args) {
+        Class<?> c = Inner.class;
+        System.out.println(c.getName());
+        System.out.println(c.getCanonicalName());
+    }}
+Output:-
+Demo$Inner
+Demo.Inner
+
+4. getPackage():-
+Kya karta hai?
+Class kis package me hai uska object return karta hai.
+Code
+System.out.println(c.getPackage());
+Output:-
+package com.test
+
+()<?> Java me Wildcard Generic hai.
+Iska matlab:-
+"Koi bhi type ho sakta hai" (Unknown Type)
+Example:-
+Class<?> c1 = String.class;
+Class<?> c2 = Integer.class;
+Class<?> c3 = Student.class;
+----------------------------------------------------------------------------
+Example Class:-
+package com.test;
+
+public class Student {
+
+    public Student() {
+        System.out.println("Default Constructor");
+    }
+
+    public Student(String name) {
+        System.out.println("Public Constructor : " + name);
+    }
+
+    private Student(int age) {
+        System.out.println("Private Constructor : " + age);
+    }
+}
+
+1. getConstructor() Kya karta hai?
+Sirf public constructor return karta hai.
+Specific parameter wala constructor nikalta hai.
+Code
+import java.lang.reflect.Constructor;
+
+public class Demo {
+
+    public static void main(String[] args) throws Exception {
+
+        Class<?> c = Student.class;
+
+        Constructor<?> con =
+                c.getConstructor(String.class);
+
+        System.out.println(con);
+
+    }
+}
+Output:-
+public com.test.Student(java.lang.String)
+Explanation
+Ye:-
+Student(String name)
+wala public constructor laya.
+
+2. getConstructors()
+Kya karta hai?
+Saare public constructors ka array return karta hai.
+Code
+import java.lang.reflect.Constructor;
+public class Demo {
+
+    public static void main(String[] args) {
+
+        Class<?> c = Student.class;
+
+        Constructor<?>[] cons =
+                c.getConstructors();
+
+        for(Constructor<?> con : cons)
+        {
+            System.out.println(con);
+        }
+    }}
+Output:-
+public com.test.Student()
+public com.test.Student(java.lang.String)
+Explanation:-
+Private constructor nahi aaya.
+Sirf public constructors aaye.
+
+3. getDeclaredConstructor():-
+Kya karta hai?
+Specific constructor return karta hai.
+Public + Private + Protected + Default
+sab access kar sakta hai.
+Code
+import java.lang.reflect.Constructor;
+
+public class Demo {
+
+    public static void main(String[] args)
+            throws Exception {
+
+        Class<?> c = Student.class;
+
+        Constructor<?> con =
+                c.getDeclaredConstructor(int.class);
+
+        System.out.println(con);
+
+    }
+}
+Output:-
+private com.test.Student(int)
+Explanation:-
+Private constructor bhi mil gaya.
+Kyuki Declared use hua.
+
+4. getDeclaredConstructor
+Kya karta hai?
+Class ke saare constructors return karta hai.
+Public + Private + Protected + Default.
+Code
+import java.lang.reflect.Constructor;
+public class Demo {
+
+    public static void main(String[] args) {
+
+        Class<?> c = Student.class;
+
+        Constructor<?>[] cons =
+                c.getDeclaredConstructors();
+
+        for(Constructor<?> con : cons)
+        {
+            System.out.println(con);
+        }
+
+    }
+}
+Output:-
+public com.test.Student()
+public com.test.Student(java.lang.String)
+private com.test.Student(int)
+
+5. Constructor.newInstance()
+Kya karta hai?
+
+Reflection use karke object create karta hai.
+
+Normal:
+
+Student s = new Student();
+
+Reflection:
+
+Constructor.newInstance()
+Example 1 — Public Constructor
+import java.lang.reflect.Constructor;
+
+public class Demo {
+
+    public static void main(String[] args)
+            throws Exception {
+
+        Class<?> c = Student.class;
+
+        Constructor<?> con =
+                c.getConstructor(String.class);
+
+        Object obj =
+                con.newInstance("Kishan");
+
+    }
+}
+Output
+Public Constructor : Kishan
+Explanation
+
+Reflection ne constructor call kiya.
+
+Example 2 — Private Constructor
+import java.lang.reflect.Constructor;
+
+public class Demo {
+
+    public static void main(String[] args)
+            throws Exception {
+
+        Class<?> c = Student.class;
+
+        Constructor<?> con =
+                c.getDeclaredConstructor(int.class);
+
+        con.setAccessible(true);
+
+        Object obj =
+                con.newInstance(25);
+
+    }
+}
+Output:-
+Private Constructor : 25
+Explanation:-
+Private constructor direct access nahi hota.
+Isliye:-setAccessible(true) use kiya.
+
+Fir:-
+newInstance(25)
+object bana diya.
+newInstance(25) object return karta hai, but return type usually Object hota hai.
+Example:-
+Object obj = con.newInstance(25);
+Ab obj ke paas actual me Student ka object hai.
+Lekin variable type Object hai.
+
+1. Type Casting karke method call
+Example:-
+public class Student {
+
+    private Student(int age) {
+        System.out.println("Constructor Called : " + age);
+    }
+
+    public void show() {
+        System.out.println("Show Method");
+    }
+}
+
+Code:-
+import java.lang.reflect.Constructor;
+
+public class Demo {
+
+    public static void main(String[] args)
+            throws Exception {
+
+        Class<?> c = Student.class;
+
+        Constructor<?> con =
+                c.getDeclaredConstructor(int.class);
+
+        con.setAccessible(true);
+
+        Object obj = con.newInstance(25);
+
+        Student s = (Student) obj;
+
+        s.show();
+
+    }
+}
+Output:-
+Constructor Called : 25
+Show Method
+
+
+2. Reflection se method call
+Type casting ke bina bhi kar sakte ho.
+Example:-
+import java.lang.reflect.*;
+
+public class Demo {
+
+    public static void main(String[] args)
+            throws Exception {
+
+        Class<?> c = Student.class;
+
+        Constructor<?> con =
+                c.getDeclaredConstructor(int.class);
+
+        con.setAccessible(true);
+
+        Object obj = con.newInstance(25);
+
+        Method m = c.getMethod("show");
+
+        m.invoke(obj);
+
+    }
+}
+Output:-
+Constructor Called : 25
+Show Method
+
+
+---------------------------------------------------------------------------
+()Example class lete hain.
+
+package com.test;
+
+public class Student {
+
+    public void show() {
+        System.out.println("Show Method");
+    }
+
+    public void print(String name) {
+        System.out.println(name);
+    }
+
+    private void secret() {
+        System.out.println("Private Method");
+    }
+}
+1. getMethods():-
+Kya karta hai?
+Class ke saare public methods return karta hai.
+Isme:-
+Current class ke public methods
+Parent class ke inherited public methods
+dono aate hain.
+Return type:-
+Method[]
+Code
+import java.lang.reflect.Method;
+
+public class Demo {
+
+    public static void main(String[] args) {
+
+        Class<?> c = Student.class;
+
+        Method[] methods = c.getMethods();
+
+        for(Method m : methods)
+        {
+            System.out.println(m.getName());
+        }
+
+    }
+}
+Output (short):-
+show
+print
+wait
+equals
+toString
+hashCode
+getClass
+notify
+notifyAll
+
+2. getDeclaredMethod()
+Kya karta hai?
+Specific method return karta hai.
+Public/private/protected/default sab nikal sakta hai.
+Syntax:-
+getDeclaredMethod(methodName, parameterTypes)
+Example 1 — Public method
+import java.lang.reflect.Method;
+
+public class Demo {
+
+    public static void main(String[] args)
+            throws Exception {
+
+        Class<?> c = Student.class;
+
+        Method m =
+                c.getDeclaredMethod("show");
+
+        System.out.println(m);
+
+    }
+}
+Output:-
+public void com.test.Student.show()
+
+Example 2 — Method with parameter:-
+Method m =
+        c.getDeclaredMethod(
+                "print",
+                String.class
+        );
+Output:-
+public void com.test.Student.print(java.lang.String)
+
+Example 3 — Private method:-
+Method m =
+        c.getDeclaredMethod("secret");
+
+System.out.println(m);
+Output
+private void com.test.Student.secret()
+
+3. getDeclaredMethods()
+Kya karta hai?
+Class ke saare methods return karta hai.
+Includes:-
+public
+private
+protected
+default
+But inherited methods nahi.
+Code
+import java.lang.reflect.Method;
+
+public class Demo {
+
+    public static void main(String[] args) {
+
+        Class<?> c = Student.class;
+
+        Method[] methods =
+                c.getDeclaredMethods();
+
+        for(Method m : methods)
+        {
+            System.out.println(m);
+        }
+
+    }
+}
+Output:-
+public void com.test.Student.show()
+public void com.test.Student.print(java.lang.String)
+private void com.test.Student.secret()
+------------------------------------------------------------
+()Method Call using Reflection:-
+Example:-
+import java.lang.reflect.Method;
+
+public class Demo {
+
+    public static void main(String[] args)
+            throws Exception {
+
+        Student s = new Student();
+
+        Class<?> c = Student.class;
+
+        Method m =
+                c.getMethod("show");
+
+        m.invoke(s);
+
+    }
+}
+Output:-
+Show Method
+---------------------------------------------------------
+()Ye sab Reflection API ke methods hain.
+Inka use class ke variables (fields) ko access/change karne ke liye hota hai.
+
+Example class:-
+package com.test;
+
+public class Student {
+
+    public String name = "Kishan";
+
+    public int age = 20;
+
+    private String password = "12345";
+}
+
+1. getField() Kya karta hai?
+1 specific public field return karta hai,Private field nahi.
+Code
+import java.lang.reflect.Field;
+
+public class Demo {
+
+    public static void main(String[] args)
+            throws Exception {
+
+        Class<?> c = Student.class;
+
+        Field f = c.getField("name");
+
+        System.out.println(f);
+
+    }
+}
+Output:-
+public java.lang.String com.test.Student.name
+
+2. getFields() Kya karta hai?
+Class ke saare public fields return karta hai.
+Inherited public fields bhi.
+Return type:-
+Field[]
+Code
+import java.lang.reflect.Field;
+public class Demo {
+
+    public static void main(String[] args) {
+
+        Class<?> c = Student.class;
+
+        Field[] fields = c.getFields();
+
+        for(Field f : fields)
+        {
+            System.out.println(f);
+        }
+    }
+}
+Output:-
+public java.lang.String com.test.Student.name
+public int com.test.Student.age
+Private password nahi aaya.
+
+3. getDeclaredField() Kya karta hai?
+1 specific field return karta hai.
+Public/private/protected/default sab.
+Code
+import java.lang.reflect.Field;
+public class Demo {
+
+    public static void main(String[] args)
+            throws Exception {
+
+        Class<?> c = Student.class;
+
+        Field f =
+            c.getDeclaredField("password");
+
+        System.out.println(f);
+
+    }
+}
+Output:-
+private java.lang.String com.test.Student.password
+Explanation:-
+Private field bhi mil gaya,Kyuki Declared use hua.
+
+4. getDeclaredFields() Kya karta hai?
+Class ke saare fields return karta hai.
+Includes:-
+public
+private
+protected
+default
+Inherited fields nahi.
+Code
+import java.lang.reflect.Field;
+
+public class Demo {
+
+    public static void main(String[] args) {
+
+        Class<?> c = Student.class;
+
+        Field[] fields =
+                c.getDeclaredFields();
+
+        for(Field f : fields)
+        {
+            System.out.println(f);
+        }
+
+    }
+}
+Output:-
+public java.lang.String com.test.Student.name
+public int com.test.Student.age
+private java.lang.String com.test.Student.password
+
+5. Field.get() Kya karta hai?
+Field ki value read/get karta hai.
+Code
+import java.lang.reflect.Field;
+
+public class Demo {
+
+    public static void main(String[] args)
+            throws Exception {
+
+        Student s = new Student();
+
+        Class<?> c = Student.class;
+
+        Field f = c.getField("name");
+
+        Object value = f.get(s);
+
+        System.out.println(value);
+
+    }
+}
+Output:-
+Kishan
+
+6. Field.set() Kya karta hai?
+Field ki value change/set karta hai.
+Code
+import java.lang.reflect.Field;
+
+public class Demo {
+
+    public static void main(String[] args)
+            throws Exception {
+
+        Student s = new Student();
+
+        Class<?> c = Student.class;
+
+        Field f = c.getField("name");
+
+        f.set(s,"Rahul");
+
+        System.out.println(s.name);
+
+    }
+}
+Output:-
+Rahul
+--------------------------------------------------------------------------
+()Ye sab java.lang.Class ke methods hain.
+Ye class ka type check aur relationship info nikalne ke kaam aate hain.
+Example classes:-
+package com.test;
+
+interface Animal {
+}
+
+enum Color {
+    RED, BLUE
+}
+
+@interface MyAnno {
+}
+
+class Person {
+}
+
+class Student extends Person implements Animal {
+}
+//////////*
+@interface Java me Custom Annotation banane ke liye use hota hai.
+Syntax:-
+@interface MyAnno {
+}
+Ab ye annotation ban gaya.
+
+ex:-
+()Step 1 — Annotation banao:-
+@interface MyAnno {
+
+    String name();
+
+    int age();
+
+}
+Yaha 2 members banaye:-
+name
+age
+----------------------------------------------
+()Reflection se annotation read karna:-
+import java.lang.annotation.Annotation;
+
+@interface MyAnno {
+    String name();
+    int age();
+}
+
+
+@MyAnno(name="Kishan",age=22)
+class Student {
+}
+
+public class Demo {
+    public static void main(String[] args) {
+        Class<?> c = Student.class;
+        MyAnno a =
+            c.getAnnotation(MyAnno.class);
+        System.out.println(a.name());
+        System.out.println(a.age());
+    }
+}
+Output:-
+Kishan
+22
+------------------------------
+()Annotation kya hota hai?
+Annotation = extra information / metadata
+Compiler, Frameworks, Reflection ko info dene ke kaam aata hai.
+Example:-
+Java ke built-in annotations:-
+@Override
+@Deprecated
+@SuppressWarnings
+
+*/////////
+--------------------------------------------------------------------------
+()Ye sab java.lang.Class ke methods hain.
+Ye class ka type check aur relationship info nikalne ke kaam aate hain.
+Example classes:-
+package com.test;
+
+interface Animal {
+}
+
+enum Color {
+    RED, BLUE
+}
+
+@interface MyAnno {
+}
+
+class Person {
+}
+
+class Student extends Person implements Animal {
+}
+
+1. getSuperclass() Kya karta hai?
+Class ka parent class (superclass) return karta hai.
+Code
+public class Demo {
+    public static void main(String[] args) {
+        Class<?> c = Student.class;
+        Class<?> parent =
+                c.getSuperclass();
+        System.out.println(parent);
+    }
+}
+Output:-
+class com.test.Person
+
+2. getInterfaces() Kya karta hai?
+Class ke implemented interfaces return karta hai.
+Return type:-
+Class<?>[]
+Code
+public class Demo {
+
+    public static void main(String[] args) {
+
+        Class<?> c = Student.class;
+
+        Class<?>[] arr =
+                c.getInterfaces();
+
+        for(Class<?> i : arr)
+        {
+            System.out.println(i);
+        }
+
+    }
+}
+Output:-
+interface com.test.Animal
+
+3. isInterface() Kya karta hai?
+Check karta hai class interface hai ya nahi.
+Return:-
+true / false
+Code
+System.out.println(
+        Animal.class.isInterface()
+);
+Output:-
+true
+
+()Normal class:-
+System.out.println(
+        Student.class.isInterface()
+);
+Output:-
+false
+
+4. isArray() Kya karta hai?
+Check karta hai object/class array hai ya nahi.
+Code
+int[] arr = {1,2,3};
+
+Class<?> c = arr.getClass();
+
+System.out.println(
+        c.isArray()
+);
+Output:-
+true
+
+Normal class:-
+System.out.println(
+        Student.class.isArray()
+);
+Output:-
+false
+
+String array:-
+System.out.println(
+        String[].class.isArray()
+);
+Output:-
+true
+-----------------------------------------
+5. isPrimitive()
+Kya karta hai?
+Check karta hai primitive datatype hai ya nahi.
+Primitive:-
+int
+double
+char
+boolean
+byte
+short
+long
+float
+Code
+System.out.println(
+        int.class.isPrimitive()
+);
+Output:-
+true
+
+()Wrapper class:-
+System.out.println(
+        Integer.class.isPrimitive()
+);
+Output:-
+false
+
+()String:-
+System.out.println(
+        String.class.isPrimitive()
+);
+Output:-
+false
+
+------------------------------------------------
+6. isEnum()
+Kya karta hai?
+
+Check karta hai class enum hai ya nahi.
+
+Code
+System.out.println(
+        Color.class.isEnum()
+);
+Output:-
+true
+
+()Normal class:-
+System.out.println(
+        Student.class.isEnum()
+);
+Output:-
+false
+----------------------------------------
+7. isAnnotation()
+Kya karta hai?
+Check karta hai class annotation hai ya nahi.
+
+Code
+System.out.println(
+        MyAnno.class.isAnnotation()
+);
+Output
+true
+
+Normal class:-
+System.out.println(
+        Student.class.isAnnotation()
+);
+Output:-
+false
+--------------------------------------------------------------
+(a)Normal Java me object:-
+Student s = new Student();
+
+(b)Reflection me object:-
+Class<?> c = Student.class;
+Object obj = c.newInstance();
+
+(c)Ya modern way:-
+Object obj =
+        c.getDeclaredConstructor()
+         .newInstance();
+
+Example class:-
+class Student {
+
+    public Student() {
+        System.out.println("Constructor Called");
+    }
+
+    public void show() {
+        System.out.println("Show Method");
+    }
+}
+
+1. Class.newInstance() Kya karta hai?
+Class ka default constructor call karke object banata hai.
+Code
+public class Demo {
+
+    public static void main(String[] args)
+            throws Exception {
+
+        Class<?> c = Student.class;
+
+        Object obj = c.newInstance();
+
+    }
+}
+Output:-
+Constructor Called
+-----------------------------------------
+2. Constructor.newInstance():-
+Ye recommended way hai.
+Example:-
+class Student {
+
+    public Student(int age) {
+
+        System.out.println(age);
+
+    }
+}
+
+Code:-
+import java.lang.reflect.Constructor;
+public class Demo {
+
+    public static void main(String[] args)
+            throws Exception {
+
+        Class<?> c = Student.class;
+
+        Constructor<?> con =
+                c.getConstructor(int.class);
+
+        Object obj =
+                con.newInstance(25);
+
+    }
+}
+Output:-
+25
+-----------------------------------------------------------------
+3. Private Constructor Object Creation:-
+Example:-
+class Student {
+
+    private Student() {
+
+        System.out.println("Private");
+
+    }
+}
+Code:-
+import java.lang.reflect.Constructor;
+public class Demo {
+
+    public static void main(String[] args)
+            throws Exception {
+
+        Class<?> c = Student.class;
+
+        Constructor<?> con =
+            c.getDeclaredConstructor();
+
+        con.setAccessible(true);
+
+        Object obj =
+            con.newInstance();
+
+    }
+}
+Output:-
+Private
+------------------------------------------------------------------
+1. Class[]
+Matlab:-
+Class objects ka array,
+Class[] = Array of Class objects.
+
+Example:-
+Class[] arr = {
+    String.class,
+    Integer.class
+};
+Output conceptually:-
+[String.class, Integer.class]
+
+()SailPointContext.class:-
+means:-
+SailPointContext class ka Class object.
+
+
+--------------------------------------------------------------------
+2. .class Syntax/Literal (In Java Code):-
+Jab aap Java code likhte waqt kisi class ke naam ke aage .class lagate hain (jaise String.class, UserCustomizer.class), 
+toh ise Class Literal kaha jata hai.
+Yeh kya karta hai? Yeh us class ka ek Class object return karta hai jo memory mein load ho chuki hai.
+Java mein har class jab load hoti hai, toh JVM memory mein uska ek representation metadata bana kar rakhta hai. 
+.class likhne se aapko us metadata ka access mil jata hai.
+
+Code Example:
+Java
+package com.project.identity;
+
+public class Test {
+    public static void main(String[] args) {
+        
+        // String class ka 'Class' object nikalna
+        Class<?> stringClassObject = String.class;
+        
+        // Ab aap is object se String class ki details nikal sakte hain
+        System.out.println("Class Name: " + stringClassObject.getName()); 
+        // Output: java.lang.String
+    }
+}
+(1)Class.forName() aur MyClass.class mein kya farq hai?
+Dono hi aapko Class ka object dete hain, lekin:-
+--(a)MyClass.class: Yeh Compile-time par check hota hai. Agar MyClass naam ki koi class aapke project mein nahi hai, 
+toh code compile hi nahi hoga. Isme error aane ke chance nahi hote runtime par.
+--(b)Class.forName("MyClass"): Yeh Runtime par class ko load karta hai string naam se. Agar woh class nahi mili, 
+toh runtime par ClassNotFoundException aati hai.
+ex:-
+package com.project.identity;
+
+public class Test {
+    public static void main(String[] args) {
+        
+        // String class ka 'Class' object nikalna
+        Class<?> stringClassObject = String.class;
+        
+        // Ab aap is object se String class ki details nikal sakte hain
+        System.out.println("Class Name: " + stringClassObject); 
+        // Output:-Class Name: class java.lang.String
+    }
+}
+----------------------------------------------------------------------------------------
+()Full Example:-
+Without SailPoint:-
+class Student {
+
+    public Student(String name) {
+
+        System.out.println(name);
+
+    }
+}
+()Reflection:-
+import java.lang.reflect.Constructor;
+public class Demo {
+
+    public static void main(String[] args)
+            throws Exception {
+
+        Class[] constructorArgs =
+        new Class[] {
+            String.class
+        };
+
+        Constructor con =
+        Student.class.getConstructor(
+            constructorArgs
+        );
+
+        Object obj =
+        con.newInstance("Kishan");
+
+    }
+}
+Output:-
+Kishan
+-----------------------------------------------------------------------------
+1. Without Array (getConstructor(SailPointContext.class))
+import java.lang.reflect.Constructor;
+
+class SailPointContext {
+
+}
+
+class MyClass {
+
+    public MyClass(
+            SailPointContext context) {
+
+        System.out.println(
+                "Constructor Called");
+    }
+}
+
+public class Demo {
+
+    public static void main(
+            String[] args)
+            throws Exception {
+
+        Constructor<?> con =
+                MyClass.class
+                        .getConstructor(
+                                SailPointContext.class);
+
+        SailPointContext ctx =
+                new SailPointContext();
+
+        Object obj =
+                con.newInstance(ctx);
+
+        System.out.println(obj);
+    }
+}
+Output
+Constructor Called
+MyClass@4617c264
+------------------------------------------------------------------------------
+2. With Array (Class[] constructorArgs)
+import java.lang.reflect.Constructor;
+
+class SailPointContext {
+
+}
+
+class MyClass {
+
+    public MyClass(
+            SailPointContext context) {
+
+        System.out.println(
+                "Constructor Called");
+    }
+}
+
+public class Demo {
+
+    public static void main(
+            String[] args)
+            throws Exception {
+
+        Class[] constructorArgs =
+                new Class[] {
+                        SailPointContext.class
+                };
+
+        Constructor<?> con =
+                MyClass.class
+                        .getConstructor(
+                                constructorArgs);
+
+        SailPointContext ctx =
+                new SailPointContext();
+
+        Object obj =
+                con.newInstance(ctx);
+
+        System.out.println(obj);
+    }
+}
+Output
+Constructor Called
+MyClass@4617c264
+-----------------------------------------------------------------------------
+Multiple Parameters Example (Array useful)
+import java.lang.reflect.Constructor;
+
+class SailPointContext {
+
+}
+
+class MyClass {
+
+    public MyClass(
+            SailPointContext ctx,
+            String name) {
+
+        System.out.println(
+                "Constructor Called");
+
+        System.out.println(name);
+    }
+}
+
+public class Demo {
+
+    public static void main(
+            String[] args)
+            throws Exception {
+
+        Class[] constructorArgs =
+                new Class[] {
+                        SailPointContext.class,
+                        String.class
+                };
+
+        Constructor<?> con =
+                MyClass.class
+                        .getConstructor(
+                                constructorArgs);
+
+        Object obj =
+                con.newInstance(
+                        new SailPointContext(),
+                        "Kishan");
+
+    }
+}
+Output
+Constructor Called
+Kishan
+-----------------------------------------------------------------------------
+cast()
+isAssignableFrom()
+getModifiers()
+getDeclaredClasses()
+------------------------------------------------------------------------------
+()1. cast()
+Kya karta hai?
+Object ko safe type casting karta hai.
+Normal cast:-
+Object obj = "Hello";
+String s = (String) obj;
+
+Reflection/Class API cast:-
+String s = String.class.cast(obj);
+
+Example:-
+public class Demo {
+
+    public static void main(String[] args) {
+
+        Object obj = "Kishan";
+
+        String s =
+            String.class.cast(obj);
+
+        System.out.println(s);
+
+    }
+}
+Output:-
+Kishan
+----------------------------------------------------------
+2. isAssignableFrom()
+Kya karta hai?
+Check karta hai:-
+"Kya ek class ka object dusri class reference me assign ho sakta hai?"
+
+Return:-
+true / false
+Example:-
+class Animal {
+}
+
+class Dog extends Animal {
+}
+
+Code:-
+System.out.println(
+    Animal.class.isAssignableFrom(
+        Dog.class
+    )
+);
+Output:-
+true
+
+-->Explanation Kya ye valid hai?
+Animal a = new Dog();
+YES.
+Isliye:-
+true
+------------------------------------------
+-->Reverse:-
+System.out.println(
+    Dog.class.isAssignableFrom(
+        Animal.class
+    )
+);
+Output:-
+false
+
+--Kyuki:-
+Dog d = new Animal();
+invalid.
+--------------------------------------------
+3. getModifiers() Kya karta hai?
+Class ke modifiers return karta hai.
+Example:-
+public
+private
+abstract
+final
+static
+
+Example:-
+public final class Student {
+}
+
+ex->
+import java.lang.reflect.Modifier;
+
+public class Demo {
+
+    public static void main(String[] args) {
+
+        Class<?> c = Student.class;
+
+        int mod =
+            c.getModifiers();
+
+        System.out.println(
+            Modifier.toString(mod)
+        );
+
+    }
+}
+Output:-
+public final
+--------------------------------------------------
+4. getDeclaredClasses()
+Kya karta hai?
+Class ke andar jo nested / inner classes declare hui hain unko return karta hai.
+
+-->Example:
+
+class Student {
+
+    class Address {
+
+    }
+
+    static class Info {
+
+    }
+
+}
+
+Code:-
+public class Demo {
+
+    public static void main(String[] args) {
+
+        Class<?> c =
+            Student.class;
+
+        Class<?>[] arr =
+            c.getDeclaredClasses();
+
+        for(Class<?> x : arr)
+        {
+            System.out.println(
+                x.getName()
+            );
+        }
+
+    }
+}
+Output:-
+Student$Address
+Student$Info
+-----------------------------------------------------

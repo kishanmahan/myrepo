@@ -1,0 +1,349 @@
+()🔥 RiskScore kya hai?
+👉 RiskScore = ek numeric value (number)
+jo batata hai ki user / role / entitlement kitna risky hai
+🧠 Simple example:-
+User A → RiskScore = 20  (safe)
+User B → RiskScore = 80  (high risk 🚨)
+👉 Matlab:-
+Jitna zyada score → utna zyada security risk
+
+🎯 RiskScore kya karta hai?
+👉 Ye help karta hai:-
+🔐 High-risk users identify karna
+🚨 Sensitive access track karna
+📊 Audit & compliance me Policy violation detect karna.
+------------------------------------------------------------------------------------------------
+🧱 RiskScore ke andar kya hota hai?
+RiskScore normally direct value nahi hota, ye calculate hota hai multiple cheezon se 👇
+
+🔹 1. Entitlements Risk:-
+👉 Agar user ke paas dangerous access hai:-
+Admin access → high risk
+Normal user → low risk
+
+🔹 2. Role Risk:-
+👉 Role ka bhi apna risk hota hai:-
+Role: Database Admin → Risk = 90
+Role: Viewer → Risk = 10
+
+🔹 3. Application Risk:-
+👉 Kuch apps sensitive hote hai:-
+SAP → high risk
+Email → medium risk
+
+🔹 4. Policy Violations
+👉 Agar user rule tod raha hai:-
+SoD violation → risk increase
+
+🔹 5. Weight (Importance):-
+👉 Har cheez ka weight hota hai:-
+Entitlement weight = 50%
+Role weight = 30%
+Policy = 20%
+👉 Final RiskScore calculate hota hai.
+--------------------------------------------------
+⚙️ Internally kaise banta hai?
+RiskScore = (Entitlements Risk × weight)
+          + (Role Risk × weight)
+          + (Policy Risk × weight)
+------------------------------------------------------
+💻 Example (Real Feel):-
+User ke paas:-
+Admin entitlement → 80
+Role → 50
+Policy violation → 20
+Final RiskScore ≈ 65
+-----------------------------------------
+🗄️ Kya ye DB me store hota hai?
+👉 ✅ Haan bhai — DB me store hota hai
+📌 Kaha store hota hai?
+Mostly:-
+Identity object
+Role (Bundle)
+Entitlement
+-----------------------------------------
+🧠 Example (Identity DB):-
+Identity Table:-
+Name     RiskScore
+Kishan   65
+Rahul    20
+---------------------------------------
+🔄 Kab update hota hai?
+👉 RiskScore change hota hai jab:-
+Aggregation hota hai
+New entitlement milta hai
+Role assign/remove hota hai
+Policy violation hoti hai
+----------------------------------------------
+🔹 Identity:-
+getRiskScore()
+setRiskScore(int riskScore)
+
+🔹 Role (Bundle):-
+getRiskScore()
+setRiskScore(int riskScore)
+getRiskScoreWeight()
+setRiskScoreWeight(int weight)
+
+🔹 Entitlement (ManagedAttribute):-
+getRiskScore()
+setRiskScore(int riskScore)
+
+🔹 Related (Risk Calculation Support):-
+getPolicyViolations()
+setPolicyViolations(java.util.List violations)
+getRoles()
+setRoles(java.util.List roles)
+getLinks()
+setLinks(java.util.List links)
+getEntitlements()
+setEntitlements(java.util.List entitlements)
+
+🔹 Custom / Rule Based (User-defined):-
+calculateRiskScore()
+updateRiskScore()
+---------------------------------------------------------------------------------------------------------------------------------------
+1. getRiskScore():-
+👉 User ka final overall risk score deta hai
+int risk = identity.getRiskScore();
+System.out.println(risk);
+✅ Output:-
+65
+🧠 Matlab:-
+👉 Ye user ka total risk hai (roles + entitlements + policy se mila ke)
+
+2. setRiskScore(int riskScore):-
+👉 User ka risk manually set karta hai
+identity.setRiskScore(80);
+✅ Output (after save):-
+Identity RiskScore = 80
+------------------------------------------------------------------
+3. getRiskScore():-
+👉 Role ka khud ka risk batata hai
+int roleRisk = role.getRiskScore();
+System.out.println(roleRisk);
+✅ Output:-
+50
+🧠 Matlab:-
+👉 Ye role kitna dangerous hai
+
+4. setRiskScore(int riskScore):-
+👉 Role ka risk set karta hai
+role.setRiskScore(70);
+✅ Output:-
+Role RiskScore = 70
+
+5. getRiskScoreWeight():-
+👉 Role ka contribution kitna hai final risk me
+int weight = role.getRiskScoreWeight();
+System.out.println(weight);
+✅ Output:-
+30
+🧠 Matlab:-
+👉 Ye role total risk me 30% contribute karega
+
+6. setRiskScoreWeight(int weight):-
+👉 Role ka weight set karta hai
+role.setRiskScoreWeight(40);
+✅ Output:-
+Role Weight = 40%
+---------------------------------------------------------------------
+7. getRiskScore():-
+👉 Ek access/group ka risk batata hai
+int entRisk = entitlement.getRiskScore();
+System.out.println(entRisk);
+✅ Output:-
+80
+🧠 Matlab:-
+👉 Ye access risky hai (jaise Admin group)
+
+8. setRiskScore(int riskScore):-
+👉 Entitlement ka risk set karta hai
+entitlement.setRiskScore(90);
+✅ Output:-
+Entitlement RiskScore = 90
+----------------------------------------------------------------------------
+🔥 🔹 getPolicyViolations():-
+👉 User ne kaun-kaun se policy rules tod diye (SoD violation etc.)
+java.util.List violations = identity.getPolicyViolations();
+System.out.println(violations);
+✅ Output:-
+[SoD_Violation_Admin_And_Approver, High_Risk_Access]
+🧠 Matlab:-
+👉 Jitni zyada violations → utna zyada RiskScore
+
+🔹 setPolicyViolations(List violations):-
+👉 Violations manually set karta hai
+java.util.List list = new java.util.ArrayList();
+list.add("SoD_Violation");
+identity.setPolicyViolations(list);
+✅ Output:-
+Policy violations updated
+
+🔥 🔹 getRoles():-
+👉 User ke paas kaun-kaun se roles hai
+java.util.List roles = identity.getRoles();
+System.out.println(roles);
+✅ Output:-
+[Admin Role, Manager Role]
+🧠 Matlab:-
+👉 Role ka risk + weight → final RiskScore me add hota hai
+
+🔹 setRoles(List roles):-
+👉 User ko roles assign karta hai
+identity.setRoles(rolesList);
+✅ Output:-
+Roles assigned to identity
+
+🔥 🔹 getLinks():-
+👉 User ke saare accounts (applications ke)
+java.util.List links = identity.getLinks();
+System.out.println(links);
+✅ Output:-
+[
+  Link{app=AD, user=ksingh},
+  Link{app=SAP, user=K123}
+]
+🧠 Matlab:-
+👉 Yahi se entitlements aate hai → risk calculate hota hai
+
+🔹 setLinks(List links):-
+👉 User ke accounts set karta hai
+identity.setLinks(linkList);
+
+🔥 🔹 getEntitlements():-
+👉 User ke paas kaun-kaun se access/group hai
+java.util.List ents = identity.getEntitlements();
+System.out.println(ents);
+
+✅ Output:-
+[Admins, Finance_Read, HR_Write]
+🧠 Matlab:-
+👉 Har entitlement ka risk hota hai → final RiskScore me add hota hai.
+
+🔹 setEntitlements(List entitlements):-
+👉 User ke entitlements set karta hai
+identity.setEntitlements(entList);
+-----------------------------------------------------------------------------------------------------------------
+import sailpoint.object.Identity;
+import sailpoint.object.Bundle;
+import sailpoint.object.ManagedAttribute;
+
+public class RiskUtil {
+
+    public static int calculateRiskScore(Identity identity) {
+
+        int totalRisk = 0;
+
+        // 🔹 Entitlements risk
+        java.util.List<ManagedAttribute> ents = identity.getEntitlements();
+        for (ManagedAttribute ent : ents) {
+            totalRisk += ent.getRiskScore();
+        }
+
+        // 🔹 Roles risk with weight
+        java.util.List<Bundle> roles = identity.getRoles();
+        for (Bundle role : roles) {
+            int roleRisk = role.getRiskScore();
+            int weight = role.getRiskScoreWeight();
+
+            totalRisk += (roleRisk * weight) / 100;
+        }
+
+        // 🔹 Policy violations
+        java.util.List violations = identity.getPolicyViolations();
+        totalRisk += violations.size() * 10;
+
+        return totalRisk;
+    }
+}
+✅ Output:-
+int risk = RiskUtil.calculateRiskScore(identity);
+System.out.println(risk);
+65
+/////////*
+()🔥 1. violations.size() * 10:-
+👉 Ye policy violations ka risk add karne ka logic hai
+
+🧠 Samajh:-
+totalRisk += violations.size() * 10;
+
+👉 Matlab:-
+Har violation = 10 risk points
+Jitni violations → utna risk badhega
+
+🎯 Example:-
+violations = ["SoD1", "SoD2", "SoD3"];
+
+👉 Size:-
+violations.size() = 3
+
+👉 Calculation:-
+3 × 10 = 30
+
+✅ Output:-
+30 risk add hoga
+⚠️ Important:-
+👉 10 fixed nahi hota
+👉 Tu change kar sakta hai.
+------------------------------------
+🔥 2. (roleRisk * weight) / 100:-
+👉 Ye role ka weighted contribution nikalta hai
+
+🧠 Samajh:-
+totalRisk += (roleRisk * weight) / 100;
+
+👉 Matlab:-
+Role ka pura risk nahi add hoga
+Sirf uska weighted part add hoga
+
+🎯 Example:-
+roleRisk = 50
+weight   = 30
+
+👉 Calculation:-
+(50 × 30) / 100 = 15
+
+✅ Output:-
+15 risk add hoga
+
+🧠 Kyun /100?
+👉 Kyunki weight percentage me hai (30%)
+👉 Isko decimal me convert karne ke liye:
+30 / 100 = 0.3
+*//////////
+------------------------------------------------------------------------------------------
+🔥 🔹 2. updateRiskScore():-
+👉 Ye method:-
+Risk calculate karta hai
+Identity me set karta hai
+DB me save bhi karta hai
+
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.tools.GeneralException;
+
+public class RiskUpdater {
+
+    public static void updateRiskScore(SailPointContext context, Identity identity) throws GeneralException {
+
+        int risk = RiskUtil.calculateRiskScore(identity);
+
+        // 🔹 set risk
+        identity.setRiskScore(risk);
+
+        // 🔹 save in DB
+        context.saveObject(identity);
+        context.commitTransaction();
+
+        System.out.println("RiskScore updated: " + risk);
+    }
+}
+✅ Output
+RiskScore updated: 65
+
+⚡ Difference samajh le (IMPORTANT 🔥):-
+Method	                  Kaam
+calculateRiskScore:-----Sirf calculate karta hai
+updateRiskScore:--------Calculate + set + DB save.
+---------------------------------------------------------------------------------------------------------------------

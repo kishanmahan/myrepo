@@ -1,0 +1,26 @@
+note:- & aur < kaam nahi karta rule me tumhe ke badle &&==&amp;&amp; aur <==&lt; use karna hoga.
+note:-beanshell script me:-
+()🔹 &gt; 0 Ka Asli Matlab Kya Hai?
+Asal mein, yeh code level par kuch aur nahi balki standard > 0 (Greater Than Zero) hi hai.
+
+()< ki jagah likha jata hai: &lt; (Less Than).
+
+<!-- Backslash (\) lagakar quote ko escape karna -->
+<Transition to="Hold Thread" condition="script:\&quot;In Progress\&quot;.equals(requestStatus)"/>
+
+()<!-- &quot; ka use karke string value define karna:->>>
+<Transition to="Hold Thread" condition="script:&quot;In Progress&quot;.equals(requestStatus)"/>
+
+()Jab bhi aap kisi <Transition> tag ke andar poori condition ko double quotes (" ... ") mein band karte hain, 
+toh uske andar use hone wali har ek Java/BeanShell String ke dono taraf aapko \" ya &quot; lagana padega.
+()<Transition to="StepA" condition="script:status.equals(&quot;Active&quot;)"/>
+()<!-- Poori condition bahar wale red quotes me hai, isliye andar \" lagaya -->
+<Transition to="StepA" condition="script:status.equals(\"Active\")"/>
+
+()Agar aap is \" ya &quot; ke jhanjhat se hamesha ke liye bachna chahte hain, toh SailPoint workflow ke andar ek bohot hi pyara shortcut kaam karta hai: Single Quote (') ka use karna.
+Java BeanShell single quote ko bhi string treat kar leta hai agar aap use proper place par rakhein. Aap upar wale saare codes ko aise bhi likh sakte hain:
+XML
+<!-- Kisi escape symbol ki zaroorat nahi, direct single quote chalao -->
+<Transition to="StepA" condition="script:status.equals('Active')"/>
+<Transition to="TriggerADProvisioning" condition="script:application.getName().equals('Active Directory')"/>
+

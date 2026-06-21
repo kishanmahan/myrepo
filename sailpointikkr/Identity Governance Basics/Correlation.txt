@@ -1,0 +1,184 @@
+()Correlation kya hai?
+--Correlation ka matlab hai application account ko SailPoint identity se link karna.
+
+Matlab system check karta hai ki ye account kis user ka hai.
+Example:-
+Application account:-
+rahul123
+email = rahul@gmail.com
+
+SailPoint identity:-
+Rahul
+email = rahul@gmail.com
+
+System email match karta hai aur bolta hai:-
+Account rahul123 belongs to identity Rahul
+Ye process Correlation hai.
+-----------------------------------------------------
+🔥 3. SailPoint me Correlation kya karta hai?
+👉 Jab aggregation hota hai (external system se data aata hai)
+👉 Tab SailPoint:-
+Accounts ko Identity se match karta hai
+🔹 Flow:-
+External Account → Correlation → Identity
+-------------------------------------------
+🔥 4. Example (SailPoint):-
+👉 External system se account aaya:-
+username = rsharma
+email = rahul@gmail.com
+
+👉 SailPoint Identity:-
+name = Rahul
+email = rahul@gmail.com
+👉 Match hua →
+✅ Account link ho gaya identity se
+----------------------------------------
+🔥 5. Agar match nahi hua?
+👉 To 2 case:-
+❌ No match
+👉 New identity create ho sakta hai
+
+❌ Wrong match
+👉 Galat user ke saath link ho gaya (danger ⚠️)
+
+🔥 6. Correlation rules kaise likhte hai?
+👉 Attribute ke base pe:-
+email
+employeeId
+username
+---------------------------------------------------
+()Mini SailPoint Developer Project Example:-
+package com.company.sailpoint.project;
+
+import sailpoint.api.SailPointContext;
+import sailpoint.object.*;
+import sailpoint.tools.GeneralException;
+import sailpoint.object.Filter;
+import sailpoint.object.QueryOptions;
+
+import java.util.List;
+
+public class IAMProject {
+
+    private SailPointContext context;
+
+    public IAMProject(SailPointContext context) {
+        this.context = context;
+    }
+
+    // 1️⃣ Aggregation → Application se users aur entitlements read
+    public void aggregate(String applicationName) throws GeneralException {
+        Application app = context.getObjectByName(Application.class, applicationName);
+        if (app == null) {
+            System.out.println("Application not found: " + applicationName);
+            return;
+        }
+        System.out.println("Aggregating data from: " + applicationName);
+
+        // Connector call (simulate)
+        List<Account> accounts = app.getAccounts(); // connector se read
+        for (Account account : accounts) {
+            System.out.println("Account found: " + account.getName());
+        }
+    }
+
+    // 2️⃣ Correlation → Application account ko SailPoint identity se link karna
+    public void correlate() throws GeneralException {
+        System.out.println("Starting correlation...");
+
+        QueryOptions qo = new QueryOptions();
+        qo.addFilter(Filter.eq("name", "Rahul")); // example identity
+
+        List<Identity> identities = context.search(Identity.class, qo, null);
+        for (Identity identity : identities) {
+            System.out.println("Correlating identity: " + identity.getName());
+            // Link example account
+            identity.setAttribute("linkedAccount", "rahul123");
+            context.saveObject(identity);
+        }
+    }
+
+    // 3️⃣ Identity Creation / Update
+    public void createOrUpdateIdentity(String name, String email) throws GeneralException {
+        Identity identity = context.getObjectByName(Identity.class, name);
+        if (identity == null) {
+            identity = new Identity();
+            identity.setName(name);
+            identity.setEmail(email);
+            context.saveObject(identity);
+            System.out.println("Identity created: " + name);
+        } else {
+            identity.setEmail(email);
+            context.saveObject(identity);
+            System.out.println("Identity updated: " + name);
+        }
+    }
+
+    // 4️⃣ Provisioning → Access grant
+    public void provisionAccess(String identityName, String applicationName, String entitlementName) throws GeneralException {
+        Identity identity = context.getObjectByName(Identity.class, identityName);
+        if (identity == null) {
+            System.out.println("Identity not found: " + identityName);
+            return;
+        }
+
+        ProvisioningPlan plan = new ProvisioningPlan();
+        plan.setIdentity(identity);
+        plan.setApplicationName(applicationName);
+
+        ProvisioningPlan.AccountRequest accReq = new ProvisioningPlan.AccountRequest();
+        accReq.setOperation(ProvisioningPlan.Operation.Add);
+        accReq.setName(entitlementName);
+
+        plan.add(accReq);
+
+        ProvisioningProject project = new ProvisioningProject(plan);
+        context.provision(project); // execute provisioning
+        System.out.println("Provisioned " + entitlementName + " for " + identityName);
+    }
+
+    // 5️⃣ Reconciliation → Application data vs SailPoint data check
+    public void reconcile(String applicationName) throws GeneralException {
+        System.out.println("Running reconciliation for: " + applicationName);
+
+        // Example: compare application accounts vs SailPoint identities
+        Application app = context.getObjectByName(Application.class, applicationName);
+        List<Account> accounts = app.getAccounts();
+        for (Account account : accounts) {
+            Identity identity = context.getObjectByName(Identity.class, account.getName());
+            if (identity == null) {
+                System.out.println("Missing identity for account: " + account.getName());
+            } else {
+                System.out.println("Identity exists for account: " + account.getName());
+            }
+        }
+    }
+
+    // 6️⃣ AuditEvent → Log actions
+    public void logAudit(String action, String target) throws GeneralException {
+        AuditEvent event = new AuditEvent();
+        event.setAction(action);
+        event.setSource("IAMProject");
+        event.setTarget(target);
+
+        context.saveObject(event);
+        System.out.println("Audit logged: " + action + " on " + target);
+    }
+
+    // Main workflow
+    public void runProject() throws GeneralException {
+        aggregate("ActiveDirectory");
+        correlate();
+        createOrUpdateIdentity("Rahul", "rahul@gmail.com");
+        provisionAccess("Rahul", "SAP", "FinanceRole");
+        reconcile("ActiveDirectory");
+        logAudit("Provisioning", "Rahul");
+    }
+
+    public static void main(String[] args) throws GeneralException {
+        // context initialize pehle se ready hona chahiye
+        SailPointContext context = SailPointContext.getCurrentContext();
+        IAMProject project = new IAMProject(context);
+        project.runProject();
+    }
+}

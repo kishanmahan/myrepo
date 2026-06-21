@@ -1,0 +1,18 @@
+🔷 1. AccountRequest me kitni Identity hoti hai?
+👉Sirf 1 Identity
+👉Sirf 1 AccountRequest = 1 account (1 application)
+🧠 Kyu?
+AccountRequest ek specific identity ke liye hota hai
+Ye batata hai:-
+“Is user ke liye kaunsa account create/modify/delete karna hai”
+
+🔷 2. ProvisioningPlan me kitni Identity hoti hai?
+👉 👉 Sirf 1 Identity
+👉 1 ProvisioningPlan = multiple AccountRequest
+🧠 Kyu?
+ProvisioningPlan ek single identity ka full plan hota hai
+Isme multiple account requests ho sakte hain
+👉 BUT identity ek hi hoti hai.
+
+🔷 AccountRequest me kitne AttributeRequest hote hain?
+👉 👉 Multiple (0 se leke unlimited tak ho sakte hain)

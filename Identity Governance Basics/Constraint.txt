@@ -1,0 +1,11 @@
+💡 Constraint kya hota hai?
+➡️ Policy ke andar ek specific rule
+Example:-
+Policy: SoD Policy
+Constraint: Dev vs Prod Access Conflict.
+
+()role ke andar:-
+👉 Constraints ka matlab:-
+Restrictions
+Conditions
+Policies

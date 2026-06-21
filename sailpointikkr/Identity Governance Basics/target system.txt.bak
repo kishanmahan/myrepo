@@ -1,0 +1,25 @@
+Target System kya hai
+
+Target System = wo external application ya system jahan user ka account ya access manage hota hai.
+
+Matlab SailPoint khud account store nahi karta.
+Wo sirf identity governance tool hai jo dusre systems ko control karta hai.
+
+Un systems ko Target Systems bolte hain.
+
+Example
+
+Company me employee Rahul hai.
+
+Uske accounts ho sakte hain:
+
+Active Directory
+SAP
+Jira
+Salesforce
+Email
+Database
+
+Ye sab Target Systems hain.
+
+SailPoint in sab me access manage karta hai.

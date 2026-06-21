@@ -1,0 +1,16 @@
+🛡️ IGA Kya Hota Hai?
+IGA = Identity Governance and Administration
+Ye ek security framework hai jo manage karta hai:
+Kaun user hai 👤
+Usko kya access milna chahiye 🔑
+Kisne approve kiya ✔️
+Kab revoke hua ❌
+Audit proof kya hai 📊
+Enterprise level pe use hota hai.
+
+Example tools:-
+SailPoint IdentityIQ
+SailPoint IdentityNow
+Saviynt
+Oracle Identity Governance
+

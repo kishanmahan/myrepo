@@ -1,0 +1,47 @@
+()Compliance ka matlab hai rules, laws, policies aur standards ka palan karna.
+--Corporate Compliance – Company ke internal rules aur policies follow karna. Jaise code of conduct,
+data security policies.
+💡 Example:-
+Agar ek company apne employees ka data store karti hai, to compliance ka matlab hai ki wo data protection laws aur company ke policies dono follow ho.
+Basically, compliance ka purpose hai risk reduce karna aur legal trouble se bachna.
+
+import java.util.ArrayList;
+import java.util.List;
+
+class Identity {
+
+    String name;
+    List<String> permissions = new ArrayList<String>();
+
+    Identity(String name) {
+        this.name = name;
+    }
+
+    void addPermission(String permission) {
+        permissions.add(permission);
+    }
+
+    boolean hasPermission(String permission) {
+        return permissions.contains(permission);
+    }
+}
+
+public class ComplianceExample {
+
+    public static void main(String[] args) {
+
+        Identity rahul = new Identity("Rahul");
+
+        rahul.addPermission("Create Vendor");
+        rahul.addPermission("Approve Payment");
+
+        // Compliance Check (SoD Policy)
+        if (rahul.hasPermission("Create Vendor") &&
+            rahul.hasPermission("Approve Payment")) {
+
+            System.out.println("Compliance Violation! SoD Conflict Detected.");
+        } else {
+            System.out.println("User is Compliant.");
+        }
+    }
+}

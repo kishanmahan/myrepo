@@ -1,0 +1,54 @@
+
+()Firewall ek security system hota hai jo network ya computer ko unauthorized access se protect karta hai.
+Ye incoming aur outgoing network traffic ko monitor aur control karta hai rules ke basis par. 🔒
+1️⃣ Firewall kya karta hai?
+Firewall ka main kaam:-
+Unauthorized users ko network me ghusne se rokna
+Suspicious traffic ko block karna
+Secure communication allow karna
+Simple words me:-
+👉 Firewall = Internet aur internal network ke beech security guard.
+
+3️⃣ Firewall kaise kaam karta hai?
+Firewall rules aur policies ke basis par traffic ko check karta hai.
+Example rules:-
+Block unknown IP addresses
+Allow only HTTPS (port 443)
+Block suspicious ports
+
+Example rule:-
+Allow : 192.168.1.10
+Block : Unknown external IP
+
+4️⃣ Firewall ke Types:-
+1️⃣ Network Firewall:-
+Pure network ko protect karta hai
+Router ya gateway me hota hai
+Example:-
+Office company network firewall
+
+2️⃣ Host Firewall:-
+Individual computer ko protect karta hai
+Example:-
+Windows Defender Firewall
+
+3️⃣ Hardware Firewall:-
+Physical device hota hai
+Router ya firewall appliance
+Example:-
+Cisco firewall device
+
+4️⃣ Software Firewall:-
+Software ke form me install hota hai
+Example:-
+Windows Firewall
+
+5️⃣ Firewall kya protect karta hai?
+Firewall protect karta hai:-
+Malware attacks
+Hackers
+Unauthorized access
+Data theft
+Suspicious traffic
+
+Firewall = ek network security system jo incoming aur outgoing traffic ko monitor aur control karke unauthorized access ko block karta hai.

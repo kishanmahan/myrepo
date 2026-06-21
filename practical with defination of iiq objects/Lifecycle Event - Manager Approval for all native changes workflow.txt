@@ -1,0 +1,1384 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE sailpoint PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<sailpoint>
+<Workflow explicitTransitions="true" libraries="Identity" name="Lifecycle Event - Manager Approval for all native changes" type="IdentityLifecycle">
+  <Variable input="true" name="trigger">
+    <Description>The IdentityTrigger</Description>
+  </Variable>
+  <Variable input="true" name="event" transient="true">
+    <Description>
+      The IdentityChangeEvent.  It can be used to build
+      the provisioning plan, but does not need to be
+      persisted with the case, so marked as transient.
+    </Description>
+  </Variable>
+  <Variable input="true" name="identityName">
+    <Description>The name of the identity.</Description>
+  </Variable>
+  
+  <Variable initializer="script:(identityDisplayName != void) ? identityDisplayName : resolveDisplayName(identityName)" input="true" name="identityDisplayName">
+    <Description>
+      The displayName of the identity being updated.
+      Query for this using a projection query and fall back to the name.
+    </Description>
+  </Variable>
+  <Variable name="plan">
+    <Description>The provisioning plan, which is built by a service method. </Description>
+  </Variable>
+  <Variable editable="true" initializer="false" name="optimisticProvisioning">
+    <Description>
+      Set to true to enable optimistic provisioning.  This will cause
+      changes to the entitlements compiled from role assignments to be 
+      applied immediately to the identity cube rather than waiting
+      for the next refresh/reaggregation after the provisioning system
+      completes the request.
+    </Description>
+  </Variable>
+ 
+ <Variable editable="true" initializer="true" name="foregroundProvisioning">
+    <Description>
+      Normally provisioning is done in a step that uses the "background"
+      option to force the workflow to be suspend and be resumed in a
+      background task thread.  This prevents the browser session from
+      hanging since provision can sometimes take a long time.  For demos
+      and testing it can be better to do this in the foreground so that
+      provisioning will have been performed when control is returned to the
+      user.  This prevents having to run the Perform Maintenance task to 
+      see the results of the request.
+    </Description>
+  </Variable>
+  
+  <Variable initializer="spadmin" input="true" name="fallbackApprover">
+    <Description>
+      A String that specifies the name of the Identity that will 
+      be assigned any approvals where the owner of the approver 
+      can't be resolved. Example if the scheme is "owner" and the 
+      application doesn't specify and owner.
+    </Description>
+  </Variable>
+  
+  <Variable initializer="LCM" input="true" name="source">
+    <Description>
+      String version of sailpoint.object.Source to indicate
+      where the request originated.  Defaults to LCM.
+    </Description>
+  </Variable>
+  
+  <Variable initializer="false" input="true" name="trace">
+    <Description>
+      Used for debugging this workflow and when set to true trace
+      will be sent to stdout.
+    </Description>
+  </Variable>
+  
+  <Variable name="project">
+    <Description>
+      ProvisioningProject which is just a compiled version of the ProvisioningPlan.
+    </Description>
+  </Variable>
+  
+  <Variable name="identityRequestId" output="true">
+    <Description>
+       The sequence id of the Identity request object which is stored in 
+       the name field of the identity request.
+    </Description>
+  </Variable>
+  
+  <Variable name="approvalSet">
+    <Description>
+       The variable used to hold the approval set generated from the
+       native changes on the event.
+    </Description>
+  </Variable>
+  
+  <Variable initializer="true" name="provisionRejectedItems">
+    <Description>
+        Flag to indicate if actual provisioning to reverse te native
+        change should take place OR if it should just print a plan to 
+        stdout. Set this variable to true, if you want it to provision
+        the rejected items, otherwise it'll just be printed to stdout. 
+     </Description>
+  </Variable>
+  <Variable name="launcher">
+    <Description>The name of the identity that launched the workflow. In cases where workflows are launched by the system an alternate launcher name may be passed as as a variable.</Description>
+  </Variable>
+  <Variable initializer="Modify" name="operations">
+    <Description>CSV list of operations that are part of the native change request, default to Modify but this will be recalculated in the "Build OP String" step.</Description>
+  </Variable>
+  <Variable initializer="Normal" input="true" name="workItemPriority">
+    <Description>
+       The String version of a WorkItem.Priority. This variable is 
+       used to set the priority on all of the workitems generated 
+       as part of this workflow and also set on the IdentityRequest
+       object.
+    </Description>
+  </Variable>
+  <Description>
+  An example workflow that requires manager approval
+  for all natively detected changes found by IdentityIQ.
+  
+  Any items rejected by the manager will be reversed and 
+  provisioned.    
+  </Description>
+  <RuleLibraries>
+    <Reference class="sailpoint.object.Rule" name="LCM Workflow Library"/>
+  </RuleLibraries>
+  <Step icon="Start" name="start" posX="23" posY="129">
+    <Script>
+      <Source>
+        import sailpoint.tools.Util;
+        if ( Util.otob(trace) ) { 
+            System.out.println("Event was fired for identity ["+identityName+"]");
+            System.out.println("                    trigger ["+trigger.toXml()+"]");
+            System.out.println("                    event ["+event.toXml()+"]");
+        }
+      </Source>
+    </Script>
+    <Transition to="Build Op String"/>
+    <Transition to="end" when="script:(Util.size(event.getNativeChanges())==0)"/>
+  </Step>
+  <Step name="Build Op String" posX="81" posY="20" resultVariable="operations">
+    <Script>
+      <Source>
+        import sailpoint.object.NativeChangeDetection;
+        import sailpoint.object.ProvisioningPlan.AccountRequest;
+        import sailpoint.tools.Util;
+        
+        List ops = new ArrayList();
+        if ( event != null ) {
+            List ncs = event.getNativeChanges();
+            if ( ncs != null ) {
+                for ( NativeChangeDetection nc : ncs ) {
+                    AccountRequest.Operation op = nc.getOperation();
+                    if ( op == null ) 
+                        opString = "Modify";
+                    else
+                        opString = op.toString();
+
+                    if ( !ops.contains(opString) ) {
+                        ops.add(opString);
+                    }
+                }
+            }
+        }
+        return Util.listToCsv(ops);
+      </Source>
+    </Script>
+    <Transition to="Build Native Change Approval"/>
+  </Step>
+  <Step action="call:buildApprovalSetFromNativeChanges" name="Build Native Change Approval" posX="232" posY="20" resultVariable="approvalSet">
+    <Arg name="event" value="ref:event"/>
+    <Return name="approvalSet" to="approvalSet"/>
+    <Transition to="Approve Native Change"/>
+  </Step>
+  <Step name="Approve Native Change" posX="408" posY="20">
+    <Approval mode="parallel" owner="script:getManagerName(identityName, launcher, fallbackApprover);" 
+	renderer="nativeChangeApprovalRenderer.xhtml" send="identityDisplayName,identityName">
+      <AfterScript>
+        <Source>
+          import sailpoint.workflow.IdentityRequestLibrary;
+                    
+          if ( item == null ) 
+              return;
+
+          assimilateWorkItemApprovalSet(wfcontext, item, approvalSet);          
+          auditDecisions(item);
+        </Source>
+      </AfterScript>
+      <Arg name="workItemRequester" value="$(launcher)"/>
+      <Arg name="launcher" value="ref:launcher"/>
+      <Arg name="approvalSet" value="ref:approvalSet"/>
+      <Arg name="operations" value="$(operations)"/>
+      <Arg name="workItemDescription" value="Native Account Changes for User: $(identityDisplayName) - Manager Approval"/>
+      <Arg name="workItemNotificationTemplate" value="ref:ownerEmailTemplate"/>
+      <Arg name="workItemPriority" value="ref:workItemPriority"/>
+    </Approval>
+    <Transition to="Process Approval Decisions"/>
+  </Step>
+  <Step action="call:processNativeChangesApprovalDecisions" name="Process Approval Decisions" posX="575" posY="20" resultVariable="plan">
+    <Transition to="Provision Native Change Reversal"/>
+  </Step>
+  <Step condition="script:( Util.otob(provisionRejectedItems) &amp;&amp; plan != null )" icon="Task" name="Provision Native Change Reversal" posX="767" posY="20">
+    <Arg name="flow" value="EntitlementsRequest"/>
+    <Arg name="identityName" value="ref:identityName"/>
+    <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+    <Arg name="optimisticProvisioning" value="ref:optimisticProvisioning"/>
+    <Arg name="plan" value="ref:plan"/>
+    <Arg name="policyScheme" value="none"/>
+    <Arg name="priority" value="ref:workItemPriority"/>
+    <Arg name="approvalScheme" value="none"/>
+    <Arg name="source" value="ref:source"/>
+    <Arg name="requireViolationReviewComments" value="false"/>
+    <Arg name="allowRequestsWithViolations" value="true"/>
+    <Arg name="enableRetryRequest" value="false"/>
+    <Arg name="launcher" value="ref:launcher"/>
+    <Arg name="doRefresh" value="true"/>
+    <Arg name="trace" value="ref:trace"/>
+    <Return name="project" to="project"/>
+    <Return name="identityRequestId" to="identityRequestId"/>
+    <Return merge="true" name="workItemComments" to="workItemComments"/>
+    <WorkflowRef>
+      <Reference class="sailpoint.object.Workflow" name="LCM Provisioning"/>
+    </WorkflowRef>
+    <Transition to="end"/>
+  </Step>
+  <Step catches="complete" icon="Catches" name="Complete" posX="658" posY="185">
+    <Arg name="priority" value="ref:workItemPriority"/>
+    <Arg name="project" value="ref:project"/>
+    <Arg name="trace" value="ref:trace"/>
+    <Arg name="approvalSet" value="ref:approvalSet"/>
+    <Arg name="identityRequestId" value="ref:identityRequestId"/>
+    <Description>
+      Call the standard subprocess that can audit/finalize the request if they are in play. 
+    </Description>
+    <WorkflowRef>
+      <Reference class="sailpoint.object.Workflow" name="Identity Request Finalize"/>
+    </WorkflowRef>
+    <Transition to="end"/>
+  </Step>
+  <Step icon="Stop" name="end" posX="767" posY="125"/>
+</Workflow>
+</sailpoint>
+
+
+
+///////////*
+()<Workflow explicitTransitions="true"
+          libraries="Identity"
+          name="Lifecycle Event - Manager Approval for all native changes"
+          type="IdentityLifecycle">:-
+()Workflow:-
+Ye main workflow object hai jo poora process define karta hai.
+Jaise:-
+approval
+provisioning
+joiner/mover/leaver
+lifecycle events
+identity update
+access request
+sab workflow ke andar hota hai.
+
+(). explicitTransitions="true":-
+Ye Workflow attribute/property hai.
+Ye control karta hai workflow ka flow automatic hoga ya manually.
+<Workflow explicitTransitions="true">
+Matlab:-
+next step manually define karna padega
+<Transition to="..."/> use karna padega
+
+(). libraries="Identity":-
+Ye workflow library use karta hai.
+Identity library me prebuilt methods/functions provide  karta hai workflow ke andar.
+Example:-
+identity lookup
+manager fetch
+attribute handling
+provisioning utilities
+Workflow me directly use kar sakte ho.
+Example:-
+<Workflow libraries="Identity">
+Matlab Identity related helper methods available hain.
+
+(). type="IdentityLifecycle":-
+Ye workflow ka category/type define karta hai.
+IdentityLifecycle ka matlab:-
+Ye Identity Lifecycle Event ke liye use hota hai.
+Jaise:-
+Joiner
+Mover
+Leaver
+Identity update
+Access change
+Lifecycle manager workflows isi type ke hote hain.
+
+()SailPoint me Common Libraries:-
+Library	              Use
+Identity:-------Identity operations
+Role:-----------Role operations
+PolicyViolation----Policy handling
+LCM----------------Lifecycle management
+*///////////
+////////////*
+()<Variable input="true" name="trigger">
+--Variable:-Ye workflow variable declare karta hai.
+
+--input="true":-
+Matlab Ye variable workflow start hote time bahar se value receive karega.
+Input variable hai.
+
+--name="trigger":-
+Variable ka naam trigger hai.
+Is variable me usually:-
+IdentityTrigger object
+lifecycle trigger info
+store hota hai.
+Example:-
+joiner trigger
+mover trigger
+native change trigger
+
+()<Variable input="true"
+          name="event"
+          transient="true">
+Matlab:-
+Workflow ek temporary input variable lega jiska naam event hai aur DB me persist nahi karega.
+
+--Ye usually:-
+IdentityChangeEvent object hota hai.
+
+Isme:-
+native changes
+operations
+changed attributes
+sab hota hai.
+
+()transient="true"->db me save(persist) nahi hoga.
+
+()<Variable input="true" name="identityName">:-
+name="identityName"
+Variable ka naam identityName hai.
+Ye store karta hai:-
+identity ka naam
+user name
+Example:-
+kishan.singh
+john.doe
+spadmin
+-----------------------------------------------------
+()1. IdentityTrigger kya hai?
+IdentityTrigger ek object hai jo batata hai:-
+Workflow kis reason/event ki wajah se trigger hua.
+
+Simple Meaning:-
+Jaise alarm trigger hota hai.
+Waise hi IIQ me:-
+joiner
+mover
+leaver
+attribute change
+manager change
+native change
+hone pe workflow trigger hota hai.
+
+()Us trigger ki details:-
+IdentityTrigger object me hoti hain.
+
+Example:-
+Suppose:-
+Department changed
+IT → Finance
+Toh lifecycle event trigger hoga.
+
+()IdentityTrigger object me info ho sakti hai:-
+Field	            Value
+Trigger Name------Department Change
+Type--------------Lifecycle Event
+Condition---------department changed
+Enabled-------------true
+
+Code me:-
+trigger.getName()
+trigger.getType()
+----------------------------------------------------
+()2. Lifecycle Trigger Info kya hota hai?
+Ye koi exact class name nahi.
+Ye meaning hai:-
+Lifecycle event ki information.
+Example Lifecycle Events:-
+Event	              Example
+Joiner--------------New employee
+Mover---------------Department changed
+Leaver--------------Employee resigned
+Manager Change------New manager assigned
+Native Change-------Target system me direct change
+
+()Trigger Info me kya ho sakta hai?
+kis event pe workflow chala,
+kis identity pe chala,
+kaunsa rule match hua,
+kya condition thi.
+------------------------------------------------------
+()3. IdentityChangeEvent kya hai?
+Ye bahut important object hai.
+IdentityChangeEvent object store karta hai:-
+Identity me kya changes detect hue.
+
+Example:-
+Suppose AD account me:-
+title change
+department change
+entitlement add
+hua.
+
+Toh uski details:-
+IdentityChangeEvent me aayegi.
+
+Isme kya hota hai?
+Data	                Example
+Changed attributes-----department
+Old value-----------------IT
+New value---------------Finance
+Native changes--------entitlement added
+Operations-----------Modify/Create/Delete
+*///////////
+////////////*
+()<Variable 
+initializer="script:(identityDisplayName != void) ? identityDisplayName : resolveDisplayName(identityName)" 
+input="true" name="identityDisplayName">:-
+
+--1. Variable:-Workflow variable declare kar raha hai.
+
+--2. initializer="...":-
+Initializer ka matlab:-Default value set karna.
+Agar variable me value nahi aayi toh ye logic chalega.
+
+--3. script:
+Matlab:-Initializer simple text nahi hai,Ye script execute karega.
+
+4.(identityDisplayName != void):-
+Ye condition check kar raha hai.
+Meaning:-Kya identityDisplayName already available hai ya nahi.
+
+--void:-Workflow scripting me,null/empty/not present jaisa use hota hai.
+
+6.identityDisplayName:-Agar value already hai toh wahi use karo.
+
+--8.resolveDisplayName(identityName):-
+Agar identityDisplayName nahi mila:-
+Toh:-
+identityName use karke display name find karo.
+
+()resolveDisplayName():-
+Ye helper method/function hai.
+Ye usually:-
+identity lookup karta hai,display name return karta hai.
+
+()9. input="true":-Workflow bahar se bhi value receive kar sakta hai.
+
+()10. name="identityDisplayName":-Variable ka naam.
+*//////////
+//////////*
+()<Variable name="plan">
+Matlab:-
+plan naam ka variable banao.
+Abhi isme value nahi hai.
+
+()"plan ko value kaha se milegi?"
+Workflow ke dusre step se.
+Ye step dekho
+
+-->plan ko value ish step se milegi.
+<Step action="call:processNativeChangesApprovalDecisions"
+      name="Process Approval Decisions"
+      resultVariable="plan">
+--resultVariable="plan":-
+Matlab:-
+Is step ka return result plan variable me store karo.
+
+-->1. Step:-Ye workflow ka ek execution block/stage hai.
+
+-->2.action:-Workflow ko batata hai ki Ish step me kya execute karna hai.
+
+-->3.call:-
+Matlab:-Kisi method/function/library action ko call karo.
+
+-->4.processNativeChangesApprovalDecisions:-
+Ye method/action ka naam hai.
+Usually:-
+workflow library method
+rule library method
+predefined SailPoint method hi likh sakte ho action me.
+--Ye Method Mainly Kya Karta Hai?
+1. Approval Decisions Read karta hai
+ApprovalSet check karta hai.
+Example:-
+Item	             Decision
+Add Finance Group----Rejected
+Remove HR Group------Approved
+
+2. Rejected Items Identify karta hai
+Manager ne kya reject kiya:-
+jaise:-
+Rejected entitlement
+Rejected attribute update
+Rejected account change
+
+3. Reverse Provisioning Logic banata hai,
+Agar native change already target system me ho gaya tha:-
+AD me Finance group add ho gaya
+aur Manager ne reject kar diya.
+Toh method reverse plan banata hai:-
+Finance group remove karo
+
+4. ProvisioningPlan return karta hai:-
+ProvisioningPlan object return karta hai resultVariable ke plan(plan Variable upar Workflow me defined hai) me.
+*/////////
+//////////*
+()<Variable editable="true" initializer="false" name="optimisticProvisioning">
+    <Description>
+      Set to true to enable optimistic provisioning.  This will cause
+      changes to the entitlements compiled from role assignments to be 
+      applied immediately to the identity cube rather than waiting
+      for the next refresh/reaggregation after the provisioning system
+      completes the request.
+    </Description>
+  </Variable>:-
+-->1. editable="true":-
+Matlab:-
+Workflow launch/change ke time is variable ki value modify ki ja sakti hai.
+
+-->2. initializer="false" ye Default value false hai.
+Matlab by default:-optimistic provisioning OFF hai.
+
+-->4. name="optimisticProvisioning" Variable ka naam.
+
+()Ab Main Concept:-Optimistic Provisioning kya hota hai?
+Normally IIQ ka flow:-
+Provisioning request gaya
+        ↓
+Target system update hua
+        ↓
+Aggregation/refresh hua
+        ↓
+Identity cube update hua
+
+Isme delay hota hai.
+Example:-
+User ko AD group diya:-
+Finance_Group
+Provisioning request bheja gaya.
+
+Lekin:-
+identity cube tab tak update nahi hota jab tak:
+aggregation
+refresh
+na chale.
+
+Optimistic Provisioning ON
+Agar:-
+optimisticProvisioning = true
+toh:
+Provisioning request gaya
+        ↓
+IIQ maan lega ki success ho gaya
+        ↓
+Immediately identity cube update kar dega.
+
+()initializer="false":-
+Matlab agar kahi se value nahi aayi:-
+optimisticProvisioning = false
+rahega.
+
+()ish <variable name="optimisticProvisioning"> me Value kaha se aa sakti hai?
+1. Workflow launch arguments se
+Workflow start karte time koi process value pass kar sakta hai.
+Example:-
+<Arg name="optimisticProvisioning" value="true"/>
+
+()<Arg name="optimisticProvisioning" value="true"/> yaha value true set kiya gaya hai.
+*//////////
+///////////*
+<Variable editable="true" initializer="true" name="foregroundProvisioning">
+    <Description>
+      Normally provisioning is done in a step that uses the "background"
+      option to force the workflow to be suspend and be resumed in a
+      background task thread.  This prevents the browser session from
+      hanging since provision can sometimes take a long time.  For demos
+      and testing it can be better to do this in the foreground so that
+      provisioning will have been performed when control is returned to the
+      user.  This prevents having to run the Perform Maintenance task to 
+      see the results of the request.
+    </Description>
+  </Variable>
+  
+->>1.initializer="true":-
+Default value:-
+foregroundProvisioning = true
+
+->>2.name="foregroundProvisioning":-
+Variable name.
+
+->>3. value kaha se aayega:-
+(a).Workflow Argument se:-
+Workflow launch karte time value pass ho sakti hai.
+Example:-
+<Arg name="foregroundProvisioning" value="false"/>
+*/////////
+/////////*
+()Foreground vs Background Provisioning:-
+
+()Foreground Provisioning:-
+Workflow wait karega jab tak provisioning complete na ho
+User ko response tab milega jab kaam finish ho jaye.
+
+()Background Provisioning:-
+Workflow suspend ho jayega
+Provisioning alag thread/task me chalega
+Browser free ho jata hai.
+*////////
+///////////*
+
+//////////*
+()Workflow ke variable ki value kaha se milti hai batao:-
+->
+1. Parent Workflow se:-
+Agar ye workflow kisi dusre workflow se call hua:
+Parent workflow:-
+<WorkflowRef>
+ke through value pass kar sakta hai.
+Example:-
+<Arg name="foregroundProvisioning" value="true"/>
+
+2. Script/Rule se:-
+Workflow script me:-
+foregroundProvisioning = false;
+set ho sakta hai.
+
+*/////////
+//////////*
+()1. Arg
+Arg = Argument.
+Ye:-
+parameter pass karne ke liye use hota hai.
+
+--jaise Java me method me parameter pass karte hai,
+Java Example:-
+myMethod(true);
+
+--waise hi Workflow me aise pass karte hai value to variable:-
+<Arg name="foregroundProvisioning" value="true"/>
+
+2. name="foregroundProvisioning":-
+Ye receiving side ka parameter/Variable name hai.
+Receiving workflow/method me parameter/variable ka naam kya hoga.
+Meaning:-
+Receiver variable name:
+foregroundProvisioning
+
+3.value="true" pass hoga.
+
+4.value="ref:foregroundProvisioning"/>:-
+--.ref:-
+Bahut important.
+ref: ka matlab:-
+Existing workflow variable ki actual value use karo.
+--foregroundProvisioning:-Current workflow variable ka naam,Ye variable pehle declare hua tha.
+matlab existing workflow ki value ko pass karo.
+*////////////
+///////////////*
+<Variable initializer="spadmin" input="true" name="fallbackApprover">
+    <Description>
+      A String that specifies the name of the Identity that will 
+      be assigned any approvals where the owner of the approver 
+      can't be resolved. Example if the scheme is "owner" and the 
+      application doesn't specify and owner.
+    </Description>
+  </Variable>
+:-
+-->value aayegi-><Arg name="fallbackApprover" value="manager1"/> yaha se.
+*///////////////
+////////////*
+<Variable initializer="LCM" input="true" name="source">
+    <Description>
+      String version of sailpoint.object.Source to indicate
+      where the request originated.  Defaults to LCM.
+    </Description>
+  </Variable>
+--
+<Arg name="source" .../>:-
+yaha ish workflow me ye line define Variable ko value pass nahi kar raha,balki define ki gayi value hi use kar raha hai.
+Isliye current XML ke hisab se:-
+initializer="LCM" hi value de raha hai.
+
+//////////*
+<Variable name="project">
+    <Description>
+      ProvisioningProject which is just a compiled version of the ProvisioningPlan.
+    </Description>
+</Variable> me value koun de raha hai.
+  
+-->Is variable ko value ye line de rahi hai:-
+<Return name="project" to="project"/>
+*///////////
+
+/////////////*
+()<Arg name="trace" value="ref:trace"/>:-Current workflow ki existing value ko dusre workflow(LCM Provisioning)/method(buildApprovalSetFromNativeChanges(event);)
+ ko PASS kar rahi hai.
+Puri line ka matlab:-yaha ish workflow me ye line define Variable ko value pass nahi kar raha,balki define ki gayi value hi use kar raha hai.
+Current workflow ke trace variable ki actual value ko dusre workflow/method me trace naam ke argument ke roop me pass karo.
+
+()kis workflow me bhej raha hai mere diye gaye workflow me kaha kishi dusre workflow ka naam hai?
+Haan, tumhare diye workflow me dusre workflow ka naam clearly diya hua hai.
+Ye line dekho:-
+<WorkflowRef>
+  <Reference class="sailpoint.object.Workflow"
+             name="LCM Provisioning"/>
+</WorkflowRef>
+Matlab:-
+Current workflow:-
+Lifecycle Event - Manager Approval for all native changes
+
+dusra workflow call kar raha hai:-
+LCM Provisioning
+*/////////////
+///////////////*
+()<WorkflowRef>:-
+ka matlab:-
+Kisi dusre workflow ko call/start karo.
+
+()<Return name="project" to="project"/>:-
+ka matlab:-
+Called workflow jo project return kare usko current workflow ke project variable me save karo.
+*///////////////
+
+/////////*
+()<Variable name="identityRequestId" output="true">:-
+
+()output="true":-
+Matlab:-Workflow complete hone ke baad ye variable output/return kiya ja sakta hai.
+
+()Value kaha se aati hai?
+Tumhare workflow me ye line value de rahi hai:-
+<Return name="identityRequestId"
+        to="identityRequestId"/>
+Ye kaha hai?
+Inside:-
+<WorkflowRef>
+   <Reference name="LCM Provisioning"/>
+</WorkflowRef>
+*//////////
+/////////////*
+<Variable name="approvalSet">
+    <Description>
+       The variable used to hold the approval set generated from the
+       native changes on the event.
+    </Description>
+</Variable>:-
+--Tumhare workflow me ye line value de rahi hai:-
+<Return name="approvalSet" to="approvalSet"/>
+
+Inside:-
+<Step action="call:buildApprovalSetFromNativeChanges"
+      resultVariable="approvalSet">
+*/////////////
+/////////////*
+Tumhare workflow me:-
+<Variable name="launcher">
+sirf declare hua hai.
+Isliye value kaha se aayegi?
+Ye workflow jab SailPoint engine launch karega tab runtime pe inject ho sakti hai.
+ya
+koi parent workflow is workflow ko call karke de sakta hai.
+*/////////////
+/////////////*
+()<Variable initializer="Modify" name="operations">:-
+
+()Ye line dekho:-
+<Step name="Build Op String" resultVariable="operations">
+Is step me:-
+return Util.listToCsv(ops);
+return ho raha hai.
+Aur:-
+resultVariable="operations"
+matlab returned value:-
+operations variable me save hogi.
+*////////////
+
+////////////*
+<Step name="Build Op String" posX="81" posY="20" resultVariable="operations">
+    <Script>
+      <Source>
+        import sailpoint.object.NativeChangeDetection;
+        import sailpoint.object.ProvisioningPlan.AccountRequest;
+        import sailpoint.tools.Util;
+        
+        List ops = new ArrayList();
+        if ( event != null ) {
+            List ncs = event.getNativeChanges();
+            if ( ncs != null ) {
+                for ( NativeChangeDetection nc : ncs ) {
+                    AccountRequest.Operation op = nc.getOperation();
+                    if ( op == null ) 
+                        opString = "Modify";
+                    else
+                        opString = op.toString();
+
+                    if ( !ops.contains(opString) ) {
+                        ops.add(opString);
+                    }
+                }
+            }
+        }
+        return Util.listToCsv(ops);
+      </Source>
+    </Script>
+    <Transition to="Build Native Change Approval"/>
+  </Step>
+
+()1. Util.listToCsv(ops):-
+Ye method:-
+List ko CSV (Comma Separated String) me convert karta hai.
+Example:-
+List ops = ["Modify", "Delete"];
+
+()Common Util Methods:-
+import sailpoint.tools.Util;
+Common methods:-
+Method	                      Kaam
+Util.otob()	             object to boolean
+Util.otoi()	             object to int
+Util.isEmpty()	         empty check
+Util.isNotNullOrEmpty()	 null/empty check
+Util.listToCsv()	     list → csv
+Util.csvToList()	     csv → list
+Util.nullSafeEq()	     safe equals
+Util.size()	             collection size
+Util.flushIterator()	 iterator clear
+
+()2. </Script>:-
+Ye XML closing tag hai.
+Matlab:-
+Script block yaha khatam
+Example:-
+<Script>
+   Java/Beanshell code
+</Script>
+
+()4. event:-
+Ye workflow variable hai:-
+<Variable input="true" name="event"/>
+Type
+Usually:-
+sailpoint.object.IdentityChangeEvent
+
+Meaning:-
+Identity change ka complete event object.
+Example:-
+Isme ho sakta hai:-
+Data
+native changes
+identity
+account changes
+operations
+attributes
+*///////////
+////////////*
+5. event.getNativeChanges():-Ye method native detected changes laata hai.
+Return Type:-
+List<NativeChangeDetection>
+Example:-
+[
+ Add Finance Group,
+ Remove HR Group
+]
+Meaning:-
+Target system me jo direct changes detect hue.
+
+6. NativeChangeDetection Class hai.
+Import:-
+import sailpoint.object.NativeChangeDetection;
+Meaning:-
+Native/direct account change object.
+
+Example:-
+Agar AD me directly group add hua:-
+Finance_Group
+
+toh uska object:-
+NativeChangeDetection
+
+()Common Methods of NativeChangeDetection:-
+Method	                Kaam
+getOperation()	     operation type
+getApplication()	 application
+getNativeIdentity()	 native account
+getAttribute()	     changed attribute
+getValue()	         changed value
+getOldValue()	     old value
+getNewValue()	     new value
+toXml()	             xml output
+toString()	         string output
+*////////////
+//////////////*
+7. event ke Common Methods:-
+IdentityChangeEvent ke common methods:-
+Method	                Kaam
+getNativeChanges()	native changes
+getIdentityName()	identity name
+getApplications()	applications
+getSource()	        source
+getAttributes()	    attributes
+toXml()	            xml
+toString()	        string
+*/////////////////////////
+Example:-
+opString = "Modify";
+ya
+opString = "Delete";
+opString me Value kaha se aati hai?
+op.toString()
+
+--BeanShell me kabhi variable bina explicit declaration ke bhi chal jata hai.
+
+Real Meaning;-
+opString ek temporary variable hai jo operation ka text hold karta hai.
+
+Example:-
+op.toString()
+
+Result:-
+Modify
+
+Store hua:-
+opString = "Modify";
+*////////////////////////////
+//////////*
+<RuleLibraries>
+    <Reference class="sailpoint.object.Rule"
+               name="LCM Workflow Library"/>
+</RuleLibraries>
+Overall Meaning:-
+Ye workflow ko:-
+LCM Workflow Library
+rule library attach/import kar raha hai.
+Taaki uske methods/functions workflow me use ho sake.
+Workflow ke andar LCM Workflow Library naam ka Rule attach/import karo.
+Taaki uske methods use ho sake.
+Example:-
+Tumhare workflow me ye methods direct use ho rahe hain:-
+getManagerName(...):-
+action="call:buildApprovalSetFromNativeChanges":-
+action="call:processNativeChangesApprovalDecisions":-
+Ye methods mostly:-
+LCM Workflow Library
+rule se aate hain.
+*//////////
+//////////*
+()<Step action="call:buildApprovalSetFromNativeChanges" name="Build Native Change Approval" 
+    posX="232" posY="20" resultVariable="approvalSet">
+    <Arg name="event" value="ref:event"/>
+    <Return name="approvalSet" to="approvalSet"/>:-
+->>
+Matlab:-
+buildApprovalSetFromNativeChanges() method call karo aur jo result aaye usko approvalSet variable me store karo.
+
+3. buildApprovalSetFromNativeChanges():-
+Ye method ka kaam:-
+Native detected changes ko approval items me convert karna.
+()Simple Meaning:-
+Suppose detected changes:-
+Add Finance Group
+Remove HR Group
+
+Ye method:-
+approval items banayega
+approvalSet object create karega
+taaki manager approve/reject kar sake.
+ApprovalSet object return hota hai.
+
+4.
+posX="232"
+posY="20"
+Workflow diagram/UI position.
+Execution logic pe effect nahi.
+
+5.resultVariable="approvalSet":-
+Method jo result return karega:-
+usko:-
+approvalSet
+variable me save karo.
+
+()<Arg name="event" value="ref:event"/>:-
+Matlab:-
+Current workflow ka event variable method ko pass karo.
+Java Analogy
+buildApprovalSetFromNativeChanges(event);
+
+()3. <Return name="approvalSet" to="approvalSet"/>:-
+--Return:-Returned value capture/store karega jo method ya workflow return karega.
+
+--name="approvalSet":-ye Called method/workflow jo value return karega us variable/output ka naam.
+<Return ka naam hai name="approvalSet">.
+
+--to="approvalSet":-Current workflow me kis variable me store karna hai.
+*/////////
+///////////*
+()posX="408":-
+Workflow diagram me:-
+horizontal position
+X-axis location
+
+()posY="20":-
+Workflow diagram me:-
+vertical position
+Y-axis location
+*/////////
+
+////////////*
+<Approval mode="parallel" owner="script:getManagerName(identityName, launcher, fallbackApprover);" 
+	renderer="nativeChangeApprovalRenderer.xhtml" send="identityDisplayName,identityName">
+:-
+1. <Approval>
+Approval process start.
+Manager/user se approve/reject karwana.
+
+2.mode="parallel":-
+Matlab:-
+Agar multiple approvers hain:-
+sabko same time approval jayega.
+
+2.Agar serial hota:-
+mode="serial"
+toh:-
+ek ke baad ek approval.
+
+3.owner="script:getManagerName(identityName,
+                             launcher,
+                             fallbackApprover);"
+Approval kisko jayega.
+
+--owner=Approval workitem owner/approver.
+
+--script:-Matlab Beanshell/Java script execute karo.
+
+--getManagerName(...) Method call.
+Usually LCM Workflow Library se aata hai.
+
+--Parameters:-
+->identityName:-Kis user/account ke changes hue.
+
+->launcher:-Workflow kisne launch kiya.
+
+->fallbackApprover:-Agar manager na mile toh fallback approver(spadmin).
+
+4.renderer="nativeChangeApprovalRenderer.xhtml":-
+Approval UI page.
+Meaning:-
+Approval screen ka XHTML renderer/template.
+Ye decide karta hai
+UI kaise dikhega
+approval form ka layout
+buttons
+fields
+
+5.send="identityDisplayName,identityName":-
+Approval page/template ko kaunse variables bhejne hain.
+Meaning:-
+Ye variables UI/template ko available honge:-
+Variable:-
+identityDisplayName
+identityName
+Example:-
+Approval screen pe show ho sakta hai:-
+Kishan Singh (kishan)
+*///////////
+////////////*
+()<AfterScript>
+ka matlab:-
+Approval/action complete hone ke BAAD jo script chalani hai wo yaha likho.
+
+()IdentityRequestLibrary ek workflow helper library hai jo:-
+
+
+()1. assimilateWorkItemApprovalSet():-
+Approval workitem ke approve/reject decisions ko workflow ke approvalSet me merge/update karna.
+
+Simple Meaning:-
+Manager ne jo decisions diye:-
+approve
+reject
+unko actual workflow approvalSet me apply karo.
+
+Parameters
+assimilateWorkItemApprovalSet(
+        wfcontext,
+        item,
+        approvalSet);
+
+()2. auditDecisions(item):-
+Approval decisions ka audit/log create karna.
+Manager ne:-
+kya approve kiya
+kya reject kiya
+kab kiya
+uska audit trail banana.
+Example:-
+Audit logs:-
+manager1 approved Finance Group
+manager1 rejected HR Group
+
+()IdentityRequestLibrary ke methods.
+assimilateWorkItemApprovalSet()
+auditDecisions()
+processApprovalDecisions()
+createIdentityRequest()
+saveIdentityRequest()
+getIdentityRequest()
+updateIdentityRequestState()
+completeIdentityRequest()
+cancelIdentityRequest()
+setRequestStatus()
+buildApprovalSet()
+createWorkItem()
+closeWorkItem()
+approveItems()
+rejectItems()
+buildProvisioningPlan()
+compileProvisioningProject()
+processPlan()
+launchProvisioningWorkflow()
+buildRejectionPlan()
+filterRejectedItems()
+refreshIdentity()
+auditRequest()
+addMessage()
+sendNotifications()
+addWorkItemComment()
+*///////////
+//////////////*
+      <Arg name="workItemRequester" value="$(launcher)"/>
+      <Arg name="launcher" value="ref:launcher"/>
+      <Arg name="approvalSet" value="ref:approvalSet"/>
+      <Arg name="operations" value="$(operations)"/>
+      <Arg name="workItemDescription" value="Native Account Changes for User: $(identityDisplayName) - Manager Approval"/>
+      <Arg name="workItemNotificationTemplate" value="ref:ownerEmailTemplate"/>
+      <Arg name="workItemPriority" value="ref:workItemPriority"/>
+    </Approval>
+	
+<Arg name="workItemRequester" value="$(launcher)"/>:-
+👉 Approval request kisne initiate kiya (requester user)
+$(launcher) = current workflow ka launcher value.
+👉 Ye value Approval step ke andar jo WorkItem/Approval engine hai (SailPoint) usko pass ho rahi hai.
+
+<Arg name="launcher" value="ref:launcher"/>:-
+👉 Ye value Approval step ke andar jo WorkItem/Approval engine hai (SailPoint) usko pass ho rahi hai.
+current workflow ka launcher variable
+matlab: kis user ne workflow start kiya.
+
+<Arg name="approvalSet" value="ref:approvalSet"/>:-
+👉 Ye value Approval step (SailPoint Approval/WorkItem engine) ko pass ho rahi hai.
+Simple breakdown:-
+ref:approvalSet kya hai?
+current workflow ka approvalSet variable
+isme hota hai:-
+native changes
+approval items
+approval decisions (approve/reject data)
+
+<Arg name="operations" value="$(operations)"/>:-
+👉 Ye value Approval step / WorkItem (SailPoint approval engine) ko pass ho rahi hai.
+Breakdown:-
+name="operations"
+parameter ka naam hai
+approval engine ke andar variable banega.
+$(operations) ka matlab hai:-workflow ka define operations variable ki value yahan replace ho jayegi.
+
+<Arg name="workItemDescription" value="Native Account Changes for User: $(identityDisplayName) - Manager Approval"/>:-
+->👉 Manager ko jo approval workitem dikhega uska message/title.
+
+<Arg name="workItemNotificationTemplate" value="ref:ownerEmailTemplate"/>:-
+->👉 Email notification ka template select ho raha hai jo manager ko notification jayega.
+
+<Arg name="workItemPriority" value="ref:workItemPriority"/>:-
+->👉 Approval task ki priority pass ho rahi hai(low/normal/high).
+*//////////
+
+/////////////*
+<Step condition="script:( Util.otob(provisionRejectedItems) &amp;&amp; plan != null )" icon="Task">:-
+->
+1. ()provisionRejectedItems:-
+Decide karta hai ki manager ke reject kiye hue changes ko system reverse/provision kare ya nahi.
+👉 provisionRejectedItems ek switch hai jo decide karta hai ki rejected changes ko system reverse karega ya nahi.
+
+2. condition="script:( ... )":-
+👉 Ye condition check karegi ki step chalega ya nahi.
+Matlab:-
+Agar condition true hui tabhi ye step execute hoga.
+
+3. Util.otob(provisionRejectedItems):-
+👉 provisionRejectedItems variable ko boolean me convert karta hai.
+Meaning:-
+"true" → true
+"false" → false
+
+5. plan != null:-
+👉 plan object exist karta hai ya nahi check ho raha hai.
+
+6. icon="Task":-
+👉 Workflow diagram me icon show karega (UI purpose only).
+*////////////
+/////////////*
+    <Arg name="flow" value="EntitlementsRequest"/>
+    <Arg name="identityName" value="ref:identityName"/>
+    <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+    <Arg name="optimisticProvisioning" value="ref:optimisticProvisioning"/>
+    <Arg name="plan" value="ref:plan"/>
+    <Arg name="policyScheme" value="none"/>
+    <Arg name="priority" value="ref:workItemPriority"/>
+    <Arg name="approvalScheme" value="none"/>
+	<Arg name="source" value="ref:source"/>
+    <Arg name="requireViolationReviewComments" value="false"/>
+    <Arg name="allowRequestsWithViolations" value="true"/>
+    <Arg name="enableRetryRequest" value="false"/>
+    <Arg name="launcher" value="ref:launcher"/>
+    <Arg name="doRefresh" value="true"/>
+    <Arg name="trace" value="ref:trace"/>
+    <Return name="project" to="project"/>
+    <Return name="identityRequestId" to="identityRequestId"/>
+    <Return merge="true" name="workItemComments" to="workItemComments"/>
+    <WorkflowRef>
+      <Reference class="sailpoint.object.Workflow" name="LCM Provisioning"/>
+    </WorkflowRef>
+    <Transition to="end"/>
+  </Step>
+//////////////*
+<Arg name="flow" value="EntitlementsRequest"/>:-
+--👉 Ye SailPoint ke “LCM Provisioning” workflow (called workflow) ko bheje ja rahe hain.
+1. <Arg> kya karta hai?
+👉 Sirf existing value ko kisi called workflow/step ko pass karta hai
+
+2. name="flow":-
+👉 parameter ka naam hai (receiver side)
+👉 Called Workflow / Called Step ka parameter
+SailPoint me jab koi workflow call hota hai (jaise LCM Provisioning), uske andar already defined parameters hote hain.
+👉 unhi parameters ke naam yaha name="..." me likhe jate hain.
+
+3. value="EntitlementsRequest"
+👉 fixed literal value hai (string)
+flow parameter ko "EntitlementsRequest" string value di ja rahi hai.
+iska matlb:-provisioning system ko bol rahe ho ki entitlement (group/role/access) related request process karo.
+
+4. Kisko pass hota hai?
+👉 Ye value ja rahi hai:-
+SailPoint provisioning workflow ko (LCM Provisioning)
+*///////////
+/////////////*
+<Return name="project" to="project"/>:-
+👉 Ye line ka matlab hai: called workflow se jo value return ho rahi hai, usko current workflow ke variable me store karo.
+1. Return:-
+👉 Matlab:-
+called workflow/step se output wapas lana
+
+2. name="project":-
+👉 Yeh returned value ka naam hai (called side se)
+SailPoint provisioning workflow (LCM Provisioning) yeh value return karta hai:
+project = ProvisioningProject object
+
+3. to="project":-
+👉 current workflow ka variable jisme store karna hai.
+*///////////
+////////////*
+1. <Arg name="requireViolationReviewComments" value="false"/>
+requireViolationReviewComments="false":-
+👉 Meaning:-
+Agar policy violation ho, toh user se comment lena mandatory nahi hai.
+✔ false = optional comments
+Ye SailPoint ke “LCM Provisioning” workflow (called workflow) ko bheje ja rahe hain.
+
+2. <Arg name="allowRequestsWithViolations" value="true"/>
+allowRequestsWithViolations="true":-
+👉 Meaning:-
+Agar request me policy violation hai, tab bhi request allow karo.
+✔ true = request proceed karega even if violation exists.
+Ye SailPoint ke “LCM Provisioning” workflow (called workflow) ko bheje ja rahe hain.
+
+4. <Arg name="policyScheme" value="none"/>
+policyScheme="none":-
+👉 Meaning:-
+Koi policy approval scheme apply nahi karni.
+✔ none = no policy-based approval flow
+Ye SailPoint ke “LCM Provisioning” workflow (called workflow) ko bheje ja rahe hain.
+
+5. <Arg name="approvalScheme" value="none"/>:-
+approvalScheme="none":-
+👉 Meaning:-
+Extra approval chain disable hai (sirf current approval flow use hoga)
+✔ none = no additional approval routing.
+Ye SailPoint ke “LCM Provisioning” workflow (called workflow) ko bheje ja rahe hain.
+
+3.<Arg name="enableRetryRequest" value="false"/>
+👉 Ye setting SailPoint provisioning engine ko batati hai ki failed request ko automatically retry karna hai ya nahi.
+Meaning:-
+enableRetryRequest="false"
+👉 Matlab:-
+Agar provisioning request fail ho jaye, to system automatically dobara try nahi karega.
+Ye SailPoint ke “LCM Provisioning” workflow (called workflow) ko bheje ja rahe hain.
+
+6. <Arg name="doRefresh" value="true"/>:-
+Provisioning complete hone ke baad identity ko refresh karo.
+Ye SailPoint ke “LCM Provisioning” workflow (called workflow) ko bheje ja rahe hain.
+
+7. <Arg name="trace" value="ref:trace"/>:-
+👉 trace SailPoint workflow ka debugging flag variable hota hai.
+Agar true ho jaye
+trace = true
+👉 system:-
+logs print karega
+debugging info show karega
+step-by-step execution trace milega
+Ye SailPoint ke “LCM Provisioning” workflow (called workflow) ko bheje ja rahe hain.
+
+8.<Return merge="true" name="workItemComments" to="workItemComments"/>:-
+👉 Called workflow se jo comments aayenge, unko existing comments ke saath merge karo,
+--Return:-value wapas la raha hai.
+--name="workItemComments":-called workflow ka output variable.
+--to="workItemComments":-current workflow variable
+--merge="true":-👉 overwrite nahi karega, add karega
+--Ye SailPoint ke “LCM Provisioning” workflow (called workflow) ko bheje ja rahe hain.
+*///////////
+///////////*
+<Step catches="complete" icon="Catches" name="Complete" posX="658" posY="185">
+    <Arg name="priority" value="ref:workItemPriority"/>
+    <Arg name="project" value="ref:project"/>
+    <Arg name="trace" value="ref:trace"/>
+    <Arg name="approvalSet" value="ref:approvalSet"/>
+    <Arg name="identityRequestId" value="ref:identityRequestId"/>
+    <Description>
+      Call the standard subprocess that can audit/finalize the request if they are in play. 
+    </Description>
+    <WorkflowRef>
+      <Reference class="sailpoint.object.Workflow" name="Identity Request Finalize"/>
+    </WorkflowRef>
+
+-><Step catches="complete" icon="Catches" name="Complete">
+👉 Ye SailPoint workflow ka final “catch/cleanup step” hota hai.
+Simple meaning:-
+Jab workflow successfully complete ho jata hai, tab ye step run hota hai.
+jab pura approval + provisioning complete ho jata hai, tab ye step system ko clean, finalize aur close karta hai
+
+->1. Identity Request finalize karta hai
+👉 request ko “complete” state me lock karta hai
+
+->2. Audit / logging trigger karta hai
+👉 kya hua, kya approve/reject hua, sab record hota hai
+
+->3. Final workflow call karta hai
+Tumhare XML me:-
+<WorkflowRef>
+  Identity Request Finalize
+</WorkflowRef>
+👉 matlab:-
+final cleanup process run hota hai
+
+->4. WorkItem / Comments close karta hai
+👉 pending work items ko finalize/close karta hai.
+
+->>5.Finalize kya karta hai?
+request ko Completed status deta hai
+provisioning + approval ka final result save karta hai
+audit log create karta hai (kisne kya approve/reject kiya)
+Identity request ko properly close karta hai
+saare data (project, approvalSet, requestId) ko system me lock karta hai.
+///////////*
+<Arg name="priority" value="ref:workItemPriority"/>
+    <Arg name="project" value="ref:project"/>
+    <Arg name="trace" value="ref:trace"/>
+    <Arg name="approvalSet" value="ref:approvalSet"/>
+    <Arg name="identityRequestId" value="ref:identityRequestId"/>
+->>priority → Ye request ya work item ki urgency define karta hai, jaise Low/Normal/High, jisse system decide karta hai ki kaunsa request pehle process hoga aur kaunsa baad me.
+->>project → Ye provisioning ka final output object hota hai, jisme saare account changes (create/update/delete, entitlements changes) ka complete result stored hota hai, jo aage audit aur finalize process me use hota hai.
+->>trace → Ye debugging flag hota hai jo decide karta hai ki workflow execution ka detailed log print hoga ya nahi, jisse developer issues troubleshoot kar sakta hai.
+->>approvalSet → Isme manager ke saare approval/rejection decisions store hote hain, jaise kis attribute ya access ko approve ya reject kiya gaya aur uske comments kya hain.
+->>identityRequestId → Ye har request ka unique identifier hota hai jo system me tracking, audit trail aur future reference ke liye use hota hai.
+*///////////
+*/////////////

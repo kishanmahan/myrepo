@@ -1,0 +1,58 @@
+2️⃣ ReviewTask kya hai?
+Kya hai:-
+Jab Campaign start hota hai, to SailPoint automatically ReviewTask create karta hai.
+Ye task ek specific reviewer ko assign hota hai.
+Kya karti hai:-
+Ek reviewer ko bolti hai “tu in users ke access check kar, approve ya revoke kar.”
+Task ke andar ReviewItems hote hain, matlab actual permissions ya entitlements jo review karni hai.
+Track karta hai ki task complete hua ya pending hai.
+
+1️⃣ getReviewer():-
+task.getReviewer();
+Kya karta hai?
+Review karne wala manager return karta hai.
+Example:-
+ManagerRahul
+
+2️⃣ setReviewer(Identity reviewer):-
+Task ka reviewer assign karta hai.
+
+3️⃣ getItems():-
+task.getItems();
+Kya karta hai?
+ReviewTask ke ReviewItems return karta hai.
+Example structure:-
+Manager Rahul
+   ↓
+ReviewItem
+ReviewItem
+ReviewItem
+
+4️⃣ addItem(ReviewItem item):-
+Task me new review item add karta hai.
+
+5️⃣ removeItem(ReviewItem item):-
+Task se review item remove karta hai.
+
+6️⃣ getDecision():-
+Reviewer ka decision return karta hai.
+Example:-
+Approve
+Revoke
+Delegate
+
+7️⃣ setDecision(String decision):-
+Reviewer ka decision set karta hai.
+Example:-
+task.setDecision("Approve");
+
+8️⃣ getState():-
+Task ka current state return karta hai.
+Example:-
+Pending
+Completed
+Delegated
+
+9️⃣ setState(String state):-
+Task ka state change karta hai.
+

@@ -1,0 +1,209 @@
+()Internal audit process:-
+1️⃣ Internal Audit Process kya hai?
+Internal Audit = Company khud apne system ko check karti hai.
+Goal:-
+Security rules follow ho rahe hain ya nahi
+Unauthorized access hai ya nahi
+Policy violations detect karna
+
+Example:-
+User : Rahul
+Role : FinanceAdmin + DatabaseDelete
+Result : Policy Violation
+
+2️⃣ Internal Audit ke Steps:-
+1️⃣ Data Collection:-
+System se data collect hota hai
+Example:-
+Users
+Roles
+Access
+Logs
+
+2️⃣ Policy Check:-
+Security rules apply kiye jate hain.
+Example rule:-
+Finance role ko DatabaseDelete access nahi milna chahiye
+
+3️⃣ Violation Detection:-
+Agar rule break hua → Violation
+Example:-
+User : Rahul
+Role : FinanceAdmin
+Access : DatabaseDelete
+Result : Violation
+
+4️⃣ Audit Report Generate:-
+User      Role           Status
+--------------------------------
+Rahul     FinanceAdmin   Violation
+Amit      Employee       Compliant
+Neha      HR             Compliant
+
+Internal Audit Process (Context Based Project Code):-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.QueryOptions;
+import sailpoint.object.Filter;
+import sailpoint.tools.GeneralException;
+
+import java.util.Iterator;
+
+public class InternalAuditProcess {
+
+    private SailPointContext context;
+
+    public InternalAuditProcess(SailPointContext context) {
+
+        this.context = context;
+
+    }
+
+    public void runAudit() throws GeneralException {
+
+        QueryOptions qo = new QueryOptions();
+
+        Iterator<Identity> identities = context.search(Identity.class, qo);
+
+        System.out.println("===== INTERNAL AUDIT REPORT =====");
+
+        while (identities.hasNext()) {
+
+            Identity id = identities.next();
+
+            String name = id.getName();
+            boolean violation = false;
+
+            // Example Policy Check
+            if (id.getAssignedRoles() != null && id.getAssignedRoles().toString().contains("FinanceAdmin")
+                    && id.getAssignedRoles().toString().contains("DatabaseDelete")) {
+
+                violation = true;
+
+            }
+
+            System.out.println("User : " + name);
+
+            if (violation) {
+
+                System.out.println("Audit Result : POLICY VIOLATION");
+
+            } else {
+
+                System.out.println("Audit Result : COMPLIANT");
+
+            }
+
+            System.out.println("------------------------------");
+
+        }
+
+    }
+
+}
+Example: runAudit() ko kaun call karega:-
+import sailpoint.api.SailPointContext;
+import sailpoint.tools.GeneralException;
+
+public class AuditMain {
+
+    public static void main(String[] args) throws GeneralException {
+
+        SailPointContext context; 
+
+        InternalAuditProcess audit = new InternalAuditProcess(context);
+
+        audit.runAudit();   // yaha call ho raha hai
+
+    }
+
+}
+Example Output
+===== INTERNAL AUDIT REPORT =====
+
+User : Rahul
+Audit Result : POLICY VIOLATION
+
+User : Amit
+Audit Result : COMPLIANT
+
+User : Neha
+Audit Result : COMPLIANT
+/////////*
+()🔥 Question:-
+👉 runAudit() throws GeneralException
+👉 aur main() throws GeneralException
+Ye kya karega?
+
+--✅ Simple Answer:-
+👉 throws GeneralException ka matlab:-
+💬 “Agar error aayega, main handle nahi karunga — upar bhej dunga”
+
+🔥 Tere code me kya ho raha hai?
+🔹 1. runAudit()
+public void runAudit() throws GeneralException
+
+👉 Matlab:
+
+Agar andar koi error aaya
+(jaise context.search() fail ho gaya)
+
+👉 To:
+❗ runAudit us error ko catch nahi karega
+👉 Direct caller ko bhej dega
+
+🔹 2. Caller kaun hai?
+audit.runAudit();   // yaha call ho raha hai
+
+👉 Caller = main()
+
+🔹 3. main() me kya likha hai?
+public static void main(String[] args) throws GeneralException
+
+👉 Matlab:
+
+main bhi error handle nahi kar raha
+wo bhi upar bhej raha hai
+--------------------------------------------------------------------------
+🔥 Final flow:-runAudit() → main() → JVM (program crash / stack trace)
+--------------------------------------------------------------------------
+🔥 Agar error aaya to kya hoga?
+👉 Example:-
+Iterator<Identity> identities = context.search(Identity.class, qo);
+
+👉 Agar:-
+context null hai ❌
+DB issue ❌
+
+👉 To:-
+GeneralException throw hoga
+runAudit → main → JVM tak jayega
+
+👉 Output:-
+Exception in thread "main" sailpoint.tools.GeneralException: ...
+--------------------------------------------------------------------
+🔥 Important point:-
+👉 Abhi tere code me:-
+SailPointContext context;
+
+❗ Ye initialize hi nahi hua
+
+👉 Isliye:-
+💥 NullPointerException ya GeneralException aayega
+
+🔥 Agar tu catch kare to?
+public static void main(String[] args) {
+
+    try {
+        SailPointContext context = null; // example
+        InternalAuditProcess audit = new InternalAuditProcess(context);
+        audit.runAudit();
+    } catch (GeneralException e) {
+        System.out.println("Error handled in main");
+        e.printStackTrace();
+    }
+}
+👉 Ab:-
+✔ Error yahi handle ho jayega
+✔ Program crash nahi karega
+*///////////

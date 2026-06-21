@@ -1,0 +1,258 @@
+🔥 1️⃣ XML ka FULL Breakdown (har word samajh)
+<TaskDefinition name="Demo Provisioning Task" type="Generic">
+    <Description>Demo Task for Provisioning</Description>
+    
+    <Attributes>
+        <Map>
+            <entry key="executor" value="com.company.task.DemoTaskExecutor"/>
+        </Map>
+    </Attributes>
+
+    <Signature>
+        <Inputs>
+            <Argument name="user" type="string"/>
+        </Inputs>
+    </Signature>
+
+    <Owner>
+        <Reference class="sailpoint.object.Identity" name="spadmin"/>
+    </Owner>
+</TaskDefinition>
+
+
+///////////*
+🔹 <TaskDefinition ... >
+👉 Ye main root tag hai
+👉 SailPoint ko bolta hai:
+"Ye ek task define kiya ja raha hai"
+
+🔹 name="Demo Provisioning Task":-
+👉 Task ka display name (UI me dikhega)
+Admin UI → Tasks → Demo Provisioning Task
+🔹 type="Generic"
+👉 Task ka type define karta hai
+
+Type	                     Meaning
+Generic:---------------Custom task (developer ka code run karega)
+AccountAggregation:----Aggregation task
+IdentityRefresh:-------Identity update task
+Generic = Custom Executor run hoga,custom(generic) task ke liye.
+
+-----------------------------------------------------------
+🔹 <entry key="executor" value="..."/>:-
+👉 MOST IMPORTANT LINE 🔥
+key = executor
+value = class ka full path
+
+👉 Meaning:-
+"Task engine, is class ko run karo"
+
+👉 Yaha:-
+com.company.task.DemoTaskExecutor
+
+👉 Matlab:-
+➡️ Ye Java class load hogi
+➡️ iska execute() method call hoga.
+-----------------------------------------------------
+🔥 3️⃣ <Inputs> kya karta hai?
+✅ Kya hai?
+👉 Ye container hai arguments ka
+
+✅ Kya karta hai?
+👉 Multiple inputs ko group karta hai.
+
+🔥 6️⃣ Java me kaise use hota hai?
+public void execute(TaskContext context){
+
+    String user = (String) context.getTask().getArgument("user");
+    String role = (String) context.getTask().getArgument("role");
+
+    System.out.println(user + " -> " + role);
+}
+------------------------------------------------------------------------
+🔥 7️⃣ Real Project Example:-
+XML
+<Signature>
+    <Inputs>
+        <Argument name="application" type="string"/>
+        <Argument name="identity" type="string"/>
+    </Inputs>
+</Signature>
+Java me:-
+String app = (String) context.getTask().getArgument("application");
+String identity = (String) context.getTask().getArgument("identity");
+------------------------------------------------------------------------
+()Signature define karta hai inputs.
+-----------------------------------------------------
+()🔹 1️⃣ <Attributes>
+✅ Kya hai?
+👉 Ye ek container (dabba) hai
+✅ Kya karta hai?
+👉 Task ke configuration settings store karta hai.
+
+👉 Iske andar:-
+executor (skip)
+aur bhi configs ho sakte hain.
+--------------------------------------------------
+🔹 2️⃣ <Map>
+✅ Kya hai?
+👉 Ye key-value structure hai
+✅ Kya karta hai?
+👉 Data ko pair me store karta hai
+
+🔹 4️⃣ <Inputs>
+✅ Kya hai?
+👉 Inputs ka group/container
+✅ Kya karta hai?
+👉 Multiple arguments ko ek jagah rakhta hai.
+--------------------------------------------------
+🔹 5️⃣ <Argument name="user" type="string"/>
+✅ Kya hai?
+
+👉 Ye ek input variable define karta hai
+
+🔥 Breakdown:-
+🔸 Argument
+👉 Ek input field
+
+🔸 name="user"
+👉 Variable ka naam
+String user;
+
+🔸 type="string"
+👉 Data type
+
+🔥 Kya karta hai?
+👉 UI me input field banata hai:-
+Enter user: ______
+🔥 Java me kaise use hoga?
+String user = (String) context.getTask().getArgument("user");
+-----------------
+🔹 6️⃣ <Owner>
+✅ Kya hai?
+👉 Task ka owner section
+
+✅ Kya karta hai?
+👉 Define karta hai:-
+Ye task ka malik kaun hai
+
+🔥 Real Use:-
+Audit
+Permission
+Access control
+------------------
+🔹 7️⃣ <Reference ... />:-
+✅ Kya hai?
+👉 Ye object reference hai (pointer jaisa)
+
+🔥 Breakdown:-
+🔸 class="sailpoint.object.Identity"
+👉 Ye batata hai:-
+Object type = Identity (user)
+
+🔸 name="spadmin"
+👉 Ye user ka naam hai
+
+🔥 Kya karta hai?
+Owner = spadmin user
+
+🔥 Real Meaning:-
+👉 System bolega:-
+"Ye task spadmin ka hai"
+--------------------------------------------------
+()lekin yaha map me kiska data store hota hai koun karta hai aur <Inputs> kaha store aur koun argument deta hai?
+-🔹 Kaun store karta hai?
+✔️ 2 tareeke:-
+1. Admin (UI se)
+Admin → Task create/edit → config fill → save
+
+2.🔥 1️⃣ Developer XML likhta hai → import karta hai
+👉 Developer ye XML likhta hai:-
+👉 Developer ya admin is XML ko SailPoint me upload/import karta hai.
+
+🔹 Uske baad kya hota hai?
+XML → parse hota hai  
+     ↓  
+TaskDefinition object banta hai  
+     ↓  
+DB me save ho jata hai  
+
+🔥 Simple Samajh:-
+👉 Developer structure define karta hai
+👉 System usko store kar deta hai.
+
+🔥 Correct + Final Version (Pro Level):-
+👉
+XML ek configuration/template hota hai jo:-
+Structure define karta hai (task ka design)
+DB me store hota hai (TaskDefinition ke form me)
+UI generate karta hai (inputs ke liye)
+Runtime me values leta hai (user se)
+Aur phir Java code (Executor) ko run karata hai
+
+()🔹Kahan store hota hai?
+👉 Internally:-
+TaskDefinition object (DB me)
+
+👉 Java me:-
+taskDefinition.getAttributes()
+
+🔥 Runtime me kaise milta hai?
+Map<String,Object> attrs = context.getTask().getAttributes();
+
+👉 Matlab:-
+XML → DB → TaskDefinition → Task → execute() me milta hai
+----------------------------------------------------
+🔥 2️⃣ <Signature> aur <Inputs> kaha store hote hain?
+✅ Answer:-
+👉 Ye bhi TaskDefinition ke andar hi store hote hain (DB me)
+🔹 Flow:-
+XML → import → TaskDefinition object → DB me save
+----------------------------------------------------
+🔥 3️⃣ Argument kaun deta hai?
+✅ Answer:-
+👉 Admin / User deta hai jab task run hota hai
+🔹 Real Flow:-
+Admin clicks "Run Task"
+      ↓
+UI form open hota hai (Signature ke basis pe)
+      ↓
+Admin input deta hai (user = jokerboy)
+      ↓
+Task start hota hai
+----------------------------------------------------
+🔥 4️⃣ Ye argument code me kaise aata hai?
+String user = (String) context.getTask().getArgument("user");
+
+👉 Matlab:-
+UI input → Task object → execute() me milta hai
+------------------------------------------------------
+🔥 5️⃣ Full End-to-End Flow 🔥
+(1) Developer XML banata hai
+        ↓
+(2) Admin import karta hai / UI me create karta hai
+        ↓
+(3) Data DB me store hota hai (TaskDefinition)
+        ↓
+(4) Admin "Run Task" click karta hai
+        ↓
+(5) UI input form (Signature se generate hota hai)
+        ↓
+(6) Admin values deta hai
+        ↓
+(7) Task Engine run karta hai
+        ↓
+(8) execute(TaskContext context)
+        ↓
+(9) context.getTask().getArgument("user") 🔥
+
+--------------------------------------------------
+🔥 TaskContext kya hota hai?
+👉 Ye SailPoint Task Engine banata hai
+👉 Developer nahi banata ❌
+👉 Isme already hota hai:-
+Task
+TaskResult
+SailPointContext (hidden inside)
+*//////////
+-------------------------------------------------------

@@ -1,0 +1,249 @@
+1️⃣ IdentityTrigger kya hai?
+IdentityTrigger = Ye ek object hai jo Identity ke upar automatic actions / events trigger karne ke liye use hota hai.
+Basically, IdentityTrigger = “rules / automation jo Identity changes pe run hote hain”
+Example:-
+Jab koi naya user create ho → automatic account create kar do,
+Jab koi role assign ho → notification bhej do.
+
+🔹2️⃣ IdentityTrigger ka kaam:-
+()Automation:-
+Identity ke changes pe automatically actions run karna (create accounts, assign roles, disable access).
+()Event-based triggers:-
+IdentityEvent generate hone pe trigger hota hai.
+()Workflow / Rule Integration:-
+Workflows ya custom rules execute karna.
+
+🔹 3️⃣ IdentityTrigger ke andar kya hota hai?
+Field/Attribute	             Description
+id:---------------------Unique ID of the trigger
+name:-----------------------Trigger ka name
+description:-------------Trigger ka description
+eventType:----------Kis type ke IdentityEvent pe trigger hoga (Create / Update / RoleAssigned / EntitlementRemoved)
+conditions:------------Conditions list jinke satisfy hone par trigger fire hota hai
+actions:------------Actions list jo trigger execute karega (assign role, send notification, disable account)
+enabled:------------Trigger active hai ya nahi (true / false)
+createdDate:--------Kab trigger create hua
+modifiedDate:-------Last modified date
+
+🔹 6️⃣ DB me store hota hai?
+✅ Haan bhai, IdentityTrigger DB me store hota hai, taaki system restart ke baad bhi triggers active rahe.
+Tables me Trigger ID, Name, EventType, Conditions, Actions, Enabled flag store hota hai,
+Ye table IdentityEvent aur Identity object ke sath link hota hai.
+-----------------------------------------------------------------------------------------------------------------------------------------
+🔹 IdentityEventTrigger Types:-
+IdentityEventTrigger event ke type pe depend karta hai.Matlab jab koi IdentityEvent generate hota hai,
+trigger ka type decide karta hai ki ye kab fire hoga.
+
+Trigger Type	                Description	                                                        Example
+Create:---------------Trigger tab fire hota hai jab naya Identity create hota hai:------------Naye user ke liye welcome email bhejna
+Update:----------Trigger tab fire hota hai jab Identity ke attributes update hote hain:-------Job title change → manager notification
+RoleAssigned:-------Trigger tab fire hota hai jab Identity ko koi role assign hota hai:----Finance role assign → SAP access create karna
+RoleRemoved	Trigger:------tab fire hota hai jab Identity se role remove hota hai:----------Finance role remove → SAP access revoke karna
+EntitlementAdded:---Trigger tab fire hota hai jab Identity ko entitlement assign hota hai:---Access to database → logging or notification
+EntitlementRemoved:-----Trigger tab fire hota hai jab Identity se entitlement remove hota hai:-------Access revoked → security alert
+PasswordChange:--------Trigger tab fire hota hai jab Identity ka password change hota hai:-----Notify security team for critical accounts
+AccountLocked:-------------Trigger tab fire hota hai jab Identity ka account lock hota hai:----------Send alert to admin
+Custom:------Trigger tab fire hota hai jab user-defined custom events occur hote hain:------Custom workflow like “certification approved”
+-----------------------------------------------------------------------------------------------------------------------------------------
+🔹4️⃣ IdentityTrigger ke methods (SailPoint style):-
+getId()
+setId(String id)
+hasId()
+getName()
+setName(String name)
+hasName()
+getDescription()
+setDescription(String desc)
+hasDescription()
+getEventType()
+setEventType(String type)
+hasEventType()
+getConditions()
+setConditions(List<Condition>)
+hasConditions()
+getActions()
+setActions(List<Action>)
+hasActions()
+isEnabled()
+setEnabled(boolean)
+getCreatedDate()
+setCreatedDate(Date date)
+getModifiedDate()
+setModifiedDate(Date date)
+toString()
+equals(Object obj)
+hashCode()
+----------------------------------------------------------------------------------------------------------------------------
+🔹 1️⃣ Condition ka nature:-
+Trigger me condition = event fire hone ke liye jo check lagta hai, matlab filter ya rule.
+Ye teen tarah ka ho sakta hai:-
+
+A) Predefined (built-in) conditions:-
+SailPoint me kuch common conditions pehle se defined hote hain,
+Example:-
+status = Active
+role = Finance
+identityType = Employee
+Ye conditions directly dropdown ya property se select kiye ja sakte hain,
+Condition c = new Condition("status", "Active"); // Predefined condition
+trigger.setConditions(List.of(c));
+
+B) Custom rule-based conditions:-
+Ye developer define karta hai using BeanShell / JavaScript / custom rule class
+Example:-
+Agar user ka department = IT aur location = Mumbai → trigger fire karo
+Condition customCondition = new Condition();
+customCondition.setRule("return identity.getAttribute('department').equals('IT') && identity.getAttribute('location').equals('Mumbai');");
+trigger.setConditions(List.of(customCondition));
+Ye runtime pe evaluate hota hai, Flexible,complex logic implement karne ke liye.
+
+C) Normal code / expression-based conditions:-
+Kabhi kabhi simple attribute comparison code hi condition hota hai
+Example:-
+Condition c = new Condition();
+c.setExpression("identity.getAttribute('jobTitle').equals('Manager')");
+trigger.setConditions(List.of(c));
+Ye predefined se zyada flexible hai, par easy maintainable bhi hai.
+----------------------------------------------------------------------------------------------------------------------------------
+🔹 1️⃣ Action kya hai?
+Action = IdentityTrigger fire hone par perform hone wali operation/command,
+Matlab trigger fire → action execute
+Examples:
+Role assign karna
+Entitlement revoke karna
+Email send karna
+Account disable karna
+
+🔹 2️⃣ Action predefined hai ya custom?
+()Predefined Actions (built-in):-
+SailPoint me common actions pehle se define hote hain
+Example:-
+AssignRoleAction → Role assign karta hai
+RemoveRoleAction → Role remove karta hai
+SendEmailAction → Email send karta hai
+DisableAccountAction → Account disable karta hai
+Action emailAction = new SendEmailAction("admin@company.com", "Welcome to system!");
+trigger.setActions(List.of(emailAction));
+
+()Custom Actions:-
+Developer apna Action class bana sakta hai by extending Action class
+Example: CustomNotificationAction, CustomWorkflowAction
+public class CustomNotificationAction extends Action {
+    @Override
+    public void execute(Identity identity) {
+        System.out.println("Custom notification for " + identity.getName());
+    }
+}
+Action customAction = new CustomNotificationAction();
+trigger.setActions(List.of(customAction));
+------------------------------------------------------------------------------------------------------------------------------------
+1️⃣ getId():-
+Purpose: Trigger ka unique ID return karta hai
+trigger.getId(); // "TRG_1001"
+
+2️⃣ setId(String id):-
+Purpose: Trigger ka ID set karta hai
+trigger.setId("TRG_1001");
+
+3️⃣ hasId():-
+Purpose: Check karta hai ID set hai ya nahi
+trigger.hasId(); // true
+
+4️⃣ getName():-
+Purpose: Trigger ka name return karta hai
+trigger.getName(); // "New Identity Trigger"
+
+5️⃣ setName(String name):-
+Purpose: Trigger ka name set karta hai
+trigger.setName("New Identity Trigger");
+
+6️⃣ hasName():-
+Purpose: Name set hai ya nahi check karta hai
+trigger.hasName(); // true
+
+7️⃣ getDescription():-
+Purpose: Trigger ka description return karta hai
+trigger.getDescription(); // "Trigger for new identity creation"
+
+8️⃣ setDescription(String desc):-
+Purpose: Trigger ka description set karta hai
+trigger.setDescription("Trigger for new identity creation");
+
+9️⃣ hasDescription():-
+Purpose: Description exist karta hai ya nahi
+trigger.hasDescription(); // true
+
+10️⃣ getEventType():-
+Purpose: Trigger ka EventType return karta hai (Create / Update / RoleAssigned)
+trigger.getEventType(); // "Create"
+
+11️⃣ setEventType(String type):-
+Purpose: Trigger ka EventType set karta hai
+trigger.setEventType("Create");
+
+12️⃣ hasEventType():-
+Purpose: EventType set hai ya nahi
+trigger.hasEventType(); // true
+
+13️⃣ getConditions():-
+Purpose: Trigger ki conditions return karta hai (List<Condition>)
+trigger.getConditions(); // [Condition(status=Active)]
+
+14️⃣ setConditions(List<Condition>):-
+Purpose: Trigger ke liye conditions set karta hai
+trigger.setConditions(List.of(new Condition("status", "Active")));
+
+15️⃣ hasConditions():-
+Purpose: Conditions exist karti hain ya nahi
+trigger.hasConditions(); // true
+
+16️⃣ getActions():-
+Purpose: Trigger ke actions return karta hai (List<Action>)
+trigger.getActions(); // [SendEmailAction, AssignRoleAction]
+
+17️⃣ setActions(List<Action>):-
+Purpose: Trigger ke actions set karta hai
+trigger.setActions(List.of(new SendEmailAction("admin@company.com")));
+
+18️⃣ hasActions():-
+Purpose: Actions set hai ya nahi
+trigger.hasActions(); // true
+
+19️⃣ isEnabled():-
+Purpose: Check karta hai trigger active hai ya nahi
+trigger.isEnabled(); // true
+
+20️⃣ setEnabled(boolean):-
+Purpose: Trigger enable / disable karta hai
+trigger.setEnabled(true);
+
+21️⃣ getCreatedDate():-
+Purpose: Trigger kab create hua return karta hai
+trigger.getCreatedDate(); // Fri Mar 27 10:00:00 IST 2026
+
+22️⃣ setCreatedDate(Date date):-
+Purpose: Creation date set karta hai
+trigger.setCreatedDate(new Date());
+
+23️⃣ getModifiedDate():-
+Purpose: Trigger ka last modified date return karta hai
+trigger.getModifiedDate(); // Fri Mar 27 12:00:00 IST 2026
+
+24️⃣ setModifiedDate(Date date):-
+Purpose: Last modified date set karta hai
+trigger.setModifiedDate(new Date());
+
+25️⃣ toString():-
+Purpose: Trigger ka readable string return karta hai
+System.out.println(trigger.toString());
+// IdentityTrigger[id=TRG_1001, name=New Identity Trigger, eventType=Create, enabled=true]
+
+26️⃣ equals(Object obj):-
+Purpose: Do triggers ko compare karta hai
+trigger1.equals(trigger2); // true / false
+
+27️⃣ hashCode():-
+Purpose: Unique hash code return karta hai, collections me use hota hai
+trigger.hashCode(); // 12345678
+-----------------------------------------------------------------------------------------------------------------------------
+

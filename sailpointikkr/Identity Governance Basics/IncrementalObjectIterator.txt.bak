@@ -1,0 +1,50 @@
+🔹 Code Line:-
+IncrementalObjectIterator identities = new IncrementalObjectIterator(context, Identity.class, qo);
+🧠 Ye karta kya hai?
+👉 Ye DB se data ko ek-ek karke (incrementally) fetch karta hai
+👉 Matlab:-
+Bulk me nahi, thoda-thoda load karta hai (memory safe)
+
+🔥 Breakdown (हर चीज समझ):-
+🔸 1. IncrementalObjectIterator
+👉 Special iterator hai SailPoint ka
+👉 Use hota hai:-
+Large data handle karne ke liye
+Memory crash se bachne ke liye.
+
+⚡ Ye kaise kaam karta hai?
+DB me 1 lakh identities hai
+        ↓
+Iterator ek baar me 100-100 load karega
+        ↓
+Loop me process hoga
+        ↓
+Memory safe 👍
+
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.QueryOptions;
+import sailpoint.object.Filter;
+import sailpoint.tools.IncrementalObjectIterator;
+
+QueryOptions qo = new QueryOptions();
+qo.addFilter(Filter.eq("inactive", false));
+
+IncrementalObjectIterator identities =
+    new IncrementalObjectIterator(context, Identity.class, qo);
+
+int count = 0;
+
+while (identities.hasNext()) {
+    Identity id = (Identity) identities.next();
+
+    count++;
+    log.info("Identity Name: " + id.getName());
+}
+
+log.info("Total Count: " + count);
+🔥 Output
+Identity Name: raj
+Identity Name: amit
+Identity Name: neha
+Total Count: 3

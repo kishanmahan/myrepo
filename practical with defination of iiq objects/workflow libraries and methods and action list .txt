@@ -1,0 +1,2403 @@
+()1. Standard Workflow Handler:-
+()2. Identity Library:-
+()3. LCM Library:-
+()4. Role Library:-
+()5. Approval Library:-
+()6. Policy Violation Library:-
+()7. Monitoring Library:-
+-------------------------------------------------------------------------------------------------------------------------------
+()Monitoring Library:-
+SailPoint IdentityIQ (IIQ) ke workflows mein Monitoring Library (sailpoint.workflow.MonitoringLibrary) 
+ek behad mahatvapurna backend framework helper hai. Iska mukhya kaam workflow ke lifecycle ko monitor karna, 
+system health checks track karna,background background processes(jaise background tasks ya background threads) ko update karna, 
+aur failure scenarios mein automatic notifications trigger karna hai.
+Jab aap workflow ke top element par libraries="Monitoring" define karte hain, 
+toh is library ke ready-made control methods aapke execution pipeline ke liye active ho jaate hain.
+
+()1. checkIdentity (User Consistency Checker):-
+Asli Kaam (Simplest Definition): Yeh method check karta hai ki jis user profile par aapka workflow chal raha hai, 
+kya woh user database (spt_identity table) mein abhi bhi sahi-salamat, active aur safe state mein hai ya nahi.
+Backend Mechanism: Ek bade business workflow ko chalne mein kai baar ghante ya din lag jaate hain 
+(jaise manager ke approval ka wait karna). Is dauran, background mein koi doosra nightly aggregate task chal sakta hai jo galti 
+se us user ko delete ya correlate se hata de. checkIdentity step chalte hi database par query maarta hai aur verify karta hai ki
+target identity abhi bhi intact hai ya nahi, taaki workflow aage crash na ho.
+ 
+()2. sendMonitoringEmail (The Panic Button / Alert Machine):-
+Asli Kaam (Simplest Definition): Agar workflow ke chalte-chalte koi bada technical crash, connector timeout, 
+ya coding exception aa jaye, toh yeh method turant SailPoint Admin ko ek alert email bhej deta hai.
+Backend Mechanism: Jaise hi workflow ke provisionProject step mein koi bad error aata hai 
+(jaise Active Directory ka port lock milna), workflow engine control ko catch block mein bhejta hai. 
+Wahan sendMonitoringEmail call hota hai, jo error stack-trace, user details, aur request ID ko uthakar ek predefined admin email
+template mein pack karta hai aur automatic support desk (SMTP) par ticket generate karne ke liye mail fire kar deta hai.
+
+()clearMonitoringForm:-
+Jab koi workflow chal raha hota hai aur woh kisi technical state mein phas jata hai 
+(jaise koi unexpected connector error ya system timeout), toh SailPoint Admin Central Dashboard 
+(Setup -> Business Processes ya Monitor -> Workflows) par ek administrative screen ya control panel generate ho sakta hai. 
+Is management dashboard par baithkar System Administrator manually kuch inputs barta hai—jaise kisi variable ko force-update 
+karna, workflow thread ko aage push karna, ya workflow state ko modify karna.
+Jaise hi administrator us monitoring control form ko submit karke thread ko forward ya fix kar deta hai, 
+toh us interface ka poora raw metadata aur UI state workflow ke temporary cache memory (transient context) mein fasa reh jata hai.
+clearMonitoringForm method ka kaam isi temporary dashboard form data aur structural metadata ko execution memory (RAM) se 
+completely clear (wipe-out) karna hai.
+
+example:-
+<Workflow name="Enterprise-Monitoring-Core-Pipeline" libraries="Monitoring,Identity">
+
+  <Variable name="identityName" input="true" required="true"/>
+  <Variable name="project"/>
+
+  <!-- STEP 1: Verify Identity State before heavy engine trigger -->
+  <Step name="Validate Identity Integrity" action="call:checkIdentity">
+    <Arg name="identityName" value="ref:identityName"/>
+    <!-- Agar identity valid hai, toh target process par jao -->
+    <Transition to="Execute Target Connector Provisioning"/>
+  </Step>
+
+  <!-- STEP 2: Actual Execution (Yahan exception aa sakta hai) -->
+  <Step name="Execute Target Connector Provisioning" action="call:provisionProject">
+    <Arg name="project" value="ref:project"/>
+    
+    <!-- Positive Path: Agar successful raha toh pipeline khatam -->
+    <Transition to="End"/>
+    <!-- Catch Exception Path: Agar connector crash hua toh handling block par dalo -->
+    <Transition to="Handle System Exception Failure" condition="script:(size(errors) &gt; 0)"/>
+  </Step>
+
+  <!-- STEP 3: Alert Administration Team via Monitoring Email -->
+  <Step name="Handle System Exception Failure" action="call:sendMonitoringEmail">
+    <Arg name="template" value="LCM Workflow Connection Failure Template"/>
+    <Arg name="to" value="iiq-support-admin@company.com"/>
+    <Arg name="identityName" value="ref:identityName"/>
+    <Transition to="Cleanup Monitoring State"/>
+  </Step>
+
+  <!-- STEP 4: Flush dynamic state memory garbage -->
+  <Step name="Cleanup Monitoring State" action="call:clearMonitoringForm">
+    <Transition to="Force Terminate Thread"/>
+  </Step>
+
+  <Step name="Force Terminate Thread" icon="Stop">
+    <!-- Handle safe rollback or graceful stop logic -->
+    <Transition to="End"/>
+  </Step>
+
+  <Step name="End"/>
+</Workflow>
+///////////*
+()🔹 &gt; 0 Ka Asli Matlab Kya Hai?
+Asal mein, yeh code level par kuch aur nahi balki standard > 0 (Greater Than Zero) hi hai.
+
+()< ki jagah likha jata hai: &lt; (Less Than).
+*//////////
+-------------------------------------------------------------------------------------------------------------------------------
+()Policy Violation Library:-
+SailPoint IdentityIQ (IIQ) ke andar Policy Violation Library (sailpoint.workflow.PolicyViolationLibrary) ek behad specialized 
+helper module hai. Iska mukhya kaam workflow execution ke dauran compliance checks run karna, 
+toxic access combinations (Segregation of Duties - SoD) ko detect karna, aur unke violations ki tracking aur mitigation policies
+ko back-end database (spt_policy_violation table) mein manage karna hai.
+Jab aap kisi workflow mein <Workflow libraries="PolicyViolation"> define karte hain, 
+toh is library ke built-in methods directly pipeline mein call karne ke liye available ho jaate hain.
+
+()🔹 checkPolicyViolations:-
+Real Project Example: Ek employee ne ek sath do roles request kiye: "Invoice Creator" aur "Invoice Approver". 
+Jaise hi request submit hoti hai, checkPolicyViolations background mein SoD rules scan karta hai aur turant detect kar leta hai
+ki yeh ek toxic combination hai. Yeh method request ko block karne ke bajay ek PolicyViolation object context generate karke
+workflow mein attach kar deta hai.
+ 
+()🔹 sendViolationNotifications:-
+Detailed Definition: Jab checkPolicyViolations dwara koi violation confirm ho jaati hai, 
+toh compliance team, security group, ya request manager ko alert karne ke liye yeh method call hota hai. 
+Yeh method violation metadata (Violation Type, Severe Risk Score, Policy Name, Requester Name) ko target Email Template mein 
+fill karke automatic notifications push karta hai.
+Real Project Example: Jaise hi system mein "Invoice Creator vs Approver" ka violation pakda jata hai, 
+yeh method Compliance Officer ko ek automatic email alert bhej deta hai: "Warning: High Risk Policy Violation detected for 
+User Amit during Access Request." 
+
+()🔹 isMitigated:-
+Detailed Definition: Kai baar business urgency ke chalte manager ya auditor policy violation wale access ko temporary bypass ya 
+accept kar dete hain, jise hum Mitigation kehte hain. Yeh method boolean check return karta hai (true/false) ki kya approver ne 
+us violation ke sath ek valid validation comment aur end-date dalkar ushe 'Mitigate' kiya hai ya nahi.
+
+()clearViolationForm ek bohot hi important cleanup aur resource management method hai.
+Muti-stage validation ya multi-level approvals ke dauran jab ek bar policy violations check aur review ho jaati hain, 
+toh uske baad is method ka chalate hai.
+Jab kisi user ki request mein koi Policy Violation(jaise SoD-Ek hi bande ko Invoice banana aur approve karna dono ka access milna) 
+pakda jata hai, toh SailPoint manager ke samne ek specialized screen/form kholta hai. 
+Manager wahan reason likhta hai ki "Emergency hai, isliye bypass kar raha hoon" aur checkbox tick karke submit kar deta hai.
+Jaise hi manager submit button dabata hai, us violation form ka poora data aur backend metadata ek temporary memory cache (RAM) 
+mein fasa reh jata hai.
+clearViolationForm ek vacuum cleaner ki tarah kaam karta hai. Iska sirf ek kaam hai: Us temporary policy form ke data aur 
+garbage values ko memory se permanently sweep (saaf) kar dena, 
+taaki agle steps ke liye workflow bilkul fresh aur light-weight ho jaye.
+
+ex:-
+<Workflow name="Enterprise-Policy-Compliance-Pipeline" libraries="PolicyViolation">
+
+  <Variable name="identityName" input="true" required="true"/>
+  <Variable name="plan" input="true" required="true"/>
+  <Variable name="violationObject"/>
+
+  <Step name="Scan Governance Policies" action="call:checkPolicyViolations">
+    <Arg name="identityName" value="ref:identityName"/>
+    <Arg name="plan" value="ref:plan"/>
+    <Return name="violation" value="violationObject"/>
+    
+    <Transition to="Trigger Compliance Alerts" condition="script:(violationObject != null)"/>
+    <Transition to="Proceed To Standard Provisioning"/>
+  </Step>
+
+  <Step name="Trigger Compliance Alerts" action="call:sendViolationNotifications">
+    <Arg name="violation" value="ref:violationObject"/>
+    <Transition to="Present Risk Mitigation Screen"/>
+  </Step>
+
+  <Step name="Present Risk Mitigation Screen">
+    <Approval mode="serial" owner="script:IdentityLibrary.getManager(identityName)">
+      <Arg name="handler" value="sailpoint.api.Workflower"/>
+      <Arg name="method" value="processApproval"/>
+    </Approval>
+    <Transition to="Evaluate Mitigation Status"/>
+  </Step>
+
+  <Step name="Evaluate Mitigation Status">
+    <Transition to="Clear Policy Form Cache" condition="script:PolicyViolationLibrary.isMitigated(violationObject)"/>
+    <Transition to="Terminate Request Due To Risk"/>
+  </Step>
+
+  <Step name="Clear Policy Form Cache" action="call:clearViolationForm">
+    <Transition to="Proceed To Standard Provisioning"/>
+  </Step>
+
+  <Step name="Proceed To Standard Provisioning" icon="Provision">
+    <Transition to="End"/>
+  </Step>
+
+  <Step name="Terminate Request Due To Risk" icon="Stop">
+    <Transition to="End"/>
+  </Step>
+
+  <Step name="End"/>
+</Workflow>
+-------------------------------------------------------------------------------------------------------------------------------
+()IdentityRequest Library:-
+IdentityRequest se jude saare high-level aur backend database functions actually LCMLibrary (sailpoint.workflow.LCMLibrary) 
+ke andar hi wrapped hote hain.Jab aap workflow ke top par libraries="LCM" likhte hain, 
+toh aapko IdentityRequest objects (spt_identity_request table) ko manage karne ke liye saare ready-made methods mil jaate hain.
+-------------------------------------------------------------------------------------------------------------------------------
+()Approval Library:-
+SailPoint IdentityIQ (IIQ) mein Approval Library (sailpoint.workflow.ApprovalLibrary) ek aur specialized built-in helper class 
+hai.Iska mukhya kaam workflow ke andar complex aur multi-level approvals ko generate karna, 
+unke notification emails handle karna.Jab aap kisi standard workflow mein <Workflow libraries="Approval"> define karte hain, 
+toh is library ke saare methods directly use karne ke liye available ho jaate hain.
+
+()🔹 buildApprovals:-
+Bada Definition: Yeh is library ka sab सबसे heavy-duty method hai. 
+Jab koi access request (ya koi lifecycle event) multiple managers ya application owners ke approval ke liye jaani hoti hai,
+toh un sabhi workitems ka alag alag aprovers hote hai,jo workitems requests ko approve ya reject karenge.toh ye workitems 
+ko banata hai.
+
+Real Project Example: Ek user ne ek sath 3 roles maange—AD Admin, SAP Viewer, aur Salesforce Manager. 
+buildApprovals chalte hi teenon roles ke owners ko scan karega aur unke liye alag-alag approval items taiyar kar dega taaki 
+sahi task sahi person ke paas pahuche.
+
+()🔹 sendApprovalNotifications:-
+Bada Definition: Jab buildApprovals dwara approval structure taiyar ho jata hai, 
+toh approvers ko inform karne ke liye yeh method call hota hai.Yeh method dynamic details(Requester name, item details, tracking URL) 
+ko uthata hai, use target Email Template (jaise LCM Request Pending Approval) 
+mein inject karta hai, aur automatic email triggers push kar deta hai.
+Real Project Example: Jaise hi manager ke inbox mein approval request land hoti hai, 
+unhe ek official email notification chala jata hai: "Hi John, you have a pending approval request REQ001 for user Amit."
+
+()🔹 sendApprovalReminders:-
+Bada Definition: Yeh escalation mechanism ka part hai.Agar koi approval item kisi approver ke dashboard par pichle 3-4 dino se 
+pending pada hai, toh yeh method background timer ke hit hote hi trigger hota hai.Yeh automatic un sabhi users ko filter karta 
+hai jinhone action nahi liya hai, aur unhe reminder notifications bhejta hai,sath hi database mein reminder count update karta hai.
+
+()🔹 delegateApproval:-
+Bada Definition: Agar koi approver chhutti (Leave) par ja raha hai ya woh us request par decision lene ke liye sahi candidate 
+nahi hai, toh woh request ko kisi aur ko delegate karta hai. Yeh method us dynamic delegation request ko backend par process 
+karta hai. Yeh original approver ke inbox se task ko secure tarike se detach karta hai aur naye delegate user ke dashboard par 
+attach kar deta hai, sath hi database audit logs maintain karta hai.
+
+()clearApprovalForm :-
+Iska sabse bada use case Multi-Level Approval Routing mein hota hai.
+Maan lijiye Level 1 par Manager ke samne ek form aaya jisme usne likha "Approved for Q2 project". 
+Agar aapne iske baad clearApprovalForm nahi chalaya, aur Level 2 par Application Owner ke samne bhi ek custom form khulna hai, 
+toh kai baar cache clear na hone ki vajah se system confuse ho jata hai ya Level 1 ka data Level 2 ke fields mein pre-populate 
+hokar conflicts create kar deta hai.Isliye, jaise hi ek approval level poora hota hai, 
+transition se theek pehle clearApprovalForm chalakar memory state ko bilkul fresh aur clean kiya jata hai.
+example:-
+<Workflow name="Custom-Enterprise-Approval-Pipeline" libraries="Approval">
+
+  <Step name="Generate Approval Matrix" action="call:buildApprovals">
+    <Arg name="plan" value="ref:plan"/>
+    <Return name="approvals" value="approvals"/>
+    <Transition to="Trigger Email Notifications" condition="script:(approvals != null)"/>
+    <Transition to="End Pipeline"/>
+  </Step>
+
+  <Step name="Trigger Email Notifications" action="call:sendApprovalNotifications">
+    <Arg name="approvals" value="ref:approvals"/>
+    <Transition to="Wait For Human Action"/>
+  </Step>
+
+  <Step name="Wait For Human Action">
+    <Approval mode="serial" owner="ref:approvers">
+      <Arg name="handler" value="sailpoint.api.Workflower"/>
+      <Arg name="method" value="processApproval"/>
+    </Approval>
+    <Transition to="Cleanup Form State"/>
+  </Step>
+
+  <Step name="Cleanup Form State" action="call:clearApprovalForm">
+    <Transition to="End Pipeline"/>
+  </Step>
+
+  <Step name="End Pipeline" icon="Stop"/>
+
+</Workflow>
+--------------------------------------------------------------------------------------------------------------------
+()Role Library:-
+SailPoint IdentityIQ (IIQ) mein Role Library (sailpoint.workflow.RoleLibrary) ek aur specialized built-in business helper class 
+hai,jise mukhya roop se roles ke lifecycle, unke approvals, mining, aur management operations ko automatic tarike se handle karne
+ke liye design kiya gaya hai.
+
+()🔹 getRole:-yeh method role ka naam ya ID lekar database se pure Bundle (Role) object ko memory mein fetch karke laata hai.
+
+()🔹 isNewRole:-Bada Definition: Yeh method ek boolean check (true ya false) return karta hai. 
+Jab koi role editing workflow shuru hota hai, toh yeh check karta hai ki kya yeh role abhi naya-naya database mein insert hone 
+ja raha hai (Creation Phase), ya phir pehle se bane hue kisi role ke attributes/entitlements ko modify kiya ja raha hai 
+(Modification Phase). Iske aadhar par workflow approval routes badal jate hain.
+
+()🔹 saveRole:-
+Bada Definition: Jab role creation ya update ka workflow poora ho jata hai aur saare required managers/owners 
+use approve kar dete hain, tab yeh method call hota hai. Yeh memory mein chal rahe temporary role metadata aur 
+entitlements configuration ko uthata hai aur use permanent roop se IdentityIQ ke spt_bundle database table 
+mein save (commit) kar deta hai, jisse woh role pooray system mein provision hone ke liye active ho jata hai.
+
+()🔹 getRoleApprovers:-
+Bada Definition: Jab koi role create ya modify hota hai, 
+toh har role ke upar ek dedicated Role Owner ya governance group mapped hota hai. 
+Yeh method us role ke internal properties ko scan karta hai aur un sabhi users/identities ki list return karta hai jinke paas 
+is role ko approve karne ka right hai. Workflow isi list ka use karke WorkItems bhejta hai.
+
+()🔹 determineRoleApprovalScheme:-
+Bada Definition: SailPoint mein roles ke approval ke kai tarike ho sakte hain 
+(jaise: sirf role owner approve kare, ya application owner bhi approve kare, ya explicit manager approval chahiye). 
+Yeh method system settings aur role type (Business Role, IT Role) ko read karke yeh tay karta hai ki is specific request ke liye
+kaunsa approval routing pattern (Scheme) apply kiya jayega.
+
+()🔹 launchRoleMining:-
+Bada Definition: Agar aapne kisi workflow mein automation lagayi hai jahan har mahine automatic user access patterns ko check karke 
+naye roles suggest karne hain, toh yeh method background mein Role Mining Task ko trigger kar deta hai.
+
+()🔹 getMiningStatus:-
+Bada Definition: Role mining tasks bohot heavy hote hain aur chalne mein ghanton le sakte hain. 
+Yeh method workflow ko background execution ka current progress status (Percent complete, items processed, pending status)
+batata rehta hai taaki workflow dashboard par loading progress sahi se dikhai ja sake.
+ex:-
+<Workflow name="Standard Role Approvals" libraries="Role">
+
+  <!-- Step 1: Check if new -->
+  <Step name="Check Role State" action="call:isNewRole">
+    <Transition to="Determine Scheme" condition="script:(isNew)"/>
+  </Step>
+
+  <!-- Step 2: Decide who should approve -->
+  <Step name="Determine Scheme" action="call:determineRoleApprovalScheme">
+    <Return name="approvalScheme" value="approvalScheme"/>
+    <Transition to="Get Approvers"/>
+  </Step>
+
+  <!-- Step 3: Get exact approver identities -->
+  <Step name="Get Approvers" action="call:getRoleApprovers">
+    <Return name="approvers" value="approvers"/>
+    <Transition to="Commit Role" condition="script:(approved == true)"/>
+  </Step>
+
+  <!-- Step 4: Save to Database permanently -->
+  <Step name="Commit Role" action="call:saveRole">
+    <Transition to="End"/>
+  </Step>
+
+</Workflow>
+---------------------------------------------------------------------------------------------------------------------------------
+()LCM Library:-SailPoint IdentityIQ (IIQ) mein LCM Library (sailpoint.workflow.LCMLibrary) ek aur bohot hi mahatvapurna built-in 
+helper class hai, jo mukhya roop se Lifecycle Manager (LCM) workflows ke business logic ko chalane ke liye design ki gayi hai.
+
+🔹 getIdentityRequest:-
+Bada Definition: Jab koi access request submit hoti hai, toh IIQ backend mein ek object banata hai 
+jise IdentityRequest kehte hain (jo database ke spt_identity_request table mein jata hai). 
+Yeh method workflow ke execution ke dauran us tracking object ko fetch ya retrieve karta hai. 
+Iska kaam workflow ko yeh batana hai ki current request ki global tracking ID kya hai taaki use audit ya report kiya ja sake.
+
+🔹 updateIdentityRequest:-
+Bada Definition: Yeh ek dynamic tracking status updater hai. 
+Jab workflow aage badhta hai (jaise approval pending se approval complete hona, 
+ya provisioning start hona), toh yeh method IdentityRequest table ke andar user ki request ka status badalta rehta hai 
+(e.g., In Progress, Verifying, Completed, Terminated). Isse end-user ko unke "My Requests" dashboard par sahi status dikhta hai.
+
+🔹 checkPolicyViolations:-
+Jab ek manager cart mein 5 naye roles add karke "Submit" dabata hai, toh yeh method target identity ke maujuda access aur 
+un naye 5 roles ko aapas mein mix karke scan karta hai. Agar unme koi SoD (Segregation of Duties) violation milti hai, 
+toh yeh workflow ko rok deta hai aur ek violation object return karta hai jise approval screen par dikhaya jata hai.
+
+🔹 optimizePlan:-
+Bada Definition: Yeh ek "Smart Filtering" method hai. Maan lijiye kisi manager ne galti se ek aise role ke liye request submit
+kar di jo us employee ke paas pehle se hi moojud hai. optimizePlan us pure ProvisioningPlan ko scan karega, 
+duplicate items ya unnecessary accesses ko filter karke drop kar dega,aur sirf vahi access aage bhejega jo user ke paas sach mein
+nahi hai. Isse target system par fuzool ka load nahi padta.
+
+🔹 isPasswordRequest:-
+Bada Definition: LCM single workflow handle karta hai access requests ke liye bhi aur password reset ke liye bhi. 
+Yeh method boolean check return karta hai (true ya false) ki kya current request ek access request hai 
+ya fir user apna password change/reset karne ki koshish kar raha hai. Iske decision par workflow ka rasta badal jata hai.
+
+🔹 getAccounts:-
+Bada Definition: Jab koi user account unlock ya password reset ki request karta hai, 
+toh yeh method us identity se Jude sabhi target application links/accounts ki ek comprehensive list nikaal kar laata hai, 
+taaki user UI par select kar sake ki use kis specific account ka password reset karna hai.
+
+🔹 sendLCMNotification:-
+Bada Definition: LCM workflow mein communications handle karne ka sabse bada method yahi hai. 
+Yeh method dynamic variables (jaise requester name, approver name, item requested) ko uthata hai, 
+use kisi predefined Email Template (jaise LCM Request Approved Notification) mein map karta hai, 
+aur automatic email trigger kar deta hai.manager ko remind ya escalate karne ke email bhejne ke liye.
+
+🔹 checkIdentityRequestStatus :-
+Jab koi user ya manager LCM dashboard se koi Access Request ya Lifecycle event submit karta hai, 
+toh IIQ backend mein ek central tracking object banata hai jise IdentityRequest (spt_identity_request table mein) kehte hain.
+Aapki single request ke andar multiple applications ke alag-alag roles ya entitlements ho sakte hain. 
+Is wajah se, ek main IdentityRequest ke andar kai saare Child Items (IdentityRequestItem) hote hain—jaise ek 
+item Active Directory ke liye, dusra SAP ke liye, aur teesra Salesforce ke liye.
+
+checkIdentityRequestStatus method ka kaam pooray workflow execution ke dauran is main IdentityRequest aur uske saare child items
+ke statuses ko continuously scan, read aur evaluate karna hai.
+Yeh method check karta hai ki:-
+Kya saare child items ke approvals poore ho chuke hain?
+Kya target system par unka actual provisioning task (ProvisioningProject ke through) khatam ho chuka hai?
+Kya koi item abhi bhi pending approval ya background retry loop mein fasa hua hai?
+
+🔹 Yeh kab aur kyun use hota hai?
+Iska sabse bada use case Asynchronous Provisioning (ya Integration Tasks) mein hota hai.
+Maan lijiye aapne kisi aisi application ka access maanga jahan automatic account nahi banta, 
+balki IIQ background mein ek Service Desk Ticket (jaise ServiceNow ticket) create kar deta hai. 
+Ab workflow ko tab tak ruka rehna padega jab tak ServiceNow par ticket close nahi ho jati.
+Aise samay par, workflow loop mein checkIdentityRequestStatus ko call kiya jata hai. 
+Yeh baar-baar (wait step ke baad) check karta hai ki kya external ticket complete hui ya nahi. 
+Jaise hi ise dikhta hai ki saare child items ka status Approved aur Provisioned ho chuka hai, 
+yeh pooray request status ko Completed mark karne ka signal de deta hai aur workflow gracefully end ho jata hai.
+ex:-
+🔹 Workflow XML mein yeh kaise dikhta hai?
+XML
+<Step name="Check Request Status" action="call:checkIdentityRequestStatus">
+  <!-- Main Identity Request object ka reference pass karte hain -->
+  <Arg name="identityRequest" value="ref:identityRequest"/>
+  
+  <!-- Yeh method updated status return karta hai -->
+  <Return name="requestStatus" value="status"/>
+  
+  <!-- Agar status abhi bhi 'In Progress' hai, toh wait step par bhejo -->
+  <Transition to="Wait For External System" condition="script:\"In Progress\".equals(requestStatus)"/>
+  
+  <!-- Agar kaam poora ho gaya, toh final compile aur close out par jao -->
+  <Transition to="Complete Request"/>
+</Step>
+
+<Step name="Wait For External System">
+  <!-- Workflow ko 1 ghante ya background request complete hone tak pause rakhta hai -->
+  <Utility action="wait" argument="60"/> 
+  <Transition to="Check Request Status"/>
+</Step>
+
+2ndexample:-
+<Workflow name="Standard LCM Request Pipeline" libraries="LCM">
+
+  <!-- Step 1: Initialize Request tracking -->
+  <Step name="Initialize Request" action="call:getIdentityRequest">
+    <Return name="identityRequest" value="identityRequest"/>
+    <Transition to="Optimize Request Cart"/>
+  </Step>
+
+  <!-- Step 2: Clean duplicate access -->
+  <Step name="Optimize Request Cart" action="call:optimizePlan">
+    <Arg name="plan" value="ref:plan"/>
+    <Return name="plan" value="plan"/>
+    <Transition to="Check SoD Policies"/>
+  </Step>
+
+  <!-- Step 3: Check Compliance/Violations -->
+  <Step name="Check SoD Policies" action="call:checkPolicyViolations">
+    <Arg name="identity" value="ref:identityName"/>
+    <Return name="violationObject" value="violations"/>
+    <Transition to="Notify Manager"/>
+  </Step>
+
+  <!-- Step 4: Send Notification Email -->
+  <Step name="Notify Manager" action="call:sendLCMNotification">
+    <Arg name="template" value="LCM Request Approval Email"/>
+    <Arg name="recipient" value="ref:managerName"/>
+    <Transition to="Monitor Status"/>
+  </Step>
+
+  <!-- Step 5: Continuous monitoring of the provisioning -->
+  <Step name="Monitor Status" action="call:checkIdentityRequestStatus">
+    <Arg name="identityRequest" value="ref:identityRequest"/>
+    <Return name="requestStatus" value="status"/>
+    <!-- loop condition agar kaam chal raha hai -->
+    <Transition to="Update Global Request Record" condition="script:!\"In Progress\".equals(requestStatus)"/>
+  </Step>
+
+  <!-- Step 6: Final Close Out -->
+  <Step name="Update Global Request Record" action="call:updateIdentityRequest">
+    <Arg name="identityRequest" value="ref:identityRequest"/>
+    <Arg name="status" value="ref:requestStatus"/>
+    <Transition to="End"/>
+  </Step>
+
+</Workflow>
+----------------------------------------------------------------------------------------------------
+(1). Standard Workflow Handler kya hai kitne methods hai?
+-->Standard Business Logic:-👉 Application ka normal rules + kaam karne ka tareeka.
+Ye decide karta hai ki software ko kya kaam karna chahiye aur kis rule ke according karna chahiye.
+
+Example 1: Banking App:-
+Business Logic:-
+Balance check karo
+Agar account me ₹5000 hai aur user ₹2000 withdraw kare
+→ Allow karo
+Agar account me ₹1000 hai aur user ₹2000 withdraw kare
+→ Reject karo (Insufficient Balance)
+Ye jo decision rules hain, ye business logic hai.
+
+Example 2: E-commerce Website:-
+Business Logic:-
+Order amount ₹1000+ ho → 10% discount
+Stock available ho → order place karo
+Stock nahi ho → Out of Stock dikhao
+Ye sab rules = Business Logic.
+
+(2)Standard Business Logic ka matlab kya?
+Standard = Normal/Default/Common rules
+Example:-
+Company ke common rules:-
+Employee active ho tabhi login
+Salary > 50000 ho toh tax calculate karo
+Manager hi approval de sakta hai
+Ye company ka standard business logic ho sakta hai.
+
+()Standard Business Logic SailPoint IIQ me Example:-
+IIQ me Standard Business Logic:-
+Joiner → account create
+Mover → entitlement update
+Leaver → account disable/delete
+Approval required ho toh workflow approval bhejo
+
+(3)Custom Business Logic:-
+Agar company apna custom rule add kare:-
+If department = IT
+then assign VPN access
+Ye custom business logic ho gaya.
+
+Short me:-
+Business Logic = Software ke kaam karne ke rules
+Standard Business Logic = Default/common predefined rules
+Custom Business Logic = Company ke extra/custom rules.
+----------------------------------------------------------
+()Standard Workflow Handler kya hai?
+Standard Workflow Handler (sailpoint.api.Workflower):-
+Jab aap kisi workflow mein standard business logic run karna chahte hain (jaise approvals bhejna, 
+identity attributes check karna, ya provisioning steps handle karna),
+toh aap BeanShell code likhne ke bajay is handler ke predefined methods ko call karte hain. 
+Yeh kaafi efficient aur fast hota hai.
+
+Example Syntax:-
+XML
+<Step name="Process Approval Step">
+  <Approval mode="serial" owner="ref:manager">
+    <Arg name="handler" value="sailpoint.api.Workflower"/>
+    <Arg name="method" value="processApproval"/>
+  </Approval>
+  <Transition to="Provisioning Step"/>
+</Step>
+
+()Standard Workflow Handler ke Key Methods:-
+Is handler mein kai saare useful methods hote hain jo workflow ke alag-alag stages par kaam aate hain.
+
+-->
+()checkApproval:-
+Kaam: 🔴 checkApproval
+Bada Definition: Jab aapka workflow kisi Approval step par pahunchta hai, toh yeh method sabse pehle background mein chalta hai. 
+Yeh check karta hai ki kya us request ke liye sach mein kisi ka approval chahiye, ya phir use auto-approve kiya ja sakta hai. 
+Yeh workflow ke variables, rule conditions, aur configuration settings (jaise LCM Electronic Signatures) ko read karta hai. 
+Agar isko lagta hai ki approver list khali hai ya condition aisi hai jisme approval bypassed hai, 
+toh yeh bina kisi ko notification bheje step ko Approved mark karke aage badha deta hai.
+“Bypass kar deta hai” matlab:-
+👉 Normal process / rule ko skip kar dena ya uske bina direct nikal jana.
+
+()🔴 processApproval:-
+processApproval SailPoint IIQ Workflow me bahut important utility/helper method hai.
+Iska kaam:-
+Jab workflow kisi <Approval> step par rukta hai, toh IdentityIQ database ke spt_work_item table mein ek naya record generate karta hai jise WorkItem (Approval Task) kehte hain. Yeh task approver ke dashboard (Inbox) par dikhai deta hai.
+Jab approver apne dashboard par jaakar "Approve", "Reject", ya "Forward" button par click karta hai, toh UI se aane wala yeh raw action seedhe processApproval method ke paas land hota hai.
+Backend par yeh method yeh 5 bade kaam karta hai:
+
+-->Decision Capture: Yeh check karta hai ki approver ne kis button par click kiya hai (Approve ya Reject) 
+aur us decision ko memory mein map karta hai.
+
+-->Comment Logging: Agar approver ne form par koi comment likha hai (e.g., "Approved for Q2 Auditing"), 
+toh yeh us text ko WorkItem ke transaction history log mein permanently write kar deta hai.
+
+-->Digital Signatures (E-Sign): Agar aapke project mein roles ke liye Electronic Signatures enabled hain, 
+toh yeh method user ke credentials aur signature token ko verify karta hai.
+
+-->WorkItem Closure: Jaise hi action valid ho jata hai, yeh database mein jaakar us unique WorkItem ka status Pending se badalkar 
+Closed (ya Finished) mark kar deta hai taaki approver ke inbox se task gayab ho jaye.
+
+-->State Advancement: Yeh workflow engine ko signal deta hai ki ab is approval par action liya ja chuka hai, 
+isliye ab conditional transitions (isApproved) ko evaluate karke aage badha jaye.
+
+⚙️ Real-World Production Workflow XML Example:-
+XML
+<Step name="Manager Decision Core Block" icon="Approval">
+  
+  <Approval mode="serial" owner="ref:managerName">
+    
+    <Arg name="handler" value="sailpoint.api.Workflower"/>
+    
+    <Arg name="method" value="processApproval"/>
+    
+    <Arg name="form" value="ref:customApprovalForm"/>
+  </Approval>
+
+  <Transition to="Assimilate Form Data" condition="script:sailpoint.api.Workflower.isApproved(approval)"/>
+  
+  <Transition to="Log Rejection Audit Layer"/>
+</Step>
+
+()🔴 isApproved:-
+Bada Definition: Yeh ek logical decision-making utility method hai jo workflow ke transitions mein kaam aata hai. 
+Yeh current approval step ki final state ko inspect karta hai. Agar approval step poora ho chuka hai aur sabhi required approvers
+ne use 'Approve' kar diya hai, toh yeh true return karta hai. Agar kisi ek ne bhi reject kiya ho ya step pending ho, 
+toh yeh false return karta hai. Iska use standard workflows mein conditional checking ke liye kiya jata hai 
+(e.g., <Transition expr="script:isApproved" to="Provisioning"/>).
+//////*
+<Transition expr="script:isApproved" to="Provisioning"/>
+Isko breakdown karte hain:-
+1. <Transition ... />:-
+Transition = workflow me next step kaha jana hai decide karta hai.
+
+2. expr="script:isApproved":-
+expr = condition / expression.
+Yaha:-
+script:isApproved:-
+matlab isApproved variable/script ko check karo.
+Agar isApproved = true
+→ condition pass
+→ transition chalega.
+
+Agar false
+→ ye transition nahi chalega.
+Example:-
+<Variable name="isApproved" initializer="true"/>
+
+ya script se:-
+boolean isApproved = approvalSet.isApproved();
+return isApproved;
+
+3. to="Provisioning":-
+Condition true hui to workflow Provisioning step me chala jayega.
+Current Step
+    ↓
+isApproved == true ?
+    ↓ Yes
+Provisioning
+*///////////
+
+approve:-
+Kaam: Kisi WorkItem (Approval item) ko programmatically 'Approved' state mein mark karne ke liye.
+reject:-
+Kaam: Kisi WorkItem ko programmatically 'Rejected' state mein mark karne ke liye.
+🔴 approve aur reject:-
+Yeh dono methods programmatically (yani bina kisi human user ke button dabaye) approval state ko change karne ke kaam aate hain.
+Agar aapne workflow mein koi aisa logic lagaya hai jahan specific conditions ke under 
+(jaise agar requester khud manager hai, ya request ek safe trusted software se aa rahi hai) 
+approval ko automatically system level par hi accept ya decline karna ho, 
+toh yeh methods direct pooray WorkItem ka status Approved ya Rejected set kar dete hain.
+
+🔴 remind:-
+Bada Definition: Yeh escalation ka hissa hai. Agar koi approval item kisi manager ke dashboard par kaafi dino se pending pada hai
+aur uski deadline cross ho rahi hai, toh remind method trigger hota hai. Yeh automatic email notifications dobara bhejta hai, 
+pending state ko highlight karta hai, aur workflow logs mein reminder ka count entry karta hai taaki reporting mein pata chal sake
+ki kis approver ne kitna delay kiya.
+
+🔴 forward:-
+Bada Definition: Jab koi approver chhutti par ja raha ho ya woh us request par decision lene ke liye sahi vyakti na ho, 
+toh woh us request ko kisi aur ko delegate/forward karta hai. Yeh method us dynamic delegation ko handle karta hai. 
+Yeh purane approver ke inbox se task ko hatata hai, naye approver ke inbox mein assign karta hai, 
+aur database ke IdentityRequest table mein ownership updates karta hai, 
+jisse traceability bani rahe ki task originially kiske paas tha aur ab kiske paas hai.
+
+2. Policy aur Validation Methods:-
+Yeh methods compliance, security aur governance rules ko enforce karne ke liye hote hain.
+🔵 checkPolicyViolations:-
+Bada Definition: Provisioning (access dene) se theek pehle yeh method IdentityIQ ke internal Policy Engine ko call karta hai. 
+Yeh un sabhi active policies (jaise Separation of Duties - SoD, Account Policies) ko check karta hai jo us request se trigger ho
+sakti hain. Udaharan ke liye, agar koi user 'Invoice Creator' aur 'Invoice Approver' dono roles ek saath maang raha hai, 
+toh yeh method us violation ko pakad lega, aur workflow variables mein violation ki poori details 
+(Policy Name, Violating Roles) ko save kar dega taaki manager ko screen par alert dikhaya ja sake.
+ 
+🔵 checkPreDelegation:-
+Bada Definition: Kisi approval item ko kisi aur ke naam par auto-delegate karne se pehle yeh method security validation run karta
+hai. Yeh check karta hai ki kya IdentityIQ mein active delegation rules set hain, kya delegate hone wala banda active status mein
+hai, aur kya requester ke paas delegation configure karne ke sahi rights hain. 
+Yeh workflow ko unauthorized ya galat delegation loops mein phasne se rokta hai.
+
+3. Data aur State Management Methods:-
+🟢 assimilateOutputs:-
+Bada Definition: Jab ek workflow kisi sub-process (child workflow) ko chalata hai ya kisi dynamic form se data collect karta hai,
+toh woh saara data ek isolated temporary space mein hota hai.assimilateOutputs ka kaam us scattered data ko collect karna aur 
+main parent workflow ke global variables ke saath merge karna hai. Agar child process mein koi naya variable generate hua hai ya
+provisioning ka result status aaya hai, toh yeh method use main workflow map mein sahi key-value pair ke roop mein inject kar 
+deta hai taaki aage ke steps use kar sakein.
+
+🟢 assimilateForm:-
+Bada Definition: Jab ek workflow kisi user ke saamne ek custom UI Form display karta hai 
+(jaise naye employee ki details bharne ke liye form), toh user ke submit karne ke baad yeh method chalte hain. 
+Yeh form ke har ek field (TextBox, Dropdown, Checkbox) se user ki entered values ko nikaalta hai, 
+unhe validate karta hai, aur workflow ke decision context ke andar variable bana kar store kar deta hai, 
+taaki un values ko aage provisioning plan mein use kiya ja sake.
+
+🟢 archive:-
+Bada Definition: Jab workflow ka poora kaam khatam hone wala hota hai, 
+toh saara transaction data memory se clear hone lagta hai. 
+archive method us khatam hone wale workflow ka ek historical record (audit trail) bana kar IdentityIQ Archive Tables mein
+transfer karta hai. Isme workflow kab shuru hua, kisne approve kiya, kya attributes badle, aur kab khatam hua, 
+is sabki permanent history safe ho jaati hai jise auditors baad mein Access History Reports mein dekh sakte hain.
+
+()4. Execution aur Sub-process Control Methods:-
+🟡 launchSubprocess:-
+Bada Definition:Bade workflows (jaise Joiner or Lifecycle Lifecycle workflows) bohot complex hote hain. 
+Unhe saaf rakhne ke liye chote chote sub-workflows banaye jaate hain (e.g., Active Directory provisioning ka alag workflow, 
+SAP ka alag).launchSubprocess method main workflow se un chote child workflows ko trigger karta hai. 
+Yeh unhe main workflow ka kuch data pass karta hai(input parameters) aur engine ko bolta hai ki is child process ko alag se execute karo.
+
+🟡 wait:-
+Bada Definition: Kai baar workflow ko kisi external event ka intezar karna padta hai—jaise kisi dusre system se flat file aane ka
+,ya target application par account generate hone ka (Asynchronous Provisioning).wait method workflow ke pure execution thread ko
+pause (sleep mode) mein dal deta hai aur background mein ek listener task open rakhta hai. 
+Jab tak woh external dependency ya condition poori nahi hoti, tab tak yeh step agle step par transition nahi hone deta, 
+jisse resources waste nahi hote.
+
+🟡 end:-
+Bada Definition: Yeh workflow ka final execution handler hai.Jab workflow ke saare tasks, approvals, 
+aur provisioning steps safaltapoorvak khatam ho jaate hain,toh yeh method call hota hai. 
+Yeh pooray workflow instance ko Completed status deta hai, locks ko release karta hai, 
+temporary memory allocations ko wipe out karta hai,aur task scheduler ko inform karta hai ki yeh task ab thread pool se hataya ja sakta hai.
+
+example:-
+<Workflow name="Standard Workflower Execution" Sequential="true">
+
+  <Step name="Process Decision">
+    <Approval mode="serial" owner="ref:managerName">
+      <Arg name="handler" value="sailpoint.api.Workflower"/>
+      <Arg name="method" value="processApproval"/>
+    </Approval>
+    
+    <Transition to="Assimilate Child Outputs" condition="script:sailpoint.api.Workflower.isApproved(approval)"/>
+    <Transition to="Handle Rejection Layer"/>
+  </Step>
+
+  <Step name="Assimilate Child Outputs">
+    <Action name="mergeData" handler="sailpoint.api.Workflower" method="assimilateOutputs">
+      <Arg name="src" value="ref:approvalFormOutputs"/>
+    </Action>
+    <Transition to="Trigger Provisioning"/>
+  </Step>
+
+  <Step name="Trigger Provisioning">
+    <Transition to="Wrap Up Execution"/>
+  </Step>
+
+  <Step name="Handle Rejection Layer">
+    <Transition to="Wrap Up Execution"/>
+  </Step>
+
+  <Step name="Wrap Up Execution" handler="sailpoint.api.Workflower" method="end">
+    <Transition to="End"/>
+  </Step>
+
+</Workflow>
+///////////*
+()Sequential:-Iska kaam workflow engine ko yeh batana hai ki "Is workflow ke andar jitne bhi <Step> hain, 
+unhe ek ke baad ek (line by line) hi execute karna hai." Agar aap Sequential="true" nahi lagate hain, 
+toh SailPoint default roop se explicit transitions (<Transition to="..."/>) par depend karta hai. 
+Lekin jab yeh true hota hai, toh agar aap kisi step ke aakhir mein <Transition> likhna bhool bhi jayein, 
+toh engine automatic uske theek neeche wale agle step par jump kar jata hai.
+
+()<Approval mode="serial" owner="ref:managerName">:-
+🔹 Asaan Shabdon Mein:-
+Maan lijiye kisi request ko approve karne ke liye 2 log chahiye (pehle Manager aur phir Security Team). 
+Jab aap mode="serial" likhte hain, toh approvals ki ek line (queue) ban jaati hai.pehle request manager ke pass aur 
+manager ne approve kiya toh security team ke pass aur agar manager ne reject kiya toh approval wahi ruk jayega.
+
+1. handler="sailpoint.api.Workflower" aur method="assimilateOutputs":-
+Backend Mechanism: Yeh line workflow engine ko batati hai ki hume standard Core Engine Control class(Workflower) ka use karna hai
+aur uska sabse powerful data merger method—assimilateOutputs call karna hai.
+
+2. <Arg name="src" value="ref:approvalFormOutputs"/>:-
+Backend Mechanism: src (Source) ek predefined input parameter hai jo assimilateOutputs method maangta hai.
+
+()📦 1. approvalFormOutputs Kya Hai? (The Data Container)
+Jab ek workflow chal raha hota hai aur woh kisi manager ke saamne ek Approval Screen ya koi UI Form display karta hai, 
+toh manager wahan kuch dynamic details barta hai. Jaise:
+Manager ne comment likha: "Approved for Project Alpha"
+Manager ne ek dropdown se location select ki: "London Office"
+Jab manager "Approve" button dabata hai, toh UI par bhari gayi yeh saari details turant ek temporary packet (Map data structure)
+ke andar pack ho jaati hain. Standard code mein isi packet/variable ka naam hum approvalFormOutputs rakhte hain.
+
+()assimilateOutputs Kya Hai?
+Iska kaam hota hai approvalFormOutputs capsule ke andar jaana, 
+wahan se saare key-value pairs (comments, dropdown selections) ko nikaalna, 
+aur unhe main workflow ke Global Variables mein merge kar dena.
+-->Yeh bohot hi zabardast aur logical sawaal hai! Jab assimilateOutputs us capsule (approvalFormOutputs) ko kholta hai, 
+toh woh data ko kisi naye random variable mein nahi daalta.
+Iska seedha sa rule hai: Capsule ke andar field ka jo "Name" (Key) hota hai, 
+main workflow ke andar bilkul ussi "Name" ke variable mein data merge ho jaata hai.
+Agar main workflow mein pehle se us naam ka variable nahi hai, 
+toh yeh method runtime par ussi naam ka ek naya global variable bana deta hai.
+ex:-
+Jab manager form submit karega, toh aapke approvalFormOutputs capsule ke andar data kuch is tarah save hoga:-
+JSON
+{
+  "managerComment": "Approved by HR Team",
+  "expiryDate": "31-12-2026"
+}
+-->
+<Step name="Assimilate Child Outputs">
+  <Action name="mergeData" handler="sailpoint.api.Workflower" method="assimilateOutputs">
+    <Arg name="src" value="ref:approvalFormOutputs"/> 
+  </Action>
+  <Transition to="Trigger Provisioning"/>
+</Step>
+*////////////
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow name="Custom-LCM-Access-Request-Workflow" explicitTransitions="true" libraries="Identity,LCM">
+  
+  <Variable name="identityName" input="true" required="true"/>
+  <Variable name="plan" input="true" required="true"/>
+  <Variable name="project"/>
+  <Variable name="identityRequest"/>
+  <Variable name="requestStatus"/>
+
+  <Step name="Initialize Tracking" icon="Start">
+    <Action library="LCM" method="getIdentityRequest">
+      <Return name="identityRequest" value="identityRequest"/>
+    </Action>
+    <Transition to="Optimize Plan"/>
+  </Step>
+
+  <Step name="Optimize Plan" icon="Analysis">
+    <Action library="LCM" method="optimizePlan">
+      <Arg name="plan" value="ref:plan"/>
+      <Return name="plan" value="plan"/>
+    </Action>
+    <Transition to="Check Governance Policies"/>
+  </Step>
+
+  <Step name="Check Governance Policies" icon="Check">
+    <Action handler="sailpoint.api.Workflower" method="checkPolicyViolations">
+      <Arg name="identityName" value="ref:identityName"/>
+      <Arg name="plan" value="ref:plan"/>
+    </Action>
+    <Transition to="Manager Approval"/>
+  </Step>
+
+  <Step name="Manager Approval" icon="Approval">
+    <Approval mode="serial" owner="script:IdentityLibrary.getManager(identityName)">
+      <Arg name="handler" value="sailpoint.api.Workflower"/>
+      <Arg name="method" value="processApproval"/>
+    </Approval>
+    <Transition to="Compile Provisioning Engine" condition="script:Workflower.isApproved(item)"/>
+    <Transition to="Reject Request Layer"/>
+  </Step>
+
+  <Step name="Compile Provisioning Engine" icon="Task">
+    <Action library="Identity" method="compileProvisioningProject">
+      <Arg name="plan" value="ref:plan"/>
+      <Return name="project" value="project"/>
+    </Action>
+    <Transition to="Execute Provisioning"/>
+  </Step>
+
+  <Step name="Execute Provisioning" icon="Provision">
+    <Action library="Identity" method="provisionProject">
+      <Arg name="project" value="ref:project"/>
+    </Action>
+    <Transition to="Monitor Async Status"/>
+  </Step>
+
+  <Step name="Monitor Async Status" icon="Undo">
+    <Action library="LCM" method="checkIdentityRequestStatus">
+      <Arg name="identityRequest" value="ref:identityRequest"/>
+      <Return name="requestStatus" value="status"/>
+    </Action>
+    <Transition to="Hold Thread" condition="script:\&quot;In Progress\&quot;.equals(requestStatus)"/>
+    <Transition to="Finalize Request Tracking"/>
+  </Step>
+
+  <Step name="Hold Thread" icon="Wait">
+    <Utility action="wait" argument="30"/>
+    <Transition to="Monitor Async Status"/>
+  </Step>
+
+  <Step name="Finalize Request Tracking" icon="Task">
+    <Action library="LCM" method="updateIdentityRequest">
+      <Arg name="identityRequest" value="ref:identityRequest"/>
+      <Arg name="status" value="ref:requestStatus"/>
+    </Action>
+    <Transition to="Notify User"/>
+  </Step>
+
+  <Step name="Notify User" icon="Email">
+    <Action library="LCM" method="sendLCMNotification">
+      <Arg name="template" value="LCM User Access Request Notification"/>
+      <Arg name="recipient" value="ref:identityName"/>
+    </Action>
+    <Transition to="End Execution Pipeline"/>
+  </Step>
+
+  <Step name="Reject Request Layer" icon="Stop">
+    <Action library="LCM" method="updateIdentityRequest">
+      <Arg name="identityRequest" value="ref:identityRequest"/>
+      <Arg name="status" value="Rejected"/>
+    </Action>
+    <Transition to="End Execution Pipeline"/>
+  </Step>
+
+  <Step name="End Execution Pipeline" handler="sailpoint.api.Workflower" method="end" icon="Stop"/>
+
+</Workflow>
+//////////////*
+()<Utility>:-
+Aamtaur par, jab aap workflow mein koi kaam karna chahte hain, toh aap <Action> tag ka use karke kisi Java class ya Rule ko 
+call karte hain. Lekin <Utility> tag kisi Java class ko call nahi karta; yeh seedhe SailPoint ke Core Workflow Engine 
+(Orchestration Engine) ko direct instructions ya commands deta hai.
+Iska mukhya kaam workflow ke execution flow ko control karna, threading manage karna, 
+debugging karna aur background tasks ko handle karna hai.
+
+--<Utility> tag ke andar mukhyata 4 sabse mahatvapurna actions/arguments chalte hain:-
+-->1. wait:-
+Bada Definition: Yeh current workflow execution thread ke pipeline ko ek specific duration ke liye rok (pause/sleep) deta hai. 
+Yeh memory background scheduler mein request register karke thread ko block hone se bachata hai.
+Real Project Example: Jab aap kisi external ticketing system (jaise ServiceNow) se account creation ka confirmation aane ka wait
+kar rahe hote hain, toh aap <Utility action="wait" argument="60"/> likhte hain. 
+Isse workflow agle 60 seconds tak shaant baith jata hai aur server resources bache rehte hain.
+
+-->2. audit:-
+Real Project Example: Kisi high-risk production application (jaise Core Banking Application) ka access kisi user ko provision ho
+ gaya. Aap chahte hain ki yeh event permanently system mein capture ho jaye, 
+ toh aap <Utility action="audit" argument="High Risk Access Granted"/> chalate hain.
+
+-->3.1. clearErrors;-
+Deep Definition: Yeh method workflow instance ke transient execution context se saare accumulated error messages ko permanently 
+wipe-out (mita) deta hai. Yeh actual database audit log ko nahi chhedta, balki current workflow runtime memory ko clean karta hai.
+Real Project Example (Retry Loop):Maan lijiye Active Directory provisioning ke waqt network down hone se Target system unreachable 
+ka error aaya. Workflow ne use detect kiya, 10 minute wait kiya, aur ab dobara try karne ja raha hai. 
+Dobara try karne se theek pehle, developer <Utility action="clearErrors"/> chalate hain taaki workflow ka slate bilkul saaf ho jaye 
+aur purana failure naye execution ko contaminate na kare.
+
+-->3.2. clearWarnings:-
+Deep Definition: Bilkul clearErrors ki tarah, yeh method workflow memory se saari purani warnings 
+(jaise non-fatal connection dropouts ya policy evaluation alerts) ko remove kar deta hai.
+Real Project Example: Ek user ko access dete waqt ek mild policy violation warning aayi thi. 
+Manager ne use 'Mitigate' (bypass) kar diya. 
+Ab provisioning phase mein jaane se pehle,workflow <Utility action="clearWarnings"/> chala deta hai taaki step validation bilkul
+clear pass ho sake.
+
+-->4. pp (Pretty Print):-
+Bada Definition: Yeh ek debugging utility hai. Yeh complex Java Objects, Maps, 
+ya Context lists ko readable JSON/String format mein internal logs (iiq.log ya stdout) mein print kar deta hai.
+Real Project Example: Rule ya Workflow testing ke dauran agar aapko dekhna hai ki ProvisioningPlan object ke andar kya exact 
+keys aur values pass ho rahi hain, toh aap pp utility ka use karte hain.
+
+()<Action> vs <Utility> vs <Script>:-
+
+()<Script>:-
+Custom business logic chalata hai BeanShell compiler ke zariye. 
+Fast development ke liye sahi hai par upgraded maintenance heavy hoti hai.	
+BeanShell Scripting me code likhata hai.
+
+()<Action>:-Predefined Java Class code ya ready-made workflow libraries (Identity, LCM) ke methods ko trigger karta hai.
+
+()<Utility>:-
+Aamtaur par, jab aap workflow mein koi kaam karna chahte hain, toh aap <Action> tag ka use karke kisi Java class ya Rule ko 
+call karte hain. Lekin <Utility> tag kisi Java class ko call nahi karta; yeh seedhe SailPoint ke Core Workflow Engine 
+(Orchestration Engine) ko direct instructions ya commands deta hai.
+Iska mukhya kaam workflow ke execution flow ko control karna, threading manage karna, 
+debugging karna aur background tasks ko handle karna hai.
+
+ex;-
+<Step name="Hold And Clean State" icon="Wait">
+  <Utility action="clearErrors"/>
+  
+  <Utility action="wait" argument="60"/>
+  
+  <Transition to="Recheck Provisioning Status"/>
+</Step>
+ex:-
+<Utility action="remove" argument="temporaryHeavyFormObject"/>
+<Utility action="pp" argument="ref:project"/>
+<Utility action="audit" argument="Manager bypassed approval for emergency access."/>
+<Utility action="clearErrors"/>
+<Utility action="clearWarnings"/>
+
+*/////////////
+--------------------------------------------------------------------------------------------------------------------------------
+(2). Identity Library:-
+SailPoint IdentityIQ (IIQ) mein Identity Library ek ready-made Java helper class (sailpoint.workflow.IdentityLibrary) hai.
+Yeh class workflow ke andar user profiles (Identities), unke accounts, automatic provisioning forms, policies aur lifecycle actions 
+ko manage karne ke liye dher saare built-in methods deti hai.
+Jab aap workflow ke <Workflow> tag mein libraries="Identity" likhte hain (ya kuch na likhein toh bhi yeh default enabled hoti hai), 
+toh iske saare methods aapke workflow ke liye available ho jaate hain.
+
+🔹 getManager:-
+Definition: Yeh method kisi specific identity ke manager ka naam pata karne ke liye use hota hai. 
+Jab aap ise target identityName pass karte hain,toh yeh database se us user ke profile ko read karta hai 
+aur uske mapped manager ka string name return kar deta hai.
+
+🔹 refreshIdentity aur refreshIdentities:-
+Definition: refreshIdentity ek single user par aur refreshIdentities ek poore group/set 
+(jo CSV list, filter string, ya roles ke aadhar par ho sakte hain) par Identity Refresh Task run karta hai. 
+Yeh user ke links aggregate karta hai, dynamic attributes recalculate karta hai, aur entitlements sync karta hai.
+Kab use karein: Jab workflow ke dauran kisi user ka department ya role badle aur aap chahte hain ki bina subah tak ka wait kiye 
+uski profile turant update ho jaye.
+
+🔹 compileProvisioningProject:-
+Definition: Jab workflow ko ek ProvisioningPlan (jisme likha hota hai ki kis account ko kya access dena hai) milta hai, 
+toh yeh method us plan ko ek ProvisioningProject mein badal (compile) deta hai. 
+Compilation ke dauran yeh system ke saare Provisioning Policies, Joiner/Mover rules aur Policy violations ko check karke plan ko 
+concrete action steps mein convert karta hai.
+
+🔹 provisionProject:-
+Definition: Compile hone ke baad execution ka asli kaam isi ka hai. 
+Yeh method ProvisioningProject ke actions ko directly IIQ Connector Architecture ke paas bhejta hai taaki actual target applications 
+(jaise Active Directory, SAP, Database) mein account create, modify ya delete ho sakein.
+
+🔹 checkProvisioningStatus:-
+Definition: Asynchronous provisioning ke mamle mein (jahan target system turant access nahi deta balki ticket create karta hai), 
+yeh method target connector se baar-baar status poochta (poll karta) hai ki kaam poora hua ya nahi.
+
+🔹 getIdentityModel:-
+Definition: Yeh method pure Identity object ke attributes (first name, last name, assigned roles, accounts) 
+ko ek asaan Map data structure mein badal deta hai jise Form Model kehte hain.
+Kab use karein: Jab workflow mein user ke samne ek bada form dikhana ho jisme uski purani details pehle se bhari hui 
+(pre-populated) hon.
+
+🔹 assimilatePlanApprovalForm:-
+Definition: Jab koi user ya manager buildProvisioningForm dwara banaye gaye form ko fill karke 'Submit' karta hai, 
+toh yeh method us form ke data ko vapas nikal kar ProvisioningPlan ke andar inject kar deta hai taaki galat data provision na ho.
+
+🔹 buildEventPlan:-
+Definition: Lifecycle events ke dauran (jaise Leaver/Termination event),
+yeh method user ke paas jitne bhi connected accounts (links) hain, un sabhi ko scan karta hai aur ek master plan taiyar karta hai
+unhe ek saath Disable ya Enable karne ke liye.
+
+🔹 updatePasswordHistory:-
+Definition: Jab koi user workflow ke throug apna password badalta hai, 
+toh yeh method us naye password ko encrypted format mein user ke Password History table mein store karta hai, 
+taaki purane passwords ko dobara use karne se roka ja sake (Password Policy enforce karne ke liye).
+
+🔹 buildProvisioningForm:-
+Deep Definition: Jab koi request compliance pass kar leti hai, 
+toh yeh method check karta hai ki kya target application (jaise Active Directory ya SAP) ko account banane ke liye kisi 
+aise attribute ki zaroorat hai jo request mein nahi diya gaya tha (e.g., dynamic "Home Directory" ya custom "Cost Center"). 
+Yeh un missing mandatory fields ko dhoondta hai aur dynamic roop se ek UI Form (Wizard) taiyar karta hai. 
+Yeh form workflow ke agle step par kisi human (Manager ya Administrator) ke samne display kiya jata hai taaki data runtime par 
+collect kiya ja sake.
+Is Form object ke andar missing fields ko manage karne ke liye fields(keys and values pair me):-
+name (The Technical Key): Yeh target application ka exact attribute ID hota hai (e.g., sAMAccountName, employeeID, email).
+value (The Holder): Shuruat mein yeh null ya blank hota hai. Jab manager screen par value bharta hai, 
+toh woh value isi key ke andar mapped ho jati hai.
+owner: Is property mein us manager ya identity ka naam/ID hota hai jise yeh form fill karne ka task assign kiya gaya hai.
+-->Kabhi provisioning ke time extra information chahiye hoti hai.
+Example:-
+User ko account create karna hai.
+Lekin missing fields hain:-
+Username
+Email Alias
+Department Code
+Server Name
+System ko ye values chahiye.
+
+🔹 processApprovalDecisions:-
+Deep Definition: Jab ek complex request mein multiple applications ke access shamil hote hain 
+(e.g., User wants access to AD, SAP, and Salesforce) aur approvals alag-alag managers ke paas jaate hain, 
+tab yeh method picture mein aata hai. Maan lijiye, Manager A ne AD ka access approve kiya, 
+lekin Manager B ne SAP ka access reject kar diya. Yeh method pooray approval matrix ka audit karta hai, 
+rejected items ko main ProvisioningPlan se hamesha ke liye strip-out (hata) deta hai, 
+aur approved items ko filter karke ek naya clean plan taiyar karta hai taaki actual engine sirf vahi provision kare jo officially
+approved hai.
+
+🔹 getProvisioningRetryThreshold:-
+Deep Definition: Yeh ek configuration reader method hai. Jab koi provisioning request "Network Connection Timed Out" jaisa error
+deti hai, toh yeh method system setting se check karta hai ki do retries ke beech mein IIQ engine ko kitna wait karna chahiye 
+(e.g., Default configuration ke mutabik 60 minutes). Yeh workflow variable ko interval time supply karta hai taaki thread fauran 
+retry karke target system par load na badhaye.
+
+🔹 getProvisioningMaxRetries:-
+Deep Definition: Yeh method yeh check karta hai ki kisi failed provisioning plan ko maximum kitni baar retry karne ki permission 
+di gayi hai (jaise max 3 ya 5 baar). Agar system continuous fail ho raha hai aur threshold limits exhaust ho chuki hain, 
+toh yeh workflow ko anant kaal (infinite loop) mein phasne se rokne ke liye ek hard stop limit return karta hai.
+
+🔹 getProvisioningMaxStatusChecks:-
+Deep Definition: Kuch target engines asynchronous kaam karte hain (yani woh request le lete hain aur ek ticket ID de dete hain).
+Yeh method check karta hai ki IIQ ticket status ko kitni baar maximum refresh/poll karega. Agar di gayi limit 
+(e.g., 10 status checks) cross ho jati hai, toh yeh use 'Timeout' mark karne ka signal deta hai.
+
+1. assembleRetryProject (Isolating the Failures):-
+Backend Mechanism:Jab provisioning fail hoti hai,toh original ProvisioningProject object ke andar kuch accounts/items/subSet
+Success hote hain aur kuch Retry state mein chale jate hain failed hone ke karan.
+Yeh method pure project ko scan karta hai aur safe/successful accounts/items/subSet ko vahin chhod deta hai.
+Yeh sirf un application/items/subSet requests ka ek alag slice ya subset nikaalta hai jo pending ya failed hain, 
+aur unhe ek naye isolated temporary project object mein wrap kar deta hai.
+Workflow Variable: Standard LCM workflows mein is naye isolated project ko retryProject variable ke andar store kiya jata hai.
+
+2. retryProvisionProject (The Actual Execution):-
+Backend Mechanism: Yeh method assembleRetryProject dwara banaye gaye retryProject ko input ki tarah leta hai. 
+Yeh workflow thread ko wahin par block karne ke bajay backend mein ek Request object(SailPoint background task) register kar deta hai. 
+Yeh method getProvisioningRetryThreshold (e.g., 60 minutes) ka wait karta hai aur system ko bolta hai:"Thodi der baad is target 
+application par dobara request hit karo, shayad tab tak unka server up ho jaye.
+aur bacha hua item/subset ko retryProject ke through failed provissioning item/subset provision ho jaye.
+
+3. mergeRetryProjectResults (Syncing Back to Reality):-
+Backend Mechanism: Jab background mein retry attempt khatam ho jata hai 
+(chahe account successfully ban gaya ho, ya maximum retries khatam hone par final error aaya ho), 
+toh uska data ek alag thread mein hota hai. mergeRetryProjectResults ka kaam hai dono worlds ko aapas mein jodna. 
+Yeh retryProject ke final status, integration logs, aur errors ko uthata hai aur unhe original Main ProvisioningProject ke status 
+ke upar overwrite/merge kar deta hai. Isse main workflow ko pata chal jata hai ki ab background task khatam ho chuka hai 
+aur workflow gracefully end step par ja sakta hai.
+
+ex:-
+<!-- Step 1: Failed items ko alag karo -->
+<Step name="Assemble Retry" action="call:assembleRetryProject">
+  <Arg name="project" value="ref:project"/>
+  <Return name="retryProject" value="retryProject"/>
+  <Transition to="Execute Retry" condition="script:(retryProject != null)"/>
+  <Transition to="End"/>
+</Step>
+
+<!-- Step 2: Background mein retry execute karo -->
+<Step name="Execute Retry" action="call:retryProvisionProject">
+  <Arg name="project" value="ref:project"/>
+  <Arg name="retryProject" value="ref:retryProject"/>
+  <Return name="retryProject" value="retryProject"/>
+  <Transition to="Merge Retry Results"/>
+</Step>
+
+<!-- Step 3: Final status ko master project mein merge karo -->
+<Step name="Merge Retry Results" action="call:mergeRetryProjectResults">
+  <Arg name="project" value="ref:project"/>
+  <Arg name="retryProject" value="ref:retryProject"/>
+  <Return name="project" value="project"/>
+  <Transition to="End"/>
+</Step>
+
+ex:-
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow name="Identity-Library-Deep-Dive-Example" explicitTransitions="true" libraries="Identity">
+
+  <Variable name="identityName" input="true" required="true"/>
+  <Variable name="plan" input="true" required="true"/>
+  <Variable name="project"/>
+  <Variable name="retryProject"/>
+  <Variable name="provisioningForm"/>
+
+  <Step name="Compile Project" icon="Task" action="call:compileProvisioningProject">
+    <Arg name="plan" value="ref:plan"/>
+    <Return name="project" value="project"/>
+    <Transition to="Check Dynamic Forms"/>
+  </Step>
+
+  <Step name="Check Dynamic Forms" icon="Analysis" action="call:buildProvisioningForm">
+    <Arg name="project" value="ref:project"/>
+    <Return name="form" value="provisioningForm"/>
+    
+    <Transition to="Present Missing Fields Form" condition="script:(provisioningForm != null)"/>
+    <Transition to="Update Password Security History"/>
+  </Step>
+
+  <Step name="Present Missing Fields Form" icon="Approval">
+    <Approval mode="serial" owner="script:IdentityLibrary.getManager(identityName)">
+      </Approval>
+    <Transition to="Update Password Security History"/>
+  </Step>
+
+  <Step name="Update Password Security History" icon="Check" action="call:updatePasswordHistory">
+    <Arg name="project" value="ref:project"/>
+    <Transition to="Execute First Provisioning Attempt"/>
+  </Step>
+
+  <Step name="Execute First Provisioning Attempt" icon="Provision" action="call:provisionProject">
+    <Arg name="project" value="ref:project"/>
+    <Transition to="Assemble Failed Items for Retry"/>
+  </Step>
+
+  <Step name="Assemble Failed Items for Retry" icon="Task" action="call:assembleRetryProject">
+    <Arg name="project" value="ref:project"/>
+    <Return name="retryProject" value="retryProject"/>
+    
+    <Transition to="Wait and Retry Execution" condition="script:(retryProject != null)"/>
+    <Transition to="End Pipeline"/>
+  </Step>
+
+  <Step name="Wait and Retry Execution" icon="Wait">
+    <Script>
+      import sailpoint.workflow.IdentityLibrary;
+      int retryThreshold = IdentityLibrary.getProvisioningRetryThreshold(context, workflow);
+      int maxRetries = IdentityLibrary.getProvisioningMaxRetries(context, workflow);
+      // Custom script to hold the thread or log info based on configurations
+    </Script>
+    
+    <Action library="Identity" method="retryProvisionProject">
+      <Arg name="project" value="ref:project"/>
+      <Arg name="retryProject" value="ref:retryProject"/>
+      <Return name="retryProject" value="retryProject"/>
+    </Action>
+    <Transition to="Merge Retry Results Back"/>
+  </Step>
+
+  <Step name="Merge Retry Results Back" icon="Undo" action="call:mergeRetryProjectResults">
+    <Arg name="project" value="ref:project"/>
+    <Arg name="retryProject" value="ref:retryProject"/>
+    <Return name="project" value="project"/>
+    <Transition to="Refresh User Profiles"/>
+  </Step>
+
+  <Step name="Refresh User Profiles" icon="Analysis" action="call:refreshIdentity">
+    <Arg name="identityName" value="ref:identityName"/>
+    <Transition to="End Pipeline"/>
+  </Step>
+
+  <Step name="End Pipeline" icon="Stop"/>
+
+</Workflow>
+-----------------------------------------------------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------------------------------------------------------------
+()Action list of all workflow:-
+buildAlertPlan
+compileProvisioningProject
+provisionProject
+call:<WorkflowName>
+rule:<RuleName>
+script
+buildSplitApprovalSet
+subprocess call(call:<workflow>)
+sendEmail / notification actions
+rule:<rule>
+variable operations
+buildEventPlan
+compileProvisioningProject
+provisionProject
+checkProvisioningStatus
+assimilateProject
+refreshIdentity
+finishRefresh
+buildApprovalSet
+processApprovalDecisions
+buildApprovalForm
+buildPlanApprovalForm
+assembleRetryProject
+requiresStatusCheck
+updatePasswordHistory
+buildApprovalSetFromNativeChanges
+/////////*
+()buildAlertPlan:-
+()action="buildAlertPlan":-yaha action kya hai kya karta hai aur ye buildAlertPlan kya hai kya karta hai?
+
+-->action kya hai?
+action = workflow step ke andar chalne wala kaam / method / function.
+Syntax:-
+<Step action="koiActionName">
+Matlab:-"Is step me ye action execute karo."
+
+-->2. buildAlertPlan kya karta hai? (Deep Dive)
+Jaise hi workflow shuru hota hai, uske paas sirf alert ki basic jankari hoti hai 
+(jaise: Alert ID, kis target par alert aaya hai, etc.). Woh jankari abhi sirf text form mein hoti hai, 
+use seedhe disable nahi kiya ja sakta.Yahan par buildAlertPlan action parde ke peeche yeh 3 bade kaam karta hai:-
+
+-->Target ka Pata Lagana (Target Identification):
+Yeh action alert ke andar ki details ko check karta hai. Woh dekhta hai ki alert ka targetType kya hai:
+Agar targetType Identity hai: Toh yeh samajh jata hai ki puri ki puri person/employee identity ko hi inactive karna hai.
+Agar targetType Link hai: Toh yeh samajh jata hai ki kisi specific application ke account (jaise sirf uske Salesforce account) ko target karna hai.
+
+-->Operation (Op) ko Map karna:-
+Aapne jo argument pass kiya tha <Arg name="op" value="ref:op"/> (jiski value "Disable" thi), 
+yeh action us instruction ko leta hai aur target account ke upar apply karne ke liye ready karta hai.
+
+-->Blueprint taiyar karna (Provisioning Plan):-
+Yeh SailPoint ka ek blank Provisioning Plan object banata hai aur usme likhta hai: "Mera target yeh account hai, 
+aur mujhe is par 'Disable' operation chalana hai."
+------------------------------------------------------------------------------------------------------------------------
+3. action="compileProvisioningProject" kaun sa action hai?
+Yeh bhi SailPoint ka ek core inbuilt action hai.
+Yeh kya karta hai? Pichle step mein jo plan (raw blueprint) bana tha, yeh use check karta hai. 
+Yeh dekhta hai ki user ke paas kya-kya roles hain, kya policies hain, 
+aur unke mutabik workflow ko aage badhane ke liye ek final execution plan taiyar karta hai 
+jise SailPoint ki bhasha mein Project (ProvisioningProject) kehte hain.
+
+()<Step action="call:compileProvisioningProject" condition="script:(!isNull(approvalSplitPoint))">:-
+-->compileProvisioningProject() action/method call karo.
+--call: ka matlab:-
+Kisi method / workflow library function / callable action ko invoke (call) karo.
+
+--condition code:-
+condition="script:(!isNull(approvalSplitPoint))"
+Ye decide karta hai:-Step chalega ya skip hoga?
+
+Example:-
+condition="script:true" ho toh step ko run karde.
+
+Example:-
+condition="script:false" ho toh step ko run mat karo.
+
+()script:-
+!isNull(approvalSplitPoint)
+Meaning:-
+approvalSplitPoint null nahi hona chahiye.
+
+()approvalSplitPoint ek workflow variable / marker / checkpoint hota hai jo batata hai:-
+Approval process me workflow ko kaha split / pause / continue karna hai.
+matlab workflow kis step pe hai approval ke:-
+-->toh yeh 3 main kaam karta hai:-
+--Plan ko todna (Splitting): Yeh poore request plan ko check karta hai aur alag-alag applications ke mutabik unhe alag-alag 
+sub-plans mein divide kar deta hai.
+--Approvers dhundhna (Approver Identification): Yeh har ek sub-plan ke liye sahi approver ka pata lagata hai 
+(jaise AD ke liye IT team, Salesforce ke liye Sales team).
+--Parallel Approvals banana: Yeh in sabhi approvals ko ek sath generate kar deta hai taaki teeno managers ke pass 
+unke screen par ek hi time par approval request chali jaye. Isse approval ka process bahut fast ho jata hai.
+
+
+()approvalSplitPoint ko value koun deta hai?
+-->Parent workflow / caller workflow pass karta hai
+Example:-
+()Parent workflow dega:-
+<Step action="call:MySubProcess">
+
+    <Arg name="approvalSplitPoint"
+         value="ManagerApproval"/>
+
+</Step>
+
+()Child workflow dega:-
+<Variable input="true"
+          name="approvalSplitPoint"/>
+Yaha value calling workflow de raha.
+
+4. Workflow input se aa sakta,Workflow start hote waqt.
+<Variable
+   input="true"
+   name="approvalSplitPoint"/>
+Workflow launch time:-
+approvalSplitPoint=SecurityApproval,sailpint dega.
+
+()Short answer:-
+variable-approvalSplitPoint ko value de sakta hai ye following 5:-
+1. Developer script
+2. Workflow variable initialization
+3. Parent/child workflow Arg passing
+4. SailPoint built-in approval/workflow library
+5. Workflow input
+*///////////
+------------------------------------------------------------------------------------------------------------
+4. action="provisionProject" kaun sa action hai?
+Yeh SailPoint ka sabse aakhiri aur main action hota hai jo badlavo ko sach mein apply karta hai.
+Yeh kya karta hai? compileProvisioningProject ne jo Project taiyar kiya tha, 
+yeh action use lekar actual target system (jaise Active Directory, Salesforce, ya koi database) ke paas jata hai
+aur wahan ke account ko sach mein Disable kar deta hai. Yaani action isi step mein hota hai.
+----------------------------------------------------------------------------------------------------------------------
+()5.rule:<RuleName>:-SailPoint IdentityIQ mein jab aap workflow ke kisi step ke andar rule="<RuleName>" likhte hain, 
+toh iska matlab hota hai ki aap SailPoint ke andar pehle se bane hue kisi Beanshell ya Java Rule (Script) ko call kar rahe hain.
+Jab SailPoint ka control us step par pahunchta hai, toh woh us Rule ke andar likhe gaye code ko execute (run) karta hai.
+
+Step mein Rule ko Input aur Output kaise milta hai?
+Input dena (<Arg>): Agar us rule ko chalne ke liye koi data chahiye (jaise user ka naam),
+toh aap <Arg> ke zariye use bhejte hain.
+Output lena (resultVariable): Jab rule apna kaam khatam karke koi result wapas bhejeta hai, 
+toh aap step mein resultVariable="myResult" likhkar use kisi naye variable mein save kar sakte hain.
+----------------------------------------------------------------------------------------------------------------
+()buildSplitApprovalSet:-
+Aasan bhasha mein kahein toh: Jab approvalSplitPoint ek bade provisioning plan ko alag-alag chote plans (sub-plans) mein tod deta
+hai, tab buildSplitApprovalSet ka kaam un sabhi chote plans ke liye alag-alag approval requests (Approval Items/Sets) ka ek 
+poora group taiyar karna hota hai.
+<!-- 1. Pehle hum Master ApprovalSet ko tod kar Split Approval Map banate hain -->
+<Step name="Build Split Approval Set" resultVariable="splitApprovalsMap">
+  <Description>
+    Yeh step master approval set ko read karta hai aur approver-wise alag-alag ApprovalSet objects ka Map taiyar karta hai.
+  </Description>
+  <Script>
+    <Source>
+      <![CDATA[
+        import sailpoint.object.ApprovalSet;
+        import sailpoint.object.ApprovalItem;
+        import java.util.Map;
+        import java.util.HashMap;
+
+        ApprovalSet masterSet = (ApprovalSet) workflow.get("approvalSet");
+        Map splitMap = new HashMap();
+
+        if (masterSet != null && !masterSet.isEmpty()) {
+            for (ApprovalItem item : masterSet.getItems()) {
+                // Maan lijiye humne har application ka ek dedicated owner define kiya hua hai
+                String ownerName = "spadmin"; 
+                if ("Active Directory".equals(item.getApplication())) {
+                    ownerName = "adManager";
+                } else if ("SAP".equals(item.getApplication())) {
+                    ownerName = "sapOwner";
+                }
+
+                // Agar is owner ka pehle se koi bucket nahi bana toh naya ApprovalSet banao
+                ApprovalSet subSet = (ApprovalSet) splitMap.get(ownerName);
+                if (subSet == null) {
+                    subSet = new ApprovalSet();
+                    splitMap.put(ownerName, subSet);
+                }
+                
+                // Item ko uske sahi owner ke bucket me daal do
+                subSet.add(new ApprovalItem(item));
+            }
+        }
+        return splitMap;
+      ]]>
+    </Source>
+  </Script>
+  <Transition to="Generate Parallel Approvals"/>
+</Step>
+
+<!-- 2. Ab is tayar splitMap ka use karke hum parallel approvals trigger karte hain -->
+<Step name="Generate Parallel Approvals" lineItem="ownerSubSet" replicator="splitApprovalsMap">
+  <Description>
+    'replicator' attribute splitApprovalsMap ke har ek key-value pair ke liye is step ko loop chalayega.
+    'lineItem' ke andar har ek loop me us individual approver ka ApprovalSet milega.
+  </Description>
+  <Approval action="approval" mode="parallel">
+    <Arg name="approver" value="script:return itemKey;"/> <!-- 'itemKey' me approver ka naam aayega (e.g., adManager) -->
+    <Arg name="approvalSet" value="ref:ownerSubSet"/>    <!-- Is approver ko sirf iska restricted data dikhega -->
+    <Arg name="workItemDescription" value="string:Please approve split items assigned to you."/>
+  </Approval>
+  <Transition to="End"/>
+</Step>
+/////////*
+()splitApprovalsMap:-Jab ek bada ApprovalSet hota hai aur usko different approvers / groups / owners ke hisab se split kiya jata hai,
+tab jo result banta hai usko aksar splitApprovalsMap me store karte hain.
+splitApprovalsMap ek Map hota hai.Isliye ye multiple key-value pairs store kar sakta hai.
+
+()Iske andar kya store hota hai?
+-->Generally 2 cheeze:-key aur value:-
+
+(1)Key:-Approver / owner / approval target
+Example:-
+Manager
+ApplicationOwner
+SecurityTeam
+John
+ABC_Group
+
+(2)Value:-
+Usually ApprovalSet
+Jisme us approver ke items hote hain.
+Example:-
+Key = Manager
+
+Value =
+ApprovalSet
+   ├── RoleAdd
+   └── EntitlementAdd
+
+Structure:-
+splitApprovalsMap
+   |
+   ├── Manager → ApprovalSet
+   │       ├── Item1
+   │       └── Item2
+   │
+   ├── AppOwner → ApprovalSet
+   │       └── Item3
+   │
+   └── SecurityTeam → ApprovalSet
+           └── Item4
+*/////////
+//////////*
+()replicator kya karta hai?
+Ye loop/iterate karta hai.
+Map ko read karta hai.
+Aur har map entry ke liye alag approval generate karta hai,aur approval step internally un sab approvals ko workitem me badal deta hai..
+ex;-
+replicator="splitApprovalsMap":-
+splitApprovalsMap me ye 3 entry data hai:-
+Manager      → ApprovalSet(Item1, Item2)
+AppOwner     → ApprovalSet(Item3)
+Security     → ApprovalSet(Item4, Item5)
+
+teeno ka alag alag teen approval banadega.
+*///////////
+////////*
+Example full flow:-
+Request aayi approvalSet me:-
+Add SAP Role
+Add AD Group
+Add DB Access
+
+Split:-
+SAPOwner → ApprovalSet(1 item)
+ADOwner → ApprovalSet(1 item)
+DBATeam → ApprovalSet(1 item)
+
+()<Approval replicator="splitApprovalsMap"/>
+Output:-
+3 workitems create honge.
+1 → SAP Owner inbox
+1 → AD Owner inbox
+1 → DBA Team inbox
+
+()replicator me item aur itemkey:-
+-->KEY   = Approver
+VALUE = ApprovalSet
+
+itemkey          item
+SAPOwner → ApprovalSet(1 item)
+ADOwner → ApprovalSet(1 item)
+DBATeam → ApprovalSet(1 item)
+*///////////
+////////////*
+()replicator="splitApprovalsMap" directly WorkItem create nahi karta.
+Ye Approval step ko replicate (multiple approval instances) karta hai.
+Phir Approval step internally WorkItem create karta hai.
+
+example flow:-
+Example:-
+splitApprovalsMap me:-
+Manager    → ApprovalSet(A,B)
+AppOwner   → ApprovalSet(C)
+Security   → ApprovalSet(D,E)
+fir ishko approval se workitem me badal deta hai.
+*////////////
+///////*
+()ownerSubSet kya hai?
+Original ApprovalSet ka chhota tukda (subset) jo ek specific owner ko diya gaya hai.
+Example:-
+Original ApprovalSet:-
+ApprovalSet
+ ├── RoleA
+ ├── RoleB
+ ├── ADGroup
+ └── SAPRole
+
+Split hua:-
+Manager
+   → RoleA, RoleB
+
+AppOwner
+   → ADGroup
+
+Security
+   → SAPRole
+
+Ab:-
+Manager ke liye
+ownerSubSet
+   ├── RoleA
+   └── RoleB
+AppOwner ke liye
+ownerSubSet
+   └── ADGroup
+Security ke liye
+ownerSubSet
+   └── SAPRole
+
+So:-
+ownerSubSet = ek approver ka approval subset.
+*/////////
+//////////*
+()lineItem practically kya karta hai?
+Approval UI / WorkItem me jo individual approval rows/items dikhte hain, unke source ko indicate karta hai.
+Example:-
+Manager inbox me:-
+Approve Access
+[Approve] RoleA
+[Approve] RoleB
+Ye data ownerSubSet se aa raha ho sakta hai.
+
+Short answer:-
+ownerSubSet = specific owner/approver ka ApprovalSet subset.
+lineItem="ownerSubSet" =
+Approval step me line-item approvals ke liye ownerSubSet variable use karo.
+*///////////
+///////////*
+()yaha ownersubsets ka alag alag approve aur reject decisions kaha store hoga?
+-->Maan lo:-
+Original ApprovalSet me 4 request teen object ka:-
+RoleA
+RoleB
+ADGroup
+SAPRole
+
+Split hua:-
+Manager   → ownerSubSet1
+AppOwner  → ownerSubSet2
+Security  → ownerSubSet3
+----------------------
+Step 1 — Split ke baad kaha store hai?
+splitApprovalsMap:-
+
+Manager
+   → ownerSubSet1
+
+AppOwner
+   → ownerSubSet2
+
+Security
+   → ownerSubSet3
+
+Aur:-fir badla approvals aur approvals se workitems:-
+ownerSubSet1 = ApprovalSet(RoleA, RoleB)
+ownerSubSet2 = ApprovalSet(ADGroup)
+ownerSubSet3 = ApprovalSet(SAPRole)
+--------------------------------------------------------------------------------
+Step 2 — Approver decision kaha store hoga?
+Har ownerSubSet ke apne ApprovalItems me.
+
+()Manager WorkItem:-
+Manager approve/reject karta hai.
+
+Before manager ko bhejne ke pehle:-
+ownerSubSet1
+RoleA
+RoleB
+
+Manager action lene ke baad:-
+RoleA → Approve
+RoleB → Reject
+
+manager decision lene ke baad decision Stored in ownerSubSet:-
+ownerSubSet1
+RoleA (Approved)
+RoleB (Rejected)
+AppOwner WorkItem
+---------------------
+Before manager ko bhejne ke pehle:-
+ownerSubSet2
+ADGroup
+
+manager ke Action lene ke baad:-
+ADGroup → Approve
+
+manager decision lene ke baad decision Stored in ownerSubSet:-
+ownerSubSet2
+ADGroup (Approved)
+--------------------
+Security WorkItem
+Before manager ko bhejne ke pehle:-
+ownerSubSet3
+SAPRole
+
+Action:
+SAPRole → Reject
+
+manager decision lene ke baad decision Stored in ownerSubSet in ApprovalItem:-
+ownerSubSet3
+SAPRole (Rejected)
+------------------------------
+Inside each ownerSubSet's ApprovalItems.
+Structure:-
+ownerSubSet (ApprovalSet)
+     |
+     └── ApprovalItem
+             |
+             └── state / decision
+---------------------------------------
+Example:-
+ownerSubSet1
+
+ApprovalItem(RoleA)
+      decision=Approved
+
+ApprovalItem(RoleB)
+      decision=Rejected
+*//////////
+/////////////*
+()variable workflow kya ha kya karta hai in Workflow?
+-->Yaha workflow = Workflow object hai.
+Ye current running workflow ka object/container hota hai.
+Iske andar workflow ki variables, state, context, data hota hai.
+ex:-
+SailPoint me:-
+workflow.get("approvalSet");
+Matlab:-
+
+-->Suppose workflow me variable hai:-
+<Variable name="approvalSet"/> declare hai in current workflow:-
+Value stored:-
+ApprovalSet object
+-->Workflow object se "approvalSet" variable ki value nikalo.
+Code:-
+ApprovalSet set =
+    (ApprovalSet) workflow.get("approvalSet");
+
+()workflow kya store karta hai?
+Workflow object me usually:-
+workflow variables,state,arguments,metadata store karta hai.
+*////////////
+--------------------------------------------------------------------------------------------------------------------
+()1. action="approval" Ye kya karta hai?:-
+Work Item Creation: Ye step backend me ek WorkItem object create karta hai aur use approver(jaise Manager, Owner, ya koi Role) 
+ke dashboard par bhej deta hai.
+Execution Pause:-Jab tak approver "Approve" ya "Reject" button par click nahi karta, 
+tab tak workflow aage nahi badhta (is step par hold rehta hai).
+Decision Handling: Approver ke decision ke baad, 
+workflow us decision (approved ya rejected) ko read karta hai aur uske basis par aage ka rasta (transition) decide karta hai.
+
+2. Code Example:-
+Ek typical action="approval" step workflow XML me kuch aisa dikhta hai:-
+XML
+<Step name="Manager Approval" action="approval">
+  <!-- Kis ke paas approval jayega -->
+  <Arg name="launcher" value="ref:launcher"/>
+  <Arg name="approver" value="script:return identity.getManager().getName();"/>
+  <Arg name="workItemDescription" value="string:Please approve access request for $(identityName)"/>
+  <Arg name="workItemNotification" value="string:Two-Factor Authentication Approval Email"/>
+  <!-- Approval ke baad workflow kaha jayega -->
+  <Transition to="Provisioning Step" when="approved"/>
+  <Transition to="Send Rejection Email" when="rejected"/>
+</Step>
+
+3. Arguments jo isme use hote hain:-
+approver: Isme us Identity ka naam pass kiya jata hai jise approve karna hai (e.g., Manager ya koi specific Workgroup).
+workItemForm: Agar aap chahte hain ki approver approval ke sath-sath koi form bhi fill kare ya data review kare, 
+toh yaha Form ka reference diya jata hai.
+workItemNotification: Approver ko jo email alert jata hai (ki aapke pass ek approval pending hai), 
+us Email Template ka naam yaha specify hota hai.
+----------------------------------------------------------------------------------------------------------------------------
+()subprocess="LCM Provisioning">:-
+SailPoint IdentityIQ (IIQ) ke workflows mein Subprocess Call tab use hoti hai jab hume ek workflow ke andar se dusre kisi
+completely independent ya nested workflow ko invoke (trigger) karna hota hai.
+
+ex:-
+<Step name="Call Provisioning Subprocess" subprocess="LCM Provisioning">
+  <Description>
+    Parent workflow se configuration aur identity details ko child subprocess mein pass karna.
+  </Description>
+  
+  <!-- INPUT ARGUMENTS: Parent se Subprocess mein data bhejna -->
+  <Arg name="identityName" value="ref:identityName"/>
+  <Arg name="project" value="ref:project"/>
+  <Arg name="plan" value="ref:plan"/>
+  <Arg name="launcher" value="ref:launcher"/>
+
+  <!-- OUTPUT RETURN VARIABLES: Subprocess se wapas parent mein data lena -->
+  <Return name="project" to="project"/>
+  <Return name="workflowResult" to="subprocessStatus"/>
+
+  <Transition to="Audit and Log Results"/>
+</Step>
+//////////*
+()Dusre workflow ko call karna: Yeh parent workflow ko temporary pause karke "LCM Provisioning" naam ke OOTB 
+(Out Of The Box) child workflow ko activate kar deta hai.
+Provisioning karake project return karna: Yeh child workflow end-applications (jaise Active Directory, SAP, etc.) 
+me actual accounts create/modify (provisioning) karta hai aur poora status update karke updated project 
+(ProvisioningProject object) wapas parent workflow ko lauta deta hai.
+
+()2. Yeh charo arguments kisko bhej raha hai?
+Yeh charo <Arg> tags parent workflow ke variables ki value utha kar LCM Provisioning (Child Workflow) 
+ke internal input context (memory area) mein inject kar rahe hain.
+Jab tak aap yeh variables pass nahi karoge, child workflow ko pata hi nahi chalega ki kis bande ke liye provisioning karni hai 
+aur kya access dena hai.
+*/////////
+------------------------------------------------------------------------------------------------------------
+()SailPoint IdentityIQ (IIQ) ke workflows mein emails aur alerts bhejne ke liye sendEmail action ya Notification actions ka 
+use kiya jata hai. Jab bhi koi approval pending ho, request complete ho jaye, ya koi error aaye, toh users ya administrators ko
+notify karne ke liye yeh mechanism kaam aata hai.
+
+<Step name="Send Confirmation Email" action="sendEmail">
+  <Description>
+    User ke manager ko access provisioning ki confirmation ka email bhejna.
+  </Description>
+  
+  <!-- INPUT ARGUMENTS -->
+  <Arg name="template" value="LCM User Notification"/> <!-- Email Template ka Naam -->
+  <Arg name="to" value="script:return identity.getManager().getEmail();"/> <!-- Target Email Address -->
+  
+  <!-- OOTB Variable Context Bindings -->
+  <Arg name="identityName" value="ref:identityName"/>
+  <Arg name="launcher" value="ref:launcher"/>
+  
+  <Transition to="End"/>
+</Step>
+----------------------------------------------------------------------------------------------------------------------
+()rule:<rule>:-Chalo points me samajhte hain ki Rule call karna kyu zaroori hai:-
+1. Reusability (Ek baar banao, kahin bhi chalao):-
+Maan lo tumne ek complex logic likha jo user ka email format validation karta hai ya manager ka exact identity ID nikalta hai.
+Problem: Agar tumne use workflow ke step 1 ke andar hi inline script me likh diya, toh kal ko agar kisi doosre workflow, kisi quicklink form, ya kisi aggregation task me wahi logic chahiye hoga, toh tumhein code copy-paste karna padega.
+Solution: Agar tumne ek external Rule bana diya, toh use tum Workflow A, Workflow B, Lifecycle Event Hook, ya Form Field Validation — sabhi jagah se sirf uske naam se call kar sakte ho. Code duplication zero ho jati hai.
+
+()2. Maintenance and Hot-Fixes (Bina workflow ko chhede code badalna)
+Production environment me jab live users system use kar rahe hote hain, tab chalte hue workflow ko touch karna bohot risky hota hai.
+Agar inline script hai: Agar code me koi bug aa gaya ya logic badalna hai (jaise HR-WORKDAY aggregation id change karni hai), 
+toh tumhein poora workflow XML edit karna padega. Isse purane chalte hue workflow cases (active threads) corrupt ho sakte hain ya break ho sakte hain.
+Agar Rule call kiya hai: Tumhe workflow ko haath bhi nahi lagana padega. Tum chupchaap Debug page ya IdentityIQ UI me jaoge, 
+target Rule ke andar ka Beanshell code update karke save kar doge. Agli hi second se saare workflow naya logic use karne lagenge, bina kisi downtime ke.
+
+3. Workflow Readability & Engine Performance:-
+Workflow XML ka kaam hai Process Orchestration (yani sirf yeh batana ki Step A ke baad Step B par jana hai, aur fail hone par Step C par jana hai).
+Agar tum 200-300 lines ka heavy Java/Beanshell code (jaise complex DB queries ya loops) workflow ke step ke andar hi daal doge, toh workflow ki readability khatam ho jayegi.
+SailPoint engine ke liye bhi workflow schemas ko parse karna heavy ho jata hai. Workflow ko clean rakhne ke liye saara heavy processing logic rules me shift kar diya jata hai.
+
+ex:-
+()<Step name="Calculate Risk Score" rule="Custom Risk Score Calculation Rule" resultVariable="calculatedScore">
+  <Description>
+    Bina kisi action block ke, direct step attribute ke through rule call karna.
+  </Description>
+  <Transition to="End Step"/>
+</Step>
+
+()<Step name="Execute Identity Customization" action="runRule" resultVariable="updatedIdentity">
+  <Description>
+    Database se existing Rule object ko load karke workflow context mein run karna.
+  </Description>
+  
+  <!-- Target Rule ka exact name jo SailPoint me saved hai -->
+  <Arg name="rule" value="Custom Identity Attribute Mapper Rule"/>
+  
+  <!-- Rule ke andar pass hone wale custom inputs -->
+  <Arg name="identityName" value="ref:identityName"/>
+  <Arg name="status" value="ref:status"/>
+  
+  <Transition to="Next Step"/>
+</Step>
+------------------------------------------------
+()action="buildEventPlan":-
+Jab bhi koi Identity Attribute change hota hai (jaise HR system se kisi user ka Status "Active" se "Terminated" hua), 
+toh IIQ ka Lifecycle Event Engine alert ho jata hai. Us alert ke baad, actual systems (AD, SAP) par kya action lena hai 
+(account disable karna, group hatana), uske liye action="buildEventPlan" ka use kiya jata hai.
+ye plan banake deta hai event ke basis pe.
+ex:-
+<Step name="Build Event Plan" action="buildEventPlan" resultVariable="plan">
+  <Description>
+    Lifecycle event trigger hone par target identity ke liye provisioning plan taiyar karna.
+  </Description>
+  
+  <!-- IMPLICIT INPUT ARGUMENTS -->
+  <Arg name="identityName" value="ref:identityName"/>
+  <Arg name="eventName" value="ref:eventName"/>
+  <Arg name="event" value="ref:event"/> <!-- sailpoint.object.IdentityTrigger object -->
+
+  <Transition to="Compile Project" when="script:plan != null"/>
+  <Transition to="End" when="script:plan == null"/>
+</Step>
+
+()alert koun generate karega?
+-->1. Workflow Engines (Custom alerts):-
+Jab bhi kisi workflow me koi major activity hoti hai, toh developer khud decide karta hai ki kab alert generate karna hai.
+Kaun karta hai? Workflow ke andar likha hua <Step> ya <Script>.
+Kaise hota hai? Agar koi approval ka kaam ruk gaya hai (Escalation), ya provisioning fail ho gayi hai, 
+toh workflow ke andar sendEmail action ya custom Beanshell script (context.sendEmailNotification()) 
+ke through users ya admins ke liye alert generate kiya jata hai.
+--------------------------------------------------------
+()action="compileProject":-
+SailPoint IdentityIQ (IIQ) ke andar compileProvisioningProject ek bahut hi powerful aur core internal method hai 
+(jo Java level par sailpoint.api.Provisioner class ke andar hota hai), aur isi ko workflows mein action="compileProject" 
+ke naam se call kiya jata hai.
+
+<Step name="Compile Project" action="compileProject" resultVariable="project">
+  <Description>
+    Raw ProvisioningPlan ko utha kar use cross-policies ke sath evaluate karna aur ek valid ProvisioningProject return karna.
+  </Description>
+  
+  <!-- INPUT ARGUMENTS -->
+  <Arg name="plan" value="ref:plan"/>                 <!-- Raw sailpoint.object.ProvisioningPlan -->
+  <Arg name="identityName" value="ref:identityName"/> <!-- Target User Name -->
+  <Arg name="requester" value="ref:launcher"/>        <!-- Jisne request dali -->
+  
+  <Transition to="Call Provisioning Subprocess" when="script:project != null"/>
+  <Transition to="End" when="script:project == null"/>
+</Step>
+ex java:-
+Provisioner provisioner =
+        new Provisioner(context);
+
+ProvisioningProject project =
+        provisioner.compile(plan);
+
+provisioner.execute(project);
+
+ex:-
+import sailpoint.api.Provisioner;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.object.Identity;
+
+ProvisioningPlan myPlan = (ProvisioningPlan) workflow.get("plan");
+Identity targetIdentity = context.getObjectByName(Identity.class, identityName);
+
+if (myPlan != null && targetIdentity != null) {
+    // 1. SailPoint ke core Provisioner object ka instance banana
+    Provisioner provisioner = new Provisioner(context);
+    
+    // 2. Provisioner class ke internal compileProvisioningProject method ko hit karna
+    ProvisioningProject compiledProject = provisioner.compileProvisioningProject(myPlan, targetIdentity);
+    
+    // 3. Compiled project ko memory context me check ya save karna
+    if (compiledProject != null) {
+        workflow.setVariable("project", compiledProject);
+        
+        // Aap check kar sakte hain ki kya isme koi violations generate hui hain
+        boolean hasViolations = compiledProject.hasPolicyViolations();
+        log.info("Project compiled successfully. Has violations? " + hasViolations);
+    }
+}
+-----------------------------------------------------------------------------------------------------------------
+()action="provision":-
+SailPoint IdentityIQ (IIQ) ke andar provisionProject provisioning pipeline ka sabse aakhri aur action-oriented phase hai.
+Yeh sailpoint.api.Provisioner class ka ek core core method hai, jise workflows mein standard action="provision" ke naam se call 
+kiya jata hai.Jab aapka ProvisioningPlan compile hokar ek safe aur validated ProvisioningProject ban jata hai, 
+tab provisionProject us project ko uthata hai aur actual target systems (jaise Active Directory, SAP, Database) 
+par badlav karne ke liye Connectors aur Integration Engines ko direct fire (execute) karta hai.
+ex:-
+<Step name="Execute Provisioning" action="provision" resultVariable="project">
+  <Description>
+    Compiled ProvisioningProject ko execute karna aur target end-applications par actual updates push karna.
+  </Description>
+  
+  <!-- INPUT ARGUMENT: Sirf compiled project object chahiye hota hai -->
+  <Arg name="project" value="ref:project"/>
+  
+  <Transition to="Refresh Identity Canvas"/>
+</Step>
+
+ex:-
+import sailpoint.api.Provisioner;
+import sailpoint.object.ProvisioningProject;
+
+// Assumed: workflow ya rule context se pehle se compiled 'project' object mil raha hai
+ProvisioningProject compiledProject = (ProvisioningProject) workflow.get("project");
+
+if (compiledProject != null) {
+    // 1. Core Provisioner instance ko instantiate karna
+    Provisioner provisioner = new Provisioner(context);
+    
+    // 2. provisionProject method ko trigger karna (Actual connection attempts start here)
+    provisioner.provisionProject(compiledProject);
+    
+    // 3. Post-execution status check karna
+    log.info("Provisioning execution complete. Checking project status map...");
+    if(compiledProject.isProvisioned()) {
+        log.info("All account requests successfully pushed to target systems.");
+    }
+}
+----------------------------------------------------------------------------------------------------------------
+()action="checkProvisioningStatus":-
+-->
+Yeh step kyu chahiye hota hai? (The Real Reason)
+SailPoint me jab provisioning hoti hai, toh do tarike ke systems hote hain:-
+Synchronous (Turant kaam hone wale): Jaise hi SailPoint ne Active Directory ko request bheji, 
+usne 1 second me account bana diya aur bol diya "Success".
+
+Asynchronous (Time lene wale):-
+Jaise koi system down hai, toh SailPoint us request ko Retry Queue (spt_provisioning_transaction) me daal deta hai
+ki "bhai 1 ghante baad fir koshish karenge".Ya fir SailPoint ne ServiceNow me ek ticket open kar diya ki 
+"jab wahan ka admin physically account banayega, tab kaam poora hoga".
+
+ex:-
+<Step name="Check Provisioning Status" action="checkProvisioningStatus" resultVariable="provisioningStatus">
+  <Description>
+    Asynchronous provisioning aur pending transaction requests ka status track karna.
+  </Description>
+  
+  <!-- INPUT ARGUMENT -->
+  <Arg name="project" value="ref:project"/> <!-- Current dynamic ProvisioningProject reference -->
+  
+  <!-- TRANSITIONS: Status ke basis par decision lena -->
+  <Transition to="Wait Step" when="script:\"pending\".equals(provisioningStatus);"/>
+  <Transition to="Refresh Identity" when="script:\"success\".equals(provisioningStatus) || \"failure\".equals(provisioningStatus);"/>
+</Step>
+
+<Step name="Wait Step" wait="60">
+  <Description>Agar transaction pending hai, toh 60 seconds tak thread ko pause rakho aur fir wapas check karo.</Description>
+  <Transition to="Check Provisioning Status"/>
+</Step>
+
+ex:-
+import sailpoint.api.Provisioner;
+import sailpoint.object.ProvisioningProject;
+
+ProvisioningProject myProject = (ProvisioningProject) workflow.get("project");
+
+if (myProject != null) {
+    Provisioner provisioner = new Provisioner(context);
+    
+    // Engine se current execution status string nikalna
+    // Expected Outputs: "success", "failure", "pending"
+    String status = provisioner.checkProvisioningStatus(myProject);
+    
+    log.info("Current Background Provisioning Status: " + status);
+    
+    if ("pending".equals(status)) {
+        // Project object ke andar ke dynamic provisioning transactions ko inspect karna
+        boolean isAsynchronous = myProject.hasAsynchronousAssembling();
+        log.warn("Some items are stuck in Retry Queue or Service Desk. Async Status: " + isAsynchronous);
+    }
+    
+    workflow.setVariable("provisioningStatus", status);
+}
+-------------------------------------------------------------------------------------------------------------------
+()action="assimilateProject":-
+Aasan bhasha mein kahein toh: assimilateProject ka kaam hai provisioning complete hone ke baad naye/updated accounts aur data 
+ko target systems se SailPoint me aggregate karta hai.jo target systems se provisioning ke baad mile naye accounts, IDs, aur 
+structural attributes ko SailPoint ke internal database(spt_link) mein live update kar deta hai bina fully aggregation ke.
+ex:-
+<Step name="Assimilate Provisioning Results" action="assimilateProject" resultVariable="project">
+  <Description>
+    Target systems se aaye response data ko SailPoint ke database (spt_link) me integrate/absorb karna.
+  </Description>
+  
+  <!-- INPUT ARGUMENT -->
+  <Arg name="project" value="ref:project"/> <!-- Current dynamically updated ProvisioningProject reference -->
+  
+  <Transition to="Refresh Identity"/>
+</Step>
+----------------------------------------------------------------------------------------------------------------------
+()action="refreshIdentity":-
+Bhai, provisioning pipeline ka sabse aakhri aur final step hota hai refreshIdentity(refresh identity cube) 
+(jise java level par sailpoint.api.Identitizer class aur workflows mein action="refreshIdentity" ke naam se call kiya jata hai).
+refreshIdentity: Badle hue links ya assimilateProject ke baad ke poore User Cube, Roles aur Risk Scores ko recalculate karke database me save kar deta hai.
+<Step name="Refresh Identity Canvas" action="refreshIdentity">
+  <Description>
+    Provisioning aur assimilation ke baad identity attributes, roles aur risk scores ko recalculate karna.
+  </Description>
+  
+  <!-- INPUT ARGUMENTS -->
+  <Arg name="identityName" value="ref:identityName"/> <!-- Target User Name -->
+  <Arg name="correlateEntitlements" value="string:true"/> <!-- Entitlements ko cube par sync karna -->
+  <Arg name="provision" value="string:false"/> <!-- Refresh ke dauran dubara provisioning stop rakhna -->
+  
+  <Transition to="End"/>
+</Step>
+--------------------------------------------------------------------------------------------------------------
+()action="finishRefresh":-
+Jab refreshIdentity poore user profile (IdentityCube) ke attributes, dynamic roles, 
+aur risk scores ko top-to-bottom recalculate kar leta hai, 
+tab finishRefresh is poore refresh cycle par "Final Full Stop" (seal) lagata hai.
+ex:-
+<Step name="Finish Identity Refresh" action="finishRefresh">
+  <Description>
+    Identity refresh cycle ke post-actions, role-based indirect provisioning aur db locks ko clear karna.
+  </Description>
+  
+  <!-- INPUT ARGUMENTS -->
+  <Arg name="identityName" value="ref:identityName"/>
+  
+  <Transition to="End"/>
+</Step>
+---------------------------------------------------------------------------------------------------------------------
+()ApprovalSet kya hai?
+SailPoint IdentityIQ (IIQ) ke andar build()
+ApprovalSet ek aisi utility ya method hai jiska kaam raw cart requests (requested roles, entitlements, ya accounts) ko read karke
+ek structured sailpoint.object.ApprovalSet object taiyar karna hota hai.
+
+Jab koi user Access Request (LCM) submit karta hai, toh uske cart mein mix items ho sakte hain—jaise 2 Roles aur 3 Entitlements.
+buildApprovalSet in saare items ko uthata hai aur unhe individual ApprovalItem object ke roop mein ek single bucket(ApprovalSet)
+mein wrap kar deta hai, taaki aage chal kar approvers ko dikhaya ja sake ki kis-kis cheez ka approval lena hai.
+
+()ApprovalItem kya hai?
+ApprovalItem: Iske andar har ek single request ki specific details hoti hain:-
+Application: Kis application ka access manga gaya hai (e.g., Active Directory).
+Name: Attribute ka naam (e.g., memberOf ya roles).
+Value: Actual value jo request ki gayi hai (e.g., CN=Finance-Group).
+Operation: Operation type (jaise Add ya Remove).
+State: Current approval state (jaise Pending, Approved, ya Rejected).
+
+ex:-
+<!-- Step 1: Raw plan se ApprovalSet taiyar karna -->
+<Step name="Build Approval Set" resultVariable="approvalSet">
+  <Description>ProvisioningPlan ko read karke lines-items ka ApprovalSet object banana.</Description>
+  <Script>
+    <Source>
+      <![CDATA[
+        // Yahan upar diya gaya Beanshell logic execute hota hai.
+		import sailpoint.object.ApprovalSet;
+import sailpoint.object.ApprovalItem;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import java.util.List;
+
+// 1. Ek naya blank ApprovalSet object instantiate karna
+ApprovalSet myApprovalSet = new ApprovalSet();
+
+// 2. Maan lijiye aapke pass pehle se compiled 'plan' (ProvisioningPlan) variable hai
+ProvisioningPlan plan = (ProvisioningPlan) workflow.get("plan");
+
+if (plan != null && plan.getAccountRequests() != null) {
+    // 3. Plan ke andar ke saare AccountRequests par iterate karna
+    for (AccountRequest accReq : plan.getAccountRequests()) {
+        String appName = accReq.getApplicationName();
+        
+        List attrReqs = accReq.getAttributeRequests();
+        if (attrReqs != null) {
+            // 4. Har ek AttributeRequest ke liye ek unique ApprovalItem banana
+            for (AttributeRequest attrReq : attrReqs) {
+                ApprovalItem item = new ApprovalItem();
+                
+                item.setApplication(appName);
+                item.setName(attrReq.getName());
+                item.setValue(attrReq.getValue());
+                
+                // Operation set karna (Add/Remove)
+                if (attrReq.getOp() != null) {
+                    item.setOperation(attrReq.getOp().toString());
+                }
+                
+                // Initial State hamesha Pending rahegi jise approver badlega
+                item.setState(ApprovalItem.State.Pending); 
+                
+                // Item ko main ApprovalSet bucket me add karna
+                myApprovalSet.add(item);
+            }
+        }
+    }
+}
+
+// 5. Is ApprovalSet ko aage workflow engine me use karne ke liye save karna
+workflow.setVariable("approvalSet", myApprovalSet);
+        return myApprovalSet;
+      ]]>
+    </Source>
+  </Script>
+  <Transition to="Split Approvals Step"/>
+</Step>
+
+()action="approval":-
+<Step name="Manager Approval" action="approval">
+  <Description>Manager ke paas simple single-threaded work item bhejna.</Description>
+  
+  <!-- INPUT ARGUMENTS -->
+  <Arg name="approver" value="script:return identity.getManager().getName();"/>
+  <Arg name="approvalSet" value="ref:approvalSet"/> <!-- Request details jo UI par dikhengi -->
+  <Arg name="workItemDescription" value="string:Approve access request for $(identityName)"/>
+  <Arg name="workItemNotification" value="LCM Manager Approval Email"/>
+  
+  <!-- TRANSITIONS -->
+  <Transition to="Execute Provisioning" when="approved"/>
+  <Transition to="Send Rejection Email" when="rejected"/>
+</Step>
+-----------------------------------------------------------------------------------------------------------------
+()action="processApprovalDecisions":-
+SailPoint IdentityIQ (IIQ) ke WorkflowEngine ka ek built-in core action method hai, 
+jise workflows mein action="processApprovalDecisions" ke naam se call kiya jata hai.
+Plan Modification (Delta Filtering): Yeh original ProvisioningPlan ko memory me load karta hai. 
+Agar koi item Rejected mila, toh uske respective AccountRequest ya AttributeRequest block ko plan se permanently delete (remove)
+kar deta hai.Isse yeh sunishchit (ensure) hota hai ki downstream provisioning engine ke paas galat ya rejected access na chala jaye.
+ye action="processApprovalDecisions" step chalega manager ka approval decision milne ke baad.
+ex:-
+<Step name="Process Decisions" action="processApprovalDecisions">
+  <Description>
+    Approver ke decisions ke mutabik raw provisioning plan ko filter aur clean karna.
+  </Description>
+  
+  <!-- INPUT ARGUMENTS -->
+  <Arg name="project" value="ref:project"/>       <!-- Current ProvisioningProject -->
+  <Arg name="approvalSet" value="ref:approvalSet"/> <!-- Completed ApprovalSet with states -->
+  
+  <Transition to="Compile Project" when="script:plan != null"/>
+  <Transition to="End" when="script:plan == null"/>
+</Step>
+----------------------------------------------------------------------------------------------------------------------------------
+step:1:-
+Q1. WorkItem ke Finished hote hi kya hota hai?
+Jaise hi manager UI par submit dabata hai, background me ye sequential operations trigger hote hain:-
+
+spt_work_item Update: Jo temporary row database ki spt_work_item table me pending padi thi, 
+uska status badal kar Finished ya Closed ho jata hai. Usme approver ka decision aur comments permanent save ho jate hain.
+
+Workflow Awaken (Neend se jagna): Jo main Workflow execution thread abhi tak Suspended (Hold) state me database me lock tha 
+(spt_workflow_case table me), use background process wapas active memory (Heap) me khinch kar laati hai aur unfreeze karti hai.
+
+Step Context Evaluation: Engine workflow ke agle step par badhta hai, 
+jo standard workflows me hamesha processApprovalDecisions hota hai.
+
+--step:2:-
+Q2. Koun pata lagata hai ki Approve hua ya Reject?
+Yeh pata lagane ka kaam sailpoint.workflow.IdentityRequestLibrary class ke backend methods karte hain, 
+aur ise workflow me action="processApprovalDecisions" step ke throw chalaya jata hai.
+
+Manager ka actual decision ApprovalSet ke andar ke har ek ApprovalItem ke state field
+(jaise State="Approved" ya State="Rejected") me band hota hai.
+
+processApprovalDecisions action is ApprovalSet par loop chalata hai aur check karta hai ki manager ne kis item ke samne green 
+tick (Approve) mara hai aur kiske samne red cross (Reject).
+
+--step:3:-
+Q3. ProvisioningPlan me add koun karta hai workitem ko?
+Yahan par ek chhota sa technical correction hai bhai: WorkItem ko ProvisioningPlan me add nahi kiya jata, 
+balki ProvisioningPlan pehle se hi bana hota hai,aur manager ke decision ke mutabik us plan me se chizen KAATI(Filter ki) jaati hain.
+
+Aur ye kaam bhi processApprovalDecisions hi karta hai!
+
+Iska complete backend modification mechanism samajho:-
+Jab tumne cart submit kiya tha, tabhi ek Master ProvisioningPlan ban gaya tha (Maan lo: AD account + SAP account).
+
+Agar manager ne SAP ko Approve kiya aur AD ko Reject kiya.
+
+Toh processApprovalDecisions original ProvisioningPlan object ko memory me kholega.Woh dekhega ki AD request ke samne State="Rejected" laga hai.
+
+toh Yeh step turant us ProvisioningPlan ke andar se AD waale AccountRequest block ko permanently delete (remove) kar dega.
+
+Ab plan me sirf approved waala SAP account bacha.Is filtered plan ko lekar yeh aage badhega aur agle step compileProject aur provisioner ko de dega.
+
+-------------------------------------------------------------------------------
+()action="buildApprovalForm":-
+SailPoint IdentityIQ (IIQ) ke andar buildApprovalForm ek mahatvapurna internal action method hai,
+aur ise workflows mein action="buildApprovalForm" ke naam se call kiya jata hai.
+Iska main kaam hota hai: Ek dynamic sailpoint.object.Form object taiyar karna, 
+jise approver approval ke dauran UI par dekhta hai aur usme fields edit ya review kar sakta hai.
+Maan lo ek manager ke paas approval request gayi. Aap chahte ho ki approval ke time manager sirf "Approve" na kare,
+balki ek form dekhe jahan woh user ke liye End Date select kar sake, ya koi Comments likh sake,
+ya kisi Drop-down se access ka reason select kar sake. Us dynamic UI form ko generate karne ka kaam buildApprovalForm karta hai.
+ex:-
+<!-- Step 1: Approver ke liye Dynamic Form taiyar karna -->
+<Step name="Create Approval Form" action="buildApprovalForm" resultVariable="approvalForm">
+  <Description>Approver ke liye dynamic fields aur interaction form build karna.</Description>
+  
+  <!-- INPUT ARGUMENTS -->
+  <Arg name="formTemplate" value="LCM Default Approval Form"/> <!-- Form Template Name -->
+  <Arg name="identityName" value="ref:identityName"/>         <!-- Target User -->
+  <Arg name="approvalSet" value="ref:approvalSet"/>           <!-- Current Requested Items -->
+
+  <Transition to="Manager Approval Component"/>
+</Step>
+
+<!-- Step 2: Form ko Approval Step ke andar use karna -->
+<Step name="Manager Approval Component" action="approval">
+  <Arg name="approver" value="ref:managerName"/>
+  <Arg name="approvalSet" value="ref:approvalSet"/>
+  
+  <!-- Yahan humne upar bana hua form inject kar diya -->
+  <Arg name="workItemForm" value="ref:approvalForm"/> 
+  
+  <Arg name="workItemDescription" value="string:Please review and fill the approval details."/>
+  <Transition to="Process Decisions"/>
+</Step>
+-----------------------------------------------------------------------------------------------------
+()action="buildPlanApprovalForm":-
+buildPlanApprovalForm ek bohot hi powerful internal action method hai, 
+jise workflows mein standard action="buildPlanApprovalForm" ke naam se call kiya jata hai.
+
+Yeh engine level par kya kaam karta hai? (3 Main Kaam):-
+1. Technical Plan ko padhta hai (Reads the Blueprint):-
+Yeh sabse pehle tumhare ProvisioningPlan ya ProvisioningProject ko andar tak scan karta hai. 
+Ise pata chalta hai ki request me kya ho raha hai. Jaise: "Achha, Active Directory me ek naya account create ho raha hai."
+
+2. App ke hisab se dynamic input boxes taiyar karta hai
+Agar AD account create ho raha hai, toh yeh form me automatic aise fields (text boxes/drop-downs) daal dega jo sirf AD ke liye zaroori hain. Jaise:
+Manager ke samne ek dropdown aayega: "Select Organizational Unit (OU) Path"
+Ek text box aayega: "Enter Custom Description for this user"
+
+3. Form ko Approver ke Dashboard par chipka deta hai
+Yeh is poore dynamic UI Form ko ready karke tumhare WorkItem (Approval Step) ko de deta hai. 
+Iska natija yeh hota hai ki jab manager apna SailPoint Dashboard kholta hai, 
+toh use sirf "Approve/Reject" ka button nahi dikhta, balki ek poora form dikhta hai jahan woh details ko review kar sakta hai, 
+modify kar sakta hai, ya extra information fill kar sakta hai provisioning hone se pehle.
+
+Ek Real-World Example se samjho:-
+Maan lo HR se Mover Event trigger hua aur tumhara workflow chal pada. User ka department IT se badal kar Finance ho gaya.
+buildEventPlan ne plan banaya: "AD me user ka department badlo aur use Finance OU me move karo."
+buildPlanApprovalForm bich me aaya aur usne ek form design kiya jisme usne likha: "Manager saheb, 
+yeh user Finance me ja raha hai. Kya aap iska default login hours badalna chahte hain? Agar haan, toh neeche select karein."
+approval step ne wahi form manager ke screen par dikha diya.
+Manager ne wahan details fill ki, "Approve" dabaya, aur woh details direct tumhare original plan me add ho gayi.
+
+ex:-
+<!-- Step 1: Provisioning Project/Plan ke basis par complex form banana -->
+<Step name="Generate Complex Plan Form" action="buildPlanApprovalForm" resultVariable="planForm">
+  <Description>
+    Compiled ProvisioningProject aur plan dependencies ko read karke granular approval form build karna.
+  </Description>
+  
+  <!-- INPUT ARGUMENTS -->
+  <Arg name="project" value="ref:project"/>                 <!-- Current compiled ProvisioningProject -->
+  <Arg name="plan" value="ref:plan"/>                       <!-- Main ProvisioningPlan -->
+  <Arg name="formTemplate" value="string:LCM Identity Update Form"/> <!-- Base form model -->
+  <Arg name="identityName" value="ref:identityName"/>       <!-- Target Identity Cube Reference -->
+  
+  <Transition to="Present Plan Approval Form"/>
+</Step>
+
+<!-- Step 2: Form ko Approver ke Dashboard par push karna -->
+<Step name="Present Plan Approval Form" action="approval">
+  <Arg name="approver" value="ref:managerName"/>
+  <Arg name="approvalSet" value="ref:approvalSet"/>
+  
+  <!-- Plan-based Dynamic Form Injection -->
+  <Arg name="workItemForm" value="ref:planForm"/> 
+  
+  <Arg name="workItemDescription" value="string:Review granular configuration details for $(identityName)."/>
+  <Transition to="Process Decisions"/>
+</Step>
+----------------------------------------------------------------------------------------------------------------------
+()action="assembleRetryProject":-
+1. Fasi hui request ko database se nikalta hai
+Jab kisi system (jaise AD) ke down hone par SailPoint request ko beech me hi rok kar database ki ek temporary table 
+(spt_provisioning_transaction) me save kar deta hai, toh yeh step us fasi hui request ke pure data ko database se wapas khinch 
+kar nikalta hai.
+
+2. Request ko dubara chalne layak banata hai
+Purani request par jo "Failed" ya "Retry" ka thappa (flag) laga hota hai, 
+yeh step use saaf kar deta hai. Uske status ko badal kar wapas "Ready" kar deta hai aur ek fresh ProvisioningProject object 
+taiyar karta hai, taaki agla step use bina kisi rukawat ke dubara target system par bhej sake.
+assembleRetryProject ka kaam execution karna bilkul nahi hai. 
+Iska kaam sirf aur sirf project ko execute hone ke liye taiyar (ready) karna hai.
+ex:-
+Yeh step kyu chahiye hota hai? (The Core Problem)
+Maan lo tumne kisi user ko Active Directory (AD) ka access diya. provisionProject ne API hit maari, 
+lekin us waqt tumhara AD domain controller temporary down (offline) tha.
+
+SailPoint engine ne kya kiya? Usne workflow ko crash nahi kiya. 
+Usne us request ko Retry Queue (spt_provisioning_transaction table) mein save kar diya ki "bhai isko baad mein chalayenge."
+
+Ab maan lo 1 ghante baad AD server wapas online aa gaya, 
+aur background timer task ne workflow ko wapas neend se jagaya (resume kiya). 
+Ab engine ke samne do badi chunautiyan (challenges) hain:-
+Jo request 1 ghante pehle fail hui thi, uske purane details (transaction state) ko database se nikalna.
+Us 1 ghante ke andar agar identity ke andar koi aur naya badlav hua hai, 
+toh use purani request ke sath sahi tarike se merge karke project banana.
+
+ex:-
+<!-- Agar checkProvisioningStatus ne bola ki "pending" ya retry chahiye -->
+<Step name="Wait for Retry" wait="3600">
+  <Description>1 ghante tak wait karo taaki target system online aa jaye</Description>
+  <Transition to="Assemble Retry Project"/>
+</Step>
+
+<!-- TRIGER POINT: Purane project aur queue data ko re-assemble karna -->
+<Step name="Assemble Retry Project" action="assembleRetryProject" resultVariable="project">
+  <Description>
+    Retry queue records ko parse karke execution project ko fir se live banana.
+  </Description>
+  <Arg name="project" value="ref:project"/>
+  <Transition to="Retry Provisioning Execution"/>
+</Step>
+
+<!-- Dobara connector ko hit maarna -->
+<Step name="Retry Provisioning Execution" action="provision" resultVariable="project">
+  <Arg name="project" value="ref:project"/>
+  <Transition to="Check Provisioning Status"/>
+</Step>
+---------------------------------------------------------------------------------------------------------------------------
+()action="requiresStatusCheck()":-
+ye boolean method hai jiska direct kaam yeh batana hai ki:-"Kya is project ke andar koi aisi request fasi hui hai 
+jiske liye humein checkProvisioningStatus action ko chalane ki zaroorat hai?"
+ex:-
+<!-- Provisioning Execution Step -->
+<Step name="Execute Provisioning" action="provision" resultVariable="project">
+  <Arg name="project" value="ref:project"/>
+  <!-- Execution ke baad transition check chalega -->
+  <Transition to="Check Provisioning Status" when="script:project.requiresStatusCheck()"/>
+  <Transition to="Assimilate Project" when="script:!project.requiresStatusCheck()"/>
+</Step>
+
+<!-- Agar requiresStatusCheck() TRUE hua, toh yeh step execute hoga -->
+<Step name="Check Provisioning Status" action="checkProvisioningStatus" resultVariable="provisioningStatus">
+  <Arg name="project" value="ref:project"/>
+  <Transition to="Wait Step" when="script:&quot;pending&quot;.equals(provisioningStatus)"/>
+  <Transition to="Assimilate Project"/>
+</Step>
+---------------------------------------------------------------------------------------------------------------
+()action="updatePasswordHistory":-
+Iska main aur single kaam hota hai: User ke naye change kiye gaye password ke encrypted secure cryptographic hash ko database ki
+password history table mein save karna, taaki woh purana password dubara use na kar sake.
+
+1. project.isSuccess() Asal me Kya Decision Leta hai?
+project yahan par ProvisioningProject ka ek object hai. 
+Jab isse pichle step (action="provision") ne target system (jaise Active Directory ya SAP) par password badalne ki API call 
+mari, toh uske baad yeh method poore project ka report card check karta hai.
+
+Yeh dekhta hai ki:-
+Kya target system ne password accept kar liya aur Success return kiya?
+Agar haan, toh project.isSuccess() ka decision true hota hai.
+Agar network fail ho gaya, account lock tha, ya password complex nahi tha aur target ne use reject kar diya, toh iska decision false hota hai.
+
+ex:-
+<!-- Step 1: Naya password target systems (AD, LDAP) par push karna -->
+<Step name="Execute Password Provisioning" action="provision" resultVariable="project">
+  <Arg name="project" value="ref:project"/>
+  <Transition to="Update Password History Cache" when="script:project.isSuccess();"/>
+  <Transition to="Handle Failure" when="script:!project.isSuccess();"/>
+</Step>
+
+<!-- TRIGER POINT: Provisioning success hone par history lock karna -->
+<Step name="Update Password History Cache" action="updatePasswordHistory">
+  <Description>
+    Naye encrypted password hash ko user ki password history list me append karna.
+  </Description>
+  
+  <!-- INPUT ARGUMENTS -->
+  <Arg name="identityName" value="ref:identityName"/> <!-- Target User Cube -->
+  <Arg name="password" value="ref:encryptedNewPassword"/> <!-- Secured Password context -->
+  
+  <Transition to="Refresh Identity Canvas"/>
+</Step>
+----------------------------------------------------------------------------------------------------------
+()action=buildApprovalSetFromNativeChanges:-
+iska kaam tab shuru hota hai jab SailPoint kisi target system (jaise Active Directory, SAP, ya koi HR system) me bina
+SailPoint ke permission ke direct (native) badlav dekhta hai, aur un badlavon ko approve karwane ke liye ek set taiyar karta hai.
+Native Changes Track Karna: Yeh check karta hai ki aapke sailpoint ad/sap application account me native taur par kya-kya metadata 
+changes (jaise fields, validation rules, apex classes) hue hain.
+Approval Set Banana: Un sabhi track kiye gaye changes ko ek jagah ik इकट्ठा (aggregate) karta hai aur ek Approval Set 
+ya change bundle taiyar karta hai.
+Compliance & Review: Is set ko aage manager ya QA ke paas approval ke liye bheja jaata hai taaki bina permission ke koi bhi 
+change live production me na chala jaaye.
+Automated DevOps Pipelines: Jab aap chahte hain ki jaise hi koi developer sandbox me kaam khatam kare, 
+system apne aap changes ko detect karke pipeline me approval ke liye daal de.
+Audit Trail: Company ke audit aur compliance ke liye yeh record rakhna ki native changes ko kisne approve kiya tha.
+
+1. Yeh Kab Trigger Hota Hai?
+Is action ka main kaam tab hota hai jab "Native Changes" (jise hum Out-of-Band changes bhi kehte hain) detect hote hain.
+Example: Maan lijiye kisi Administrator ne direct Active Directory (AD) me jaakar kisi user ko ek sensitive Admin Group me daal diya (bina SailPoint ke through request kiye).
+Jab SailPoint agla Aggregation Run (sync) karega, toh use pata chalega ki AD me yeh change natively hua hai.
+
+2. Yeh Action Karta Kya Hai?
+Jab SailPoint ko in native changes ka pata chalta hai, toh background me buildApprovalSetFromNativeChanges action call hota hai. Yeh niche diye gaye kaam karta hai:
+Changes ko Identify Karna: Yeh check karta hai ki native change kya tha (e.g., "User X ko Group Y me add kiya gaya").
+Approval Set Banana: Yeh un saare changes ko ek Approval Set Object me convert karta hai.
+Approval Workflow Shuru Karna: SailPoint is approval set ko directly manager ya security team ke paas bhejta hai yeh poochne ke liye: "Yeh change bahar se kiya gaya hai, kya aap isse approve karte hain?"
+
+3. Iske Baad Kya Hota hai? (The Outcome)
+Is action ke approval set banane ke baad do hi raste hote hain:-
+Approved: Agar manager ne approve kar diya, toh SailPoint apne database me us change ko accept kar leta hai (Identity Cube update ho jata hai).
+Rejected (Remediation): Agar manager ne reject kar diya, toh SailPoint ek Reversion/Remediation event trigger karta hai aur us user ko us group se wapas nikal deta hai taaki security bani rahe.
+
+------------------------------------------------------------------------------------------
+()action="processNativeChangesApprovalDecisions":-
+processNativeChangesApprovalDecisions SailPoint IdentityIQ (IIQ) ke Lifecycle aur Provisioning engine ka ek behad mahatvapurna internal method/action hai.
+
+1. Yeh Action Karta Kya Hai? (The Final Execution)
+Jaise hi manager apna decision submit karta hai, yeh method pooray ApprovalSet ko read karta hai aur har ek item par niche diye gaye actions leta hai:
+
+Case 1: Agar Manager ne "Approve" kiya (Acceptance):
+Agar manager ne kaha ki "Theek hai, mujhe manzoor hai," toh yeh action SailPoint ke database (Identity Cube) ko update kar deta 
+hai. Yeh us change ko official maan leta hai taaki agli baar jab aggregation chale,
+toh SailPoint isse "Violation" ya "Unidentified Change" na maane.
+Approved milne par yeh target system me koi naya provision nahi karta.
+Identity Cube Sync: Yeh SailPoint ke andar us user ke Identity Cube (database) ko update kar deta hai aur bolta hai: "Theek hai, yeh access ab official hai."
+-->provision Kyun nahi karega? Kyunki woh access toh pehle se hi target system me maujood hai! Native change ka matlab hi yahi hota hai ki kisi ne SailPoint ke bahar se (natively) woh access user ko pehle hi de diya tha.
+
+Case 2: Agar Manager ne "Reject" kiya (Remediation/Rollback):
+Yeh iska sabse powerful kaam hai.Agar manager ne change ko reject kar diya(e.g., "Rahul ko AD ke Admin group me nahi hona chahiye tha"),
+toh yeh action background me ek Provisioning Plan taiyar karta hai. 
+Yeh target system Jab target system se access hat jata hai, toh SailPoint apne database (Identity Cube) se bhi us access ko remove kar deta hai taaki dono jagah data sahi ho jaye.(Active Directory) ko ek command bhejta hai aur us user ko us group se wapas nikal deta hai (deprovision kar deta hai) taaki security bani rahe.
+---------------------------------------------------------------------------------------------
+

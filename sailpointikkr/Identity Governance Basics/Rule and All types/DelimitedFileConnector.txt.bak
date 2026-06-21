@@ -1,0 +1,1509 @@
+()DelimitedFileConnector kya hai kya karta hai kya db me store hota hai kya kya andar hai?
+--🔹 DelimitedFileConnector kya hai?
+SailPoint IdentityIQ me DelimitedFileConnector ek file-based connector hai jo CSV / delimited files (jaise comma, pipe |, tab separated) ko read karke system me data import/export karta hai.
+
+👉 Simple language me:-
+“File (CSV etc.) se data read karke SailPoint me use karna”
+
+🔹 Ye kya karta hai?
+1️⃣ File se data read karta hai:-
+Example file:-
+sAMAccountName,displayName,department
+kumar123,Kumar Singh,IT
+rahul456,Rahul Verma,HR
+👉 Connector is file ko read karega
+
+2️⃣ Data ko Identity / Account me convert karta hai
+File ka data:-
+Identity
+Account
+Attribute
+me convert ho jata hai
+
+3️⃣ Aggregation (data fetch) karta hai:-
+👉 Ye system se data “pull” karta hai:-
+Accounts list
+Attributes
+Users
+
+4️⃣ Provisioning ke liye data generate karta hai?
+👉 File me jo data hai usko use karke:-
+Create
+Update
+Delete
+operations possible hote hain
+
+🔹 Kya ye DB me store hota hai?
+
+👉 ❌ Directly nahi
+DelimitedFileConnector ka data database me store nahi hota
+Ye external file source hota hai.
+
+👉 Lekin:-
+✔ Aggregated data IdentityIQ ke database me store ho sakta hai
+✔ Connector ka configuration DB me hota hai.
+----------------------------------------------------------
+🔹 Connector ke andar kya hota hai?
+SailPoint IdentityIQ me connector ke andar mainly ye components hote hain:-
+
+Configuration:-
+Schema Mapping
+Object Type Definition
+Attribute Mapping
+Aggregation Logic
+Provisioning Logic
+Operation Support (create/update/delete)
+Connection Settings
+Authentication Details
+Transformation / Rules Hooks
+
+()🔹 1️⃣ Configuration:-
+👉 Ye connector ka basic setup hota hai
+File path / server URL
+Delimiter (CSV, |, ,)
+Port / protocol (FTP, SFTP)
+File encoding
+Polling interval
+👉 Matlab: connector ko kaise aur kaha se data lena hai.
+
+🔹 2️⃣ Schema Mapping:-
+👉 External system ke fields ko IdentityIQ ke fields se map karta hai
+Example:-
+sAMAccountName → username  
+displayName → fullName  
+mail → email  
+👉 Ye define karta hai:-
+“external field ka internal IdentityIQ field kya hoga”
+
+🔹 3️⃣ Object Type Definition:-
+👉 Ye batata hai connector kya-kya handle karega:-
+Account
+Group
+Entitlement
+Custom object
+👉 Example:-
+Object Type: Account
+👉 Matlab connector user accounts handle karega.
+
+🔹 4️⃣ Attribute Mapping:-
+👉 Object ke andar ke attributes ka mapping
+Example:-
+department → dept
+manager → managerId
+👉 Ye decide karta hai ki data kaunse attribute me jayega.
+
+🔹 5️⃣ Aggregation Logic:-
+👉 External system se data fetch (pull) karna:-
+File read karna
+DB query chalana
+API call
+👉 Example flow:-
+File → Read → Parse → IdentityIQ
+👉 Ye data ko system me import karta hai.
+
+🔹 6️⃣ Provisioning Logic:-
+👉 IdentityIQ se external system me data push (write) karna
+Operations:-
+Create user
+Update attribute
+Delete user
+👉 Example:-
+IdentityIQ → Create Account → AD
+
+🔹 7️⃣ Operation Support (create/update/delete):-
+👉 Connector ye operations support karta hai:-
+Create
+Update
+Delete
+👉 Example:-
+accountRequest.add("operation", "create");
+👉 Ye batata hai kya action perform karna hai.
+
+🔹 8️⃣ Connection Settings:-
+👉 External system se connect hone ke settings:-
+Host / IP
+Port
+File path / DB URL
+Protocol (LDAP, JDBC, FTP)
+👉 Example:-
+jdbc:mysql://localhost:3306/db
+
+🔹 9️⃣ Authentication Details:-
+👉 Login / access credentials:-
+Username
+Password
+API key
+Token
+👉 Example:-
+user: admin  
+pass: ****  
+👉 Ye ensure karta hai secure connection.
+
+🔹 🔟 Transformation / Rules Hooks
+
+👉 Data ko modify karne ke hooks:
+
+BeforeProvisioning
+AfterProvisioning
+BuildMap
+BeanShell scripts
+👉 Ye data ko customize / transform karta hai
+------------------------------------------------------
+🔹DelimitedFileConnector methods (list only):-
+create
+update
+delete
+testConnection
+initialize
+destroy
+
+getObject
+getObjectList
+getObjects
+getSchema
+discoverSchema
+
+buildMap
+parse
+readFile
+writeFile
+aggregate
+iterateObjects
+
+query
+executeQuery
+buildObject
+buildAttributes
+normalize
+
+convertToObject
+convertToAttributes
+validate
+setConfiguration
+getConfiguration
+
+open
+close
+connect
+disconnect
+login
+logout
+
+handleRequest
+processRequest
+applyDelta
+sync
+refresh
+loadData
+saveData
+-------------------------------------------------------------------------------------------------------------------------
+🔹 1️⃣ create():-
+create() method ka use external target system me naya object (account/user/resource) create karne ke liye hota hai.
+
+👉 Detailed meaning:-
+Ye method provisioning ke time call hota hai
+IdentityIQ se data lekar external system (AD, DB, etc.) me naya record banata hai
+Required attributes ke sath object create hota hai.
+
+👉 Input:-
+Object ID / Native Identity
+Attributes (Map / AttributeRequest)
+
+👉 Output:-
+Success / Failure
+Response message / result object
+------------------------------------
+🔹 2️⃣ update():-
+update() method ka use existing object ke attributes ko modify ya update karne ke liye hota hai.
+
+👉 Detailed meaning:-
+Jab user ke attributes change hote hain
+Ya entitlement add/remove hota hai
+Tab ye method call hota hai.
+
+🔹 3️⃣ delete():-
+delete() method ka use external system me existing object ko permanently remove karne ke liye hota hai.
+----------------------------------------------------------------------------------------------------------
+🔹 4️⃣ testConnection():-
+testConnection() method ka use connector aur external system ke beech connectivity verify karne ke liye hota hai.
+
+👉 Detailed meaning:-
+Ye method check karta hai ki system reachable hai ya nahi
+Credentials valid hai ya nahi
+Network / configuration sahi hai ya nahi
+
+👉 Input:-
+Configuration parameters
+
+👉 Output:-
+Success → connection established
+Failure → connection error
+----------------------------------------------------------------
+🔹 5️⃣ initialize():-
+initialize() method ka use connector ko start karne aur required resources setup karne ke liye hota hai.
+👉 Detailed meaning:-
+Jab connector load hota hai
+Tab ye method run hota hai
+Internal objects, config, cache initialize karta hai
+Connection setup ka first step hota hai
+
+👉 Input:-
+Configuration object
+
+👉 Output:-
+Connector ready state
+-------------------------------------------------------
+🔹 6️⃣ destroy():-
+destroy() method ka use connector ko shutdown aur cleanup karne ke liye hota hai.
+
+👉 Detailed meaning:-
+Jab connector ka use complete ho jata hai
+Tab ye method resources release karta hai
+Connections close karta hai
+Memory leaks avoid karta hai
+
+👉 Input:-
+None (generally)
+
+👉 Output:-
+Resources released / cleanup done
+-------------------------------------------------------
+🔹 1️⃣ Initialize + Context use:-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.Application;
+
+public void initialize(SailPointContext context) {
+    System.out.println("Context initialized: " + context);
+}
+------------------------------------------------------------------------------------------
+🔹 2️⃣ testConnection() with context:-
+public String testConnection(SailPointContext context) {
+    try {
+        Application app = context.getObject(Application.class, "DelimitedFileApp");
+
+        if (app != null) {
+            return "SUCCESS: Connection OK";
+        } else {
+            return "FAILURE: Application not found";
+        }
+
+    } catch (Exception e) {
+        return "ERROR: " + e.getMessage();
+    }
+}
+-------------------------------------------------------------------------------------------
+🔹 3️⃣ create() using SailPointContext:-
+import sailpoint.object.AccountRequest;
+
+public Object create(SailPointContext context, String nativeIdentity, Map attributes) {
+
+    try {
+        System.out.println("Creating account: " + nativeIdentity);
+
+        // Example: Fetch Identity
+        Identity identity = context.getObject(Identity.class, nativeIdentity);
+
+        // Create AccountRequest
+        AccountRequest accReq = new AccountRequest();
+        accReq.setNativeIdentity(nativeIdentity);
+
+        // Set attributes
+        accReq.setAttribute("displayName", attributes.get("displayName"));
+        accReq.setAttribute("department", attributes.get("department"));
+
+        // Save / execute (conceptual)
+        context.saveObject(accReq);
+        context.commitTransaction();
+
+        return "SUCCESS: Account Created";
+
+    } catch (Exception e) {
+        return "ERROR: " + e.getMessage();
+    }
+}
+--------------------------------------------------------------------------------------------
+🔹 4️⃣ update() with context:-
+public Object update(SailPointContext context, String nativeIdentity, Map attributes) {
+
+    try {
+        System.out.println("Updating account: " + nativeIdentity);
+
+        AccountRequest accReq = new AccountRequest();
+        accReq.setNativeIdentity(nativeIdentity);
+
+        accReq.setAttribute("department", attributes.get("department"));
+
+        context.saveObject(accReq);
+        context.commitTransaction();
+
+        return "SUCCESS: Account Updated";
+
+    } catch (Exception e) {
+        return "ERROR: " + e.getMessage();
+    }
+}
+----------------------------------------------------------------------------
+🔹 5️⃣ delete() with context:-
+public Object delete(SailPointContext context, String nativeIdentity) {
+
+    try {
+        System.out.println("Deleting account: " + nativeIdentity);
+
+        AccountRequest accReq = new AccountRequest();
+        accReq.setNativeIdentity(nativeIdentity);
+
+        accReq.setOperation("delete");
+
+        context.saveObject(accReq);
+        context.commitTransaction();
+
+        return "SUCCESS: Account Deleted";
+
+    } catch (Exception e) {
+        return "ERROR: " + e.getMessage();
+    }
+}
+--------------------------------------------------------------------
+🔹 6️⃣ destroy():-
+public void destroy(SailPointContext context) {
+    try {
+        System.out.println("Destroying connector...");
+
+        context.commitTransaction();
+
+        System.out.println("Connector destroyed");
+
+    } catch (Exception e) {
+        System.out.println("Error in destroy: " + e.getMessage());
+    }
+}
+----------------------------------------------------------------------------------------------------------------------------------------------
+🔹 1️⃣ getObject():-
+👉 Kya karta hai:-
+Database se single object (Identity, Application, Account etc.) fetch karta hai.
+✅ Code:-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+Identity identity = context.getObject(Identity.class, "kumar123");
+System.out.println(identity.getDisplayName());
+👉 Output:-
+Kumar Singh
+------------------------
+🔹 2️⃣ getObjectList():-
+getObjectList() ek method hai jo same type ke multiple objects ko ek list (collection) ke form me return karta hai,
+usually filter ya condition ke basis par.
+✅ Code:-
+import sailpoint.object.Filter;
+import sailpoint.object.QueryOptions;
+import sailpoint.object.Identity;
+import java.util.List;
+QueryOptions qo = new QueryOptions();
+qo.addFilter(Filter.like("displayName", "%Singh%"));
+List identities = context.getObjects(Identity.class, qo);
+for (Object obj : identities) {
+    Identity id = (Identity) obj;
+    System.out.println(id.getName());
+}
+👉 Output:-
+kumar123
+rahul456
+---------------------------
+🔹 3️⃣ getObjects():-
+getObjects() ek advanced retrieval method hai jo QueryOptions ke through flexible querying karke multiple objects fetch karta hai.
+
+---------------------------
+🔹 4️⃣ getSchema():-
+getSchema() method kisi specific Application ke defined schema (structure) ko retrieve karta hai,
+jisme attributes, object types, aur mappings defined hote hain.
+👉 Detail me samajh:-
+Schema = data ka structure (fields, types, mapping)
+Ye method connector/application ke andar defined schema ko read karta hai
+Batata hai ki system ka data kaise structured hai.
+Object type (account, group) ke according schema deta hai
+----------------------------
+🔹 5️⃣ discoverSchema():-
+discoverSchema() ek method hai jo external system (file, DB, LDAP, etc.) 
+se automatically schema detect (discover) karta hai aur uska structure return karta hai.
+👉 Detail me samajh:-
+Ye intelligent detection method hai
+External source ko scan karta hai
+Columns / attributes identify karta hai
+Unka schema generate karta hai
+👉 Important points:-
+Auto schema detection
+Mapping ke bina structure nikal leta hai
+Mainly connectors me use hota hai.
+------------------------------------------
+🔹 1️⃣ getObjects() — Code:-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.QueryOptions;
+import sailpoint.object.Filter;
+import java.util.List;
+
+public void fetchObjects(SailPointContext context) {
+
+    try {
+        QueryOptions qo = new QueryOptions();
+        qo.addFilter(Filter.like("displayName", "%Singh%"));
+
+        List identities = context.getObjects(Identity.class, qo);
+
+        for (Object obj : identities) {
+            Identity id = (Identity) obj;
+            System.out.println("Name: " + id.getName());
+        }
+
+    } catch (Exception e) {
+        System.out.println("Error: " + e.getMessage());
+    }
+}
+output:-
+Identity{name=kumar123, displayName=Kumar Singh}
+Identity{name=rahul456, displayName=Rahul Verma}
+Identity{name=amit789, displayName=Amit Kumar}
+------------------------------------------------------------
+🔹 2️⃣ getSchema() — Code:-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Application;
+import sailpoint.object.Schema;
+
+public void fetchSchema(SailPointContext context) {
+
+    try {
+        Application app = context.getObject(Application.class, "DelimitedFileApp");
+
+        Schema schema = app.getSchema("account");
+
+        System.out.println("Object Type: " + schema.getObjectType());
+
+        System.out.println("Attributes:");
+        for (Object attr : schema.getAttributes()) {
+            System.out.println(attr);
+        }
+
+    } catch (Exception e) {
+        System.out.println("Error: " + e.getMessage());
+    }
+}
+output:-
+Schema {
+  objectType = account,
+  attributes = [
+    sAMAccountName,
+    displayName,
+    mail,
+    department
+  ]
+}
+--------------------------------------------------
+🔹 3️⃣ discoverSchema() — Code:-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Application;
+import sailpoint.object.Schema;
+
+public void discoverSchema(SailPointContext context) {
+
+    try {
+        Application app = context.getObject(Application.class, "DelimitedFileApp");
+
+        Schema schema = app.discoverSchema(context);
+
+        System.out.println("Discovered Object Type: " + schema.getObjectType());
+
+        System.out.println("Discovered Attributes:");
+        for (Object attr : schema.getAttributes()) {
+            System.out.println(attr);
+        }
+
+    } catch (Exception e) {
+        System.out.println("Error: " + e.getMessage());
+    }
+}
+output:-
+Schema {
+  objectType = account,
+  attributes = [
+    empId,
+    name,
+    department,
+    location,
+    email
+  ]
+}
+---------------------------------------------------------------------------------------------------------------------------------
+🔹 2️⃣ parse():-
+👉 Kaam:-
+String row ko structured object me convert karna
+🔧 Example:-
+String line = "E101,John,IT";
+Object obj = parse(line);
+System.out.println(obj);
+📤 Output:-
+[empId=E101, name=John, dept=IT]
+👉 (format depends on schema mapping)
+------------------------------------------------------------
+🔹 3️⃣ readFile():-
+👉 Kaam:-
+File ko read karke uska content lana
+🔧 Example:-
+String data = readFile("/data/users.csv");
+System.out.println(data);
+📤 Output:-
+E101,John,IT
+E102,Alice,HR
+---------------------------
+🔹 4️⃣ writeFile():-
+👉 Kaam:-
+File me data likhna
+🔧 Example:-
+writeFile("/data/output.csv", "E103,Bob,IT");
+📤 Output file:-
+E103,Bob,IT
+---------------------------------
+🔹 5️⃣ aggregate():-
+👉 Kaam:-
+Multiple records ko combine / summarize karna
+🔧 Example:-
+List salaries = [5000, 7000, 6000];
+int total = aggregate(salaries);
+System.out.println(total);
+📤 Output:-
+18000
+-----------------------------------------------------------------
+👉 SailPoint IdentityIQ ke DelimitedFileConnector me
+iterateObjects() ek core method hai jo file ke har record (row) par loop chalata hai.
+
+🔹 Simple Meaning:-
+👉 Ye method:-
+CSV / delimited file ko row by row read karta hai
+Har row ko ek object (map / bean) me convert karta hai
+Aur us object par custom logic execute karwata hai.
+import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
+import sailpoint.object.ObjectHandler;
+
+public class DelimitedFileExample {
+
+    public static void main(String[] args) {
+
+        List users = readFile("/data/users.csv");
+
+        iterateObjects(users, new ObjectHandler() {
+
+            public void handle(Object obj) {
+
+                Map row = (Map) obj;
+
+                String empId = (String) row.get("empId");
+                String name  = (String) row.get("name");
+                String dept  = (String) row.get("dept");
+
+                System.out.println("EmpId: " + empId);
+                System.out.println("Name: " + name);
+                System.out.println("Dept: " + dept);
+                System.out.println("------------------");
+            }
+        });
+    }
+
+    // 🔹 File read + convert into List<Map>
+    public static List readFile(String filePath) {
+
+        List list = new ArrayList();
+
+        BufferedReader br = null;
+
+        try {
+
+            br = new BufferedReader(new FileReader(filePath));
+
+            String line;
+
+            // First line = header
+            String headerLine = br.readLine();
+            String[] headers = headerLine.split(",");
+
+            while ((line = br.readLine()) != null) {
+
+                String[] values = line.split(",");
+
+                Map row = new java.util.HashMap();
+
+                for (int i = 0; i < headers.length; i++) {
+
+                    row.put(headers[i], values[i]);
+                }
+
+                list.add(row);
+            }
+
+        } catch (IOException e) {
+
+            System.out.println("Error reading file: " + e.getMessage());
+
+        } finally {
+
+            try {
+                if (br != null) br.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return list;
+    }
+
+    // 🔹 iterateObjects implementation
+    public static void iterateObjects(List list, ObjectHandler handler) {
+
+        if (list == null || handler == null) return;
+
+        for (Object obj : list) {
+
+            handler.handle(obj);
+        }
+    }
+}
+🔹 Sample CSV File (/data/users.csv):-
+empId,name,dept
+E101,John,IT
+E102,Alice,HR
+E103,Bob,Finance
+🔹 Output
+EmpId: E101
+Name: John
+Dept: IT
+------------------
+EmpId: E102
+Name: Alice
+Dept: HR
+------------------
+EmpId: E103
+Name: Bob
+Dept: Finance
+------------------
+////////////*
+()📁 1. File kya hoti hai?
+File = disk pe stored data (jaise .txt, .csv, .json)
+👉 Example:-
+/data/users.csv
+Is file me data hota hai:-
+empId,name,dept
+101,Ram,IT
+102,Shyam,HR
+👉 Java me file ko read/write karne ke liye InputStream/OutputStream classes use hoti hain.
+
+📥 2. BufferedReader kya hai?
+👉 BufferedReader ek class hai jo efficient way me text read karta hai (line by line)
+🔹 Without BufferedReader → slow reading
+🔹 With BufferedReader → fast reading (buffer use karta hai).
+
+📌 3. new BufferedReader(new FileReader(filePath)):-
+👉 Yeh line 2 kaam karti hai:-
+Step 1: FileReader:-
+new FileReader(filePath)
+✔ File ko read karta hai (character by character)
+
+Step 2: BufferedReader:-
+new BufferedReader(...)
+✔ FileReader ko wrap karta hai
+✔ Data ko buffer me store karta hai
+✔ Line-by-line reading allow karta hai
+👉 Final:-
+BufferedReader br = new BufferedReader(new FileReader(filePath));
+✔ File ko efficient way me read karne ke liye.
+
+📄 4. br.readLine() kya karta hai?
+👉 Yeh method ek line read karta hai.
+Example:
+String line = br.readLine();
+👉 Output:-
+empId,name,dept
+👉 Next call:-
+101,Ram,IT
+👉 Important:-
+Ek baar call → ek line
+End of file → null
+
+🧾 5. headerLine.split(",") kya karta hai?
+👉 split() string ko todta hai
+Example:-
+String headerLine = "empId,name,dept";
+String[] headers = headerLine.split(",");
+
+👉 Output:-
+headers[0] = empId
+headers[1] = name
+headers[2] = dept
+✔ Comma (,) ke basis pe split hota hai.
+
+🔁 6. br.readLine() second time use
+while ((line = br.readLine()) != null)
+👉 Yeh:-
+First line (header) already read ho chuki hai
+Ab actual data read ho raha hai.
+
+
+*////////////
+🔹 Output:-
+EmpId: E101
+Name: John
+Dept: IT
+---------------
+EmpId: E102
+Name: Alice
+Dept: HR
+---------------
+EmpId: E103
+Name: Bob
+Dept: Finance
+---------------
+()iterateObjects(users, new ObjectHandler() { ... });:-
+ka matlab hai:-
+➡️ “users list ke har element (row) par jao aur handle() method execute karo”
+apne custom bhi dekha.
+------------------------------------------------------------------------------------------------------------------------------------------------
+🔹 1️⃣ query():-
+👉 Ye method file se data fetch karta hai
+Kaam:-
+File read karta hai
+Filter apply karta hai (agar diya ho)
+Records return karta hai
+Simple:-
+👉 “CSV se data laao”
+
+----------------------------------------------------------------------------------
+🔹 2️⃣ executeQuery():-
+👉 Ye query() ko internally call karta hai
+Kaam:-
+Query ko run karta hai
+Result set return karta hai
+Simple:-
+👉 “Query ko execute karo aur data nikaalo”
+---------------------------------------------------------------------
+🔹 3️⃣ buildObject():-
+👉 Ye method raw data (row) ko SailPoint object me convert karta hai
+Kaam:-
+CSV row → Object banata hai (Identity / Account)
+Field mapping karta hai
+Example:-
+CSV Row:-
+E101,John,IT
+    ↓ 
+buildObject():-
+Object:-
+{
+  empId: E101,
+  name: John,
+  dept: IT
+}
+👉 Simple:-
+“Row ko proper object me convert karo”
+-------------------------------------------------------------------------------------
+🔹 5️⃣ normalize():-
+👉 Ye method data ko clean / standard format me convert karta hai
+Kaam:-
+Null handling
+Data formatting
+Trim / lowercase / standardization
+Example:-
+"  John  " → "John"
+"IT" → "it" (agar rule ho)
+👉 Simple:-
+“Data ko clean aur standard banao”
+---------------------------------------------------------------------------------
+(4)🔹 buildAttributes() kya karta hai?
+👉 Ye method SailPoint IdentityIQ ke DelimitedFileConnector me use hota hai
+👉 Iska main kaam hai: object ke andar attributes set / map karna.
+
+🔹 Flow me position:-
+CSV Row
+   ↓
+query()
+   ↓
+normalize()
+   ↓
+buildObject()
+   ↓
+buildAttributes()   ← (YAHAN KAAM HOTA HAI)
+   ↓
+Final Identity / Account Object
+
+🔹 Example Input (CSV Row):-
+empId,name,dept
+E101,John,IT
+🔹 buildAttributes() ka Output
+👉 Ye method attributes ko map karta hai:-
+INPUT (row):-
+empId = E101
+name  = John
+dept  = IT
+
+OUTPUT (Identity Object):-
+{
+  uid: E101,
+  displayName: John,
+  department: IT
+}
+---------------------------------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointContextFactory;
+import sailpoint.connector.DelimitedFileConnector;
+import java.util.*;
+
+public class TestConnector {
+
+    public static void main(String[] args) throws Exception {
+
+        // 1️⃣ Context lena
+        SailPointContext context = SailPointContextFactory.getCurrentContext();
+
+        // 2️⃣ Connector initialize karna
+        DelimitedFileConnector connector = new DelimitedFileConnector();
+
+        // 3️⃣ Config banana (real me ConnectorConfig object hota hai)
+        Map<String, Object> config = new HashMap<>();
+        config.put("filePath", "/data/users.csv");
+
+        connector.initialize(config);
+
+        // 4️⃣ Query call
+        List<Map<String, Object>> data = connector.query();
+
+        // 5️⃣ Data process
+        for (Map<String, Object> row : data) {
+
+            // attributes build
+            Map<String, Object> attrs = connector.buildAttributes(row);
+
+            // object build
+            Object obj = connector.buildObject(attrs);
+
+            // normalize example
+            String name = (String) attrs.get("name");
+            String cleanName = connector.normalize(name);
+
+            System.out.println("Original: " + name);
+            System.out.println("Clean: " + cleanName);
+            System.out.println("Object: " + obj);
+            System.out.println("-------------------");
+        }
+    }
+}
+📄 Assumed users.csv
+empId,name,dept
+101, Rahul , IT
+102, Amit , HR
+🔥 Code ka Output:-
+Original:  Rahul 
+Clean: Rahul
+Object: {empId=101, name= Rahul , dept= IT}
+-------------------
+Original:  Amit 
+Clean: Amit
+Object: {empId=102, name= Amit , dept= HR}
+-------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointContextFactory;
+import sailpoint.connector.DelimitedFileConnector;
+
+import java.util.List;
+import java.util.Map;
+
+public class DelimitedFileExample {
+
+    public static void main(String[] args) {
+
+        try {
+
+            // 1️⃣ SailPoint Context lena
+            SailPointContext context = SailPointContextFactory.getCurrentContext();
+
+            // 2️⃣ Connector object create karna
+            DelimitedFileConnector connector = new DelimitedFileConnector();
+
+            // 3️⃣ Connector configuration (real system me ConnectorConfig hota hai)
+            java.util.Map<String, Object> config = new java.util.HashMap<String, Object>();
+            config.put("filePath", "/data/users.csv");
+            config.put("delimiter", ",");
+            config.put("hasHeader", "true");
+
+            // 4️⃣ Initialize connector
+            connector.initialize(config);
+
+            // 5️⃣ Query execute karna
+            List<Map<String, Object>> result = connector.executeQuery("SELECT * FROM users");
+
+            // 6️⃣ Result print karna
+            for (Map<String, Object> row : result) {
+
+                System.out.println("----- ROW START -----");
+
+                for (Map.Entry<String, Object> entry : row.entrySet()) {
+                    System.out.println(entry.getKey() + " : " + entry.getValue());
+                }
+
+                System.out.println("----- ROW END -----");
+            }
+
+            // 7️⃣ Context close (good practice)
+            context.decache();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+📄 Assumed CSV file (/data/users.csv):-
+empId,name,dept
+101,Rahul,IT
+102,Amit,HR
+🔥 Output:-
+----- ROW START -----
+empId : 101
+name : Rahul
+dept : IT
+----- ROW END -----
+----- ROW START -----
+empId : 102
+name : Amit
+dept : HR
+----- ROW END -----
+///////////*
+🔥 1️⃣ config.put("delimiter", ",");:-
+👉 Matlab:-
+File me data kis symbol se separate hai ye batata hai
+Yaha , ka matlab comma-separated file (CSV)
+📄 Example file:-
+empId,name,dept
+101,Rahul,IT
+102,Amit,HR
+
+👉 Yaha:-
+empId, name, dept → comma se separate hai
+101, Rahul, IT → comma se separate hai
+
+👉 Isliye:-
+config.put("delimiter", ",");
+
+➡️ Connector samajh jayega ki:-
+“har value comma se alag hai”
+-------------------------------------------
+🔥 2️⃣ config.put("hasHeader", "true");:-
+👉 Matlab:-
+File ki first line header hai ya nahi batata hai
+📄 Example:-
+empId,name,dept   ← header
+101,Rahul,IT
+102,Amit,HR
+
+👉 Yaha:-
+empId, name, dept → column names hain
+isliye:
+config.put("hasHeader", "true");
+
+➡️ Connector samjhega:-
+“first row column names hain, data nahi”
+-------------------------------------------
+🔥 3️⃣ connector.executeQuery("SELECT * FROM users");:-
+👉 Matlab:-
+Ye ek virtual query hai (real SQL nahi)
+Connector ko bolta hai:-
+“users data ke saare records laao”
+
+🧠 Important samajh:-
+👉 DelimitedFileConnector me:-
+"SELECT * FROM users"
+
+➡️ iska matlab:-
+users = logical dataset (CSV file)
+* = sab records
+📦 Internally kya hota hai?
+CSV file → read hoti hai
+         → har row → Map ban jata hai
+         → List me store hota hai
+
+👉 Output:-
+List<Map<String, Object>>
+🔥 Example output:
+{empId=101, name=Rahul, dept=IT}
+{empId=102, name=Amit, dept=HR}
+------------------------------------------------------
+*///////////
+--------------------------------------------------------------------
+🔥 1️⃣ setConfiguration():-
+👉 Kaam:-
+Connector ko configuration set karna (file path, delimiter, header etc.)
+
+👉 Calling line:-
+connector.setConfiguration(config);
+👉 Example:-
+Map<String, Object> config = new HashMap<>();
+config.put("filePath", "/data/users.csv");
+config.put("delimiter", ",");
+config.put("hasHeader", "true");
+DelimitedFileConnector connector = new DelimitedFileConnector();
+connector.setConfiguration(config);
+-------------------------------------------
+🔥 2️⃣ getConfiguration():-
+👉 Kaam:-
+Jo configuration set ki hai, usko retrieve karna
+
+👉 Calling line:-
+Map<String, Object> config = connector.getConfiguration();
+👉 Example:-
+Map<String, Object> config = connector.getConfiguration();
+
+System.out.println(config);
+👉 Output:-
+{filePath=/data/users.csv, delimiter=,, hasHeader=true}
+----------------------------------------------------------
+🔥 3️⃣ convertToAttributes():-
+👉 Kaam:-
+Raw data (row) ko attributes map me convert karna
+
+👉 Calling line:-
+Map<String, Object> attrs = connector.convertToAttributes(row);
+👉 Example
+Map<String, Object> row = new HashMap<>();
+row.put("empId", "101");
+row.put("name", "Rahul");
+
+Map<String, Object> attrs = connector.convertToAttributes(row);
+
+System.out.println(attrs);
+👉 Output:-
+{empId=101, name=Rahul}
+--------------------------------------------
+🔥 4️⃣ convertToObject():-
+👉 Kaam:-
+Attributes ko final object (Identity / Account) me convert karna
+
+👉 Calling line:-
+Object obj = connector.convertToObject(attrs);
+👉 Example
+Map<String, Object> attrs = new HashMap<>();
+attrs.put("empId", "101");
+attrs.put("name", "Rahul");
+
+Object obj = connector.convertToObject(attrs);
+
+System.out.println(obj);
+👉 Output:-
+Account Object: empId=101, name=Rahul
+👉 (actual output depend karta hai implementation pe)
+---------------------------------------------------------------------------------------------------------------------------------------
+🔥 5️⃣ validate():-
+👉 Kaam:-
+Configuration ya data ko validate karna (correct hai ya nahi)
+👉 Calling line:-
+connector.validate();
+
+🔥 validate() kya kya check karta hai
+1️⃣ 📁 File Path Validation;-
+👉 Check karta hai ki file exist karti hai ya nahi
+config.put("filePath", "/data/users.csv");
+
+✔ Validate karega:-
+File path correct hai?
+File mil rahi hai ya nahi?
+
+❌ Error:-
+File not found: /data/users.csv
+---------------------------------
+2️⃣ 🔗 File Access Permission:-
+👉 Check karta hai ki:-
+file read kar sakte ho ya nahi
+
+❌ Error:-
+Permission denied: Cannot read file
+---------------------------------------
+3️⃣ 🔄 Delimiter Validation:-
+👉 Check karta hai:-
+delimiter valid hai ya nahi
+config.put("delimiter", ",");
+
+✔ Valid:-
+,
+|
+;
+
+❌ Invalid:-
+Invalid delimiter configuration
+----------------------------------------------
+4️⃣ 📄 Header Validation (hasHeader):-
+👉 Check karta hai:-
+
+header present hai ya nahi (agar true diya hai)
+config.put("hasHeader", "true");
+
+✔ Valid:-
+first row header match karta hai
+
+❌ Error:-
+Header not found or mismatch
+--------------------------------------------
+5️⃣ 📊 Column Mapping / Schema Validation:-
+
+👉 Check karta hai:-
+CSV ke columns aur expected schema match karte hain ya nahi
+
+❌ Error:-
+Column mismatch: Expected 'empId' but not found
+----------------------------------------------------
+6️⃣ ⚙️ Configuration Validation:-
+👉 Check karta hai:-
+required config keys present hain ya nahi
+
+✔ Required:-
+filePath
+delimiter
+
+❌ Error:-
+Missing required configuration: filePath
+-------------------------------------------
+7️⃣ 🔍 Data Format Validation:-
+👉 Check karta hai:-
+data correct format me hai ya nahi
+
+Example:-
+empId,name,age
+101,Rahul,twenty   ❌ (invalid age)
+
+❌ Error:-
+Invalid data format for field 'age'
+-------------------------------------------------------------------------------------------------------------------------------------------------
+🔥 1️⃣ connect():-
+👉 Kaam:-
+System (file / DB / external system) se connection establish karta hai
+
+👉 Calling line;-
+connector.connect();
+👉 Example:-
+connector.connect();
+System.out.println("Connected successfully");
+👉 Output:-
+Connected successfully
+----------------------------------------------------
+🔥 2️⃣ disconnect():-
+👉 Kaam:-
+Connection ko close karta hai (resources free karta hai)
+
+👉 Calling line:-
+connector.disconnect();
+👉 Example:-
+connector.disconnect();
+System.out.println("Disconnected");
+👉 Output:-
+Disconnected
+----------------------------------------------------
+🔥 3️⃣ open():-
+👉 Kaam:-
+Resource ko open karta hai (file, stream, connection start)
+
+👉 Calling line:-
+connector.open();
+👉 Example:-
+connector.open();
+System.out.println("Resource Opened");
+👉 Output:-
+Resource Opened
+--------------------------------------------------------
+🔥 4️⃣ close():-
+👉 Kaam:-
+Open ki hui resource ko band karta hai
+
+👉 Calling line:-
+connector.close();
+👉 Example:-
+connector.close();
+System.out.println("Resource Closed");
+👉 Output:-
+Resource Closed
+-------------------------------------------------------------------
+🔐 5️⃣ login():-
+👉 Kaam:-
+External system me authenticate karta hai (username/password se)
+👉 Calling line:-
+connector.login("admin", "password");
+👉 Example:-
+boolean success = connector.login("admin", "password");
+if(success) {
+    System.out.println("Login Successful");
+}
+👉 Output:-
+Login Successful
+
+❌ Wrong credentials:-
+Login Failed
+------------------------
+🔓 6️⃣ logout():-
+👉 Kaam:-
+Logged-in session ko terminate karta hai
+
+👉 Calling line:-
+connector.logout();
+👉 Example:-
+connector.logout();
+System.out.println("Logged out");
+👉 Output:-
+Logged out
+
+💥 Full Lifecycle Flow (IMPORTANT 🔥):-
+login()
+   ↓
+connect()
+   ↓
+open()
+   ↓
+query() / operations
+   ↓
+close()
+   ↓
+disconnect()
+   ↓
+logout()
+------------------------------------------------------------------------------------------------
+🔥 2️⃣ processRequest():-
+🧠 Concept:-
+👉 Ye main business logic execute karta hai
+📌 Kya karta hai:-
+Request ko process karta hai
+Decide karta hai kya karna hai:-
+load data
+save data
+sync
+apply delta
+
+👉 Flow:-
+handleRequest()
+      ↓
+processRequest()
+      ↓
+if (sync) → sync()
+if (load) → loadData()
+if (save) → saveData()
+👉 Example:-
+public void processRequest(Map<String, Object> request) {
+
+    String action = (String) request.get("action");
+
+    if ("sync".equals(action)) {
+        sync();
+    } else if ("load".equals(action)) {
+        loadData();
+    } else if ("save".equals(action)) {
+        saveData(request);
+    }
+}
+-----------------------------------------------
+🔥 3️⃣ loadData():-
+🧠 Concept:-
+👉 Ye method external system se data read karta hai.
+📌 Kya karta hai:-
+CSV / DB / API se data fetch
+Data ko internal format me convert
+Return karta hai List<Map>
+--------------------------------------------
+🔥 4️⃣ sync()
+🧠 Core Concept:
+
+👉 Ye synchronization engine hai
+👉 Source aur target ko compare karta hai
+
+📌 Kaam kya karta hai:
+Source data fetch karta hai
+Target data fetch karta hai
+Dono ko compare karta hai
+Differences (delta) find karta hai
+applyDelta() call karta hai
+----------------------------------
+🔥 5️⃣ applyDelta():-
+🧠 Core Concept:-
+👉 Ye actual change apply karta hai
+📌 Kaam kya karta hai:-
+Delta (difference) identify karta hai
+Decide karta hai:
+Create
+Update
+Delete
+Changes ko save karta hai
+--------------------------------------
+🔥 6️⃣ saveData():-
+🧠 Concept:-
+👉 Ye actual write operation karta hai
+
+📌 Kya karta hai:-
+Data ko external system me save karta hai
+Create / Update operation perform karta hai.
+---------------------------------------
+🔥 7️⃣ refresh():-
+🧠 Concept:-
+👉 Ye latest data reload / refresh karta hai
+📌 Kya karta hai:-
+Cache clear karta hai
+Fresh data fetch karta hai
+UI / system ko updated data deta hai.
+--------------------------------------------
+🔥 1️⃣ handleRequest():-
+🧠 Core Concept:-
+👉 Ye entry point (starting point) hota hai
+👉 Har request yahin se start hoti hai
+📌 Kaam kya karta hai:-
+Incoming request receive karta hai
+Request ko validate karta hai
+Decide karta hai kaunsa action perform karna hai
+Further processing ko forward karta hai
+----------------------------------------
+--------------------
+flow:-
+handleRequest()
+      ↓
+processRequest()
+      ↓
+loadData()
+      ↓
+sync()
+      ↓
+applyDelta()
+      ↓
+saveData()
+      ↓
+refresh()
+------------------------------------------------------------------------------------------------------------------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointContextFactory;
+import sailpoint.object.Identity;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+
+public class SailPointFlowDemo {
+
+    public static void main(String[] args) throws Exception {
+
+        // 1️⃣ Context lena
+        SailPointContext context = SailPointContextFactory.getCurrentContext();
+
+        // 2️⃣ Load Data (real like DB fetch)
+        List<Map<String, Object>> data = loadData(context);
+
+        // 3️⃣ Process Request
+        Map<String, Object> request = new HashMap<String, Object>();
+        request.put("operation", "update");
+
+        processRequest(context, request);
+
+        // 4️⃣ Apply Delta
+        Map<String, Object> oldData = data.get(0);
+        Map<String, Object> newData = new HashMap<String, Object>();
+        newData.put("name", "ram_updated");
+
+        applyDelta(context, oldData, newData);
+
+        // 5️⃣ Sync
+        sync(context);
+
+        // 6️⃣ Refresh
+        refresh(context, oldData);
+
+        // 7️⃣ Save Data
+        saveData(context, oldData);
+
+        context.decache();
+    }
+
+    // 🔹 handleRequest (entry style)
+    public static void handleRequest(SailPointContext context, Map<String, Object> request) {
+
+        String op = (String) request.get("operation");
+
+        System.out.println("handleRequest -> " + op);
+
+        if ("create".equals(op)) {
+            System.out.println("Creating object...");
+        }
+    }
+
+    // 🔹 processRequest
+    public static void processRequest(SailPointContext context, Map<String, Object> request) {
+
+        System.out.println("processRequest -> Processing request");
+
+        handleRequest(context, request);
+    }
+
+    // 🔹 applyDelta
+    public static void applyDelta(SailPointContext context,
+                                 Map<String, Object> oldData,
+                                 Map<String, Object> newData) {
+
+        System.out.println("applyDelta -> Before: " + oldData);
+
+        oldData.putAll(newData);
+
+        System.out.println("applyDelta -> After: " + oldData);
+    }
+
+    // 🔹 sync
+    public static void sync(SailPointContext context) {
+
+        System.out.println("sync -> Aggregation / sync started");
+
+        // real systems me external system sync hota hai
+    }
+
+    // 🔹 refresh
+    public static void refresh(SailPointContext context, Map<String, Object> data) {
+
+        System.out.println("refresh -> Reloading data");
+
+        // example: identity refresh
+        String name = (String) data.get("name");
+
+        System.out.println("Refreshed object: " + name);
+    }
+
+    // 🔹 loadData (REAL API use)
+    public static List<Map<String, Object>> loadData(SailPointContext context) throws Exception {
+
+        List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+
+        Identity id = context.getObjectByName(Identity.class, "john.doe");
+
+        Map<String, Object> data = new HashMap<String, Object>();
+        data.put("name", id.getName());
+
+        list.add(data);
+
+        System.out.println("loadData -> Loaded: " + list);
+
+        return list;
+    }
+
+    // 🔹 saveData (REAL API use)
+    public static void saveData(SailPointContext context, Map<String, Object> data) throws Exception {
+
+        String name = (String) data.get("name");
+
+        Identity id = context.getObjectByName(Identity.class, name);
+
+        id.setAttribute("status", "UPDATED");
+
+        context.saveObject(id);
+        context.commitTransaction();
+
+        System.out.println("saveData -> Saved: " + name);
+    }
+}
+--------------------------------------------------------------------------------------------------------------------------------------------------

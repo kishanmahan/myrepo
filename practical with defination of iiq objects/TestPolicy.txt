@@ -1,0 +1,132 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule created="1781721253690" id="7f0000019ed01117819ed6dcc73a1202" language="beanshell" modified="1781808321194" name="TestPolicy" significantModified="1781808321194" type="IdentityTrigger">
+  <Signature returnType="Void">
+    <Inputs>
+      <Argument name="context" type="sailpoint.api.SailPointContext"/>
+      <Argument name="log" type="org.apache.commons.logging.Log"/>
+    </Inputs>
+  </Signature>
+  <Source>
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
+
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Custom;
+import sailpoint.object.Identity;
+import sailpoint.object.Link;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.tools.GeneralException;
+  
+  
+  public boolean checkPolicy() throws GeneralException {
+    String AD_APP    = "Active Directory - VDOT";   // exact AD application name
+    String OSP_APP   = "Ospinsight";
+    String AD_ATTR   = "memberOf";                  // AD entitlement attribute
+    String OSP_ATTR  = "permissions";               // OSPInsight entitlement attribute
+    String AD_PREFIX = "CN=A501-AC-OT";             // only these AD groups correlate
+    String OSP_DEFAULT = "basic";                   // default OSPInsight permission
+
+    boolean violation = false;
+    StringBuffer messages = new StringBuffer();
+
+    // Pair map: AD entitlement value -> matching OSPInsight permission
+    Map pairMap = new HashMap();
+
+    if (identity != null) {
+
+        Custom custom = context.getObjectByName(Custom.class, "VDOT Custom Ospinsight");
+        if (custom != null) {
+            Object cfg = custom.get("ospinsightAdGroups");
+            if (cfg instanceof Map) {
+                pairMap.putAll((Map) cfg);
+            }
+        }
+
+        // Collect entitlement values held on each app
+        Set adValues   = new HashSet();
+        Set ospValues  = new HashSet();
+        boolean hasADAccount  = false;
+        boolean hasOSPAccount = false;
+
+        List links = identity.getLinks();
+        if (links != null) {
+            for (int i = 0; i &lt; links.size(); i++) {
+                Link link = (Link) links.get(i);
+                String appName = link.getApplicationName();
+
+                if (AD_APP.equalsIgnoreCase(appName)) {
+                    hasADAccount = true;
+                    addValues(adValues, link.getAttribute(AD_ATTR));
+                } else if (OSP_APP.equalsIgnoreCase(appName)) {
+                    hasOSPAccount = true;
+                    addValues(ospValues, link.getAttribute(OSP_ATTR));
+                }
+            }
+        }
+
+        // Only evaluate if the identity actually has an AD account
+        if (hasADAccount) {
+
+            boolean holdsAnyRelevantADGroup = false;
+
+            Iterator it = pairMap.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry e = (Map.Entry) it.next();
+                String adEnt  = (String) e.getKey();
+                String ospEnt = (String) e.getValue();
+
+                // only the A501-AC-OT groups are relevant
+                if (adEnt == null || !adEnt.startsWith(AD_PREFIX)) {
+                    continue;
+                }
+
+                // does the identity hold this AD group?
+                if (adValues.contains(adEnt)) {
+                    holdsAnyRelevantADGroup = true;
+
+                    // its paired OSPInsight permission must be present
+                    if (!ospValues.contains(ospEnt)) {
+                        violation = true;
+                        messages.append("Has AD entitlement [" + adEnt
+                            + "] but missing required OSPInsight permission [" + ospEnt + "]. ");
+                    }
+                }
+            }
+
+            // if any relevant AD group is held, the default "basic" permission must also exist
+            if (holdsAnyRelevantADGroup &amp;&amp; !ospValues.contains(OSP_DEFAULT)) {
+                violation = true;
+                messages.append("Holds an A501-AC-OT AD group but missing default OSPInsight permission ["
+                    + OSP_DEFAULT + "]. ");
+            }
+        }
+    }
+
+    return violation;
+}
+
+// Helper: normalize single-value vs List/Collection attributes into the Set
+void addValues(Set target, Object attrVal) {
+    if (attrVal == null) return;
+    if (attrVal instanceof Collection) {
+        Iterator i = ((Collection) attrVal).iterator();
+        while (i.hasNext()) {
+            Object o = i.next();
+            if (o != null) target.add(o.toString());
+        }
+    } else {
+        target.add(attrVal.toString());
+    }
+}
+  Identity identity=context.getObjectByName(Identity.class,"Sam.Dribbles");
+  return checkPolicy();
+  </Source>
+</Rule>

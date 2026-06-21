@@ -1,0 +1,89 @@
+1️⃣ Campaign kya hai?
+Kya hai:
+Campaign basically ek review/ certification process ka container hai.
+Matlab, jab company ko decide karna hota hai ki “kaun kaun se users ke kaun kaun se access sahi hai
+aur kaun se remove karne chahiye”, to us process ko ek Campaign ke andar organize kiya jata hai.
+Kya karti hai:-
+Kaun se users ko review karna hai (scope)
+Kaun se access ya entitlements check karne hai
+Review ka start aur end date define karna
+Kaun kaun reviewers involved hain (manager, application owner, etc.)
+→ Basically Campaign ek review session ka master object hai.
+
+1️⃣ getName():-
+campaign.getName();
+Kya karta hai?
+Campaign ka name return karta hai.
+jo tumne database me rakha hai name campaign ka.
+
+2️⃣ setName(String name):-
+campaign.setName("FinanceAccessReview");
+Kya karta hai?
+Campaign ka naam set karta hai.
+
+3️⃣ getId():-
+campaign.getId();
+Kya karta hai?
+Campaign ka unique database id return karta hai.
+Example:-
+4028a4c1e981bdbf01e9bda1a6e10021
+
+4️⃣ setId(String id):-
+campaign.setId("12345");
+Kya karta hai?
+Campaign ka identifier set karta hai.
+Normally ye system automatically assign karta hai.
+
+5️⃣ getDescription():-
+campaign.getDescription();
+Kya karta hai?
+Campaign ka description return karta hai.
+Example:-
+Quarterly finance access review
+
+6️⃣ setDescription(String description):-
+campaign.setDescription("Quarterly finance access review");
+Kya karta hai?
+Campaign ka description set karta hai.
+
+7️⃣ getStartDate():-
+campaign.getStartDate();
+Kya karta hai?
+Campaign kab start hua uski date return karta hai.
+Example:-
+01-Apr-2026
+
+8️⃣ setStartDate(Date date):-
+Campaign ki start date set karta hai.
+
+9️⃣ getEndDate():-
+Campaign kab complete hona hai ye return karta hai.
+
+🔟 setEndDate(Date date):-
+Campaign ki end date set karta hai.
+
+1️⃣1️⃣ getTasks():-
+campaign.getTasks();
+Kya karta hai?
+Campaign ke sab ReviewTask objects return karta hai.
+Structure
+Campaign
+   ↓
+ReviewTask
+ReviewTask
+ReviewTask
+
+1️⃣2️⃣ addTask(ReviewTask task):-
+Campaign me new ReviewTask add karta hai.
+
+1️⃣3️⃣ removeTask(ReviewTask task):-
+Campaign se ReviewTask remove karta hai.
+
+1️⃣4️⃣ getOwner():-
+Campaign ka owner identity return karta hai.
+Example;-
+CertificationAdmin
+
+1️⃣5️⃣ setOwner(Identity owner):-
+Campaign ka owner set karta hai,ki koun review karega.
+

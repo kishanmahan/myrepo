@@ -1,0 +1,604 @@
+()system/admin side se Access Profile create aur manage kar raha hai.
+Ye sab SailPoint IdentityNow ke REST APIs ko call karke hota hai.
+hummne abhi tak koi access request nahi kiya access profile ko choose karne ke liye,
+lekin abb hum access profile ko choose karenge access request karne ke liye:-
+
+3️⃣ Access Request JSON ka matlab:-
+{
+ "requestedFor": "UserID",
+ "accessProfileIds": ["AccessProfileID"]
+}
+Meaning:-
+UserID → kis user ko access chahiye
+AccessProfileID → kaunsa access chahiye.
+----------------------------------------------
+()Access Request kya hai?
+--Access Request = user kisi application ka access maangta hai.
+Access Profile ek permission bundle hota hai, 
+jabki Access Request wo process hai jisme user us Access Profile ka access maangta hai.
+👉 Jab koi user access maangta hai (role / access profile / entitlement)
+👉 Tab ek AccessRequest object create hota hai
+
+Access Request ka use:-
+1️⃣ Application access lene ke liye
+User kisi bhi app ka access request karta hai.
+Example;-
+Salesforce
+ServiceNow
+Jira
+SAP
+
+2️⃣ Role access lene ke liye:-
+Example:-
+HR Role
+Finance Role
+Developer Role
+
+3️⃣ Temporary access lene ke liye;
+Example:-
+Developer ko 2 din ke liye production access chahiye.
+------------------------------------------------------------------------------------------------------------------------------------------------
+1️⃣ AccessRequest ke methods:-
+getId()
+setId(String id)
+getOwner()
+setOwner(Identity owner)
+
+getRequestor()
+setRequestor(Identity requestor)
+getRequestedItems()
+setRequestedItems(List<AccessProfile> items)
+addRequestedItem(AccessProfile item)
+removeRequestedItem(AccessProfile item)
+
+getState()
+setState(String state)
+getCreatedDate()
+setCreatedDate(Date date)
+getCompletedDate()
+setCompletedDate(Date date)
+getComments()
+setComments(String comments)
+approve()
+reject()
+isApproved()
+isRejected()
+submit()
+-------------------------------------------------------------------------------------------------------------------------------------
+🔹 1️⃣ getId() / setId(String id):-
+✅ setId(String id):-
+👉 Request ka unique ID set karta hai
+AccessRequest req = new AccessRequest();
+req.setId("REQ101");
+✅ Stored:-
+id = REQ101
+
+✅ getId():-
+👉 Request ka ID return karta hai
+System.out.println(req.getId());
+✅ Output:-
+REQ101
+------------------
+🔹 2️⃣ getOwner() / setOwner(Identity owner):-
+✅ setOwner(Identity owner):-
+👉 Request kisne create ki / kis user ki request hai — wo set karta hai
+Identity user = new Identity();
+user.setName("Ram");
+req.setOwner(user);
+
+✅ Stored:-
+owner = Ram
+
+✅ getOwner():-
+👉 Owner (user object) return karta hai
+System.out.println(req.getOwner().getName());
+✅ Output:-
+Ram
+--------------------
+✅ setRequestor(Identity requestor):-
+👉 Jo banda request create karta hai (self ya kisi aur ke liye)
+Identity manager = new Identity();
+manager.setName("Manager");
+req.setRequestor(manager);
+✅ Stored:-
+requestor = Manager
+
+✅ getRequestor():-
+👉 Request banane wala user return karega
+System.out.println(req.getRequestor().getName());
+✅ Output:-
+Manager
+
+💡 Real Case:-
+Ram ke liye access chahiye
+Manager ne request daali
+👉 owner = Ram
+👉 requestor = Manager
+---------------------------
+✅ setRequestedItems(List<AccessProfile> items):-
+👉 Ek saath multiple AccessProfiles set karta hai
+AccessProfile ap1 = new AccessProfile();
+ap1.setName("Admin Access");
+AccessProfile ap2 = new AccessProfile();
+ap2.setName("User Access");
+List<AccessProfile> list = new ArrayList<>();
+list.add(ap1);
+list.add(ap2);
+req.setRequestedItems(list);
+✅ Stored:-
+[Admin Access, User Access]
+
+✅ getRequestedItems():-
+👉 Saare requested AccessProfiles return karega
+System.out.println(req.getRequestedItems());
+✅ Output:-
+[Admin Access, User Access]
+
+✅ addRequestedItem(AccessProfile item):-
+👉 Ek single access add karta hai request me
+AccessProfile ap3 = new AccessProfile();
+ap3.setName("Database Access");
+req.addRequestedItem(ap3);
+✅ Updated:-
+[Admin Access, User Access, Database Access]
+
+✅ removeRequestedItem(AccessProfile item):-
+👉 Kisi access ko remove karta hai
+req.removeRequestedItem(ap1);
+✅ Updated:-
+[User Access, Database Access]
+
+💥 Full Example:-
+AccessRequest req = new AccessRequest();
+
+// Requestor
+Identity manager = new Identity();
+manager.setName("Manager");
+req.setRequestor(manager);
+
+// Requested Items
+AccessProfile ap1 = new AccessProfile();
+ap1.setName("Admin Access");
+
+AccessProfile ap2 = new AccessProfile();
+ap2.setName("User Access");
+
+req.addRequestedItem(ap1);
+req.addRequestedItem(ap2);
+
+// Print
+System.out.println(req.getRequestor().getName());
+
+for(AccessProfile ap : req.getRequestedItems()) {
+    System.out.println(ap.getName());
+}
+✅ Output:
+Manager
+Admin Access
+User Access
+-----------------------------------
+✅ setState(String state):-
+👉 Request ka state set karta hai
+req.setState("PENDING");
+
+✅ Stored:-
+state = PENDING
+---
+✅ getState():-
+👉 Current state batata hai
+System.out.println(req.getState());
+✅ Output:-
+PENDING
+
+💡 Common States:-
+PENDING → approval ka wait
+APPROVED → approve ho gaya
+REJECTED → reject ho gaya
+COMPLETED → process finish
+-----------------------------
+✅ setCreatedDate(Date date):-
+👉 Request kab bani
+req.setCreatedDate(new Date());
+
+✅ getCreatedDate():-
+👉 Created date return karega
+System.out.println(req.getCreatedDate());
+✅ Output:-
+Tue Mar 24 12:00:00 IST 2026
+
+✅ setCompletedDate(Date date):-
+👉 Request kab complete hui
+req.setCompletedDate(new Date());
+
+✅ getCompletedDate():-
+👉 Completion date return karega
+System.out.println(req.getCompletedDate());
+-------------------------------------------------
+✅ setComments(String comments):-
+👉 Approver ka comment set karta hai
+req.setComments("Approved by manager");
+
+✅ getComments():-
+👉 Comment return karega
+System.out.println(req.getComments());
+✅ Output:-
+Approved by manager
+--------------------------------------------------
+✅ approve():-
+👉 Request ko approve karta hai
+req.approve();
+👉 Internally kya hota hai:-
+state = APPROVED
+
+✅ reject():-
+👉 Request ko reject karta hai
+req.reject();
+👉 Internally:-
+state = REJECTED
+-------------------------------------------
+✅ isApproved():-
+👉 Check karta hai approve hui ya nahi
+System.out.println(req.isApproved());
+✅ Output:-
+true
+
+✅ isRejected():-
+👉 Check karta hai reject hui ya nahi
+System.out.println(req.isRejected());
+-----------------------------------------
+🔥 submit() kya karta hai?
+👉 Jab tu likhta hai:-
+req.submit();
+
+👉 iska matlab:-
+“Request ko system me officially bhej diya — ab process start karo”
+
+🧠 Internally EXACT kya hota hai (simple steps):-
+1️⃣ Validation
+
+👉 System check karta hai:
+
+owner hai ya nahi
+requestor hai ya nahi
+requestedItems empty toh nahi
+
+❌ Agar kuch missing → error (submit fail)
+
+2️⃣ State change
+state = PENDING
+
+👉 Matlab:
+
+"Ab request approval ke wait me hai"
+
+3️⃣ Created Date set
+createdDate = current time
+
+👉 Track ke liye (kab request bani)
+
+4️⃣ Workflow start
+
+👉 System ek internal workflow start karta hai
+
+(ye background process hai)
+
+5️⃣ Approval ke liye WorkItem create
+
+👉 System ek task banata hai:
+
+Manager → approve this request
+
+👉 Isko bolte hain WorkItem
+
+6️⃣ Notification bhejta hai
+
+👉 Manager ko message/email:
+
+"New request pending for approval"
+7️⃣ System wait karta hai
+
+👉 Ab kuch nahi hoga jab tak:
+
+approve()
+reject()
+----------------------------------------------------------------------------------------------------------------------------------------------------
+7️⃣ Access Profile:-
+Kya hai?
+Access Profile = Application access ka bundle / package.
+Isme entitlements (permissions) group kiye jate hain taaki ek hi request me access mil jaye.
+Short Answer:-
+👉 Access Profile में user application के entitlements (permissions / groups / roles) के लिए request करता है।
+Access Profile kyu bhejte (request) hai?
+Access Profile isliye bhejte hain taaki user ko kisi application ka access mil sake.
+
+()Access Profile Important Attributes:-
+Attribute	Kya karta hai
+name------------Access profile ka naam
+source----------Application source
+entitlements----Permissions list
+requestable-----User request kar sakta hai ya nahi
+description-----Access ka purpose
+
+()Access Profile में क्या-क्या होता है:-
+Access Profile के अंदर:-
+Entitlements
+Approval workflow
+Owner
+Description
+Source (Application)
+
+()Example:-
+Access Profile:-
+HR App Access
+
+Inside Access Profile:-
+Entitlement 1 → HR_Read
+Entitlement 2 → HR_Report
+
+अगर user HR App Access request करेगा तो दोनों entitlements मिल सकते हैं।
+
+()IdentityNow Access Request Flow:-
+User
+↓
+Access Request
+↓
+Access Profile choose
+↓
+Manager / Owner approval
+↓
+Provisioning
+↓
+Application में access create
+----------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------
+2️⃣ AccessProfile ke methods:-
+getId()
+setId(String id)
+getName()
+setName(String name)
+getDescription()
+setDescription(String description)
+
+getOwner()
+setOwner(Identity owner)
+
+getEntitlements()
+setEntitlements(List<String> entitlements)
+addEntitlement(String entitlement)
+removeEntitlement(String entitlement)
+getApplications()
+setApplications(List<Application> apps)
+addApplication(Application app)
+removeApplication(Application app)
+getStatus()
+setStatus(String status)
+
+validate()
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+1️⃣ setId(String id):-
+👉 Object ke andar ID set karta hai
+
+AccessProfile ap = new AccessProfile();
+ap.setId("AP101");
+
+✅ Output (internally store hoga):-
+id = AP101
+
+2️⃣ getId():-
+👉 Jo ID set ki thi wo return karta hai
+System.out.println(ap.getId());
+
+✅ Output:-
+AP101
+
+3️⃣ setName(String name):-
+👉 AccessProfile ka naam set karta hai
+ap.setName("Admin Access");
+✅ Stored:-
+name = Admin Access
+
+4️⃣ getName():-
+👉 Naam return karega
+System.out.println(ap.getName());
+
+✅ Output:-
+Admin Access
+
+5️⃣ setDescription(String description):-
+👉 Description set karta hai
+ap.setDescription("Full system access");
+
+✅ Stored:-
+description = Full system access
+
+6️⃣ getDescription():-
+👉 Description return karega
+System.out.println(ap.getDescription());
+
+✅ Output:-
+Full system access
+---------------------------------------------------------------------
+🔹 setOwner(Identity owner):-
+👉 Iska matlab:-
+AccessProfile ka owner kaun hai (kaun responsible hai) wo set karna
+
+🧠 Simple samajh:-
+"Ye access profile kis bande ka hai / kaun manage karega?"
+
+🔹 Example:-
+Identity user = new Identity();
+user.setName("Ram");
+
+AccessProfile ap = new AccessProfile();
+ap.setOwner(user);
+
+✅ Internally:-
+owner = Ram
+-------------------------------------------------------
+🔹 getOwner():-
+👉 Jo owner set kiya tha, usko wapas laata hai
+Identity owner = ap.getOwner();
+System.out.println(owner.getName());
+
+✅ Output:-
+Ram
+
+()AccessProfile = "Admin Access":-
+Owner = "IT Manager"
+👉 Matlab:-
+Agar koi user ye access maangega → approval owner ke paas jayega.
+------------------------------------------------------------------------------------
+🔹 getEntitlements():-
+👉 Saare entitlements (permissions) return karta hai
+System.out.println(ap.getEntitlements());
+✅ Output:-
+[READ, WRITE, DELETE]
+
+🔹 setEntitlements(List<String> entitlements):-
+👉 Ek saath multiple permissions set karta hai
+List<String> entList = new ArrayList<>();
+entList.add("READ");
+entList.add("WRITE");
+ap.setEntitlements(entList);
+✅ Stored:-
+entitlements = [READ, WRITE]
+
+🔹 addEntitlement(String entitlement):-
+👉 Ek single permission add karta hai
+ap.addEntitlement("DELETE");
+✅ Updated:-
+[READ, WRITE, DELETE]
+
+🔹 removeEntitlement(String entitlement):-
+👉 Kisi permission ko remove karta hai
+ap.removeEntitlement("WRITE");
+✅ Updated:-
+[READ, DELETE]
+-------------------------------------------------------------------------------------------------
+🔹 getApplications():-
+👉 Kaun-kaun se applications linked hain return karega
+System.out.println(ap.getApplications());
+
+✅ Output:-
+[Salesforce, SAP]
+----------------------------------------------------
+🔹 setApplications(List<Application> apps):-
+👉 Ek saath multiple applications set karta hai
+
+Application app1 = new Application("Salesforce");
+Application app2 = new Application("SAP");
+
+List<Application> apps = new ArrayList<>();
+apps.add(app1);
+apps.add(app2);
+
+ap.setApplications(apps);
+
+✅ Stored:-
+applications = [Salesforce, SAP]
+
+🔹 addApplication(Application app):-
+👉 Ek application add karta hai
+
+Application app3 = new Application("Oracle");
+ap.addApplication(app3);
+
+✅ Updated:-
+[Salesforce, SAP, Oracle]
+-----------------------------------------------------------------------
+🔹 removeApplication(Application app):-
+👉 Application remove karta hai
+
+ap.removeApplication(app1);
+
+✅ Updated:-
+[SAP, Oracle]
+
+💡 Real Meaning:-
+👉 Application = system/software
+Jaise:-
+Salesforce
+SAP
+Database
+HR system
+-----------------------------------------------------
+🔹 setStatus(String status):-
+👉 AccessProfile ka status set karta hai
+ap.setStatus("ACTIVE");
+✅ Stored:-
+status = ACTIVE
+
+🔹 getStatus():-
+👉 Status return karta hai
+System.out.println(ap.getStatus());
+✅ Output:-
+ACTIVE
+------------------------------------------------------
+💡 Status kya hota hai?
+ACTIVE → use ho sakta hai
+INACTIVE → disabled
+DRAFT → abhi complete nahi
+
+💥 Full Example:-
+AccessProfile ap = new AccessProfile();
+
+// Entitlements
+ap.addEntitlement("READ");
+ap.addEntitlement("WRITE");
+
+// Applications
+Application app1 = new Application("Salesforce");
+ap.addApplication(app1);
+
+// Status
+ap.setStatus("ACTIVE");
+
+// Print
+System.out.println(ap.getEntitlements());
+System.out.println(ap.getApplications());
+System.out.println(ap.getStatus());
+
+✅ Output:-
+[READ, WRITE]
+[Salesforce]
+ACTIVE
+---------------------------------------------------------------------------------------------------
+()🔥 validate() kya hota hai?
+👉 validate() ka kaam hota hai:-
+Check karna ki AccessProfile sahi bana hai ya nahi,
+Agar kuch galat hua ❌
+👉 Error throw karega (Exception)
+Agar sab sahi hai ✅
+👉 Successfully pass ho jayega.
+
+1️⃣ Name check:-
+if(name == null || name.isEmpty())
+❌ Error:-
+Name is required
+
+2️⃣ Entitlements empty hai ya nahi:-
+if(entitlements == null || entitlements.isEmpty())
+❌ Error:-
+At least one entitlement required
+
+3️⃣ Applications linked hai ya nahi:-
+if(applications == null || applications.isEmpty())
+❌ Error:-
+Application must be assigned
+
+4️⃣ Owner set hai ya nahi:-
+if(owner == null)
+❌ Error:-
+Owner is mandatory
+
+5️⃣ Status valid hai ya nahi:-
+if(!status.equals("ACTIVE") && !status.equals("INACTIVE"))
+❌ Error:-
+Invalid status
+
+6️⃣ Duplicate entitlements check:-
+Set<String> set = new HashSet<>(entitlements);
+if(set.size() != entitlements.size())
+❌ Error:-
+Duplicate entitlements not allowed.
+-----------------------------------------------------------------------------------------------------------------------------------------

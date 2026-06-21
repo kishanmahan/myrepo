@@ -1,0 +1,129 @@
+🔹 Sort kya hai?
+Sort ka matlab hai data ko kisi order me arrange karna.
+
+1️⃣ Ascending order (chhota → bada)
+Numbers: 1, 2, 3, 4, 5
+Alphabets: A, B, C, D
+
+2️⃣ Descending order (bada → chhota)
+Numbers: 5, 4, 3, 2, 1
+Alphabets: Z, Y, X, W
+
+🔹 1️⃣ Arrays ke liye
+Arrays.sort(array):-
+Kya karta hai: Default ascending order me sort karta hai
+
+int[] arr = {5, 2, 9, 1};
+Arrays.sort(arr);
+System.out.println(Arrays.toString(arr));
+
+✅ Output: [1, 2, 5, 9]
+----------------------------------------------------
+Arrays.sort(array, Comparator):-
+Kya karta hai: Custom comparator ke according sort
+Example: Descending
+
+Integer[] arr = {5, 2, 9, 1};
+Arrays.sort(arr, Collections.reverseOrder());
+System.out.println(Arrays.toString(arr));
+
+✅ Output: [9, 5, 2, 1]
+----------------------------------------------
+🔹 2️⃣ Lists / Collections ke liye:-
+Collections.sort(list)
+Kya karta hai: List ko ascending order me sort karta hai
+
+List<String> names = Arrays.asList("Rahul", "Ram", "Shyam");
+Collections.sort(names);
+System.out.println(names);
+✅ Output: [Ram, Rahul, Shyam]
+
+()Collections.sort(list, Comparator):-
+Kya karta hai: Custom sort (Descending / by object property)
+
+Collections.sort(names, Collections.reverseOrder());
+System.out.println(names);
+
+✅ Output: [Shyam, Rahul, Ram]
+-------------------------------------------------------------------
+🔹 Comparator kya hai?
+Comparator ek interface hai Java me jo do objects ko compare karne ka logic define karta hai.
+Ye decide karta hai ki kaunsa object pehle aayega aur kaunsa baad me.
+Methods: compare(T o1, T o2)
+
+Return value:-
+<0 → o1 pehle
+0 → equal
+>0 → o2 pehle
+-------------------
+package com.example.sortexample;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+
+// Identity class
+class Identity {
+    private String name;
+
+    public Identity(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String toString() {
+        return name;
+    }
+}
+
+// Custom Comparator class
+class IdentityNameComparator implements Comparator<Identity> {
+    @Override
+    public int compare(Identity i1, Identity i2) {
+        return i1.getName().compareTo(i2.getName()); // Ascending order
+    }
+}
+
+public class SortExample {
+    public static void main(String[] args) {
+        List<Identity> identities = new ArrayList<Identity>();
+        identities.add(new Identity("Rahul"));
+        identities.add(new Identity("Ram"));
+        identities.add(new Identity("Shyam"));
+
+        System.out.println("Before Sorting: " + identities);
+
+        // Sort using custom comparator
+        Collections.sort(identities, new IdentityNameComparator());
+
+        System.out.println("After Sorting Ascending: " + identities);
+    }
+}
+
+✅ Output:
+
+Before Sorting: [Rahul, Ram, Shyam]
+After Sorting Ascending: [Ram, Rahul, Shyam]
+🔹 Descending Order
+
+Agar descending chahiye to comparator me reverse kar do:
+
+class IdentityNameDescendingComparator implements Comparator<Identity> {
+    @Override
+    public int compare(Identity i1, Identity i2) {
+        return i2.getName().compareTo(i1.getName()); // Descending
+    }
+}
+
+// Use:
+Collections.sort(identities, new IdentityNameDescendingComparator());
+
+✅ Output:
+
+[Shyam, Rahul, Ram]
+------------------------------------------------------------------------

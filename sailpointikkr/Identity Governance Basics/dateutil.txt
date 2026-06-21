@@ -1,0 +1,29 @@
+()🔹 DateUtil kya hai?
+👉 DateUtil = Date/Time related operations ke liye helper class
+Date create karna
+Format convert karna
+Date compare karna
+Date add/subtract karna
+
+🔹 Common kaam jo DateUtil karta hai:-
+1️⃣ Date format karna
+String formatted = DateUtil.formatDate(new Date());
+System.out.println(formatted);
+✅ Output:-
+2026-03-23
+
+2️⃣ String → Date:-
+Date date = DateUtil.parseDate("2026-03-23");
+System.out.println(date);
+✅ Output:-
+Mon Mar 23 00:00:00 IST 2026
+
+3️⃣ Date compare karna:-
+boolean result = DateUtil.isBefore(date1, date2);
+
+4️⃣ Date add/subtract karna:-
+Date newDate = DateUtil.addDays(new Date(), 5);
+👉 Aaj ki date + 5 din
+
+5️⃣ Current date/time:-
+Date now = DateUtil.getCurrentDate();

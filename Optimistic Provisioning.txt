@@ -1,0 +1,30 @@
+()Optimistic Provisioning ka matlab hota hai: "Bina final confirmation ka wait kiye, pehle hi maan lena ki kaam ho gaya hai."
+Ise ek simple real-life example se samajhte hain:-
+Maan lijiye aapne Zomato/Swiggy se khana order kiya. Jaise hi aap payment karte hain,
+app aapko turant dikha deta hai ki "Order Confirmed!" bhale hi restaurant ne abhi tak order accept karke banana shuru na kiya ho.
+App ek optimistic (sakaaratmak) approach leta hai ki order ho hi jayega. Agar baad mein restaurant order cancel karta hai,
+tab jake app aapko update karta hai.
+Bas yahi same logic SailPoint mein lagta hai!
+
+()SailPoint mein yeh kaise kaam karta hai?
+Jab SailPoint kisi target system (jaise Active Directory, Workday, ya Salesforce) mein koi naya account banane ya access dene ki
+request bhejta hai, toh normal process mein usko wait karna padta hai ki target system se "Success" ka message aaye. 
+Lekin Optimistic Provisioning on hone par:-
+
+--Request Bhejna: SailPoint target application ko provisioning ki request bhejta hai.
+
+--Turant Update (Optimistic step): Target system se confirmation aane ka wait kiye bina hi,
+SailPoint apne database (Identity Cube) ko turant update kar deta hai.
+
+--UI Display: SailPoint ke UI mein dikhne lagta hai ki user ko access/account mil gaya hai.
+
+--Reality Check (Aggregation): Kuch time baad jab SailPoint ka Aggregation task run hota hai,
+tab SailPoint actual mein check karta hai ki us target system mein account sach mein bana tha ya nahi.
+
+Agar ban gaya tha: Toh sab badhiya hai, status waisa hi rehta hai.
+
+Agar fail ho gaya tha: (Jaise target server down tha ya koi error aa gayi thi),
+toh SailPoint us access ko apne UI se hata deta hai (revert kar deta hai) kyunki actual mein user ko wo nahi mila tha.
+
+Iska Fayda (Advantage) Kya Hai?
+Faster User Experience: Users ko UI bahut fast aur responsive lagta hai. Unhe turant dikh jata hai ki unka request process ho gaya hai aur dashboard jaldi update ho jata hai.

@@ -1,0 +1,55 @@
+🔹 FTP (File Transfer Protocol)
+👉 Purana file transfer protocol
+🔸 Features:
+Port: 21
+Unsecure (data plain text me jata hai)
+Username/password bhi encrypt nahi hota
+Separate control + data connection use karta hai
+Firewall issues aa sakte hain
+🔸 Use:
+Public file sharing
+Old systems
+🔹 SCP (Secure Copy Protocol)
+👉 SSH based secure file transfer
+🔸 Features:
+Port: 22 (SSH)
+Fully secure (encrypted)
+Simple command based transfer
+Ek hi connection use karta hai
+🔸 Use:
+Server to server transfer
+Secure environments (production)
+
+💀 Ekdum solid summary
+👉
+Host = jahan connect karte ho (server)
+User = us server ka account
+Password = us account ka password
+
+🔹 Common Terms (FTP & SCP dono me same concept)
+✅ 1. Host (Server Address)
+👉 Jis system pe tu file bhejna ya lena chahta hai
+IP address ya domain name hota hai
+Example:
+192.168.1.10
+example.com
+
+🔹 2. User (Username kya hota hai)
+👉 User = server ke andar ek account
+Matlab:
+Server pe har user ka alag login hota hai
+Har user ka apna folder + permission hota hai
+🔸 Example:
+User
+Access
+root
+Full control
+ubuntu
+Limited
+kishan
+Custom
+🔹 3. Password kya hota hai
+👉 Password = user ka login secret
+Server verify karta hai:
+kya user sahi hai?
+password sahi hai?

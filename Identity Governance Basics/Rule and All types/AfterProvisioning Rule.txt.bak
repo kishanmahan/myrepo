@@ -1,0 +1,266 @@
+()AfterProvisioning kya hai kya karta hai?
+--🔹 AfterProvisioning Rule kya hai?
+👉 SailPoint IdentityIQ me:-
+AfterProvisioning Rule ek post-processing rule hoti hai jo tab run hoti hai jab provisioning process successfully complete ho jata hai.
+
+🔹 Simple Samajh (Flow):-
+Access Request / Identity Refresh
+        ↓
+ProvisioningPlan create
+        ↓
+BeforeProvisioning Rule  🔥
+        ↓
+Provisioning (AD, DB, etc.) execute
+        ↓
+AfterProvisioning Rule  🔥 (yaha tera rule chalta hai).
+
+🔹 AfterProvisioning ka main purpose:-
+1️⃣ 📊 Logging & Audit:-
+Kaun sa account create hua
+Kaun se attributes set hue
+Kaun si application me provisioning hui
+👉 Example:-
+AD account created → log store
+Compliance ke liye tracking
+
+2️⃣ 📧 Notification:-
+Email to user / manager / admin
+Slack / webhook alerts
+👉 Example:-
+“Your account has been created”
+“Provisioning failed for user”
+
+3️⃣ 🔍 Result Validation:-
+Check provisioning success/failure
+Analyze provisioning errors
+👉 Example:-
+AD failed → error log
+DB update failed → retry logic trigger
+
+4️⃣ 🧹 Post Processing:-
+Extra attributes update
+Custom database update
+External system call
+👉 Example:-
+EmployeeId ko CRM me update karna
+Custom logging system me entry
+
+5️⃣ ⚠️ Error Handling:-
+👉 Provisioning process me:-
+AD / DB / LDAP call fail ho sakta hai
+Attribute set nahi ho pata
+Network / API issue aa sakta hai
+👉 AfterProvisioning me tu:-
+Result check karta hai
+Errors identify karta hai
+Actions leta hai (log, alert, retry).
+----------------------------------------------
+<Rule name="AfterProvisioning_ErrorHandling" type="AfterProvisioning">
+    <Source>
+
+        import sailpoint.api.SailPointContext;
+        import sailpoint.object.ProvisioningPlan;
+        import sailpoint.object.AccountRequest;
+        import sailpoint.object.AttributeRequest;
+        import sailpoint.object.ProvisioningResult;
+        import java.util.List;
+
+        SailPointContext context = (SailPointContext) args.get("context");
+        ProvisioningPlan plan = (ProvisioningPlan) args.get("plan");
+
+        if (plan == null) {
+            System.out.println("Provisioning plan is null");
+            return;
+        }
+
+        List accountRequests = plan.getAccountRequests();
+
+        if (accountRequests != null) {
+
+            for (Object obj : accountRequests) {
+
+                AccountRequest accReq = (AccountRequest) obj;
+
+                // 🔹 Get result object (important for error handling)
+                ProvisioningResult result = accReq.getResult();
+
+                if (result == null) {
+                    System.out.println("Result is null for account: " + accReq.getNativeIdentity());
+                    continue;
+                }
+
+                String status = result.getStatus();
+
+                System.out.println("Account: " + accReq.getNativeIdentity());
+                System.out.println("Status: " + status);
+
+                // 🔥 ERROR HANDLING
+                if ("FAILED".equalsIgnoreCase(status)) {
+
+                    System.out.println("Provisioning failed!");
+
+                    // Get errors
+                    List errors = result.getErrors();
+
+                    if (errors != null) {
+                        for (Object err : errors) {
+                            System.out.println("Error: " + err.toString());
+                        }
+                    }
+
+                    // 🔥 Custom handling (example)
+                    // 1. Log
+                    // 2. Send alert
+                    // 3. Store in DB
+                    System.out.println("Taking action for failure...");
+                }
+
+                // 🔥 SUCCESS HANDLING
+                else if ("COMPLETED".equalsIgnoreCase(status)) {
+                    System.out.println("Provisioning successful");
+
+                    // Example: audit log
+                    System.out.println("Account created successfully: " + accReq.getNativeIdentity());
+                }
+            }
+        }
+
+        System.out.println("AfterProvisioning Error Handling completed");
+
+    </Source>
+</Rule>
+//////////*
+()🔹 1️⃣ continue ka matlab kya hai?
+👉 continue ek loop control statement hai (Java/BeanShell me)
+
+✅ Iska kaam:-
+👉 current iteration ko skip karna aur next iteration par jaana
+
+🔹 Tumhara code:-
+if (result == null) {
+    System.out.println("Result is null for account: " + accReq.getNativeIdentity());
+    continue;
+}
+👉 Matlab:-
+Agar result == null hai
+To:-
+log print karo
+aur iss account ko process karna skip karo
+loop next account par chala jayega
+-----------------------------------------------
+🔹 2️⃣ args kya hai?
+👉 args ek Map object hota hai jo SailPoint rule engine pass karta hai
+🔹 Real meaning:-
+👉 SailPoint IdentityIQ rule execute karte time:-
+SailPoint system automatically:
+context
+provisioningPlan
+identity
+aur dusri values
+👉 sab args ke through pass karta hai.
+
+🔹 args kaha se aata hai?
+👉 Ye developer nahi banata
+👉 Ye SailPoint engine internally create karta hai
+*//////////
+----------------------------------------------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Global-AfterProvisioning-Rule" type="AfterProvisioning">
+  <Source>
+  <![CDATA[
+  import sailpoint.object.*;
+  import sailpoint.api.ProvisioningPlan;
+  import sailpoint.api.ProvisioningPlan.AccountRequest;
+  import sailpoint.api.ProvisioningPlan.AttributeRequest;
+  import org.apache.commons.logging.Log;
+  import org.apache.commons.logging.LogFactory;
+
+  Log customLogger = LogFactory.getLog(this.getClass());
+
+  if (plan != null) {
+      // 1. Result Check: Kya provisioning sach mein successful hui?
+      ProvisioningResult result = plan.getResult();
+      
+      if (result != null && ProvisioningResult.STATUS_COMMITTED.equals(result.getStatus())) {
+          
+          List accReqs = plan.getAccountRequests();
+          for (AccountRequest accReq : accReqs) {
+              
+              // 2. Sirf 'Create' operation ke baad welcome mail trigger karna
+              if (AccountRequest.Operation.Create.equals(accReq.getOperation())) {
+                  
+                  String appName = accReq.getApplicationName();
+                  String nativeIdentity = accReq.getNativeIdentity(); // AD ka DN ya ID
+                  
+                  customLogger.info("Success! Account created in " + appName + " with ID: " + nativeIdentity);
+
+                  // 3. Post-Creation Logic: Triggering an Email
+                  Identity user = plan.getIdentity();
+                  if (user != null) {
+                      String userEmail = user.getEmail();
+                      if (userEmail != null) {
+                          // Production mein yahan Email Template call hota hai
+                          customLogger.info("Triggering Welcome Email to: " + userEmail);
+                      }
+                  }
+              }
+          }
+      } else {
+          customLogger.error("Provisioning failed or is still in 'Pending' state.");
+      }
+  }
+  ]]>
+  </Source>
+</Rule>
+------------------------------------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Global-AfterProvisioning-Rule" type="AfterProvisioning">
+  <Source>
+  <![CDATA[
+  import sailpoint.object.*;
+  import sailpoint.api.ProvisioningPlan;
+  import sailpoint.api.ProvisioningPlan.AccountRequest;
+  import sailpoint.api.ProvisioningPlan.AttributeRequest;
+  import org.apache.commons.logging.Log;
+  import org.apache.commons.logging.LogFactory;
+
+  Log customLogger = LogFactory.getLog("com.company.afterprovisioning");
+
+  if (plan != null) {
+      // 1. Result Check: Kya provisioning sach mein successful hui?
+      ProvisioningResult result = plan.getResult();
+      
+      if (result != null && ProvisioningResult.STATUS_COMMITTED.equals(result.getStatus())) {
+          
+          List accReqs = plan.getAccountRequests();
+          for (AccountRequest accReq : accReqs) {
+              
+              // 2. Sirf 'Create' operation ke baad welcome mail trigger karna
+              if (AccountRequest.Operation.Create.equals(accReq.getOperation())) {
+                  
+                  String appName = accReq.getApplicationName();
+                  String nativeIdentity = accReq.getNativeIdentity(); // AD ka DN ya ID
+                  
+                  customLogger.info("Success! Account created in " + appName + " with ID: " + nativeIdentity);
+
+                  // 3. Post-Creation Logic: Triggering an Email
+                  Identity user = plan.getIdentity();
+                  if (user != null) {
+                      String userEmail = user.getEmail();
+                      if (userEmail != null) {
+                          // Production mein yahan Email Template call hota hai
+                          customLogger.info("Triggering Welcome Email to: " + userEmail);
+                      }
+                  }
+              }
+          }
+      } else {
+          customLogger.error("Provisioning failed or is still in 'Pending' state.");
+      }
+  }
+  ]]>
+  </Source>
+</Rule>
+-----------------------------------------------------------------------------------------------------------------------------------------------

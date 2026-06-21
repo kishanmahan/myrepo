@@ -1,0 +1,144 @@
+🔄 4️⃣ Provisioning & Deprovisioning:-
+Account creation
+Entitlement assignment
+Birthright access
+Automated provisioning
+Manual provisioning
+Deprovisioning
+
+1️⃣ Provisioning kya hai?
+Provisioning ka matlab hai user ko system ya application me access dena.
+Jab kisi employee ko company me join karaya jata hai, tab uske liye automatically:
+account create hota hai
+roles assign hoti hain
+permissions milti hain
+Is process ko Provisioning kehte hain.
+
+Example:-
+Maan lo company me Rahul naam ka employee join karta hai.
+
+System automatically ye kaam karega:-
+Active Directory account create
+Email account create
+Finance application access
+Database access
+Ye sab Provisioning process ka part hai.
+
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.ProvisioningProject;
+
+public class ProvisionExample {
+    public void provisionUser(SailPointContext context) throws Exception {
+
+        Identity user = context.getObjectByName(Identity.class, "rahul");
+
+        ProvisioningPlan plan = new ProvisioningPlan();
+        plan.setIdentity(user);
+
+        AccountRequest accReq = new AccountRequest();
+        accReq.setApplication("ActiveDirectory");
+        accReq.setOperation(AccountRequest.Operation.Create);
+
+        AttributeRequest attrReq = new AttributeRequest();
+        attrReq.setName("memberOf");
+        attrReq.setOperation(ProvisioningPlan.Operation.Add);
+        attrReq.setValue("FinanceGroup");
+
+        accReq.add(attrReq);
+
+        plan.add(accReq);
+
+        ProvisioningProject project = new ProvisioningProject(plan);
+
+        context.provision(project);
+
+        context.commitTransaction();
+    }
+}
+
+()Simple Flow:-
+New User Join
+      ↓
+Identity Create
+      ↓
+Role Assign
+      ↓
+Access Grant
+      ↓
+Account Create in Applications
+
+2️⃣ Deprovisioning kya hai?
+Deprovisioning ka matlab hai user ka access remove karna.
+Jab employee:-
+company chhod deta hai
+department change karta hai
+role change hota hai
+Tab uske unnecessary access remove kiye jate hain.
+Is process ko Deprovisioning kehte hain.
+
+Example:-
+Rahul company se resign karta hai.
+System automatically:-
+Email disable
+Database access remove
+Finance system access remove
+VPN access remove
+Ye sab Deprovisioning hai.
+
+()Simple Flow:-
+Employee Leaves Company
+        ↓
+Identity Disable
+        ↓
+Roles Remove
+        ↓
+Accounts Disable/Delete
+
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.ProvisioningProject;
+
+public class DeprovisionExample {
+
+    public void deprovisionUser(SailPointContext context) throws Exception {
+
+        Identity user = context.getObjectByName(Identity.class, "rahul");
+
+        ProvisioningPlan plan = new ProvisioningPlan();
+        plan.setIdentity(user);
+
+        AccountRequest accReq = new AccountRequest();
+        accReq.setApplication("ActiveDirectory");
+        accReq.setOperation(AccountRequest.Operation.Modify);
+
+        AttributeRequest attrReq = new AttributeRequest();
+        attrReq.setName("memberOf");
+        attrReq.setOperation(ProvisioningPlan.Operation.Remove);
+        attrReq.setValue("FinanceGroup");
+
+        accReq.add(attrReq);
+
+        plan.add(accReq);
+
+        ProvisioningProject project = new ProvisioningProject(plan);
+
+        context.provision(project);
+
+        context.commitTransaction();
+    }
+}
+Employee Resign:-
+User Disable
+↓
+DeprovisionPlan
+↓
+Remove Access
+↓
+context.provision()

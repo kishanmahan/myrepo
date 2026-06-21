@@ -1,0 +1,30 @@
+()🔥 AuditManager kya hai?
+AuditManager bhi SailPoint IdentityIQ me ek class/service hoti hai
+Ye AuditEvent ko create, log, save aur manage karne ke liye use hoti hai
+
+👉 Simple:-
+AuditEvent = data (log record)
+AuditManager = us data ko handle karne wala controller/service.
+
+🔹 AuditManager ke methods:-
+log(AuditEvent event)
+log(String action, String actor, String target)
+log(String action, String actor, String target, String result)
+log(AuditEvent event, boolean persist)
+save(AuditEvent event)
+createEvent()
+getEvents()
+getEventsByAction(String action)
+getEventsByActor(String actor)
+getEventsByTarget(String target)
+getEventsByTrackingId(String trackingId)
+getEventsByDateRange(Date start, Date end)
+deleteEvent(AuditEvent event)
+archiveEvent(AuditEvent event)
+countEvents()
+countEventsByAction(String action)
+searchEvents(QueryOptions options)
+toMap(AuditEvent event)
+fromMap(Map map)
+toXml(AuditEvent event)
+fromXml(String xml)

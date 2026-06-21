@@ -1,0 +1,589 @@
+()Workflow ka matlab hai – ek predefined sequence of tasks jo automatic ya semi-automatic chalti hai 
+jab koi event trigger hota hai. 😎
+workflow decide karta hai ki kaunsa kaam kab aur kaise hoga. Enterprise me ye Automation ka backbone hai.
+
+2️⃣ Types of Workflows in SailPoint:-
+Type	                                Description
+Provisioning Workflow-------User ko access assign karna, roles add/remove karna
+Deprovisioning Workflow-----User ke access remove karna (employee leave hone par)
+Reconciliation Workflow-----Application accounts ko SailPoint ke data ke saath sync karna
+Access Request Workflow-----User apne liye new access request karta hai → approval chain follow hota hai
+Policy Violation Workflow---Policy breach detect hone par alert, remediation ya approval trigger hota hai
+
+4️⃣ Simple Example in SailPoint:-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Workflow;
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.Link;
+import sailpoint.api.ProvisioningProject;
+import sailpoint.object.Application;
+import java.util.List;
+
+public class LeastPrivilegeExample {
+
+    public static void main(String[] args) throws Exception {
+
+        // 1️⃣ Context create / fetch
+        SailPointContext context = SailPointFactory.getCurrentContext(); // Assume context setup
+
+        // 2️⃣ Workflow fetch
+        Workflow workflow = context.getObject(Workflow.class, "LeastPrivilegeWorkflow");
+
+        // 3️⃣ Identity fetch
+        Identity user = context.getObject(Identity.class, "john.doe");
+
+        System.out.println("Starting Least Privilege Workflow for: " + user.getName());
+
+        // 4️⃣ Step 1: Check current access
+        System.out.println("Step 1: Checking current access...");
+        workflow.executeStep("CheckAccess", user);
+
+        // 5️⃣ Step 2: Identify extra access / roles
+        System.out.println("Step 2: Removing unnecessary roles...");
+        workflow.executeStep("DeprovisionExtraAccess", user);
+
+        // 6️⃣ Step 3: Assign required roles
+        System.out.println("Step 3: Provisioning required access...");
+        workflow.executeStep("ProvisionRequiredAccess", user);
+
+        // Optional: You can also manually create a ProvisioningPlan
+        ProvisioningPlan plan = new ProvisioningPlan();
+        plan.setIdentity(user);
+
+        // Example: Remove extra access (links)
+        List<Link> currentLinks = user.getLinks();
+        for (Link link : currentLinks) {
+            if (link.getApplicationName().equals("OldSystem")) {
+                plan.add(DeleteLink(link));
+            }
+        }
+
+        // Example: Assign required roles
+        Application salesforceApp = context.getObject(Application.class, "Salesforce");
+        plan.add(ProvisioningPlan.createAssignRolePlan(salesforceApp, user, "FinanceRole"));
+
+        // Execute provisioning plan
+        ProvisioningProject project = new ProvisioningProject(plan, "LeastPrivilegeProject");
+        context.provision(project);
+
+        // 7️⃣ Step 4: Notify manager
+        System.out.println("Step 4: Sending notification...");
+        workflow.executeStep("NotifyManager", user);
+
+        System.out.println("Least Privilege Workflow completed for: " + user.getName());
+    }
+
+    // Dummy method for deleting link
+    private static ProvisioningPlan.DeleteLink DeleteLink(Link link) {
+        ProvisioningPlan.DeleteLink dl = new ProvisioningPlan.DeleteLink();
+        dl.setLink(link);
+        return dl;
+    }
+}
+---------------------------------------------------------------------------------------------------------------------------------------
+()workflow methods:-
+----------------------------------------------------
+Method	                              Description
+getProperty	         Return system property
+isProperty	          Check property exists
+getMessage	          Get localized message
+addMessage	        Add message to workflow case
+addLaunchMessage	UI launch message
+setLaunchMessage	Replace launch message
+log	Log message:-------
+print	                Print to console
+audit	               Create audit event
+sendEmail	               Send Email
+launchTask	                 Launch task
+scheduleRequest	         Schedule a generic request
+scheduleWorkflowEvent	Schedule workflow launch
+commit	                   Commit transaction
+rollback	              Rollback transaction
+
+getManager	                      Get identity’s manager
+calculateIdentityDifference	      Compute identity diff
+addLinksInformation	               Add link list info
+checkPolicyViolations	           Evaluate violations
+
+activateRoleAssignment	              Assign roles
+assimilateProvisioningForm	         Store form data
+buildPlanApprovalForm	          Build approval form
+provisionProject	               Execute provisioning
+---------------------------------------------------------------------------------
+()System Property kya hai?
+System Property ek key-value pair hoti hai jo system ya application ke liye configuration settings store karti hai.
+Key: Property ka naam (jaise defaultPassword)
+Value: Property ka actual value (jaise Welcome@123)
+Ye properties program me kahin bhi access ho sakti hain, jaise workflow, rules, ya provisioning me.
+
+1️⃣ System ka matlab:-
+Ye ek computer ya application environment hota hai jahan program run hota hai.
+Isme include hota hai:-
+Server: Jahan application host hoti hai (jaise web server, SailPoint server).
+Operating System: Windows, Linux, etc.
+Application/Software: Jaise SailPoint IdentityNow ya IdentityIQ.
+
+------------------------------------------------------------------------------------
+
+1️⃣ Check property exist karti hai ya nahi:-
+boolean exists = context.isProperty("defaultPassword");
+System.out.println("Property exists? " + exists);
+
+Output:-
+Property exists? true
+
+2️⃣ Property ka value lena:-
+String value = context.getProperty("defaultPassword");
+System.out.println("Property value: " + value);
+
+Output:-
+Property value: Welcome@123
+
+-------------------------------------------------------------------------------------------
+3️⃣ getMessage:-
+Kya karta hai:-
+Localized message ya workflow-specific message return karta hai. Usually UI ya logs me show karne ke liye use hota hai.
+
+Example:-
+String msg = context.getMessage("identityCreated");
+System.out.println("Message: " + msg);
+
+Output (agar message set hai):-
+Message: Identity successfully created.
+
+4️⃣ addMessage:-
+Kya karta hai:-
+Workflow case me ek custom message add karta hai, jo workflow ke execution me store ho jata hai.
+Example:-
+context.addMessage("Starting provisioning for John Doe.");
+Output (Workflow logs / UI me):-
+Workflow Messages:-
+- Starting provisioning for John Doe.
+
+5️⃣ addLaunchMessage:-
+Kya karta hai:-
+Workflow ke UI launch message me ek message add karta hai. Ye mostly workflow trigger ke time user ko show hota hai.
+Example:-
+context.addLaunchMessage("Workflow launched for onboarding process.");
+Output (UI launch screen me):-
+Workflow launched for onboarding process.
+
+6️⃣ setLaunchMessage:-
+Kya karta hai:
+Existing launch message ko replace karta hai.
+Example:-
+context.setLaunchMessage("Workflow is now running. Please wait...");
+Output (UI launch screen me):-
+Workflow is now running. Please wait...
+--------------------------------------------------------------------------------------------------------------------------
+2️⃣ audit:-
+Kya karta hai:-
+Audit event create karta hai. Identity ya workflow ke actions track karne ke liye use hota hai.
+Example:-
+context.audit("UserCreation", "Created new identity for John Doe");
+
+Output (Audit log me):-
+[Audit] Type: UserCreation, Message: Created new identity for John Doe.
+--------------------------------------------------------------------------------------------------
+3️⃣ sendEmail:-
+Kya karta hai:-
+Workflow ke context me email bhejne ke liye use hota hai.
+
+Example:-
+context.sendEmail("admin@example.com", "Provisioning Started", "Workflow has started provisioning John Doe");
+
+Output:-
+Admin ke inbox me email aayega:-
+
+To: admin@example.com
+Subject: Provisioning Started
+Body: Workflow has started provisioning John Doe.
+------------------------------------------------------------------------------------------------------
+4️⃣ launchTask:-
+Kya karta hai:-
+Ye method workflow ke andar koi specific task launch karne ke liye use hota hai. Task matlab workflow ka ek chhota part jo alag se execute hota hai, jaise role assignment, approval, ya provisioning action.
+
+Syntax Example:-
+// RuleContext ya WorkflowContext assume kiya hai context variable ke roop me
+context.launchTask("RoleAssignmentTask");
+
+Explanation:-
+"RoleAssignmentTask" ye task ka naam hai.
+Ye task workflow engine me execute hota hai immediately.
+Agar task successfully launch ho gaya, workflow continue karta hai.
+
+Output (Console / Logs):-
+Task 'RoleAssignmentTask' launched successfully.
+-------------------------------------------------------
+5️⃣ scheduleRequest:-
+Kya karta hai:-
+Ye method generic workflow request ko schedule karne ke liye use hota hai. Matlab workflow ko future me ek specific date/time pe execute karne ke liye queue me dalta hai.
+
+Syntax Example:-
+context.scheduleRequest("AccessReview", "2026-03-20T10:00:00");
+
+Explanation:-
+"AccessReview" → request ka type/name.
+"2026-03-20T10:00:00" → date/time jab request execute hogi.
+Ye request queue me add ho jati hai aur system usko schedule ke according execute karega.
+
+Output (Console / Logs):-
+Request 'AccessReview' scheduled for 2026-03-20T10:00:00
+----------------------------------------------------------------
+6️⃣ scheduleWorkflowEvent:-
+Kya karta hai:-
+Ye method poore workflow ko future me launch karne ke liye schedule karta hai. Agar koi onboarding workflow ya provisioning workflow ko aaj nahi, par future date/time pe run karna hai, to ye use hota hai.
+
+Syntax Example:-
+context.scheduleWorkflowEvent("OnboardingWorkflow", "2026-03-19T09:00:00");
+
+Explanation:-
+"OnboardingWorkflow" → workflow ka naam.
+"2026-03-19T09:00:00" → date/time jab workflow start hoga.
+System ye workflow automatically start karega us time pe.
+
+Output (Console / Logs):-
+Workflow 'OnboardingWorkflow' scheduled for 2026-03-19T09:00:00
+-------------------------------------------------------------------------
+7️⃣ commit:-
+Kya karta hai:-
+Workflow ke transaction ko commit karta hai.Matlab workflow ke andar jo changes kiye gaye(roles assign,identity create,approvals update)
+wo permanent ho jate hain aur database me save ho jate hain.
+Syntax Example:-
+context.commit();
+
+Output (Console / Logs):-
+Transaction committed successfully.
+-------------------------------------------------------------
+8️⃣ rollback:-
+Kya karta hai:-
+Workflow ke transaction ko rollback karta hai. Matlab agar workflow me error aaya, 
+to jo bhi changes abhi tak kiye gaye, wo revert ho jate hain.
+
+Syntax Example:-
+context.rollback();
+
+Explanation:-
+Error ya exception ke case me use hota hai.
+
+Database aur workflow state pehle wali state me aa jati hai.
+
+Output (Console / Logs):-
+Transaction rolled back successfully.
+------------------------------------------------------------------------
+1️⃣ getManager:-
+Kya karta hai:-
+Ye method kisi identity ka manager fetch karta hai. Mostly approvals aur notifications ke liye use hota hai.
+
+Syntax Example:-
+// Assume 'identity' is the Identity object
+Identity manager = context.getManager(identity);
+System.out.println("Manager: " + manager.getName());
+
+Output (agar manager set hai):-
+Manager: Alice Smith
+
+Output (agar manager nahi hai):-
+Manager: null
+----------------------------------------------
+2️⃣ calculateIdentityDifference:-
+Kya karta hai:-
+Ye method do identity states ke difference calculate karta hai.
+Useful hai agar workflow me identity update ho rahi hai aur hume before vs after changes dekhna hai.
+
+Syntax Example:-
+Map<String, Object> diff = context.calculateIdentityDifference(oldIdentity, newIdentity);
+System.out.println("Identity Differences: " + diff);
+
+Output Example:-
+Identity Differences: {email=old: john@example.com, new: john.doe@example.com, title=old: Developer, new: Senior Developer}
+-----------------------------------------------------
+3️⃣ addLinksInformation:-
+Kya karta hai:-
+Ye method identity ke linked accounts / connected systems ka info workflowcase me add karta hai.
+Ye provisioning aur auditing me use hota hai.
+----------------------------------------------------------
+4️⃣ checkPolicyViolations:-
+Kya karta hai:-
+Ye method identity ke access aur roles ko evaluate karta hai against policies aur violations detect karta hai.
+Useful for compliance & risk management.
+
+Syntax Example:
+
+List<Violation> violations = context.checkPolicyViolations(identity);
+for(Violation v : violations){
+    System.out.println("Violation: " + v.getName() + " - " + v.getDescription());
+}
+
+Output Example:-
+Violation: SegregationOfDuty - John Doe has conflicting roles: Admin + Finance Approver
+Violation: ExcessiveAccess - John Doe has 5 roles exceeding policy limit of 3.
+----------------------------------------------------------------------------------------------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.workflow.WorkflowContext;
+import sailpoint.object.TaskResult;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+public class WorkflowExample {
+
+    public static void main(String[] args) throws Exception {
+        
+        // Assume we already have WorkflowContext aur SailPointContext
+        WorkflowContext context = WorkflowContext.getCurrentWorkflowContext();
+        SailPointContext sailpointContext = context.getSailPointContext();
+
+        // 1️⃣ Identity object fetch
+        Identity identity = sailpointContext.getObjectByName(Identity.class, "john.doe");
+
+        // 2️⃣ addLinksInformation
+        List<String> links = Arrays.asList("AD:JohnD", "Salesforce:JDoe");
+        context.addLinksInformation(identity, links);
+        System.out.println("Links added for " + identity.getName() + ": " + links);
+
+        // 3️⃣ calculateIdentityDifference
+        Identity oldIdentity = sailpointContext.getObjectByName(Identity.class, "john.doe_old");
+        Map<String, Object> diff = context.calculateIdentityDifference(oldIdentity, identity);
+        System.out.println("Identity Differences: " + diff);
+
+        // 4️⃣ scheduleWorkflowEvent
+        context.scheduleWorkflowEvent("OnboardingWorkflow", "2026-03-19T09:00:00");
+        System.out.println("Workflow 'OnboardingWorkflow' scheduled for 2026-03-19T09:00:00");
+
+        // 5️⃣ scheduleRequest
+        context.scheduleRequest("AccessReview", "2026-03-20T10:00:00");
+        System.out.println("Request 'AccessReview' scheduled for 2026-03-20T10:00:00");
+
+        // 6️⃣ launchTask
+        TaskResult result = context.launchTask("RoleAssignmentTask");
+        System.out.println("Task 'RoleAssignmentTask' launched, result: " + result.getStatus());
+    }
+}
+Expected Output (Console / Workflow logs):
+Links added for John Doe: [AD:JohnD, Salesforce:JDoe]
+Identity Differences: {email=old: john@example.com, new: john.doe@example.com, title=old: Developer, new: Senior Developer}
+Workflow 'OnboardingWorkflow' scheduled for 2026-03-19T09:00:00
+Request 'AccessReview' scheduled for 2026-03-20T10:00:00
+Task 'RoleAssignmentTask' launched, result: SUCCESS
+//////////*
+()1️⃣ context.getSailPointContext() ka matlab:-
+SailPointContext sailpointContext = context.getSailPointContext();
+Yaha context ek WorkflowContext object hai.
+WorkflowContext workflow ke execution ka current state, arguments, aur methods hold karta hai.
+getSailPointContext():-
+se hume SailPoint backend system ka main context milta hai, jisse hum identities, roles, policies, aur objects fetch kar sakte hain.
+Matlab: WorkflowContext → workflow ke andar ka temporary environment.
+SailPointContext → poora IAM system ka live environment, jisse data read/write kar sakte hain.
+--------------------------------------------------------------------------------------------------------------------------
+()🔹 RuleContext me:-
+SailPointContext spContext = context.getSailPointContext();
+Rule run ho raha hota hai (jaise Identity Rule, Provisioning Rule)
+
+Yaha se tu:-
+Identity fetch karega
+Role fetch karega
+DB operations karega
+👉 Matlab: Rule → backend data access
+
+🔹 WorkflowContext me:-
+SailPointContext spContext = context.getSailPointContext();
+Workflow run ho raha hota hai (approval, provisioning flow)
+
+Yaha bhi tu:-
+Identity fetch karega
+Task launch karega
+Policy check karega
+👉 Matlab: Workflow → backend + process control
+--------------------------------------------------------------------------------------------------------------------------🔹 Real me kya hota hai?
+2️⃣ Links me "AD:JohnD", "Salesforce:JDoe" kyun diya?
+Bhai ye real Link object nahi hai ❌
+Ye sirf example string hai ✅
+
+SailPoint me Link object hota hai:-
+Link link = identity.getLinks().get(0);
+
+System.out.println(link.getApplicationName());
+System.out.println(link.getNativeIdentity());
+
+🔹 Real output hota hai:-
+Application: Active Directory
+Native Identity: JohnD
+
+🔹 To maine "AD:JohnD" kyun diya?
+👉 Sirf samjhane ke liye short format.
+--------------------------------------------------------------------------------------------------------------------------
+()3️⃣ OnboardingWorkflow aur AccessReview:-
+context.scheduleWorkflowEvent("OnboardingWorkflow", "2026-03-19T09:00:00");
+context.scheduleRequest("AccessReview", "2026-03-20T10:00:00");
+Ye names workflow aur request ke predefined names hain.
+OnboardingWorkflow → ek workflow jo employee onboarding ke steps run karta hai (provision accounts, assign roles, approvals).
+AccessReview → ek request type jo periodically identity ke access check karne ke liye schedule hota hai.
+Real system me ye workflows aur requests pehle se SailPoint me define hote hain. Ye code sirf schedule karne ke liye hai, creation nahi kar raha.
+Matlab “create” nahi, bas “schedule” kar raha hai.
+
+()4️⃣ RoleAssignmentTask aur john.doe_old:-
+TaskResult result = context.launchTask("RoleAssignmentTask");:-
+RoleAssignmentTask → workflow ka ek predefined task, jaise role assign karna.
+Ye SailPoint me developer ya admin ne pehle create kiya hota hai.
+
+()Identity oldIdentity = sailpointContext.getObjectByName(Identity.class, "john.doe_old");:-
+john.doe_old → old identity snapshot. Workflow me comparison ke liye hum old state aur new state compare karte hain.
+Ye historical identity hai, jo SailPoint me system automatically store karta hai ya manually snapshot liya jata hai.
+Ye example ke liye hai, real system me ye objects exist karne chahiye, warna fetch fail ho jayega.
+*//////////
+-------------------------------------------------------------------------------------------------------------------------------------
+1️⃣ activateRoleAssignment
+👉 Kya karta hai:-
+Identity ko role assign karta hai
+Ye provisioning process start karta hai (accounts create/update ho sakte hain)
+
+✅ Code:-
+Identity identity = context.getObjectByName(Identity.class, "john.doe");
+
+// Role assignment activate
+context.activateRoleAssignment(identity, "EmployeeRole");
+🟢 Output:
+Role 'EmployeeRole' assigned to John Doe
+Provisioning plan generated
+
+💡 Real me kya hota hai:-
+Role → entitlements → accounts → provisioning trigger
+Ye background me ProvisioningPlan create karta hai
+-------------------------------------------------------------------------------------
+2️⃣ assimilateProvisioningForm
+👉 Kya karta hai:-
+Provisioning form (UI se aaya data) ko workflow me store karta hai
+User ne jo input diya (like username, access), wo save hota hai
+
+✅ Code:-
+Map formData = context.getArguments();
+
+context.assimilateProvisioningForm(formData);
+🟢 Output:-
+Provisioning form data stored successfully
+Form fields: username=john.doe, access=READ_ONLY
+💡 Real use:-
+Jab user form fill karta hai (Create Account / Access Request)
+Ye method us data ko workflow me push karta hai.
+---------------------------------------------------------------------
+3️⃣ buildPlanApprovalForm:-
+👉 Kya karta hai:-
+Provisioning plan ke basis pe approval form generate karta hai
+Manager / approver ko dikhane ke liye
+
+✅ Code:-
+ProvisioningPlan plan = context.get("plan");
+
+context.buildPlanApprovalForm(plan);
+🟢 Output:-
+Approval form generated for provisioning plan
+Roles requested: EmployeeRole
+Approver: Manager
+
+💡 Real use:-
+Approval workflow me use hota hai
+Manager ko dikhta hai:-
+kya access diya ja raha hai
+kis user ko
+-------------------------------------------------------------------------
+4️⃣ provisionProject
+👉 Kya karta hai:-
+Final provisioning execute karta hai 🔥
+Matlab:-
+Account create
+Role assign
+Entitlements apply
+
+✅ Code:-
+ProvisioningProject project = context.get("project");
+
+context.provisionProject(project);
+🟢 Output:-
+Provisioning started...
+Account created in Active Directory
+Role assigned successfully
+Provisioning completed
+-------------------------------------------------------------------------------------------------------------------------------------
+🔥 Full Flow (sab ek saath)
+Identity identity = context.getObjectByName(Identity.class, "john.doe");
+
+// 1. Role assign
+context.activateRoleAssignment(identity, "EmployeeRole");
+
+// 2. Form data store
+context.assimilateProvisioningForm(context.getArguments());
+
+// 3. Approval form build
+context.buildPlanApprovalForm(context.get("plan"));
+
+// 4. Final provisioning
+context.provisionProject(context.get("project"));
+
+🟢 Final Output:-
+Role assigned to John Doe
+Form data stored
+Approval form generated
+Provisioning executed successfully
+-----------------------------------------------------------------------------------------------
+✅ FULL REAL WORKFLOW STEP CODE (NON-CUSTOM)
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.workflow.WorkflowContext;
+
+// context already available hota hai (WorkflowContext)
+
+// 1️⃣ Identity fetch (workflow variable se)
+Identity identity = (Identity) context.get("identity");
+
+// Safety check (real workflow me hota hai)
+if (identity == null) {
+    throw new Exception("Identity not found in workflow context");
+}
+
+// 2️⃣ Form data ko store karo (UI se aaya data)
+context.assimilateProvisioningForm(context.getArguments());
+
+// 3️⃣ Provisioning Plan lo (system generate karta hai)
+ProvisioningPlan plan = (ProvisioningPlan) context.get("plan");
+
+if (plan == null) {
+    throw new Exception("ProvisioningPlan not found in workflow context");
+}
+
+// 4️⃣ Approval form build karo
+context.buildPlanApprovalForm(plan);
+
+// 5️⃣ Role assignment activate karo
+// (plan ke andar jo roles already defined hain wo apply honge)
+context.activateRoleAssignment(identity);
+
+// 6️⃣ Provisioning Project lo (plan se auto banta hai)
+ProvisioningProject project = (ProvisioningProject) context.get("project");
+
+if (project == null) {
+    throw new Exception("ProvisioningProject not found in workflow context");
+}
+
+// 7️⃣ Final provisioning execute karo
+context.provisionProject(project);
+/////////////*
+✅ 1️⃣ UI se kya aata hai?
+Jab user UI me request karta hai:-
+Role select karta hai (ex: EmployeeRole)
+Form fill karta hai
+
+👉 Ye sab data aata hai:-
+context.getArguments()
+
+🔹 Example (UI Input):-
+User: john.doe
+Requested Role: EmployeeRole
+
+()// 2️⃣ Form data ko store karo (UI se aaya data)
+context.assimilateProvisioningForm(context.getArguments());
+*////////////
+-----------------------------------------------------------------------------------------------------------------------------------

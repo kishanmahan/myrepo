@@ -1,0 +1,100 @@
+()Violation detection kya hai?
+1️⃣ Violation Detection क्या है
+Violation Detection:-
+एक process है जो policies (SoD, Activity, Attribute, Risk, Password) के rules check 
+करके यह पता लगाती है कि कोई     "user" या    "activity policy" को violate कर रही है या नहीं।
+
+4️⃣ Project-Level Java Code (Violation Detection Engine)
+import java.util.ArrayList;
+import java.util.List;
+
+class Violation {
+    private String user;
+    private String policyName;
+    private String reason;
+
+    public Violation(String user, String policyName, String reason) {
+        this.user = user;
+        this.policyName = policyName;
+        this.reason = reason;
+    }
+
+    public void printViolation() {
+        System.out.println("VIOLATION DETECTED");
+        System.out.println("User: " + user);
+        System.out.println("Policy: " + policyName);
+        System.out.println("Reason: " + reason);
+        System.out.println("----------------------");
+    }
+}
+
+public class ViolationDetectionEngine {
+
+    private List<Violation> violations = new ArrayList<>();
+
+    // SoD Example Check
+    public void checkSoD(String user, boolean hasCreate, boolean hasApprove) {
+        if(hasCreate && hasApprove) {
+            violations.add(new Violation(user, "SoD Policy", "User has conflicting roles: Create & Approve Payment"));
+        }
+    }
+
+    // Activity Example Check
+    public void checkActivity(String user, int downloads, int limit) {
+        if(downloads > limit) {
+            violations.add(new Violation(user, "Activity Policy", "Downloaded " + downloads + " files exceeding limit " + limit));
+        }
+    }
+
+    // Identity Attribute Example Check
+    public void checkAttribute(String user, String department, String system) {
+        if(department.equals("Finance") && system.equals("HRSystem")) {
+            violations.add(new Violation(user, "Attribute Policy", "Finance users cannot access HR System"));
+        }
+    }
+
+    public void printAllViolations() {
+        if(violations.isEmpty()) {
+            System.out.println("No violations detected");
+        } else {
+            for(Violation v : violations) {
+                v.printViolation();
+            }
+        }
+    }
+}
+5️⃣ Main Program
+public class ViolationMain {
+
+    public static void main(String[] args) {
+
+        ViolationDetectionEngine engine = new ViolationDetectionEngine();
+
+        // SoD Violation
+        engine.checkSoD("Rahul", true, true);
+
+        // Activity Violation
+        engine.checkActivity("Amit", 120, 100);
+
+        // Identity Attribute Violation
+        engine.checkAttribute("John", "Finance", "HRSystem");
+
+        // Print all violations
+        engine.printAllViolations();
+    }
+}
+6️⃣ Output (Enterprise Level)
+VIOLATION DETECTED
+User: Rahul
+Policy: SoD Policy
+Reason: User has conflicting roles: Create & Approve Payment
+----------------------
+VIOLATION DETECTED
+User: Amit
+Policy: Activity Policy
+Reason: Downloaded 120 files exceeding limit 100
+----------------------
+VIOLATION DETECTED
+User: John
+Policy: Attribute Policy
+Reason: Finance users cannot access HR System

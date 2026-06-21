@@ -1,0 +1,5 @@
+()2. ResultSet kya hai?
+ResultSet Java ke standard JDBC (java.sql.ResultSet) ka ek interface hai.
+Kaam: Jab aap Java/Beanshell code se database me koi SQL query (SELECT statement) chalate hain, 
+toh database se jo data nikal kar aata hai (rows aur columns ke roop me), 
+use hold karne ke liye ResultSet ka use hota hai. Aap ise ek temporary virtual table samajh sakte hain.

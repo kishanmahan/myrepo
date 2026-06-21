@@ -1,0 +1,26 @@
+()Identity = Digital Person
+Identity ka purpose: Ye system ko batata hai kaun kaun hai aur kya kya access hai.
+Components of an Identity:-
+Basic Info: Name, Email, Employee ID, Department
+Credentials: Username, Password, MFA info
+Roles & Groups: Admin, Manager, Finance, IT
+Permissions: Kya kya system ya application me access hai
+Status: Active, Inactive, Suspended
+Example:-
+Rahul ka Identity object me ye ho sakta hai:-
+Name: Rahul Kumar
+Email: rahul@company.com
+Department: Finance
+Role: Finance Manager
+Applications Access: SAP, Salesforce
+Status: Active
+
+Ye Identity SailPoint me identity object ke roop me save hota hai.
+SailPoint iske basis pe access request, provisioning, and certification manage karta hai.
+aur identity me bahut sare users(employees,admin,staff,manager,owner) ho sakte hai.
+aur har user ke bahut sare accounts alag alag applications ke ho sakte hai.
+
+ex:-
+name----rahul
+role----manager
+accounts-sap,db,ad etc.

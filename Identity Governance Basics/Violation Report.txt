@@ -1,0 +1,111 @@
+1️⃣ Violation Report kya hota hai?
+Violation Report = system me jo policy break hui hai uska report.
+Example:-
+User        Violation Type
+-----------------------------
+Rahul       Admin + Finance (SoD Conflict)
+Amit        Sensitive Access
+Neha        Excess Privilege
+
+Iska matlab:-
+user ne policy violate ki,
+system usko report me show karta hai.
+
+2️⃣ Violation ka example:-
+()SoD Conflict
+Finance Role + Audit Role
+Ye allowed nahi hota.
+
+()Sensitive access:-
+Admin + DatabaseDelete
+Ye high risk violation hai.
+
+3️⃣ Violation Report Project (Context Based):-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.QueryOptions;
+import sailpoint.object.AuditEvent;
+import sailpoint.tools.GeneralException;
+
+import java.util.Iterator;
+
+public class ViolationReportService {
+
+    public void generateViolationReport(SailPointContext context) throws GeneralException {
+
+        QueryOptions qo = new QueryOptions();
+
+        Iterator<Identity> identities = context.search(Identity.class, qo);
+
+        System.out.println("===== VIOLATION REPORT =====");
+
+        int violationCount = 0;
+
+        while (identities.hasNext()) {
+
+            Identity id = identities.next();
+
+            String user = id.getName();
+            String roles = String.valueOf(id.getAssignedRoles());
+
+            boolean violation = false;
+
+            // SoD Conflict
+            if (roles.contains("Finance") && roles.contains("Audit")) {
+
+                violation = true;
+
+                System.out.println("User : " + user);
+                System.out.println("Violation : Finance + Audit Conflict");
+            }
+
+            // Sensitive privilege
+            if (roles.contains("Admin") && roles.contains("DatabaseDelete")) {
+
+                violation = true;
+
+                System.out.println("User : " + user);
+                System.out.println("Violation : Sensitive Admin Access");
+            }
+
+            if (violation) {
+
+                violationCount++;
+
+                AuditEvent event = new AuditEvent();
+                event.setAction("PolicyViolation");
+                event.setTarget(user);
+
+                context.saveObject(event);
+            }
+
+            System.out.println("-----------------------------");
+        }
+
+        System.out.println("Total Violations : " + violationCount);
+
+        context.commitTransaction();
+    }
+}
+4️⃣ Rule / Task jo report run karega:-
+import sailpoint.api.SailPointContext;
+
+public Object execute(SailPointContext context) throws Exception {
+
+    ViolationReportService service = new ViolationReportService();
+
+    service.generateViolationReport(context);
+
+    return "Violation Report Generated";
+}
+6️⃣ Example Output:-
+===== VIOLATION REPORT =====
+
+User : Rahul
+Violation : Sensitive Admin Access
+
+User : Amit
+Violation : Finance + Audit Conflict
+-------------------------------------
+
+Total Violations : 2

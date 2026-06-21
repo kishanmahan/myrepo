@@ -1,0 +1,36 @@
+2️⃣ IAM / SaaS Governance me Monitor?
+IAM tools me monitor ka matlab hai users, access, aur applications ka real-time ya periodic observation.
+Kya cheeze monitor hoti hain:-
+
+()User Activity:-
+Kaun login kar raha hai, kaun access request kar raha hai
+Example: Rahul ne 10 March ko Salesforce me login kiya
+
+()Access Changes:-
+Kaun access mila, kaun revoke hua, kaun role assign hua
+Example: Intern ka admin access remove ho gaya.
+
+()Privileged Accounts:-
+High-risk / admin accounts continuously track karna
+Example: Cloud Admin ka activity monitor karna.
+
+()Policy Violations / Risk:-
+SoD violation, excessive access detect karna
+Example: Employee same time me Approver + Requester role hold kar raha hai
+
+()Compliance Events:-
+Audit trail ready rakhna, report generate karna
+Example: GDPR compliance check ke liye access logs monitor karna.
+
+3️⃣ IAM me Monitor ka Method Example
+// Pseudo code example
+monitorUserActivity(user){
+    logLoginAttempts(user);
+    trackAccessChanges(user);
+    alertIfPrivilegedAccess(user);
+}
+
+Explanation:-
+logLoginAttempts → login ka record rakhna
+trackAccessChanges → access grant/revoke track karna
+alertIfPrivilegedAccess → agar high-risk access hua to alert

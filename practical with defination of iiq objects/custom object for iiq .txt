@@ -1,0 +1,133 @@
+()SailPoint IdentityIQ (IIQ) mein customization ke liye aap kayi tarah ke objects aur rules likh sakte hain. 
+Yeh flexibility BeanShell scripting aur XML configuration par depend karti hai.
+​Niche un main objects aur components ki list di gayi hai jinhe aap custom tarike se define ya modify kar sakte hain:
+​
+1. Custom Rules (The Logic)
+​IIQ mein sabse zyada custom code Rules mein likha jata hai. Kuch main rules ye hain:
+​Correlation Rule: Account ko sahi Identity se jodne ke liye.
+​Creation Rule: Naya account bante waqt attribute set karne ke liye.
+​BuildMap Rule: Delimited files (CSV) ka data parse karne ke liye.
+​MapToResourceObject Rule: Connector se aane wale data ko modify karne ke liye.
+​Workflow Rule: Kisi specific step par custom logic chalane ke liye.
+​Policy Violation Rule: Advance SOD (Segregation of Duties) check karne ke liye.
+​2. Custom Workflows
+​Default workflows (jaise Lifecycle Manager) ke alawa aap apna khud ka Workflow Object bana sakte hain.
+​Isme aap custom Steps, Transitions, aur Approval Schemes define kar sakte hain.
+​Example: Ek aisa workflow jo provisioning ke baad kisi third-party API ko call kare.
+​3. Custom Objects (General Purpose)
+​IIQ mein ek Custom class ka object hota hai. Iska istemal aap configuration data store karne ke liye karte hain:
+​Key-Value Pairs: SQL queries, constant variables, ya mapping tables store karne ke liye.
+​Isse hardcoding se bacha ja sakta hai.
+​4. Custom Tasks (TaskDefinition)
+​Agar aapko koi background process chalani hai (jaise cleanup ya report generation), toh aap Custom Task likh sakte hain:
+​Aapko ek Java class ya Rule likhna hota hai jo TaskExecutor interface ko implement kare.
+​5. Custom Attributes (Extended Attributes)
+​Aap standard Identity ya Account schema ko extend kar sakte hain:
+​Identity Extended Attributes: Jaise employeeType, costCenter, etc.
+​Application/Link Extended Attributes: Specific application accounts ke liye extra fields.
+​6. Custom Reports
+​Agar out-of-the-box reports kaafi nahi hain, toh aap:
+​LiveReports: XML define karke custom grid aur filters bana sakte hain.
+​Plugin Reports: Java backend ka use karke advanced reporting de sakte hain.
+​7. Custom QuickLinks & UI
+​User interface ko personalize karne ke liye:
+​QuickLinks: Dashboard par naye buttons ya options add karna.
+​Dynamic Scopes: Rules ke basis par user ko dikhne wala content control karna.
+​8. Custom Connectors (Integration Config)
+​Agar koi application default connector se support nahi ho rahi:
+​Rule-Based Connectors: Poora connection logic script se likhna.
+​OpenConnector Framework (OCF): Java code ke zariye naya connector build karna.
+​9. Custom Forms
+​Provisioning ya Access Request ke waqt user se input lene ke liye aap logic-based forms design kar sakte hain jisme field validation aur visibility rules custom hote hain.
+
+()Yahan un sabhi SailPoint IIQ objects ki consolidated list hai jinhe aap custom likh sakte hain:-
+​1. Core Logic & Execution
+​Rule: (Correlation, Provisioning, BuildMap, MapToResource, etc.)
+​Workflow: (Lifecycle, Approvals, Escalations)
+​TaskDefinition: (Custom Maintenance, Background Jobs)
+​ServiceDefinition: (Persistent background services)
+​ScheduledEvent: (Custom triggers for events)
+​2. System & Data Configuration
+​Application: (Connection details, Schema, Connector Rules)
+​ObjectConfig: (Extended attributes for Identity, Link, Role)
+​Custom: (Global key-value configuration storage)
+​SystemConfiguration: (Global platform settings)
+​Dictionary: (Password word-lists and patterns)
+​CorrelationConfig: (Complex multi-attribute matching)
+​3. UI & User Experience
+​Form: (User input screens, Validation logic)
+​QuickLink: (Navigation icons and Dashboard actions)
+​QuickLinkOptions: (Visibility and Population logic)
+​MessageCatalog: (Custom labels and multi-language support)
+​UIConfig: (Dashboard widgets and menu structures)
+​4. Security & Governance
+​Bundle: (Business, IT, and Organizational Roles)
+​Policy: (SOD, Advanced, and Activity policies)
+​Capability: (Custom Admin permissions)
+​Right: (Granular access permissions)
+​Scope: (Organizational data visibility)
+​IdentitySelector: (Rule-based user grouping)
+​CertificationDefinition: (Access Review campaign logic)
+​5. Integration & Communication
+​EmailTemplate: (HTML/Velocity based notifications)
+​IntegrationConfig: (Ticketing system mappings like ServiceNow)
+​Plugin: (Full module extensions: Java, UI, and DB)
+​AuditConfig: (Custom tracking for specific actions)
+​6. Report & Analytics
+​LiveReport: (Custom grid-based reporting)
+​ReportTemplate: (Custom data source for PDF/CSV reports)
+​TaskResult: (Custom logging for task outcomes)
+
+🔥 Real Project me Custom Likhe Jane Wale Objects:-
+🔹 1. Rule (सबसे important 🔥)
+Correlation Rule
+Creation Rule
+Manager Correlation Rule
+BuildMap Rule
+Before Provisioning Rule
+After Provisioning Rule
+Validation Rule
+Policy Rule
+Certification Rule
+Identity Attribute Rule
+Task Rule
+🔹 2. Workflow
+Joiner Workflow
+Mover Workflow
+Leaver Workflow
+Access Request Workflow
+Approval Workflow
+Custom Provisioning Workflow
+🔹 3. Form
+Access Request Form
+Provisioning Form
+Dynamic Form (Rule based fields)
+🔹 4. EmailTemplate
+Custom Approval Email
+Certification Email
+Notification Email
+🔹 5. TaskDefinition (Custom Tasks)
+Custom Identity Refresh Task
+Custom Aggregation Task
+Custom Report Task
+🔹 6. Custom Object
+Key-Value storage (configs, flags, mappings)
+Example: country mapping, role mapping
+🔹 7. Configuration
+System level configs
+Feature flags
+App specific configs
+🔹 8. Policy
+SoD Policy (custom rules ke sath)
+Password Policy (custom constraints)
+🔹 9. QuickLink
+Custom UI shortcut
+Direct workflow trigger
+🔹 10. Report (kabhi-kabhi)
+Custom report definition
+Audit / compliance reports
+🔹 11. IntegrationConfig / ConnectorConfig (Advanced)
+Custom connector behavior
+API integration configs
+🔹 12. UIConfig (Rare but possible)
+UI customization

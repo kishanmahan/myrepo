@@ -1,0 +1,14 @@
+()1.renderer="nativeChangeApprovalRenderer.xhtml" toh Yeh Line Karti Kya Hai?
+SailPoint me jab koi manager ya approver apna Inbox / Dashboard kholta hai, toh use approvals ki list dikhti hai.
+Lekin har approval ek jaisa nahi hota (kuch normal access requests hoti hain, toh kuch native changes hote hain). 
+renderer attribute SailPoint ko batata hai ki is specific approval set ko screen par dikhane ke liye kis UI template ya design ka use karna hai.
+nativeChangeApprovalRenderer.xhtml ek pre-defined JSF (JavaServer Faces) page hai.
+Yeh page manager ke saamne ek specific layout kholta hai jo native changes ke liye hi design kiya gaya hai.
+
+2. Manager ko Screen Par Kya Dikhega?
+Jab yeh renderer load hoga, toh approver ko screen par kuch is tarah ka data saaf-saaf dikhega:-
+Field                         Description
+Identity / User-----------Kis employee ke account me badlav hua hai.
+Application-----Kis target system (jaise Active Directory, SAP) me change hua.
+Native Change---Exact kya change hua (e.g., "Added to Domain Admins Group").
+Action Buttons--Approve (is change ko valid maano) ya Reject/Remediate (is change ko rollback karo).

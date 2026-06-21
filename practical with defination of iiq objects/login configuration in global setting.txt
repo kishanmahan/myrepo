@@ -1,0 +1,123 @@
+()global-setting->login configuration->
+
+()Pass-through Authentication:-
+Ye sabse important section hai. Iska matlab hai ki SailPoint apna khud ka password check karne ke bajaye kisi dusre application
+(jaise Active Directory) se puchega ki password sahi hai ya nahi.
+
+()Pass through application: Yahan aap wo application select karte hain (jaise AD) jo login verify karega.
+
+()Refresh pass through account after successful login: Agar ye checked hai, 
+toh login hote hi SailPoint user ka latest data us application se turant fetch (refresh) kar lega.
+
+()Automation & Rules
+Auto create user rule: Agar koi user login karne ki koshish karta hai jo SailPoint mein nahi hai, 
+toh ye rule taye karta hai ki kya us user ka account IdentityIQ mein automatically ban jana chahiye.
+
+()Login error style:-
+
+--Simple: User ko sirf itna batayega ki login fail ho gaya.
+
+--Detailed: Zyada jaankari dega (jaise "password galat hai" ya "user block hai").Security ke liye aksar 'Simple' rakha jata hai.
+
+()Login after timeout returns to home page: Agar session khatam (timeout) ho jaye aur user phir se login kare, 
+toh kya use seedha Home Page par bhejna hai? Agar ye off hai, toh user usi page par wapas jayega jahan wo kaam kar raha tha.
+
+()Enable Authorization Lockout: Agar koi baar-baar galat password daalta hai, 
+toh system us user ko thodi der ke liye lock kar dega. Ye brute-force attacks se bachne ke liye zaroori hai.
+
+()Enable Forgot Password: Jab aap ise check karte hain, toh login page par ek link aa jata hai. 
+Iska istemal karke user apna password khud badal sakta hai. Iske liye SailPoint unse unke pehle se set kiye gaye security sawal 
+(Challenge Questions) puchta hai.
+
+()Enable Account Unlock: Kai baar user galat password daal kar apna account lock karwa leta hai. 
+Ise enable karne se user bina password badle sirf apne account ko "Unlock" kar sakta hai, basharte wo apni identity verify kar de.
+
+()Single Sign-On Rule: Ye ek code (Beanshell script) hota hai jo check karta hai ki user kahan se aa raha hai 
+(e.g., HTTP Header check karna) aur uski Identity ko SailPoint mein dhoondhta hai.
+
+()Single Sign-On Validation Rule: Ye rule ek extra security check ki tarah hai jo ye confirm karta hai ki 
+jo login request aayi hai wo sahi jagah se hai aur uske sath jo data (token) hai wo valid hai.
+
+()Enable SAML Based Single Sign-On (SSO): Ye aaj kal ka standard hai. Agar aap Azure AD, Okta, 
+ya PingFederate jaisi modern services use kar rahe hain, toh aap ise check karte hain.
+Ismein rules likhne ki zaroorat nahi hoti, bas settings configure karni padti hain.
+
+--------------------------------------------------------------------------------------------
+()1. Identity Provider (IdP) - "The Authority"
+IdP woh system hai jo user ki asli pehchan (Identity) ko verify karta hai. Yeh ek tarah ka "Identity Warehouse" hai 
+jahan users ke login credentials (username, password, MFA) save hote hain.
+Kaam: User se password mangna, use check karna, aur phir ek "SAML Assertion" (ek digital certificate) generate karna.
+Examples: Azure AD (Microsoft Entra), Okta, PingFederate, ya Google Workspace.
+SailPoint ke context mein: Jab aap image_945e8f.png mein Identity Provider Settings bharte hain, 
+toh aap SailPoint ko bata rahe hote hain ki "Is system (IdP) ki baat par aankh band karke bharosa karna."
+
+()2.Service Provider(IdentityIQ):-
+Service Provider ka kaam user ko login karwana nahi, balki Identity Provider (IdP) se milne wale "Digital Passport" 
+(SAML Assertion) ko verify karke access dena hai.
+-------------------------------------------------------------------
+1. SailPoint ka Direct Login (Native Login):-
+Kya hai: Yeh SailPoint ka apna internal login system hai.
+Credentials: Username aur password SailPoint ke apne database (IdentityIQ database) mein save hote hain.
+Kaise kaam karta hai: Jab aap SailPoint ka URL kholte hain, toh wahi purana box aata hai jahan aap spadmin ya apna username/password daalte hain.
+Kyun use hota hai: Yeh zyadatar Admins ke liye hota hai ya tab ke liye jab SSO kaam na kar raha ho (emergency access).
+
+2. IdP ka Login (SSO Login):-
+Kya hai: Yeh aapki company ka main login gate hai (jaise Azure AD, Okta, ya Ping).
+Credentials: Password SailPoint ke paas nahi hota, balki IdP ke paas hota hai.
+Kaise kaam karta hai:-
+Aap SailPoint ka URL kholte hain.
+SailPoint dekhta hai ki SSO enabled hai, toh wo aapko turant IdP ke login page par bhej (redirect) deta hai.
+Aap wahan apna password aur MFA (OTP) daalte hain.
+IdP verify karne ke baad SailPoint ko ek "Success Message" (SAML Assertion) bhejta hai.
+SailPoint us message ko dekh kar aapko andar aane deta hai.
+
+()Dono ke beech ka Flow (Step-by-Step):-
+--Request: User SailPoint (SP) par jata hai.
+
+--Redirect: SailPoint user ko Azure/Okta (IdP) ke login page par bhej deta hai.
+
+--Auth: User IdP par apna password aur MFA daalta hai.
+
+--Assertion: IdP user ko verify karke ek digital message (Assertion) banata hai aur use user ke browser ke zariye SailPoint ke ACS URL par bhej deta hai.
+
+--Correlation: SailPoint us message ka Certificate check karta hai aur Correlation Rule use karke user ko pehchan leta hai aur login kara deta hai.
+
+1. Identity Provider (IdP) Settings:-
+Yeh woh jankari hai jo aap Okta se laakar SailPoint mein bharte hain.
+
+()Entity ID / Issuer:-
+Kya hai?: IdP ka unique naam.
+Example: [http://www.okta.com/exk123456789](http://www.okta.com/exk123456789).
+Kyun?: Taaki SailPoint ko pata chale ki yeh message asli Okta se hi aaya hai, kisi fake system se nahi.
+
+()SSO Login URL:-
+Kya hai?: Okta ka login page address.
+Example: [https://company.okta.com/app/sailpoint/sso/saml](https://company.okta.com/app/sailpoint/sso/saml).
+Kyun?: Jab user SailPoint par login karne jayega, toh SailPoint use isi URL par bhej dega taaki woh apna password Okta mein daal sake.
+
+()Public X.509 Certificate:-
+Kya hai?: Ek digital security key.
+Example: Ek lamba text jo -----BEGIN CERTIFICATE----- se shuru hota hai.
+Kyun?: Okta jab user ko verify karke bhejta hai, toh woh message ko "sign" karta hai. 
+SailPoint isi certificate se us signature ko verify karta hai. Bina iske login secure nahi hoga.
+
+2. Service Provider (IdentityIQ) Settings:-
+Yeh woh jankari hai jo aap SailPoint se uthakar Okta mein bharte hain.
+
+()Entity ID / Issuer:-
+Kya hai?: SailPoint ka apna unique ID.
+Example: [http://sailpoint.company.com/identityiq](http://sailpoint.company.com/identityiq).
+Kyun?: Taaki Okta ko pata chale ki kaunsa application (SailPoint) usse user ki pehchan maang raha hai.
+
+()SAML URL (ACS):-
+Kya hai?: SailPoint ka woh rasta jahan Okta wapas aayega.
+Example: [https://sailpoint.company.com/identityiq/saml/consume](https://sailpoint.company.com/identityiq/saml/consume).
+Kyun?: Login hone ke baad Okta user ko isi address par wapas bhejta hai. Agar yeh galat hua, toh user Okta par hi atka reh jayega.
+
+()SAML Binding:-
+SAML Binding: Yeh tay karta hai ki data IdP se SailPoint tak kaise pahunchega—hidden form ke zariye (HTTP POST) 
+ya URL ke peeche lag kar (HTTP Redirect).
+
+()SAML Correlation Rule: Yeh SP ka sabse technical hissa hai. Jab IdP user ka data bhejta hai, 
+toh yeh rule us data ko SailPoint ke database mein maujood sahi identity se match karta hai.
+

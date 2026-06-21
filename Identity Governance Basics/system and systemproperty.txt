@@ -1,0 +1,80 @@
+()System Property kya hai?
+System Property ek key-value pair hoti hai jo system ya application ke liye configuration settings store karti hai.
+Key: Property ka naam (jaise defaultPassword)
+Value: Property ka actual value (jaise Welcome@123)
+Ye properties program me kahin bhi access ho sakti hain, jaise workflow, rules, ya provisioning me.
+
+()Java / SailPoint me example:-
+
+1️⃣ Check property exist karti hai ya nahi:-
+boolean exists = context.isProperty("defaultPassword");
+System.out.println("Property exists? " + exists);
+
+Output:-
+Property exists? true
+
+2️⃣ Property ka value lena:-
+String value = context.getProperty("defaultPassword");
+System.out.println("Property value: " + value);
+
+Output:-
+Property value: Welcome@123
+
+1️⃣ System ka matlab:-
+Ye ek computer ya application environment hota hai jahan program run hota hai.
+Isme include hota hai:-
+Server: Jahan application host hoti hai (jaise web server, SailPoint server).
+Operating System: Windows, Linux, etc.
+Application/Software: Jaise SailPoint IdentityNow ya IdentityIQ.
+---------------------------------------------------------------------------------------------
+Common SailPoint System Properties List (koi na chute):-
+#	Property Name	                                                            Description
+1	sailpoint.application.defaultPassword---------------------------Default password for new accounts
+2	sailpoint.application.defaultEmail------------------------------Default email address for new accounts
+3	sailpoint.application.accountNamePattern---------------------------Naming pattern for new accounts
+4	sailpoint.provisioning.reconciliationEnabled---------------------Enable/disable reconciliation process
+5	sailpoint.provisioning.defaultManager---------------------------Default manager for provisioning requests
+6	sailpoint.audit.logLevel----------------------------------------Audit log level (INFO, DEBUG, ERROR)
+7	sailpoint.audit.logFile--------------------------------------------Path of audit log file
+8	sailpoint.scheduler.jobThreadPoolSize-------------------------------Thread pool size for scheduler jobs
+9	sailpoint.workflow.defaultLocale----------------------------------Default locale/language for workflows
+10	sailpoint.identity.validation.enabled----------------------------Enable/disable identity validation
+11	sailpoint.system.notification.emailServer--------------------------SMTP server for system notifications
+12	sailpoint.system.notification.fromAddress-----------------------------Default “from” email address
+13	sailpoint.ui.sessionTimeoutMinutes------------------------------------UI session timeout in minutes
+14	sailpoint.ui.maxLoginAttempts----------------------------------------Max login attempts before lockout
+15	sailpoint.policy.violation.notifyOwner---------------------------------Notify owner on policy violation
+16	sailpoint.policy.violation.autoMitigate---------------------------------Auto-mitigation enabled/disabled
+17	sailpoint.rule.defaultExecutionContext--------------------------------Default execution context for rules
+18	sailpoint.connector.retryCount--------------------------------------------Number of retries for connector failures
+19	sailpoint.connector.timeoutSeconds----------------------------------------Timeout for connector calls in seconds
+20	sailpoint.logging.debugEnabled------------------------------------------Enable/disable debug logging
+21	sailpoint.logging.traceEnabled------------------------------------------Enable/disable trace logging
+22	sailpoint.environment-----------------------------------------------Environment name (DEV, QA, PROD)
+23	sailpoint.version--------------------------------------------------------SailPoint system version
+24	sailpoint.custom.property.-------------------------------------------*Any custom property defined by admin
+-------------------------------------------------------------------------------------------------------------------------------
+1️⃣ SailPoint / Enterprise System Servers:-
+SailPoint environment me usually ye servers hoti hain:-
+#	Server Type	                                                  Description
+1	Application Server:------------------------------Jahan SailPoint application deploy hoti hai (Tomcat, JBoss, WebLogic)
+2	Database Server:---------------------------------Backend database (Oracle, SQL Server, MySQL) jahan identity data store hota hai
+3	Email Server / SMTP Server:-----------------------Notifications aur alerts ke liye
+4	Scheduler Server:--------------------------------Background jobs aur workflow executions ke liye
+5	Web Server / Proxy Server:-----------------------User requests route karne ke liye (Apache, Nginx)
+6	Connector Server / Target Systems:-----------External systems jisse identity info sync hoti hai (Active Directory, SAP, Salesforce)
+7	Audit / Logging Server:-------------------------Logs aur audit trails store karne ke liye
+8	Authentication / SSO Server:---------------------Single Sign-On aur authentication ke liye (AD FS, Okta)
+9	Dev / QA / Test Servers:-------------------------Development aur testing environment ke liye
+
+2️⃣ General Common Servers Types (Any IT Environment):-
+File Server – Files store aur share karne ke liye
+Database Server – Structured data store karne ke liye
+Web Server – Websites serve karne ke liye
+Application Server – Business logic run karne ke liye
+Mail Server – Emails send/receive ke liye
+Proxy Server – Requests route karne aur security ke liye
+DNS Server – Domain name ko IP me convert karne ke liye
+FTP Server – File transfer ke liye
+Game Server – Multiplayer games host karne ke liye
+-------------------------------------------------------------------------------------------------------------------------------------

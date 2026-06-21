@@ -1,0 +1,7 @@
+8. foregroundProvisioning:-
+foregroundProvisioning: Yeh speed badhane ka switch hai. Agar true hai, 
+toh saari provisioning user ke samne (screen par load hote hue) turant hoti hai. 
+Agar false ho, toh SailPoint ushe background thread mein daal deta hai taaki browser session hang na ho.
+Value Kaun Deta Hai: Inbuilt Initializer (true) aur Admin UI Settings
+Kaise/Kab: Shuruat mein true rehta hai taaki testing/demo ke waqt provisioning turant screen ke samne ho jaye. 
+Ise bhi UI se change kiya ja sakta hai.

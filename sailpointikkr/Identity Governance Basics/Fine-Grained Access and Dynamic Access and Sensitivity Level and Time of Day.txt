@@ -1,0 +1,29 @@
+()1️⃣ Fine-Grained Access:-
+Meaning: Access control itna detailed hai ki har chhoti permission ko control kiya ja sakta hai.
+Example:-
+Rahul ko Finance folder me read access, lekin write access sirf Manager ko.
+Employee ko leave portal access, lekin salary details HR ko hi dikhe.
+Ek line me: Small, specific permissions per user/resource control.
+
+()2️⃣ Dynamic Access:-
+Meaning: Access real-time conditions aur attributes ke basis pe decide hota hai, na ki static roles se.
+Example:-
+Rahul Finance system me sirf office hours (9am–6pm) me access le sakta hai.
+Agar Rahul VPN ya unknown device se login karta → Access deny.
+Ek line me: Access automatically change hota hai based on rules or conditions.
+
+()3️⃣ Sensitivity Level:-
+Meaning: Resource ka criticality/importance level define karta hai.
+Example:-
+Resource	             Sensitivity Level	    Access Allowed
+Public HR Policies-----------Low-----------------All Employees
+Payroll Data-----------------High----------------HR + Finance Manager
+Top Secret Financial Report--Very High-----------CFO only
+SailPoint me ABAC policy me use hota hai, taaki only authorized users hi sensitive data access kare.
+
+()4️⃣ Time of Day:-
+Meaning: Access sirf specified time window me allow hota hai.
+Example:-
+Rahul ka SAP access: 9am – 6pm
+Payroll reports: 10am – 4pm
+After hours: Access denied

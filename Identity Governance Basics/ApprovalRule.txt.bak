@@ -1,0 +1,49 @@
+🔹 1️⃣ ApprovalRule kya hai?
+👉 ApprovalRule = ek custom rule (Java/BeanShell code)
+jo decide karta hai:-
+Approval kaise process hoga
+Kisko bhejna hai (approver kaun hoga)
+Auto approve / reject karna hai ya nahi
+Approval ka behavior control karna
+💡 Simple samajh:-
+👉 “Approval ka dimaag (brain)” = ApprovalRule.
+
+🔹 2️⃣ ApprovalRule kya karta hai?
+ApprovalRule mainly ye kaam karta hai:-
+✔️ 1. Approver decide karta hai
+Kaun approve karega (Manager, Admin, Role Owner, etc.)
+✔️ 2. Auto Approval / Rejection
+Condition ke basis pe:
+Auto approve
+Auto reject
+✔️ 3. Approval flow control
+Multi-level approval (L1, L2)
+Conditional approval
+✔️ 4. Data modify karta hai
+Comments add kar sakta hai
+Approvers list change kar sakta hai.
+
+🔹 3️⃣ ApprovalRule ke andar kya hota hai?
+ApprovalRule me normally ye cheeze hoti hain:-
+✔️ 1. Inputs (arguments):-
+Approval object
+Identity (user)
+Request (ApprovalRequest)
+Context (SailPointContext)
+👉 Ye sab rule ke andar use hote hain
+
+✔️ 2. Core Logic:-
+Conditions likhte hain:-
+if (amount > 10000) {
+    // manager approval
+} else {
+    // auto approve
+}
+✔️ 3. Approval object modify:-
+approval.setApprovers(list);
+approval.setStatus("APPROVED");
+✔️ 4. Return value:-
+Rule usually return karta hai:-
+Approval object
+ya decision (true/false)
+

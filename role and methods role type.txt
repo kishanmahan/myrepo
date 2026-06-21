@@ -1,0 +1,992 @@
+()🔥 1️⃣ Role kya hai?
+Role ek class/object hota hai (SailPoint / Java me),
+👉 Role = Permissions ka group (bundle)
+Matlab:-
+Ek user ko direct 50 permissions dene ke bajaye
+ek Role bana dete hain jisme wo sab permissions already hoti hain
+
+📌 Example:-
+Role: Admin
+Iske andar:
+Create User
+Delete User
+Modify Data
+👉 Ab kisi user ko Admin role de diya → automatically sab access mil gaya.
+
+()Enterprise me least privilege enforce karne ke liye roles define karte hain.
+Example:-
+Role hrRole = context.getObject(Role.class, "HR_ReadOnly");
+identity.addRole(hrRole); // Role assign karna
+-------------------------------------
+✔kya Bundle role alag hai?
+nahi:-
+️ SailPoint IdentityIQ me:-
+Backend class → Bundle
+UI me naam → Role
+
+📌 Matlab:-
+Bundle (code level) = Role (UI level)
+-------------------------------------------------------------
+🧠 1️⃣ Role DB me save hota hai ya nahi?
+👉 YES ✔️
+Role (SailPoint me Bundle) ek persistent object hota hai
+➡️ Matlab iska data database me store hota hai.
+
+🗄️ 2️⃣ DB me Role ka data kaise save hota hai?
+Jab tu role create karta hai:-
+Bundle role = new Bundle();
+role.setName("Admin");
+context.saveObject(role);
+context.commitTransaction();
+---------------------------------------
+⚙️ 2️⃣ Role kya karta hai?
+Role ka main kaam:-
+✔️ 1. Access control simplify karna
+Direct permission dene ki jagah role assign karte hain
+✔️ 2. Security manage karna
+Kaun kya access karega → role decide karta hai
+✔️ 3. Automation
+New employee aaye → role assign → automatically access mil gaya
+✔️ 4. Governance (Audit)
+Kaun kya use kar raha hai → easily track hota hai.
+
+🧠 3️⃣ Role ke andar kya kya hota hai?
+Role ek simple object nahi hota — iske andar multiple cheeze hoti hain:-
+🔹 1. Name:-
+Role ka naam
+📌 Example:-
+Admin
+Manager
+HR
+🔹 2. Description:-
+Role kya karta hai
+📌 Example:
+Admin role for full system access
+
+🔹 3. Permissions / Entitlements:-
+👉 Sabse important part
+Read
+Write
+Delete
+Execute
+📌 Example:-
+READ_USER
+WRITE_USER
+DELETE_USER
+
+🔹 4. Applications / Resources:-
+Role kis system pe apply hota hai
+📌 Example:-
+SAP
+Active Directory
+Database
+
+🔹 5. Users (Members):-
+Kaun kaun user is role me hai
+
+🔹 6. Owner:-
+Role ka owner (generally admin ya manager)
+
+🔹 7. Type of Role:-
+Role ke type bhi hote hain:-
+✔️ Business Role:-High level (HR, Manager)
+✔️ IT Role:-Technical permissions
+
+🔹 8. Policies / Rules:-
+Validation rules
+Compliance rules
+📌 Example:-
+Ek user ko Admin + Auditor dono nahi mil sakta
+
+🔹 9. Approval Process:-
+Role assign karne ke liye approval lagta hai
+📌 Example:-
+Manager approval
+Security team approval
+
+🔹 🔟 Metadata / Attributes:-
+Extra info:-
+created date
+modified date
+custom attributes
+---------------------------------------------------------------------------------------------------------
+🔥 4️⃣ Role ke andar kya kya DB me store hota hai?
+✔️ Basic Info:-
+name
+description
+type
+✔️ Owner
+role ka owner (identity)
+✔️ Permissions
+profiles / entitlements
+✔️ Applications
+kis system ka access
+✔️ Role hierarchy
+parent role / child role
+✔️ Metadata
+created date
+modified date
+-------------------------------------------------------------------------------
+🔥 3️⃣ Inheritance Types (Deep Explanation):-
+🔹 1. NONE:-
+✔️ Meaning:-
+Role independent hai
+Kisi aur role se link nahi
+✔️ Example:-
+Role: Basic_User
+→ No child / parent
+✔️ Use:-
+Simple roles
+Direct assignment
+-------------------------------------------------------------
+🔹 2. PERMISSIVE (Most Important 🔥):-
+✔️ Meaning:-
+👉 Child role ke saare permissions parent me add ho jate hain
+➡️ "ADD / UNION" logic
+
+✔️ Formula:-
+Final Access = Parent + Child
+✔️ Example:-
+Role A: Developer
+Role B: Git Access
+A includes B
+👉 Result:-
+Developer role me Git access automatically aa gaya.
+----------------------------------------------------------------
+🔹 3. RESTRICTIVE (Advanced 🔥):-
+✔️ Meaning:-
+👉 Child role ka access blindly add nahi hota
+👉 Filter / restriction apply hoti hai
+
+✔️ Formula:-
+Final Access = Parent + (Filtered Child Access)
+✔️ Example:
+Role A: Manager
+Role B: Finance Access
+
+A includes B
+BUT policy says:-
+→ Manager only sees his department data
+👉 Yaha full access nahi mila — restricted mila
+
+✔️ Use Case:-
+Data filtering
+Security policies
+Compliance (SOX, audit)
+---------------------------------------------------------------------
+()🧠 1️⃣ Role Type kya hota hai?
+👉 Role ka type decide karta hai ki role ka kaam kya hai
+Kya wo sirf grouping karega
+Ya direct system access dega
+
+🔥 2️⃣ Main Role Types:-
+SailPoint me 2 hi core role types hote hain:-
+🔹 1. Business Role
+✔️ Kya hai?
+
+👉 Ye ek high-level role hai jo job ya department ko represent karta hai
+
+✔️ Kaam kya hai?
+
+👉 Ye direct access nahi deta
+👉 Ye IT Roles ko group karta hai
+
+✔️ Structure
+Business Role
+   ↓
+   IT Roles
+      ↓
+      Entitlements
+✔️ Real Example
+Business Role: Manager
+
+Includes:
+   - IT Role: Email Access
+   - IT Role: HR System Access
+   - IT Role: Report View Access
+
+✔️ Flow:-
+👉 User ko Business Role mila
+➡️ Automatically uske andar ke saare IT Roles mil gaye
+➡️ Final me access mil gaya
+
+✔️ Use kahan hota hai?
+HR onboarding
+Department access
+Bulk assignment
+
+✔️ Key Points:-
+❌ Direct access nahi
+✅ Easy to understand
+✅ Non-technical log use karte hain
+
+()👉 “Business Role group ke sath sath kya saare IT Roles ka access bhi le leta hai?”
+✅ Correct Answer (Short)
+👉 Haan ✔️
+-----------------------------------------------------------------------------------------------
+🔹 2. IT Role 
+✔️ Kya hai?
+
+👉 Ye ek technical role hai jo actual permissions deta hai
+
+✔️ Kaam kya hai?
+
+👉 Ye direct system access deta hai
+
+✔️ Structure
+IT Role
+   ↓
+   Entitlements (permissions)
+✔️ Real Example
+IT Role: Database_Read
+
+Permissions:
+   - SELECT access
+   - Read tables
+✔️ Flow
+
+👉 IT Role assign hua
+➡️ Direct provisioning ho gaya
+➡️ User ko system access mil gaya
+
+✔️ Use kahan hota hai?
+Database access
+Application access
+Technical permissions
+
+✔️ Key Points:-
+✅ Direct access
+❌ Complex (non-technical ke liye)
+✅ IT/Admin manage karta hai
+-----------------------------------------------------------------------------------------
+()Business Role direct access deta hai:-------❌ Nahi
+Business Role IT Roles ko include karta hai:---✅ Haan  
+ka matlab kya?
+
+🧠 Iska matlab kya hai?
+🔹 1. “Direct access nahi deta” ❌
+👉 Business Role ke andar:-
+koi actual permission nahi hoti
+koi system access directly defined nahi hota
+
+📌 Example:-
+Business Role: Developer
+
+👉 Isme khud se:-
+na DB access hai
+na Git access hai
+❌ Kuch bhi direct nahi.
+
+🔹 2. “IT Roles ko include karta hai” ✅
+👉 Business Role ke andar:-
+multiple IT Roles add hote hain
+
+📌 Example:-
+Business Role: Developer
+
+Includes:
+   - IT Role: Git Access
+   - IT Role: Jira Access
+   - IT Role: DB Read
+🔥 Ab actual magic yaha hota hai
+👉 Jab user ko Business Role assign hota hai:-
+User/developer → Business Role → IT Roles → Entitlements
+
+👉 Result:-
+User ko Git access mil gaya
+User ko Jira access mil gaya
+User ko DB access mil gaya
+---------------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------
+getName()
+setName(String name)
+getDisplayName()
+setDisplayName(String displayName)
+getDescription()
+setDescription(String description)
+
+getType()
+setType(String type)
+getOwner()
+setOwner(Identity owner)
+
+getProfiles()
+setProfiles(List profiles)
+addProfile(Profile profile)
+removeProfile(Profile profile)
+getRoles()
+setRoles(List roles)
+addRole(Bundle role)
+removeRole(Bundle role)
+getApplications()
+setApplications(List applications)
+
+getConstraints()
+setConstraints(List constraints)
+
+getAttributes()
+setAttributes(Attributes attributes)
+getAttribute(String name)
+setAttribute(String name, Object value)
+getCreated()
+getModified()
+getId()
+setId(String id)
+
+isAssignable()
+setAssignable(boolean assignable)
+
+getApprovalScheme()
+setApprovalScheme(String scheme)
+
+getDisabled()
+setDisabled(boolean disabled)
+
+getSelector()
+setSelector(Selector selector)
+
+getInheritanceType()
+setInheritanceType(String type)
+
+getRiskScoreWeight()
+setRiskScoreWeight(int weight)
+getRequirements()
+setRequirements(List requirements)
+
+getPermits()
+setPermits(List permits)
+getPopulation()
+setPopulation(Filter population)
+
+getProvisioningForms()
+setProvisioningForms(List forms)
+getPolicyViolations()
+setPolicyViolations(List violations)
+----------------------------------------------------------------------------
+🔸 1. getName():-
+👉 Role ka internal name return karta hai
+
+🔸 2. setName(String name):-
+👉 Role ka internal name set karta hai
+
+🔸 3. getDisplayName():-
+👉 UI me jo visible naam hota hai wo return karta hai
+
+🔸 4. setDisplayName(String displayName):-
+👉 UI me dikhne wala naam set karta hai
+
+🔸 5. getDescription():-
+👉 Role ka description deta hai
+
+🔸 6. setDescription(String description):-
+👉 Role ka description set karta hai.
+
+💻 Example:-
+Bundle role = new Bundle();
+role.setName("DEV_ROLE");
+role.setDisplayName("Developer Role");
+role.setDescription("This role is for developers");
+-------------------------------------------------------------------------------
+
+🔸 setType("business"):-
+👉 Role ka type set kar diya
+"business"
+"it"
+
+🔸 getType():-
+👉 Wapas wahi value deta hai jo set ki thi
+
+🔸 setOwner(Identity owner):-
+👉 Role ka owner assign kar diya (generally admin/manager)
+
+🔸 getOwner():-
+👉 Owner object return karta hai
+
+()Owner matlab:-
+jisne role banaya ho (zaruri nahi)
+jo role ko manage karta hai
+jo approve/review karta hai
+
+👉 .getName():-
+se uska naam nikalte hain
+---------------------------------------------
+⚡ Real Values (Important):-
+role.setType("business"); // Business Role
+role.setType("it");       // IT Role
+-------------------------------------
+🧠 Example Code (with output):-
+Bundle role = new Bundle();
+
+// Type set karna
+role.setType("business");
+
+// Owner create karna
+Identity owner = new Identity();
+owner.setName("admin");
+
+// Owner set karna
+role.setOwner(owner);
+
+// Output print
+System.out.println(role.getType());
+System.out.println(role.getOwner().getName());
+📤 Output:-
+business
+admin
+-------------------------------------------------------------------
+🧠 1️⃣ getProfiles():-
+✔️ Kya karta hai?
+👉 Role ke andar jitne profiles (permissions) hain → unko return karta hai
+
+💻 Example:-
+Bundle role = new Bundle();
+
+Profile p1 = new Profile();
+p1.setName("GitAccess");
+
+role.addProfile(p1);
+
+for (Profile p : role.getProfiles()) {
+    System.out.println(p.getName());
+}
+📤 Output:-
+GitAccess
+-------------------------------------------------------------------------
+🧠 2️⃣ setProfiles(List profiles):-
+✔️ Kya karta hai?
+👉 Puri profile list ek baar me set kar deta hai.
+
+💻 Example:-
+Bundle role = new Bundle();
+
+Profile p1 = new Profile();
+p1.setName("GitAccess");
+
+Profile p2 = new Profile();
+p2.setName("JiraAccess");
+
+List profiles = new ArrayList();
+profiles.add(p1);
+profiles.add(p2);
+
+role.setProfiles(profiles);
+
+for (Profile p : role.getProfiles()) {
+    System.out.println(p.getName());
+}
+📤 Output:-
+GitAccess
+JiraAccess
+--------------------------------------------------
+🧠 3️⃣ addProfile(Profile profile):-
+✔️ Kya karta hai?
+
+👉 Ek single profile add karta hai
+
+💻 Example
+Bundle role = new Bundle();
+
+Profile p1 = new Profile();
+p1.setName("GitAccess");
+
+role.addProfile(p1);
+
+System.out.println(role.getProfiles().size());//output 1
+--------------------------------------------------------------
+🧠 4️⃣ removeProfile(Profile profile):-
+✔️ Kya karta hai?
+
+👉 Specific profile remove karta hai
+
+💻 Example
+Bundle role = new Bundle();
+
+Profile p1 = new Profile();
+p1.setName("GitAccess");
+
+role.addProfile(p1);
+role.removeProfile(p1);
+
+System.out.println(role.getProfiles().size());
+----------------------------------------------------
+🧠 5️⃣ getRoles():-
+✔️ Kya karta hai?
+👉 Role ke andar jitne child roles hain → unko return karta hai
+
+💻 Example:-
+Bundle parent = new Bundle();
+
+Bundle child = new Bundle();
+child.setName("GitRole");
+
+parent.addRole(child);
+
+for (Bundle r : parent.getRoles()) {
+    System.out.println(r.getName());
+}
+📤 Output:-
+GitRole
+-------------------------------------------------------------
+🧠 6️⃣ setRoles(List roles):-
+✔️ Kya karta hai?
+👉 Multiple roles ek saath set karta hai.
+
+💻 Example:-
+Bundle parent = new Bundle();
+
+Bundle r1 = new Bundle();
+r1.setName("GitRole");
+
+Bundle r2 = new Bundle();
+r2.setName("JiraRole");
+
+List roles = new ArrayList();
+roles.add(r1);
+roles.add(r2);
+
+parent.setRoles(roles);
+
+for (Bundle r : parent.getRoles()) {
+    System.out.println(r.getName());
+}
+📤 Output:-
+GitRole
+JiraRole
+-------------------------------------------------------
+🧠 7️⃣ addRole(Bundle role):-
+✔️ Kya karta hai?
+👉 Ek child role add karta hai
+
+💻 Example:-
+Bundle parent = new Bundle();
+
+Bundle child = new Bundle();
+child.setName("DBRole");
+
+parent.addRole(child);
+
+System.out.println(parent.getRoles().size());
+------------------------------------------------------
+🧠 8️⃣ removeRole(Bundle role):-
+✔️ Kya karta hai?
+👉 Child role remove karta hai
+
+💻 Example:-
+Bundle parent = new Bundle();
+
+Bundle child = new Bundle();
+child.setName("DBRole");
+
+parent.addRole(child);
+parent.removeRole(child);
+
+System.out.println(parent.getRoles().size());
+📤 Output:-
+0
+------------------------------------------------------
+🧠 9️⃣ getApplications():-
+✔️ Kya karta hai?
+👉 Role ke saare applications return karta hai
+
+💻 Example;-
+Bundle role = new Bundle();
+
+List apps = new ArrayList();
+apps.add("GitHub");
+apps.add("Jira");
+
+role.setApplications(apps);
+
+for (Object app : role.getApplications()) {
+    System.out.println(app);
+}
+📤 Output:-
+GitHub
+Jira
+------------------------------------------------------
+🧠 🔟 setApplications(List applications):-
+✔️ Kya karta hai?
+👉 Applications ki list set karta hai
+
+💻 Example:-
+Bundle role = new Bundle();
+List apps = new ArrayList();
+apps.add("SAP");
+apps.add("Oracle");
+role.setApplications(apps);
+System.out.println(role.getApplications().size());
+--------------------------------------------------------
+🧠 1️⃣ getConstraints():-
+✔️ Kya karta hai?
+👉 Role ke andar jitne constraints (rules/conditions) lage hain → unko return karta hai
+
+👉 Constraints ka matlab:-
+Restrictions
+Conditions
+Policies
+
+💻 Example:-
+Bundle role = new Bundle();
+List constraints = new ArrayList();
+constraints.add("Location = India");
+constraints.add("Department = IT");
+role.setConstraints(constraints);
+// Print constraints
+for (Object c : role.getConstraints()) {
+    System.out.println(c);
+}
+📤 Output:-
+Location = India
+Department = IT
+----------------------------------------------------
+🧠 2️⃣ setConstraints(List constraints):-
+✔️ Kya karta hai?
+👉 Role ke upar constraints (rules) set karta hai
+
+💻 Example:-
+Bundle role = new Bundle();
+List constraints = new ArrayList();
+constraints.add("Only Manager can approve");
+constraints.add("Access valid for 30 days");
+role.setConstraints(constraints);
+// Size check
+System.out.println(role.getConstraints().size());
+-----------------------------------------------------
+🧠 1️⃣ getAttributes()/setAttributes(Attributes attributes):-
+✔️ Kya karta hai?
+👉 Role ke saare custom attributes (extra data) return karta hai
+
+💻 Example:-
+Bundle role = new Bundle();
+Attributes attrs = new Attributes();
+attrs.put("level", "high");
+attrs.put("region", "India");
+role.setAttributes(attrs);
+System.out.println(role.getAttributes());
+📤 Output:-
+{level=high, region=India}
+
+🧠 3️⃣ getAttribute(String name)/setAttribute(String name, Object value):-
+✔️ Kya karta hai?
+👉 Specific attribute ki value return karta hai;
+
+💻 Example:-
+Bundle role = new Bundle();
+Attributes attrs = new Attributes();
+attrs.put("location", "Delhi");
+role.setAttributes(attrs);
+System.out.println(role.getAttribute("location"));
+📤 Output:-
+Delhi
+-----------------------------------------------------------------------------------------
+🧠 5️⃣ getCreated():-
+✔️ Kya karta hai?
+👉 Role kab create hua → wo date return karta hai
+💻 Example:-
+Bundle role = new Bundle();
+// assume role saved in DB
+System.out.println(role.getCreated());
+📤 Output:-
+2026-03-23 10:30:00
+
+🧠 6️⃣ getModified():-
+✔️ Kya karta hai?
+👉 Role last kab update hua → wo date return karta hai
+💻 Example:-
+System.out.println(role.getModified());
+📤 Output
+2026-03-23 12:00:00
+
+🧠 7️⃣ getId()
+✔️ Kya karta hai?
+👉 Role ka unique ID return karta hai (DB primary key)
+💻 Example:-
+System.out.println(role.getId());
+📤 Output
+a1b2c3d4e5
+
+🧠 8️⃣ setId(String id):-
+✔️ Kya karta hai?
+👉 Role ka ID manually set karta hai (rare use)
+💻 Example:-
+Bundle role = new Bundle();
+role.setId("ROLE123");
+System.out.println(role.getId());
+📤 Output:-
+ROLE123
+------------------------------------------------------------------------------------------------------------------------------------
+🧠 1️⃣ isAssignable()
+✔️ Kya karta hai?
+👉 Check karta hai ki role user ko directly assign ho sakta hai ya nahi
+
+💻 Example:-
+Bundle role = new Bundle();
+role.setAssignable(true);
+System.out.println(role.isAssignable());
+📤 Output:-
+true
+
+🧠 2️⃣ setAssignable(boolean assignable):-
+✔️ Kya karta hai?
+👉 Decide karta hai:-
+role assign ho sakta hai
+ya sirf internally use hoga (direct assign nahi)
+
+🔥 Real Samajh (Important):-
+()🔥 Assignable = true ka matlab:-
+👉 Role direct user ko diya ja sakta hai
+📌 Flow:-
+User → Role (direct assign)
+🧠 Example:-
+Role: Manager
+Assignable = true
+👉 HR / Admin directly user ko ye role de sakta hai
+✔️ User ko turant access mil jayega.
+
+()❌ Assignable = false ka matlab:-
+👉 Role user ko directly nahi diya ja sakta
+👉 Ye role sirf dusre role ke andar use hoga (internal use)
+📌 Flow:-
+Business Role → IT Role
+User → IT Role ❌ (direct nahi)
+------------------------------------------------------------------------------
+🧠 1️⃣ setApprovalScheme(String scheme):-
+👉 Ye decide karta hai approval ka type
+
+💻 Example:-
+Bundle role = new Bundle();
+
+// Manager approval lagaye
+role.setApprovalScheme("managerApproval");
+
+// Direct assign without approval
+// role.setApprovalScheme("auto");
+
+🧠 2️⃣ getApprovalScheme():-
+👉 Ye bataata hai ki current role me kaunsa approval scheme set hai
+
+💻 Example:-
+System.out.println(role.getApprovalScheme());
+------------------------------------------------------------------------------
+🧠 1️⃣ getDisabled()/setDisabled(boolean disabled):-
+✔️ Kya karta hai?
+👉 Ye check karta hai ki role disabled hai ya active
+
+true → Role disabled hai (use nahi kar sakte)
+false → Role active hai (use ho sakta)
+💻 Example:-
+Bundle role = new Bundle();
+
+// Role abhi active hai
+role.setDisabled(false);
+System.out.println(role.getDisabled());
+----------------------------------------------------------------------
+🧠 1️⃣ getSelector()/setSelector(Selector selector):-
+✔️ Kya karta hai?
+
+👉 Role ke selector ko return karta hai
+
+Selector = ek filter / rule object
+Ye define karta hai ki role kaunse targets/identities/objects pe apply hoga.
+💻 Example:-
+Bundle role = new Bundle();
+
+// Selector create
+Selector selector = new Selector();
+selector.setRule("department == 'IT'");
+
+role.setSelector(selector);
+
+// Get selector
+Selector sel = role.getSelector();
+System.out.println(sel.getRule());
+📤 Output
+department == 'IT'
+-----------------------------------------------------------------------------
+🧠 1️⃣ getInheritanceType()/setInheritanceType(String type):-
+✔️ Kya karta hai?
+👉 Ye batata hai ki role ka inheritance type kya hai,
+Inheritance = role ke andar jo child roles ya IT roles hain, unko kaise inherit kiya jata hai.
+
+💻 Example:-
+Bundle role = new Bundle();
+
+// Inheritance set karte hain
+role.setInheritanceType("static");
+
+// Get inheritance type
+System.out.println(role.getInheritanceType());
+--------------------------------------------------------------------------------------
+🧠 1️⃣ getRiskScoreWeight()/setRiskScoreWeight(int weight):-
+✔️ Kya karta hai?
+👉 Ye batata hai ki role ka risk score weight kya hai
+
+Risk score = role ke security / access risk level ko represent karta hai.
+Higher weight → zyada sensitive role
+
+💻 Example:-
+Bundle role = new Bundle();
+
+// Risk score set karte hain
+role.setRiskScoreWeight(5);
+
+// Get risk score
+System.out.println(role.getRiskScoreWeight());
+------------------------------------------------------------------------------------------------
+🧠 1️⃣ setRequirements(List requirements)/getRequirements():-
+✔️ Kya karta hai?
+👉 Role ke prerequisites / conditions set karta hai, jo role assign hone se pehle complete honi chahiye
+
+💻 Example:-
+Bundle role = new Bundle();
+
+// Prerequisites set karte hain
+List<String> reqs = new ArrayList<>();
+reqs.add("Manager Approval");
+reqs.add("Security Training");
+role.setRequirements(reqs);
+---------------------------------------------
+🧠 1️⃣ getPermits()
+✔️ Kya karta hai?
+👉 Role ke permits / permissions return karta hai
+Permits = specific access ya entitlement jo role provide karta hai
+💻 Example:-
+Bundle role = new Bundle();
+
+// Permits set karte hain
+List<String> permits = new ArrayList<>();
+permits.add("Read Access");
+permits.add("Write Access");
+
+role.setPermits(permits);
+
+// Get permits
+for(String p : role.getPermits()) {
+    System.out.println(p);
+}
+📤 Output:-
+Read Access
+Write Access
+------------------------------------------------
+🧠 2️⃣ setPermits(List permits):-
+✔️ Kya karta hai?
+👉 Role ke permits / access rights set karta hai
+💻 Example:-
+Bundle role = new Bundle();
+
+List<String> permits = new ArrayList<>();
+permits.add("Admin Access");
+permits.add("Delete Access");
+
+role.setPermits(permits);
+
+System.out.println(role.getPermits().size());
+📤 Output
+2
+--------------------------------------------------
+🧠 3️⃣ getPopulation():-
+✔️ Kya karta hai?
+👉 Ye return karta hai population filter / set of identities jiske liye role applicable hai.
+
+Population = targeted users / identities
+Ye define karta hai ki kaun is role ke liye eligible hai.
+
+💻 Example:-
+Bundle role = new Bundle();
+
+Filter population = new Filter();
+population.setRule("department == 'IT'");
+
+role.setPopulation(population);
+
+// Get population
+System.out.println(role.getPopulation().getRule());
+📤 Output:-
+department == 'IT'
+----------------------------------------------------------------
+🧠 4️⃣ setPopulation(Filter population):-
+✔️ Kya karta hai?
+👉 Role ke target population / filter set karta hai
+Population filter = condition jo define kare kaun is role ko use kar sakta hai.
+💻 Example:-
+Bundle role = new Bundle();
+
+Filter population = new Filter();
+population.setRule("location == 'Delhi'");
+role.setPopulation(population);
+
+System.out.println(role.getPopulation().getRule());
+📤 Output:-
+location == 'Delhi'
+
+🔥 Real Life Example:-
+Role: GitAccess
+Permits:-
+- Read
+- Write
+Population:-
+- department == IT
+- location == Delhi
+Matlab: Ye role sirf Delhi ke IT department ke users ke liye apply hoga
+Ye unko Read + Write access dega
+----------------------------------------------------------------------------------
+🧠 1️⃣ getProvisioningForms():-
+✔️ Kya karta hai?
+👉 Role ke provisioning forms return karta hai,
+Provisioning Forms = extra forms / data fields jo user ko fill karne hote hain role request ke time,
+Ye additional info collect karne ke liye use hote hain.
+💻 Example:-
+Bundle role = new Bundle();
+
+List<String> forms = new ArrayList<>();
+forms.add("Justification Form");
+forms.add("Security Questionnaire");
+
+role.setProvisioningForms(forms);
+
+// Get provisioning forms
+for(String f : role.getProvisioningForms()) {
+    System.out.println(f);
+}
+📤 Output:-
+Justification Form
+Security Questionnaire
+-------------------------------------------------------------
+🧠 2️⃣ setProvisioningForms(List forms):-
+✔️ Kya karta hai?
+👉 Role ke liye provisioning forms set karta hai
+
+💻 Example:-
+Bundle role = new Bundle();
+
+List<String> forms = new ArrayList<>();
+forms.add("HR Approval Form");
+role.setProvisioningForms(forms);
+
+System.out.println(role.getProvisioningForms().size());
+📤 Output:-
+1
+----------------------------------------------------------------------
+🧠 3️⃣ getPolicyViolations()/setPolicyViolations(List violations):-
+✔️ Kya karta hai?
+👉 Role ke saath linked policy violations return karta hai.
+Policy Violations = rules ya policies jo role assign karne par break ho sakti hain
+Example: SoD (Segregation of Duties) conflict
+
+💻 Example:-
+Bundle role = new Bundle();
+
+List<String> violations = new ArrayList<>();
+violations.add("SoD Conflict");
+violations.add("Excessive Access");
+
+role.setPolicyViolations(violations);
+
+// Get violations
+for(String v : role.getPolicyViolations()) {
+    System.out.println(v);
+}
+📤 Output:-
+SoD Conflict
+Excessive Access
+---------------------------------------------------------------------------------------------------------------------------------------------

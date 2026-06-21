@@ -1,0 +1,298 @@
+🔥 1. GeneralException kya hai?
+👉 GeneralException ek Exception class hai (error handling ke liye)
+👉 Ye SailPoint ka generic/common exception hai
+
+📌 Package:-
+sailpoint.tools.GeneralException
+
+👉 Matlab:-
+Jab bhi SailPoint me koi problem aati hai
+Aur specific exception use nahi karna ho
+👉 Tab GeneralException throw karte hai.
+
+🔥 2. Ye kya karta hai?
+👉 Simple:-
+Error ko represent karta hai + propagate karta hai
+✔ Kaam:-
+Error throw karna (throw)
+Error catch karna (catch)
+Error message carry karna
+Stack trace store karna
+/////////*
+
+
+
+*/////////
+-------------------------------------------------------------------------------------------------
+🔥 3. Example (real use):-
+import sailpoint.tools.GeneralException;
+public void createUser() throws GeneralException {
+
+    if (identity == null) {
+        throw new GeneralException("Identity is null");
+    }
+}
+-----------------------------------------------------------
+🔥 4. Catch karna:-
+try {
+    createUser();
+} catch (GeneralException e) {
+    log.error("Error occurred: ", e);
+}
+---------------------------------------------------
+🔥 5. Andar kya kya hota hai?
+👉 GeneralException ke andar ye sab hota hai:
+
+🧩 1. Message:-
+"Identity is null"
+
+🧩 2. Cause (another exception):-
+new GeneralException("Error", e);
+
+🧩 3. Stack Trace:-
+👉 Error kaha hua → line by line detail
+
+🧩 4. Methods (important):-
+e.getMessage();      // message nikalta hai
+e.getCause();        // original exception
+e.printStackTrace(); // pura error detail
+---------------------------------------------------------------------
+🔥 6. Constructors (types bol sakte ho)
+new GeneralException()
+new GeneralException(String message)
+new GeneralException(Throwable cause)
+new GeneralException(String message, Throwable cause)
+👉 Ye hi iska “types” hai (alag class nahi hai)
+------------------------------------------------------------
+🔥 7. Kya DB me store hota hai?
+👉 ❌ Direct GeneralException DB me store nahi hota
+👉 ✔ Lekin indirectly:-
+Logs me store hota hai
+Audit me aa sakta hai
+TaskResult / ProvisioningResult me error message aa sakta hai.
+-------------------------------------------------------------------
+🔥 8. Real SailPoint Use Cases:-
+✔ 1. Rule me
+if (identity == null) {
+    throw new GeneralException("Identity not found");
+}
+✔ 2. Provisioning
+if (!success) {
+    throw new GeneralException("Provisioning failed");
+}
+✔ 3. API / Service layer
+public void execute() throws GeneralException
+👉 SailPoint ke bahut sare methods me throws GeneralException hota hai.
+--------------------------------------------------------------------------------
+🔥 11. Real Flow samajh:-
+try {
+    planExecutor.execute(plan);
+} catch (Exception e) {
+    throw new GeneralException("Provisioning failed", e);
+}
+👉 Yaha:-
+Original error → e
+Wrap karke → GeneralException
+--------------------------------------------------------------------
+🔥 9. Important baat (interview killer):-
+👉 GeneralException = Checked Exception
+✔ Matlab:-
+Either try-catch karo
+Ya throws likho
+------------------------------------------------------
+🔥 10. Difference samajh (important):-
+Type	                Meaning
+GeneralException:---SailPoint ka generic error
+RuntimeException:---Java ka unchecked error
+IOException:--------File related error
+---------------------------------------------------------
+🔥 Error kaha propagate hota hai?
+👉 Error (GeneralException) upar ki taraf propagate hota hai
+👉 Matlab: method se caller → caller ke caller → … → top level
+
+🔹 Simple flow samajh:-
+Method C  (error aaya)
+   ↑
+Method B  (call kiya C ko)
+   ↑
+Method A  (call kiya B ko)
+   ↑
+Main / SailPoint Engine
+👉 Error neeche se upar travel karta hai
+
+🔥 Real Example:-
+public void methodC() throws GeneralException {
+    throw new GeneralException("Error in C");
+}
+
+public void methodB() throws GeneralException {
+    methodC();  // yaha error aayega aur upar jayega
+}
+
+public void methodA() throws GeneralException {
+    methodB();  // fir yaha bhi propagate hoga
+}
+👉 Agar kisi ne catch nahi kiya → error upar chadhta rahega
+------------------------------------------------------------------
+🔥 Catch kaha hota hai?
+👉 Jahan try-catch likhoge → wahi ruk jayega
+try {
+    methodA();
+} catch (GeneralException e) {
+    log.error("Handled here", e);
+}
+👉 Yaha aake propagation stop ho gaya.
+example:-------------------------------------------------
+🔥 Full Example Code (End-to-End):-
+import sailpoint.tools.GeneralException;
+
+public class ExceptionDemo {
+
+    public static void main(String[] args) {
+
+        ExceptionDemo demo = new ExceptionDemo();
+
+        try {
+            demo.methodA();
+        } catch (GeneralException e) {
+            System.out.println("✅ Catch in MAIN: Error handled here");
+            e.printStackTrace();
+        }
+    }
+
+    // Method A
+    public void methodA() throws GeneralException {
+        System.out.println("➡ Entering methodA");
+        methodB();  // call methodB
+        System.out.println("⬅ Exiting methodA"); // ye execute nahi hoga
+    }
+
+    // Method B
+    public void methodB() throws GeneralException {
+        System.out.println("➡ Entering methodB");
+        methodC();  // call methodC
+        System.out.println("⬅ Exiting methodB"); // ye bhi execute nahi hoga
+    }
+
+    // Method C (yaha error aayega)
+    public void methodC() throws GeneralException {
+        System.out.println("➡ Entering methodC");
+
+        // 🔥 Yahi error throw ho raha hai
+        throw new GeneralException("❌ Error occurred in methodC");
+
+        // System.out.println("⬅ Exiting methodC"); // ye kabhi run nahi hoga
+    }
+}
+🔥 Output kya aayega?
+➡ Entering methodA
+➡ Entering methodB
+➡ Entering methodC
+✅ Catch in MAIN: Error handled here
+sailpoint.tools.GeneralException: ❌ Error occurred in methodC
+    at ExceptionDemo.methodC(ExceptionDemo.java:...)
+    at ExceptionDemo.methodB(ExceptionDemo.java:...)
+    at ExceptionDemo.methodA(ExceptionDemo.java:...)
+    at ExceptionDemo.main(ExceptionDemo.java:...)
+🔥 Flow samajh (step by step):-
+1️⃣ methodC():-
+👉 Error throw:-
+throw new GeneralException(...)
+
+2️⃣ methodB():-
+👉 Catch nahi kiya → upar bhej diya
+
+3️⃣ methodA():-
+👉 Yaha bhi catch nahi → upar bhej diya
+
+4️⃣ main():-
+👉 Yaha try-catch tha
+👉 ✅ Error yahi handle ho gaya
+///////////*
+✅ Short Answer:-
+👉 2 type ke cases hote hai:-
+
+1️⃣ Automatic Exception (Java khud throw karta hai):-
+👉 Example:-
+int x = 10 / 0;   // ArithmeticException
+✔ Yaha Java khud exception throw karta hai
+👉 tujhe throw likhne ki zarurat nahi
+
+2️⃣ Manual Exception (Developer khud throw karta hai):-
+👉 Example:-
+if (identity == null) {
+    throw new GeneralException("Identity is null");
+}
+✔ Yaha koi Java error nahi tha
+👉 tu khud bol raha hai: “ye situation galat hai → error treat karo”
+👉 iska matlab:-
+❗ Forcefully error create kar raha hai
+--------------------------------------------------------------------------
+🔥 1. methodA() throws GeneralException ka matlab kya?
+public void methodA() throws GeneralException {
+    methodB();
+}
+
+👉 Iska matlab:-
+💬 “Ye method error throw kar sakta hai, handle karna caller ka kaam hai”
+
+👉 Matlab:-
+methodA khud catch nahi kar raha
+error ko upar bhej raha hai (propagate)
+
+*///////////
+///////////*
+🔥 Real SailPoint Example:-
+if (identity == null) {
+    throw new GeneralException("Identity not found");
+}
+👉 Yaha:-
+Java ko koi problem nahi thi
+But business logic fail ho gaya
+👉 Isliye tu manually throw kar raha hai.
+-----------------------------------------------------------------
+🔥 Ek aur solid example:-
+if (!accountExists) {
+    throw new GeneralException("Account does not exist in target system");
+}
+
+👉 System crash nahi hua
+👉 But logic galat hai
+👉 Isliye exception throw kiya
+
+--------------------------------
+🔥 2. throws kyu likhte hai?
+👉 Java rule (Checked Exception ke liye):-
+👉 Agar method ke andar exception aa sakta hai →
+✔ ya to try-catch karo
+✔ ya throws likho
+
+🔹 Example:-
+public void methodB() throws GeneralException {
+    methodC();
+}
+👉 Yaha:-
+methodC error throw kar raha hai
+methodB catch nahi kar raha
+👉 Isliye throws likhna mandatory hai.
+----------------------------------------------------------------------
+🔥 3. throw vs throws (Main difference):-
+🔴 1. throw (action):-
+👉 Actual error throw karta hai
+throw new GeneralException("Error aaya");
+✔ Runtime pe execute hota hai
+✔ Object banata hai (exception object)
+
+🔵 2. throws (declaration):-
+👉 Sirf batata hai ki error aa sakta hai
+public void test() throws GeneralException
+✔ Compile time pe check hota hai
+✔ Sirf signature me likhte hai
+
+🔥 4. Side by side comparison:-
+Point	                     throw	                          throws
+Kaam	            Exception throw karta hai	        Exception declare karta hai
+Kahan likhte hai	Method ke andar	                      Method signature me
+Kab use	           Jab error create karna ho             Jab handle nahi karna ho
+Example	           throw new GeneralException()	      method() throws GeneralException
+*/////////

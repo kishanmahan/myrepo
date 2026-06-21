@@ -1,0 +1,27 @@
+()global-setting->time-periods->
+
+()Configure Time Periods upyog system ke alag-alag kamo (jaise access requests, certifications, ya notifications)
+ke liye samay tay karne ke liye kiya jata hai.
+
+()Quarters (First, Second, Third, Fourth):-
+Kya hai?: Yeh poore saal ko teen-teen mahino ke char hisso mein baantta hai.
+Kaam: Inka upyog aksar Quarterly Access Reviews ke liye hota hai taaki har teen mahine mein employees ke access ko check kiya ja sake.
+
+()Holidays:-
+Kya hai?: chhuttiyon (jaise 1st Jan, 25th Dec) ki ek list.
+Kaam: Agar koi onboarding ya offboarding task chhutti ke din pad raha hai, toh system ise detect karke use agle working day par shift kar sakta hai.
+
+()Holidays:-
+Kya hai?: Saalgiri ki chhuttiyon (jaise 1st Jan, 25th Dec) ki ek list.
+Kaam: Agar koi onboarding ya offboarding task chhutti ke din pad raha hai, 
+toh system ise detect karke use agle working day par shift kar sakta hai.
+
+()Weekdays & Weekends:-
+Kya hai?: Somvar se Shukravar (Weekdays) aur Shani-Ravi (Weekends).
+Kaam: System policies banate waqt kaam aata hai—jaise "Emergency Access" sirf weekends par hi maanga ja sake.
+
+()Inka Istemal Kahan Hota Hai?
+IdentityIQ mein in periods ka istemal mukhya roop se teen jagahon par hota hai:-
+Workgroups: Kaam distribute karne ke liye.
+Certification Schedules: Periodic reviews set karne ke liye.
+Policy Violations: Yeh check karne ke liye ki kya koi access sirf specific samay par hi allowed hai.

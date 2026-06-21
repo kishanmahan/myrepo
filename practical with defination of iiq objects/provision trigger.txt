@@ -1,0 +1,123 @@
+()IIQ me provisioning trigger hone ke common ways:-
+1. LCM Request (Access Request)
+Jab user access maangta hai:
+Role request
+Entitlement request
+Application access request
+Tab IIQ provisioning plan banata hai aur connector/application ko bhejta hai.
+Example:-
+User ne SAP access request kiya
+Approval hua
+IIQ provisioning trigger karega
+SAP me account create/update hoga
+Flow:-
+Plain text
+Copy code
+Request → Approval → ProvisioningPlan → Connector → Target System.
+
+2. Joiner / Mover / Leaver Event:-
+Identity lifecycle event par provisioning automatically trigger hota hai.
+Joiner
+Naya employee aaya:-
+Plain text
+Copy code
+HR Aggregation → Identity Created → Role Assigned → Provisioning Trigger
+Example:-
+Department = IT
+Automatically AD account create
+Mover
+Department ya role badla:-
+Plain text
+Copy code
+Role Change → Old Access Remove → New Access Add
+Example:-
+Finance → HR
+Finance entitlement remove
+HR entitlement add
+Leaver
+Employee terminate:-
+Plain text
+Copy code
+Termination Date → Disable/Delete Accounts
+
+3. Role Assignment:-
+Jab kisi identity ko role assign hota hai:-
+Plain text
+Copy code
+Business Role → IT Role → Entitlements
+Then provisioning trigger hota hai.
+Example:
+Plain text
+Copy code
+Developer Role
+   ↓
+AD Group + Jira Access + DB Access
+
+4. Identity Refresh:-
+Bahut important trigger.
+Identity refresh ke during:-
+Role evaluate hota hai
+Policy check hota hai
+Missing access detect hota hai
+Agar changes mile:-
+Plain text
+Copy code
+Refresh → ProvisioningPlan Generate → Provisioning Execute
+Identity Refresh task me option hota hai:
+Plain text
+Copy code
+Provision assignments
+Ye ON hoga toh provisioning chalega.
+
+5. Workflow Se:-
+Custom workflow se bhi provisioning trigger kar sakte ho.
+Example:-
+Java
+Copy code
+Provisioner provisioner = new Provisioner(context);
+provisioner.execute(plan);
+Ya:-
+Java
+Copy code
+call:compileProvisioningProject
+call:provisionProject
+
+6. Rules Se:-
+Custom rule se provisioning trigger.
+Mostly:
+BeanShell Rule
+JDBC Provisioning Rule
+Before Provisioning Rule
+After Provisioning Rule
+Example:
+Java
+Copy code
+ProvisioningPlan plan = new ProvisioningPlan();
+Then execute.
+
+7. Quicklink Se:-
+User quicklink click karta hai:-
+Example:
+Create Shared Account
+Reset Password
+Request VPN
+Then provisioning trigger hota hai.
+
+8. Certification Revocation:-
+Agar manager certification me access revoke kare:
+Plain text
+Copy code
+Certification Revoke → Provisioning Trigger
+Then entitlement remove hota hai target system se.
+
+9. Policy Violation Remediation:-
+Agar SoD violation detect hua:-
+Plain text
+Copy code
+Policy Violation → Remediation → Provisioning
+10. API Se
+REST/SOAP/API call se bhi provisioning trigger hota hai.
+Example:
+Java
+Copy code
+Provisioner.execute(plan);

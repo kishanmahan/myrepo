@@ -1,0 +1,853 @@
+🔹 2️⃣ Job:-
+Kya hai:-
+Job ek bada unit of work ya scheduled execution hota hai.
+Ye ek ya multiple tasks ka collection hota hai jo ek saath execute hote hain.
+Mostly background / periodic process ke liye hota hai.
+
+Example:-
+IdentityRefreshJob → saare identities ko daily refresh kare.
+AccessCertificationJob → access review workflow trigger kare for multiple users.
+
+Key points:-
+Job usually scheduled / automated hota hai (daily, weekly, etc.).
+Job me multiple tasks ho sakte hain.
+Long-running aur system-wide impact wale processes ke liye use hota hai.
+-----------------------------------------------------------------------------------------------
+1️⃣ Identity / Owner / Basic Info:-
+getId() → Job ka unique ID
+getName() → Job ka name
+getType() → Job ka type (manual, automated, workflow)
+getOwner() → Job ka owner (Identity object)
+setOwner(Identity owner) → Job ka owner assign karna
+
+2️⃣ Status / Lifecycle:-
+getStatus() → Current job status
+setStatus(String status) → Status update karna
+launch() → Job ko start karna
+schedule() → Future ke liye schedule karna
+cancel() → Job cancel karna
+archive() → Job archive karna
+complete() → Job complete mark karna
+reject() → Job reject mark karna
+
+3️⃣ Audit / Metadata:-
+getCreated() → Job kab create hua
+getModified() → Last modification time
+getCreatedBy() → Kisne create kiya
+getModifiedBy() → Kisne last modify kiya
+
+4️⃣ Execution / Arguments:-
+getArguments() 
+setArguments(Map<String,Object> args) 
+getExecutionTime() 
+setExecutionTime(long time) 
+getExecutionResult() 
+setExecutionResult(Object result) 
+getExecutionStatus() 
+setExecutionStatus(String status) 
+
+5️⃣ Validation / Core Methods:-
+validate() 
+clone() 
+equals(Object obj) 
+hashCode() 
+toString() 
+
+6️⃣ Tasks Management:-
+getTasks() 
+getTaskResults() 
+getPendingTasks() 
+getCompletedTasks() 
+getTaskById(String id) 
+
+7️⃣ WorkItems / Approval:-
+getWorkItems() 
+getPendingWorkItems() 
+getCompletedWorkItems() 
+getWorkItemById(String id) 
+getApprovalSet() 
+setApprovalSet(ApprovalSet approvalSet) 
+
+8️⃣ Job Configuration:-
+getJobConfig()
+setJobConfig(JobConfig config)
+
+9️⃣ Escalation / Reminders:-
+getEscalationDate() 
+setEscalationDate(Date date) 
+getEscalationLevel() 
+setEscalationLevel(int level) 
+getEscalationOwner() 
+setEscalationOwner(Identity owner) 
+getReminders() 
+setReminders(List<Date> reminders) 
+addReminder(Date date) 
+
+🔟 Target / Integration:-
+getTarget() 
+setTarget(Object target) 
+getTargetName() 
+getTargetType() 
+-------------------------------------------------------------------------------------------------------------------------------
+1️⃣ Identification / Basic Info
+Method	          Description
+getId():-----Job ka unique ID return karta hai
+getName():---Job ka name return karta hai
+getType():---Job ka type return karta hai (manual, automated, workflow)
+getOwner():--Job ka owner (Identity object) return karta hai
+setOwner(Identity owner):------Job ka owner assign / update karna.
+
+2️⃣ Status / Lifecycle Methods:-
+Method	                              Description
+getStatus()	                Job ka current status return karta hai (Pending, Running, Completed, Failed, etc.)
+setStatus(String status)	Job ka status update karna
+launch()	                Job ko immediately start karna
+schedule()	                Job ko future execution ke liye schedule karna
+cancel()	                Job ko cancel karna (agar running ya scheduled hai)
+archive()	                Job ko archive / store karna after completion
+complete()	                Job ko manually complete mark karna
+reject()	                Job ko reject mark karna (failed / invalid job).
+
+3️⃣ Audit / Metadata Methods:-
+Method	                      Description
+getCreated()	     Job kab create hua ye return karta hai
+getModified()	     Job ka last modification time return karta hai
+getCreatedBy()	     Kisne job create kiya ye return karta hai
+getModifiedBy()	     Kisne job last modify kiya ye return karta hai.
+
+1️⃣ Job Status – Common Values:-
+Status	           Meaning / Use Case
+Pending	       Job create hua hai, abhi run nahi hua
+Running	       Job abhi execute ho raha hai
+Completed	   Job successfully finish ho gaya
+Failed	       Job execution me error aaya
+Canceled	   Job ko cancel kar diya gaya
+Rejected	   Job validation fail ya manually reject kiya gaya
+Archived	   Job ka record store / archive kiya gaya.
+
+2️⃣ Java Example – Job Status Simulation
+import java.util.Date;
+
+// Simulate Identity class
+class Identity {
+    private String name;
+    public Identity(String name) { this.name = name; }
+    public String getName() { return name; }
+}
+
+// Simulate Job class
+class Job {
+    private String id;
+    private String name;
+    private String status;
+    private Identity owner;
+    private Date created;
+    private Date modified;
+
+    public Job(String id, String name, Identity owner) {
+        this.id = id;
+        this.name = name;
+        this.owner = owner;
+        this.status = "Pending"; // default status
+        this.created = new Date();
+        this.modified = new Date();
+    }
+
+    // Basic Info
+    public String getId() { return id; }
+    public String getName() { return name; }
+    public Identity getOwner() { return owner; }
+    public void setOwner(Identity owner) { this.owner = owner; }
+
+    // Status Methods
+    public String getStatus() { return status; }
+    public void setStatus(String status) { 
+        this.status = status;
+        this.modified = new Date(); // update modified time
+    }
+
+    // Lifecycle Methods
+    public void launch() { 
+        System.out.println("Job launching...");
+        setStatus("Running");
+    }
+    public void schedule() { 
+        System.out.println("Job scheduled for future execution");
+        setStatus("Pending");
+    }
+    public void cancel() { 
+        System.out.println("Job canceled");
+        setStatus("Canceled");
+    }
+    public void complete() { 
+        System.out.println("Job completed");
+        setStatus("Completed");
+    }
+    public void reject() { 
+        System.out.println("Job rejected");
+        setStatus("Rejected");
+    }
+    public void archive() { 
+        System.out.println("Job archived");
+        setStatus("Archived");
+    }
+
+    // Audit
+    public Date getCreated() { return created; }
+    public Date getModified() { return modified; }
+}
+
+public class JobDemo {
+    public static void main(String[] args) {
+        Identity admin = new Identity("AdminUser");
+        Job myJob = new Job("J001", "DataSyncJob", admin);
+
+        System.out.println("Initial Status: " + myJob.getStatus());
+
+        myJob.launch();
+        System.out.println("Status after launch(): " + myJob.getStatus());
+
+        myJob.complete();
+        System.out.println("Status after complete(): " + myJob.getStatus());
+
+        myJob.archive();
+        System.out.println("Status after archive(): " + myJob.getStatus());
+
+        myJob.reject(); // simulating invalid scenario
+        System.out.println("Status after reject(): " + myJob.getStatus());
+
+        myJob.cancel(); // cancel after completion
+        System.out.println("Status after cancel(): " + myJob.getStatus());
+    }
+}
+3️⃣ Sample Output
+Initial Status: Pending
+Job launching...
+Status after launch(): Running
+Job completed
+Status after complete(): Completed
+Job archived
+Status after archive(): Archived
+Job rejected
+Status after reject(): Rejected
+Job canceled
+Status after cancel(): Canceled
+-------------------------------------------------------------------------------------------------------------------------
+✅ 1. Real Java Code – Fetch & Use Job Object
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Job;
+import sailpoint.object.Identity;
+import sailpoint.api.JobManager;
+import java.util.Date;
+
+public class JobExample {
+
+    public static void main(String[] args) {
+
+        SailPointContext context = null;
+
+        try {
+            // Get SailPoint Context (runtime)
+            context = SailPointFactory.createContext();
+
+            // Fetch Job by name or id
+            String jobName = "My Job Name";
+            Job myJob = context.getObject(Job.class, jobName);
+
+            if (myJob == null) {
+                System.out.println("Job not found: " + jobName);
+                return;
+            }
+
+            // ----------------------------
+            // 1️⃣ Identification / Basic Info
+            // ----------------------------
+
+            System.out.println("Job ID: " + myJob.getId());
+            System.out.println("Job Name: " + myJob.getName());
+            System.out.println("Job Type: " + myJob.getType());
+
+            // Owner
+            Identity owner = myJob.getOwner();
+            if (owner != null) {
+                System.out.println("Job Owner: " + owner.getName());
+            }
+
+            // Set Owner
+            Identity newOwner = context.getObjectByName(Identity.class, "admin");
+            myJob.setOwner(newOwner);
+            context.commitTransaction();
+
+            // ----------------------------
+            // 2️⃣ Status / Lifecycle
+            // ----------------------------
+
+            System.out.println("Current Status: " + myJob.getStatus());
+
+            // Launch immediately
+            JobManager.launch(myJob, context);
+            System.out.println("Launched Job.");
+
+            // Set status manually
+            myJob.setStatus(Job.Status.Running.name());
+            System.out.println("Updated Status: " + myJob.getStatus());
+
+            // Cancel job
+            JobManager.cancel(myJob, context);
+            System.out.println("Canceled Job.");
+
+            // Complete job
+            myJob.setStatus(Job.Status.Completed.name());
+            System.out.println("Completed Job.");
+
+            // Reject job
+            myJob.setStatus(Job.Status.Rejected.name());
+            System.out.println("Rejected Job.");
+
+            // Archive job
+            myJob.archive(context);
+            System.out.println("Archived Job.");
+
+            context.commitTransaction();
+
+            // ----------------------------
+            // 3️⃣ Audit / Metadata
+            // ----------------------------
+
+            System.out.println("Job Created: " + myJob.getCreated());
+            System.out.println("Job Modified: " + myJob.getModified());
+
+            if (myJob.getCreatedBy() != null)
+                System.out.println("Created By: " + myJob.getCreatedBy().getName());
+
+            if (myJob.getModifiedBy() != null)
+                System.out.println("Modified By: " + myJob.getModifiedBy().getName());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (context != null) {
+                context.decache(true);
+                context.close();
+            }
+        }
+    }
+}
+-----------------------------------------------------------------------------------------------------------------------------------
+()Job ke input arguments basically wo values hoti hain jo job ko run karte waqt di jati hain,
+taki job ko pata chale ki kya kaam karna hai. Ye arguments user, workflow, ya koi aur programmatic source se aa sakte hain.
+Example sources:-
+1️⃣ Manual set in code:-
+job.setArguments(Map.of("user","Kishan", "action","create"));
+→ Yaha arguments directly developer ne code me diye.
+
+2️⃣ Workflow ya Task se:-
+Agar koi workflow job ko trigger karta hai, to workflow variables as arguments pass kar sakta hai:
+
+Map<String,Object> args = workflow.getVariables();
+job.setArguments(args);
+
+3️⃣ User input:-
+Kuch interactive jobs me user GUI/console se input deta hai, jo arguments me convert hota hai.
+
+4️⃣ External system / API:-
+Job ko kisi external system ya API se data mil sakta hai aur job me arguments ke form me set ho jata hai.
+
+1️⃣ getArguments():-
+Kya karta hai: Job ke input arguments ko return karta hai.
+
+Example:-
+job.setArguments(Map.of("user","Kishan", "action","create"));
+System.out.println(job.getArguments());
+
+Output:-
+{user=Kishan, action=create}
+
+2️⃣ setArguments(Map<String,Object> args):-
+Kya karta hai: Job ke liye input arguments set karta hai.
+
+Example:-
+job.setArguments(Map.of("user","Ravi", "action","delete"));
+System.out.println(job.getArguments());
+
+Output:-
+{user=Ravi, action=delete}
+
+3️⃣ getExecutionTime():-
+Kya karta hai: Job execute hone me lagne wala time (milliseconds) return karta hai.
+Example:-
+job.setExecutionTime(5000); // manually set 5 seconds
+System.out.println(job.getExecutionTime());
+
+Output:-
+5000
+
+4️⃣ setExecutionTime(long time):-
+Kya karta hai: Execution time manually set karne ke liye.
+Example: (same as above)
+
+job.setExecutionTime(3000);
+System.out.println(job.getExecutionTime());
+
+Output:-
+3000
+
+5️⃣ getExecutionResult():-
+Kya karta hai: Job ka execution result return karta hai.
+Example:-
+job.setExecutionResult("Success");
+System.out.println(job.getExecutionResult());
+
+Output:-
+Success
+
+6️⃣ setExecutionResult(Object result):-
+Kya karta hai: Execution ka result set karne ke liye.
+
+Example: (same as above)
+job.setExecutionResult("Failed");
+System.out.println(job.getExecutionResult());
+
+Output:-
+Failed
+
+7️⃣ getExecutionStatus():-
+Kya karta hai: Job ka current execution status return karta hai (e.g., RUNNING, COMPLETED, FAILED).
+
+Example:-
+job.setExecutionStatus("RUNNING");
+System.out.println(job.getExecutionStatus());
+
+Output:-
+RUNNING
+
+8️⃣ setExecutionStatus(String status):-
+Kya karta hai: Job ka status set karne ke liye.
+
+Example: (same as above)
+
+job.setExecutionStatus("COMPLETED");
+System.out.println(job.getExecutionStatus());
+
+Output:-
+COMPLETED
+--------------------------------------------------------------------------------------------------------------------------
+2️⃣ clone():-
+Kya karta hai: Object ka exact copy bana deta hai.
+Example:-
+Job clonedJob = (Job) job.clone();
+System.out.println(clonedJob.getArguments());
+
+Output:-
+{user=Kishan}
+
+3️⃣ equals(Object obj):-
+Kya karta hai: Check karta hai ki do objects same hain ya nahi (usually content ke basis par).
+Example:-
+Job job2 = new Job();
+job2.setArguments(Map.of("user","Kishan"));
+System.out.println(job.equals(job2));
+
+Output:-
+true
+
+4️⃣ hashCode():-
+Kya karta hai: Object ka unique hash code return karta hai. Ye mostly hash-based collections (like HashMap, HashSet) me use hota hai.
+
+Example:-
+System.out.println(job.hashCode());
+
+Output:-
+12345678  
+
+5️⃣ toString():-
+Kya karta hai: Object ka readable string representation return karta hai.
+
+Example:-
+System.out.println(job.toString());
+
+Output:-
+Job{arguments={user=Kishan}, status=RUNNING, result=Success}
+------------------------------------------------------------------------------------------------------------------------
+()validate() kya-kya check karta hai:-
+
+1️⃣ Required fields check:-
+Agar koi mandatory field missing hai (jaise job name, owner, arguments, target application), to exception throw karta hai.
+
+job.setArguments(null); 
+job.validate(); // → IllegalArgumentException ya ValidationException
+
+2️⃣ Argument types / values:-
+Check karta hai ki jo arguments diye gaye hain, unka type aur value sahi hai ya nahi.
+Example: String expected hai, lekin number pass ho gaya → error.
+
+3️⃣ Status consistency:-
+Job ka status valid hona chahiye. Jaise RUNNING, COMPLETED, FAILED.
+Agar invalid status set hai → validation fail.
+
+4️⃣ Execution constraints:-
+Agar koi time constraints ya scheduling rules defined hain, to ye check karta hai ki execution valid hai.
+
+5️⃣ Workflow / Task references:-
+Agar job kisi workflow ya task se linked hai, to validate karta hai ki linked object exist karta hai aur accessible hai.
+
+6️⃣ Custom rules:-
+Developer ne agar koi custom validation rules define kiye hain, to validate() unhe bhi check karega.
+Example:-
+job.setArguments(Map.of()); // empty arguments
+job.setExecutionStatus("RUNNING"); 
+job.validate(); // agar arguments required hain → ValidationException
+
+Output:-
+ValidationException: Arguments cannot be empty
+--------------------------------------------------------------------------------------------------------------------------------------
+1️⃣ getTasks():-
+Kya karta hai: Job/Workflow me sabhi tasks ki list return karta hai (pending + completed).
+
+Example:-
+List<Task> allTasks = job.getTasks();
+System.out.println(allTasks.size()); // total tasks
+
+2️⃣ getTaskResults():-
+Kya karta hai: Sabhi tasks ke execution results return karta hai.
+
+Example:-
+Map<String, Object> results = job.getTaskResults();
+System.out.println(results);
+
+Output:-
+{task1=Success, task2=Failed}
+
+3️⃣ getPendingTasks():-
+Kya karta hai: Sirf abhi pending (incomplete) tasks return karta hai.
+
+Example:-
+List<Task> pending = job.getPendingTasks();
+System.out.println(pending.size());
+
+Output:-
+2
+
+4️⃣ getCompletedTasks():-
+Kya karta hai: Sirf completed tasks return karta hai.
+
+Example:-
+List<Task> completed = job.getCompletedTasks();
+System.out.println(completed.size());
+
+Output:-
+3
+
+5️⃣ getTaskById(String id):-
+Kya karta hai: Task ka specific ID ke basis par object return karta hai.
+
+Example:-
+Task t = job.getTaskById("task123");
+System.out.println(t.getName());
+
+Output:-
+"Create User Task"
+----------------------------------------------------------------------------------------------------------------
+1️⃣ getWorkItems():-
+Kya karta hai: WorkflowCase ke sabhi WorkItems return karta hai (pending + completed).
+Example:-
+List<WorkItem> items = workflowCase.getWorkItems();
+System.out.println(items.size());
+Output:-
+5
+
+2️⃣ getPendingWorkItems():-
+Kya karta hai: Sirf abhi pending WorkItems return karta hai.
+Example:-
+List<WorkItem> pending = workflowCase.getPendingWorkItems();
+System.out.println(pending.size());
+Output:-
+2
+
+3️⃣ getCompletedWorkItems():-
+Kya karta hai: Sirf completed WorkItems return karta hai.
+Example:-
+List<WorkItem> completed = workflowCase.getCompletedWorkItems();
+System.out.println(completed.size());
+Output:-
+3
+
+4️⃣ getWorkItemById(String id):-
+Kya karta hai: Specific WorkItem ID ke basis par return karta hai.
+Example:-
+WorkItem wi = workflowCase.getWorkItemById("wi123");
+System.out.println(wi.getName());
+Output:-
+"Manager Approval"
+
+5️⃣ getApprovalSet():-
+Kya karta hai: WorkflowCase ke ApprovalSet object ko return karta hai (kaun approve kar raha hai, kaun pending hai).
+Example:-
+ApprovalSet approvals = workflowCase.getApprovalSet();
+System.out.println(approvals.getApprovers());
+Output:-
+[manager1, manager2]
+
+6️⃣ setApprovalSet(ApprovalSet approvalSet):-
+Kya karta hai: WorkflowCase me ApprovalSet set karne ke liye.
+Example:-
+ApprovalSet set = new ApprovalSet();
+set.addApprover("manager1");
+workflowCase.setApprovalSet(set);
+Output:-
+// workflowCase ab manager1 ko approver ke roop me rakhta hai.
+
+////////////*
+()ApprovalSet SailPoint me ek object hai jo workflow me approvals ko manage karne ke liye use hota hai.
+Simple shabdon me, ye batata hai ki kaun approve kar raha hai, kaun pending hai aur kaun reject kar chuka hai.
+ApprovalSet ka kaam:
+
+1️⃣ Approvers list rakhna – Kaun log approve karenge ya kar chuke hain.
+2️⃣ Pending approvals track karna – Kaun abhi action nahi liya.
+3️⃣ Approval status maintain karna – Approved, Pending, Rejected.
+4️⃣ Workflow me decisions control karna – Agar saare approvals mil gaye → workflow aage badhe.
+
+Example Code:-
+ApprovalSet set = new ApprovalSet();
+set.addApprover("manager1"); // Approver add kiya
+set.addApprover("manager2");
+workflowCase.setApprovalSet(set);
+System.out.println(workflowCase.getApprovalSet().getApprovers());
+
+Output:-
+[manager1, manager2]
+*/////////
+---------------------------------------------------------------------------------------------------------------------------------
+8️⃣ Job Configuration:-
+()getJobConfig():-
+Kya karta hai: Job ke configuration object (JobConfig) ko return karta hai.
+
+()setJobConfig(JobConfig config):-
+Kya karta hai: Job ke liye configuration set karta hai.
+Example:-
+JobConfig config = new JobConfig();
+config.setSchedule("Daily");
+job.setJobConfig(config);
+System.out.println(job.getJobConfig().getSchedule());
+
+Output:-
+Daily
+
+9️⃣ Escalation / Reminders:-
+getEscalationDate() / setEscalationDate(Date date)
+Job ka next escalation date get/set karte hain.
+job.setEscalationDate(new Date());
+System.out.println(job.getEscalationDate());
+
+Output:-
+Thu Mar 19 11:30:00 IST 2026
+
+()getEscalationLevel() / setEscalationLevel(int level):-
+Kitna escalation level hai (1,2,3…).
+job.setEscalationLevel(2);
+System.out.println(job.getEscalationLevel());
+
+Output:-
+2
+
+()getEscalationOwner() / setEscalationOwner(Identity owner):-
+Kaun responsible owner hai escalation ke liye.
+Identity owner = new Identity("manager1");
+job.setEscalationOwner(owner);
+System.out.println(job.getEscalationOwner().getName());
+
+Output:-
+manager1
+
+()getReminders() / setReminders(List<Date> reminders) / addReminder(Date date):-
+Job ke reminder dates manage karte hain.
+job.addReminder(new Date());
+System.out.println(job.getReminders());
+
+Output:-
+[Thu Mar 19 11:30:00 IST 2026]
+
+🔟 Target / Integration:-
+getTarget() / setTarget(Object target)
+Job ka target system ya object get/set karte hain.
+job.setTarget("ActiveDirectory");
+System.out.println(job.getTarget());
+
+Output:-
+ActiveDirectory
+
+()getTargetName():-
+Target ka name return karta hai.
+
+()getTargetType():-
+Target ka type return karta hai (e.g., Application, System).
+System.out.println(job.getTargetName()); // ActiveDirectory
+System.out.println(job.getTargetType()); // Application
+----------------------------------------------------------------------------------------------------------------------------------------
+1️⃣ getEscalationOwner():-
+Kya hai: Ye method return karta hai ki kaun responsible hai escalation ke liye.
+Agar job complete nahi hua ya kisi task me delay hai, to ye owner (Identity object) ko escalate karne ke liye use hota hai.
+Ye mostly workflow/job approvals aur notifications me kaam aata hai.
+
+Example:-
+Identity manager = new Identity("manager1");
+job.setEscalationOwner(manager);  // Escalation owner set
+System.out.println(job.getEscalationOwner().getName());
+
+Output:-
+manager1
+
+3️⃣ 8️⃣ Job Configuration ka Example Code:-
+JobConfig config = new JobConfig();
+config.setSchedule("Daily");         // Job ka schedule set
+config.setRetryCount(3);             // Retry attempts
+config.setOwner(new Identity("admin")); // Job ka owner
+
+job.setJobConfig(config);            // Job me configuration set
+System.out.println("Schedule: " + job.getJobConfig().getSchedule());
+System.out.println("Retry: " + job.getJobConfig().getRetryCount());
+System.out.println("Owner: " + job.getJobConfig().getOwner().getName());
+
+Output:-
+Schedule: Daily
+Retry: 3
+Owner: admin
+----------------------------------------------------------------------------------------------------------------------------------
+()Job TargetType (Target / Integration):-
+Job ka TargetType basically ye batata hai ki job kis tarah ke system, object, ya resource par kaam karega.
+Ye mostly workflow, provisioning, integration ke liye use hota hai.
+Common / Standard TargetTypes in SailPoint:-
+
+1️⃣ Application:-
+Job kisi connected application (Active Directory, HR System, ERP, SailPoint Application) ke liye run ho raha hai.
+
+2️⃣ System:-
+Job kisi external system ya server ke liye run ho raha hai (non-application, generic system).
+
+3️⃣ Identity:-
+Job directly Identity object (user) par kaam kar raha hai, jaise create, update, disable user.
+
+4️⃣ Task:-
+Job kisi specific Task ko execute kar raha hai.
+
+5️⃣ Workflow:-
+Job kisi WorkflowCase ya workflow process ko execute kar raha hai.
+
+6️⃣ Role:-
+Job role assignments ya role-based provisioning ke liye.
+
+7️⃣ Group:-
+Job kisi user group ke liye actions perform kar raha hai.
+
+8️⃣ Policy:-
+Job kisi policy evaluation ya policy-based action ke liye.
+
+9️⃣ Certification:-
+Job kisi access review / certification campaign ke liye run ho raha hai.
+
+🔟 Custom / Other:-
+Agar koi custom integration ya unique object target hai, to type Custom ya user-defined value ho sakta hai.
+--------------------------------------------------------------------------------------------------------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.api.JobManager;
+import sailpoint.object.Job;
+import sailpoint.object.Task;
+import sailpoint.object.WorkItem;
+import sailpoint.object.ApprovalSet;
+import sailpoint.object.Identity;
+
+import java.util.List;
+import java.util.Map;
+
+public class JobExample {
+
+    public static void main(String[] args) {
+
+        SailPointContext context = null;
+        try {
+            // 🔹 Get SailPoint context
+            context = SailPointFactory.createContext();
+
+            // 🔹 Load Job by name or ID
+            String jobName = "Quarterly Certification Job";
+            Job job = context.getObject(Job.class, jobName);
+
+            if (job == null) {
+                System.out.println("Job not found: " + jobName);
+                return;
+            }
+
+            // ============================================
+            // 1️⃣ Basic Info
+            // ============================================
+            System.out.println("Job ID: " + job.getId());
+            System.out.println("Job Name: " + job.getName());
+            System.out.println("Job Type: " + job.getType());
+
+            Identity owner = job.getOwner();
+            System.out.println("Job Owner: " + (owner != null ? owner.getName() : "None"));
+
+            // ============================================
+            // 2️⃣ Tasks Related Methods
+            // ============================================
+            List<Task> allTasks = job.getTasks();
+            System.out.println("All Tasks in Job: " + allTasks.size());
+
+            List<Task> pendingTasks = job.getPendingTasks();
+            System.out.println("Pending Tasks: " + pendingTasks.size());
+
+            List<Task> completedTasks = job.getCompletedTasks();
+            System.out.println("Completed Tasks: " + completedTasks.size());
+
+            // Get specific Task by ID
+            Task t1 = job.getTaskById("TASK123");
+            System.out.println("Task TASK123: " + t1);
+
+            // Get Task Results
+            Map<String, Object> results = job.getTaskResults();
+            System.out.println("Task Results: " + results);
+
+            // ============================================
+            // 3️⃣ WorkItems Related Methods
+            // ============================================
+            List<WorkItem> workItems = job.getWorkItems();
+            System.out.println("Total WorkItems in Job: " + workItems.size());
+
+            List<WorkItem> pendingWorkItems = job.getPendingWorkItems();
+            System.out.println("Pending WorkItems: " + pendingWorkItems.size());
+
+            List<WorkItem> completedWorkItems = job.getCompletedWorkItems();
+            System.out.println("Completed WorkItems: " + completedWorkItems.size());
+
+            WorkItem wi = job.getWorkItemById("WI789");
+            System.out.println("WorkItem WI789: " + wi);
+
+            // ============================================
+            // 4️⃣ Approval Set
+            // ============================================
+            ApprovalSet approvalSet = job.getApprovalSet();
+            System.out.println("Approval Set: " + approvalSet);
+
+            // Optionally update approval set
+            // job.setApprovalSet(newApprovalSet);
+
+            // ============================================
+            // 5️⃣ Target Info
+            // ============================================
+            Object target = job.getTarget();
+            System.out.println("Job Target: " + (target != null ? target.toString() : "None"));
+            System.out.println("Target Name: " + job.getTargetName());
+            System.out.println("Target Type: " + job.getTargetType());
+
+            context.commitTransaction();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (context != null) {
+                context.decache(true);
+                context.close();
+            }
+        }
+    }
+}

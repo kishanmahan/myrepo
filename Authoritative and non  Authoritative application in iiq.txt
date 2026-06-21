@@ -1,0 +1,112 @@
+🔹 1. Authoritative Application kya hota hai?
+👉 Authoritative Application = Source of Truth (main data source)
+Matlab:
+Ye wo system hota hai jahan se identity ka original data aata hai
+Jaise:
+HR system (SAP, Workday)
+Employee database
+🔸 Example:
+Agar HR system me employee add hua:
+SailPoint usko detect karega
+Identity create karega
+Baaki systems me account banayega
+👉 Iska kaam:
+Identity create/update karna
+Joiner / Mover / Leaver process chalana
+🔹 Authoritative Application ke important classes
+1. Identity
+Java
+Copy code
+sailpoint.object.Identity
+👉 Ye class represent karti hai user ko (employee)
+2. IdentityService
+Java
+Copy code
+sailpoint.api.IdentityService
+3. Aggregation Task
+Java
+Copy code
+sailpoint.task.AggregationTask
+👉 Ye HR system se data pull karta hai
+🔹 Flow (Authoritative App)
+HR system me employee add hua
+Aggregation run hua
+SailPoint me Identity bani
+Provisioning start hua
+🔹 2. Non-Authoritative Application kya hota hai?
+👉 Non-Authoritative = Target system (jahan account banega)
+Matlab:
+Ye system identity ka source nahi hota
+Sirf account store karta hai
+🔸 Example:
+Active Directory
+Database
+Salesforce
+👉 Iska kaam:
+Account create/update/delete karna
+Access manage karna
+🔹 Non-Authoritative ke important classes
+1. Link (Account)
+Java
+Copy code
+sailpoint.object.Link
+👉 Ye represent karta hai:
+User ka account kisi application me
+2. Application
+Java
+Copy code
+sailpoint.object.Application
+👉 Application configuration store karta hai
+3. ProvisioningPlan
+Java
+Copy code
+sailpoint.object.ProvisioningPlan
+👉 Ye decide karta hai:
+kya create/update/delete karna hai
+4. Provisioner
+Java
+Copy code
+sailpoint.api.Provisioner
+🔹 Flow (Non-Authoritative App)
+Identity create hui(Authoritative se)
+Role assign hua
+ProvisioningPlan bana
+Target system me account create hua.
+
+
+🔹 Authoritative Application Classes
+sailpoint.object.Identity
+sailpoint.api.IdentityService
+sailpoint.object.IdentityEntitlement
+sailpoint.object.IdentitySnapshot
+sailpoint.object.Bundle
+sailpoint.object.RoleAssignment
+sailpoint.object.Capability
+sailpoint.object.Workgroup
+sailpoint.object.TaskResult
+sailpoint.task.AggregationTask
+sailpoint.connector.Connector
+sailpoint.connector.ConnectorFactory
+sailpoint.object.Schema
+sailpoint.object.ResourceObject
+sailpoint.object.Attributes
+sailpoint.object.Filter
+sailpoint.object.QueryOptions
+🔹 Non-Authoritative Application Classes
+sailpoint.object.Application
+sailpoint.object.Link
+sailpoint.object.ProvisioningPlan
+sailpoint.object.ProvisioningPlan.AccountRequest
+sailpoint.object.ProvisioningPlan.AttributeRequest
+sailpoint.api.Provisioner
+sailpoint.object.ProvisioningResult
+sailpoint.object.ManagedAttribute
+sailpoint.object.Entitlement
+sailpoint.object.AccountGroup
+sailpoint.object.Custom
+sailpoint.object.Rule
+sailpoint.object.RuleContext
+sailpoint.object.Field
+sailpoint.object.Form
+sailpoint.object.ApprovalSet
+sailpoint.object.Workflow

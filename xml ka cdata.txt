@@ -1,0 +1,31 @@
+()SailPoint rules ya kisi bhi XML file mein <![CDATA[ ... ]]> ka use ek bahut hi technical wajah se kiya jata hai. 
+Iska full form Character Data hota hai.
+Isko samajhne ke liye ye 3 points dekhiye:-
+
+1. XML vs Java/Beanshell Code:-
+XML ek aisi language hai jo characters jaise <, >, aur & ko apne "Tags" ke liye use karti hai (e.g., <Rule>, <Source>).
+Lekin aapka Beanshell code (Java) bhi yahi characters use karta hai:
+if (a < b) (Less than sign)
+if (cap != null && !id.hasCap) (Logical AND sign)
+Agar aap <![CDATA[ nahi lagayenge, toh XML parser confuse ho jayega. 
+Use lagega ki code ka && ya < koi naya XML tag hai aur wo "Parsing Error" de dega.
+
+2. Iska Asli Kaam:-
+<![CDATA[ parser ko ye order deta hai:-
+"Iske andar jo bhi likha hai, use sirf 'Text' ki tarah treat karo, use XML tags ki tarah mat padho."
+Isi wajah se aapka code safe rehta hai aur XML parser use disturb nahi karta.
+
+3. Example ke saath samjhein:-
+()Galat Tareeka (Bina CDATA ke):-
+XML
+<Source>
+   if (count < 10 && status == "Active") { ... } 
+</Source>
+
+()Sahi Tareeka (CDATA ke saath):-
+XML
+<Source>
+   <![CDATA[
+      if (count < 10 && status == "Active") { ... }
+   ]]>
+</Source>

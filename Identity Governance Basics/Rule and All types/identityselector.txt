@@ -1,0 +1,70 @@
+()IdentitySelector kya hai kya karta hai?
+👉 IdentitySelector = identities (users) ko select/filter karne ka mechanism
+📌 Simple line:-
+Kaun-kaun se users pe rule/task/apply hoga → ye decide karta hai.
+
+🧠 Easy Samajh:-
+👉 System me 10,000 users hain
+👉 Tumhe sirf:-
+IT department wale users chahiye
+ya active users
+👉 Kaise select karoge?
+👉 IdentitySelector use karke
+
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Custom Department Selector Rule Explicit" type="IdentitySelector">
+  <Description>
+    Ye rule sirf un Identities ko select karta hai jo Finance department mein hain 
+    aur jinki Employment Status 'Active' hai. (No wildcard imports used).
+  </Description>
+  <Source>
+  // 1. Explicit Imports (Bina '*' ke)
+  import sailpoint.object.Identity;
+  import sailpoint.tools.Util;
+  import org.apache.commons.logging.Log;
+  import org.apache.commons.logging.LogFactory;
+
+  // 2. Logging Setup
+  Log logger = LogFactory.getLog("custom.rule.IdentitySelector");
+
+  try {
+      // Identity object rule mein context se implicitly aata hai
+      if (identity == null) {
+          return false;
+      }
+
+      // 3. Attributes fetch karna
+      String dept = (String) identity.getAttribute("department");
+      String status = (String) identity.getAttribute("employmentStatus");
+
+      logger.debug("Checking Identity: " + identity.getName() + " | Dept: " + dept);
+
+      // 4. Selection Logic
+      if ("Finance".equalsIgnoreCase(dept) &amp;&amp; "Active".equalsIgnoreCase(status)) {
+          
+          // Extra Check: Kahin user 'Service Account' ya 'Workgroup' toh nahi?
+          boolean isServiceAccount = identity.isWorkgroup();
+          
+          if (!isServiceAccount) {
+              logger.info("Identity Selected: " + identity.getName());
+              return true; // User policy/certification ke liye select ho gaya
+          }
+      }
+
+  } catch (Exception e) {
+      logger.error("Error in IdentitySelector Rule for user " + identity.getName() + ": " + e.getMessage());
+  }
+
+  // Default: Agar upar ki koi condition match nahi hui toh false return karo
+  return false;
+  </Source>
+</Rule>
+//////////*
+🔹 identity.isWorkgroup(); kya karta hai?
+👉 Ye check karta hai:-
+Ye Identity ek normal user hai ya Workgroup (group)?
+
+🔥 Workgroup kya hota hai?
+👉 Workgroup = group of users (team)
+*//////////

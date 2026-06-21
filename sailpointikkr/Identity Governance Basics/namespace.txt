@@ -1,0 +1,51 @@
+()1️⃣ Namespace in Java – Concept
+Namespace = ek logical container jisme identifiers (class, method, variable, package) ko unique name diya jaata hai.
+Java me namespace ka kaam:-
+Name clashes avoid karna.
+Code organize karna.
+Access control maintain karna.
+example:-
+class Student {
+    int id;   // Class-level namespace
+    String name;
+
+    void display() {
+        int id = 10;  // Local namespace, class-level id se alag
+        System.out.println(id);  // Output: 10 (local id)
+        System.out.println(this.id); // Output: 0 (class-level id)
+    }
+}
+---------------------
+3️⃣ Package-level Namespace:-
+Java me package ek namespace ka kaam karta hai.
+Agar 2 classes ka same naam ho, lekin alag packages me ho, to conflict nahi hota.
+package pkg1;
+public class Demo { }
+
+package pkg2;
+public class Demo { }
+
+// Main.java
+import pkg1.Demo;  // pkg1 ka Demo use hoga
+import pkg2.Demo;  // agar dono import karoge, conflict aayega
+
+Solution:-
+Fully qualified name use kar sakte ho:
+pkg1.Demo d1 = new pkg1.Demo();
+pkg2.Demo d2 = new pkg2.Demo();
+----------------------
+4️⃣ Module-level namespace isolation
+
+Benefit: Same package name alag modules me ho sakta hai, conflict nahi hota.
+
+// Module A
+module moduleA {
+    exports com.example.util;
+}
+
+// Module B
+module moduleB {
+    exports com.example.util;  // Same package name, lekin alag module
+}
+com.example.util moduleA me aur moduleB me same name ka package ho sakta hai.
+Dono ka namespace module ke andar isolated hai, isliye name clash nahi hota.

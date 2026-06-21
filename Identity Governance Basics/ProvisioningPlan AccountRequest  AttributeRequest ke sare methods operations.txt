@@ -1,0 +1,709 @@
+ProvisioningPlan ke sare methods:-
+()1️⃣ ProvisioningPlan ka Simple Matlab:-
+Ye ek blueprint / plan hai ki SailPoint kaun sa account create/modify/remove kare aur kaun sa entitlement 
+assign/revoke kare.Kaun sa user(Identity) affected hai ye check karta hai.
+Ye ek blueprint ya plan hai jo decide karta hai ki SailPoint ka kaunsa action perform karna hai kisi identity (user) ke liye.
+ProvisioningPlan ke andar AccountRequest, AttributeRequest, aur Entitlement requests store hote hain.
+Kaam:-
+Kaunsa account create, modify, ya delete karna hai
+Kaunsa entitlement (role/permission) assign ya revoke karna hai
+Automation ke liye workflow trigger karna
+
+()1️⃣ ProvisioningPlan ka Simple Matlab:-
+Ye ek blueprint / plan hai ki SailPoint kaun sa account create/modify/remove kare aur kaun sa entitlement 
+assign/revoke kare.Iske through provisioning workflow automate hota hai.
+Example:-
+Naya employee join hota hai → ProvisioningPlan decide karega:
+Email account create karo
+Salesforce role assign karo
+VPN access enable karo
+-------------------------------
+1️⃣ Accounts Affected kya hai?
+Accounts Affected = Kaun-kaun se application accounts par provisioning change hone wala hai.
+Jab SailPoint koi ProvisioningPlan execute karta hai, tab system batata hai ki kis identity ke kis application account par impact padega.
+
+2️⃣ Simple Example:-
+User: Rahul
+Uske accounts hain:-
+Active Directory
+SAP
+Jira
+
+Agar Rahul ko Finance role diya gaya to system bolega:-
+Accounts Affected
+
+Rahul → ActiveDirectory
+Rahul → SAP
+Rahul → Jira
+
+Matlab 3 accounts par change hoga.
+------------------------------------
+
+2️⃣ Example Workflow:-
+Naya employee join hota hai:-
+ProvisioningPlan banega:-
+Employee ka name, department, role sab decide hoga
+
+Actions define honge:-
+Email account create karo
+Salesforce role assign karo
+VPN access enable karo
+
+--SailPoint execute karega plan
+Ye automatically accounts aur permissions create/assign karega,
+
+--------------------------------------------------------------------------------------------
+---------------------------------------------------------------------
+2. ProvisioningResult.STATUS_COMMITTEDYe SailPoint ka ek internal constant hai. 
+Iska matlab hai ki connector ne target system par operation successfully "Commit" (finish) kar diya hai.
+ConstantMatlab:-
+STATUS_COMMITTEDSuccess:-Kaam ho gaya (Account created/updated).
+STATUS_FAILEDError:-Target system ne mana kar diya (e.g., User already exists).
+STATUS_RETRYWait:-Network down tha, SailPoint thodi der baad fir koshish karega.
+STATUS_QUEUEDPending:-Request line mein hai (ServiceNow tickets mein aksar hota hai).
+---------------------------------------------------------------------
+()all methods of plan:-
+()add(AccountRequest request):-Syntax: plan.add(aqqr);
+()getAccountRequests():-Syntax: List accReqs = plan.getAccountRequests();
+()getAccountRequests(String application):-Syntax: List sapReqs = plan.getAccountRequests("SAP");
+()getAccountRequest(String appName, String instance, String nativeIdentity)
+()setIdentity(Identity identity):-Syntax: plan.setIdentity(idn);
+()getIdentity()
+
+()put(String name, Object value):-
+Description: Plan ke andar custom arguments/variables save karne ke liye (jaise workflow case IDs ya tracking numbers).
+Syntax: plan.put("source", "LCM_Workflow");
+()get(String name):-Description: put() method se save kiye gaye kisi argument ki value nikalne ke liye.
+()getArguments():-
+Description: Plan ke andar set kiye gaye saare custom arguments ka ek Attributes (Map) object deta hai.
+()toXml():-
+Description: Poore ProvisioningPlan ke data ko ek readable XML String mein convert karta hai.
+()remove(AccountRequest request):-
+Description: Kisi specific AccountRequest ko plan se delete/remove karne ke liye.
+()isEmpty():-plan add kiya ya nahi.
+---------------------------------------------------------------------------------------------
+(1).ProvisioningPlan.AccountRequest kya hai?
+👉 AccountRequest = ek specific application account ke liye request
+📌 Matlab:-
+👉 “Kisi particular application (AD / SAP / DB) me account ke saath kya karna hai”
+
+🔹 3. Example se samajh 💡
+👉 Tum bolte ho:-
+john.doe ke liye:-
+- AD me account create karo
+- SAP me role change karo
+
+👉 Internally:-
+AD → AccountRequest
+SAP → AccountRequest
+✔ Har application ke liye alag AccountRequest.
+
+🔹 4. Code example:-
+ProvisioningPlan.AccountRequest acc = 
+    new ProvisioningPlan.AccountRequest();
+
+acc.setApplication("AD");
+acc.setNativeIdentity("jdoe123");
+acc.setOperation(ProvisioningPlan.Operation.Create);
+plan.add(acc);
+-------------------------------------------------------------
+🔹 5. AccountRequest kya karta hai? ⚙️
+👉 Ye batata hai:-
+✔ Kaunsa application
+✔ Kaunsa account
+✔ Kya action (create / modify / delete)
+✔ Kaunse attributes change honge
+-------------------------------------------------------
+🔹 6. AccountRequest ke andar kya kya hota hai? 🧠
+Main fields 👇
+🔸 1. application:-
+👉 Kaunsa system
+AD / SAP / DB
+
+🔸 2. nativeIdentity:-
+👉 External system ka username
+jdoe123
+
+🔸 3. operation:-
+👉 Kya karna hai
+Create / Modify / Delete / Enable / Disable
+
+🔸 4. attributeRequests:-
+👉 Field-level changes
+email = new@mail.com
+role = Admin
+👉 Ye ek list hoti hai
+
+🔸 5. objectRequests:-
+👉 Groups / roles / entitlements ke changes
+
+🔸 6. arguments:-
+👉 Extra parameters (optional)
+
+🔸 7. instance:-
+👉 Application instance (prod/test)
+
+🔸 8. trackingId:-
+👉 Request tracking ke liye
+--------------------------------------------------------
+🔹 9. DB me store hota hai kya? 🧠
+👉 ❌ Directly AccountRequest DB me store nahi hota
+👉 Kyunki:-
+✔ Ye runtime object hai
+
+✅ Lekin indirectly store hota hai:-
+🔸 1. spt_provisioning_transaction
+👉 Provisioning logs
+
+🔸 2. spt_audit_event
+👉 Audit trail
+
+🔸 3. spt_task_result
+👉 Execution result
+---------------------------------------------------------------------------------------------------
+()accountrequest methods:-
+
+🔹 2. 🔥 Core Methods:-
+🔸 1. setApplication(String app):-
+👉 Kaunsa application target hai
+acc.setApplication("AD");
+✔ Use: AD / SAP / DB set karne ke liye
+
+🔸 2. getApplication():-
+String app = acc.getApplication();
+✔ Output: "AD"
+
+🔸 3. setNativeIdentity(String id):-
+👉 External system ka username
+acc.setNativeIdentity("jdoe123");
+
+🔸 4. getNativeIdentity():-
+String id = acc.getNativeIdentity();
+✔ Output: "jdoe123"
+
+------
+-->add(AttributeRequest request):-
+Description: AccountRequest mein ek naya AttributeRequest (jaise group add karna ya attribute update karna) jodhne ke liye.
+Syntax: aqqr.add(attrRequest);
+
+-->addAll(List requests):-
+Description: Agar aapke paas multiple AttributeRequest objects ki ek list hai, toh unhe ek sath bulk mein add karne ke liye.
+
+-->getAttributeRequests():-
+Description: Is request ke andar jitne bhi AttributeRequest objects add kiye gaye hain, unki poori List return karta hai.
+Syntax: List attrs = aqqr.getAttributeRequests();
+
+-->getAttributeRequest(String name):-
+Description: Kisi specific attribute name (key) ke basis par uski AttributeRequest ko fetch karne ke liye.
+
+-->getApplication() / setApplication(String name):-
+Description: Target application ka naam (String) get ya set karne ke liye (e.g., "SAP" ya "Active Directory").
+
+-->getOperation() / setOperation(AccountRequest.Operation op):-
+Description: Provisioning action/operation type set ya get karne ke liye. 
+acc.setOperation(ProvisioningPlan.Operation.Create);
+Operation op = acc.getOperation();
+Iske common enum values hain:-
+AccountRequest.Operation.Create
+AccountRequest.Operation.Modify
+AccountRequest.Operation.Delete
+AccountRequest.Operation.Disable
+AccountRequest.Operation.Enable
+AccountRequest.Operation.Lock / Unlock
+
+-->getNativeIdentity() / setNativeIdentity(String id):-
+Description: Target system par user ka jo unique identifier/username hota hai (jaise DN, sAMAccountName, ya SAP ID), use set ya get karne ke liye.
+
+-->getInstance() / setInstance(String instance):-
+Description: Agar application ke multiple instances configure hain, 
+toh specific instance name set karne ke liye (aksar ise null rakha jata hai).
+
+3. Utility aur Validation Methods:-
+Plan ke evaluation aur checking ke liye yeh methods kaam aate hain:-
+isEmpty():-
+Description: Check karta hai ki kya is AccountRequest ke andar koi AttributeRequest ya changes maujood hain ya nahi. 
+Agar koi change nahi hai, toh true return karta hai.
+
+remove(AttributeRequest request):-
+Description: Agar kisi AttributeRequest ko provisioning pipeline se bahar nikalna ho, toh use remove karne ke liye.
+
+toXml():-
+Description: Poore AccountRequest object ke internal structure ko debugging ke liye XML String format mein convert karke deta hai.
+Syntax: log.info(aqqr.toXml());
+
+🔹 7. accReq.getResult():-
+👉 Ye return karta hai:-
+ProvisioningResult
+
+🔥 Simple samajh:-
+AccountRequest → kya karna hai (Create / Modify / Delete)
+Result → uska final output (success/failure + details)
+
+🔹 Result me kya hota hai?
+ProvisioningResult object me generally ye hota hai:
+
+✅ status (SUCCESS / FAILURE)
+❌ error messages (agar fail hua)
+📄 detailed response
+🆔 operation result info.
+
+
+
+----------------------------------------------------------------------------------
+🔹 3. 🔥 AttributeRequest Methods:-
+🔸 7. add(AttributeRequest attr):-
+👉 Attribute add karne ke liye
+AttributeRequest attr = new AttributeRequest();
+attr.setName("email");
+attr.setValue("john@example.com");
+acc.add(attr);
+
+🔸 8. getAttributeRequests():-
+List attrs = acc.getAttributeRequests();
+✔ Output: List of attributes
+
+🔸 9. setAttributeRequests(List list):-
+acc.setAttributeRequests(list);
+
+🔹 4. 🔥 ObjectRequest Methods:-
+🔸 10. add(ObjectRequest obj):-
+ObjectRequest obj = new ObjectRequest();
+acc.add(obj);
+👉 Groups / roles ke liye
+
+🔸 11. getObjectRequests():-
+List objs = acc.getObjectRequests();
+
+🔹 5. 🔥 Arguments / Extra Data:-
+🔸 12. setArguments(Map args):-
+Map args = new HashMap();
+args.put("key", "value");
+acc.setArguments(args);
+
+🔸 13. getArguments():-
+Map args = acc.getArguments();
+
+🔹 6. 🔥 Instance Methods:-
+🔸 14. setInstance(String instance):-
+acc.setInstance("Production");
+
+🔸 15. getInstance():-
+String inst = acc.getInstance();
+
+🔹 7. 🔥 Tracking / Metadata:-
+
+🔸 16. setTrackingId(String id):-
+acc.setTrackingId("REQ123");
+
+🔸 17. getTrackingId():-
+String id = acc.getTrackingId();
+
+🔹 8. 🔥 Utility Methods:-
+
+🔸 18. toString():-
+👉 Object ka readable format
+System.out.println(acc.toString());
+
+🔸 19. equals(Object obj):-
+👉 Compare karta hai
+
+🔸 20. hashCode():-
+👉 Hash value generate karta hai.
+------------------------------------------------------------------------------
+4. ALL Operations with code:-
+()AccountRequest Operations:-
+Create
+Modify
+Delete
+Enable
+Disable
+Unlock
+
+()AttributeRequest Operations:-
+Add
+Remove
+Set
+Revoke
+Retain
+
+1. ProvisioningPlan.Operation.Add:-(Add)
+Yeh operation kisi multi-valued attribute (jaise AD mein memberOf ya kisi application ke roles/entitlements) mein naya data add karne ke liye use hota hai.
+Kaise kaam karta hai: Yeh target system par user ke pehle se exist karne wale data ko touch nahi karta. 
+Jo value aap bhej rahe hain, use purani list mein append (add) kar deta hai.
+Example: Maan lo ek user ke paas AD mein pehle se do groups hain: Finance aur HR.
+Agar aap Operation.Add ke saath "Vpn_Group" bhejenge, toh execution ke baad user ke paas teen groups ho jayenge: Finance, HR, aur Vpn_Group.
+Use Case: Jab aapko user ko koi naya access, group, ya role assign karna ho bina uske purane access ko cheede.
+2. .Operation.Add Kab Use Karte Hain? (Multi-Valued Attributes)
+Jab kisi attribute ke andar ek se zyada values (List/Array) store ho sakti hain, 
+toh wahan Add use hota hai. Add ka matlab hota hai: "Purani values ko mat chhedo, 
+unke sath is nayi value ko bhi list mein jod do."
+AD Examples: memberOf (Groups), proxyAddresses (Email aliases), description (kabhi-kabhi multi-valued hota hai).
+Kyun? Ek user ek hi waqt par 10 alag-alag AD Groups ka member ho sakta hai. 
+Agar aap user ko VPN_Group mein daalna chahte ho, 
+toh aap .Operation.Add chalate ho taaki uske purane groups delete na hon aur naya group list mein add ho jaye.
+
+2. ProvisioningPlan.Operation.set:-
+Yeh operation kisi attribute ki value ko overwrite (re-write) karne ke liye use hota hai.
+Kaise kaam karta hai: Yeh target system ko bolta hai, "User ke paas iss attribute ke liye pehle se jo kuch bhi hai use hatao, 
+aur abhi jo main de raha hoon sirf wahi set karo."Single-valued attributes par: Jaise email, firstname, ya department. 
+Yahan set use karna ekdum safe aur standard hai kyunki user ka ek hi email ya department ho sakta hai.
+Example: Agar user ke paas Finance aur HR groups hain, aur aapne Operation.set ke saath "Vpn_Group" bheja, 
+toh target system se Finance aur HR gayab ho jayenge, aur user ke paas sirf Vpn_Group reh jayega.
+1. .Operation.Set Kab Use Karte Hain? (Single-Valued Attributes)
+Jab kisi attribute ke andar sirf ek hi value reh sakti hai, 
+toh wahan hamesha Set use hota hai. Set ka matlab hota hai: "Pehle se jo bhi value hai use saaf karo, 
+aur meri naye wali value wahan daal do (Overwrite)."
+AD Examples: givenName (firstName), sn (lastName), mail (email), telephoneNumber, title, department.
+Kyun? Ek insaan ka legal first name ya email ek hi ho sakta hai. 
+Agar aap AD mein pehle se majood firstName="Rahul" par .Operation.Add chala kar "Amit" bhejoge, 
+toh AD gussa ho jayega kyunki ek hi bande ke do first name nahi ho sakte.
+
+1. Revoke (Access Hata Dena):-
+Jab aap kisi access (role, group, ya entitlement) ko Revoke karte hain, 
+toh iska matlab hai ki aap us user se woh access wapas le rahe hain.
+Kaise kaam karta hai: SailPoint background mein ek ProvisioningPlan generate karega jisme Operation.
+Remove use hoga. Yeh plan target system (jaise Active Directory) ko command bhejega ki user ko us specific group se nikaal diya jaye.
+Example: Ek employee HR department se Finance department mein transfer ho gaya. Manager HR group ko Revoke kar dega taaki user ka purana access band ho jaye.
+
+2. Retain (Access Rehne Dena):-
+Jab aap kisi access ko Retain karte hain, toh iska matlab hai ki aap us access ko approve kar rahe hain taaki user ke paas woh access jaisa hai waisa hi rahe.
+Kaise kaam karta hai: SailPoint target system par koi badlav (change) nahi karta. 
+Provisioning engine ko koi plan nahi bheja jata kyunki access ko touch hi nahi karna hai. 
+Bas SailPoint ke database mein audit log entry ho jaati hai ki yeh access certified/approved hai.
+Example: Manager ne dekha ki user ke paas "Vpn_Group" hai aur user abhi bhi work from home kar raha hai, 
+toh manager use Retain kar dega taaki uski VPN service chalti rahe.
+Use Case: Regular access reviews (Manager/Application Certification) mein valid access ko verify aur approve karne ke liye.
+-----------------------------------------------------------------------------------------------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.object.AccountRequest;
+import sailpoint.object.AttributeRequest;
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+
+import sailpoint.tools.GeneralException;
+
+import java.util.List;
+
+public class BeforeProvisioningExample {
+
+    public void execute(ProvisioningPlan provisioningPlan, SailPointContext context) throws GeneralException {
+
+        Identity identity = provisioningPlan.getIdentity();
+
+        if (identity == null) {
+            throw new GeneralException("Identity is null");
+        }
+
+        List accountRequests = provisioningPlan.getAccountRequests();
+
+        if (accountRequests != null) {
+
+            for (Object obj : accountRequests) {
+
+                AccountRequest accReq = (AccountRequest) obj;
+
+                // 🔹 Get attribute request
+                AttributeRequest sam = accReq.getAttributeRequest("sAMAccountName");
+
+                if (sam != null) {
+
+                    Object value = sam.getValue();
+
+                    if (value != null) {
+                        String username = value.toString();
+
+                        System.out.println("Username before provisioning: " + username);
+
+                        // 🔥 Modify value
+                        sam.setValue(username.toLowerCase());
+                    }
+                }
+
+                // Add custom attribute
+                AttributeRequest customAttr = new AttributeRequest();
+                customAttr.setName("source");
+                customAttr.setValue("BeforeProvisioning");
+                customAttr.setOperation(ProvisioningPlan.Operation.Add);
+
+                accReq.add(customAttr);
+            }
+        }
+    }
+}
+////////*
+🔹 3. accReq.getAttributeRequest("sAMAccountName") kya karta hai?
+✅ Explanation:
+sailpoint.object.AttributeRequest sam =
+    accReq.getAttributeRequest("sAMAccountName");
+👉 Ye method:-
+AccountRequest ke andar se attribute fetch karta hai
+"sAMAccountName" = AD username attribute
+
+🔹 Return kya hota hai?
+👉 Return type:-
+sailpoint.object.AttributeRequest
+Agar attribute exist karta hai:-
+object return karega
+
+🔹 4. sam.getValue() kya return karega?
+Object value = sam.getValue();
+👉 Ye return karega:-
+attribute ka actual value
+Example:-
+Agar provisioning plan me hai:-
+<sAMAccountName>john.doe</sAMAccountName>
+To:-
+sam.getValue();  // returns "john.doe"
+*////////
+----------------------------------------------------------------------------------
+
+🔷 1. AccountRequest me kitni Identity hoti hai?
+👉Sirf 1 Identity
+👉Sirf 1 AccountRequest = 1 account (1 application)
+🧠 Kyu?
+AccountRequest ek specific identity ke liye hota hai
+Ye batata hai:-
+“Is user ke liye kaunsa account create/modify/delete karna hai”
+
+
+🔷 2. ProvisioningPlan me kitni Identity hoti hai?
+👉 👉 Sirf 1 Identity
+👉 1 ProvisioningPlan = multiple AccountRequest
+🧠 Kyu?
+ProvisioningPlan ek single identity ka full plan hota hai
+Isme multiple account requests ho sakte hain
+👉 BUT identity ek hi hoti hai.
+ex:-
+()ProvisioningPlan plan = new ProvisioningPlan();
+plan.setIdentity(identity);
+
+🔷 AccountRequest me kitne AttributeRequest hote hain?
+👉 👉 Multiple (0 se leke unlimited tak ho sakte hain)
+
+-------------------------------------------------------------------------------------------------------------
+2. AccountRequest Operations:-
+ProvisioningPlan.AccountRequest.Operation
+Ye account level operation hota hai.
+Sare Operations:-
+Operation	Kaam
+Create	Naya account create
+Modify	Existing account update
+Delete	Account delete
+Enable	Account enable
+Disable	Account disable
+Lock	Account lock
+Unlock	Account unlock
+
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+
+ProvisioningPlan plan = new ProvisioningPlan();
+
+AccountRequest accReq = new AccountRequest();
+
+accReq.setApplication("HR Application");
+
+accReq.setNativeIdentity("EMP1001");
+
+accReq.setOperation(AccountRequest.Operation.Modify);
+
+plan.add(accReq);
+
+()Har Operation Ka Example:-
+1. Create Operation:-
+AccountRequest accReq = new AccountRequest();
+accReq.setApplication("HR Application");
+accReq.setNativeIdentity("EMP1001");
+accReq.setOperation(AccountRequest.Operation.Create);
+
+2. Modify Operation:-
+accReq.setOperation(AccountRequest.Operation.Modify);
+3. Delete Operation:-
+accReq.setOperation(AccountRequest.Operation.Delete);
+4. Enable Operation:-
+accReq.setOperation(AccountRequest.Operation.Enable);
+5. Disable Operation:-
+accReq.setOperation(AccountRequest.Operation.Disable);
+6. Lock Operation:-
+accReq.setOperation(AccountRequest.Operation.Lock);
+7. Unlock Operation:-
+accReq.setOperation(AccountRequest.Operation.Unlock);
+------------------------------------------------------------------
+3. AttributeRequest Operations:-
+ProvisioningPlan.AttributeRequest.Operation
+Ye account ke attributes ko handle karta hai.
+Jaise:-
+role
+email
+department
+entitlement
+groups
+
+()Sare Attribute Operations:-
+Operation	         Kaam
+Add	              Attribute add
+Set	              Value replace/update
+Remove	          Attribute remove
+AttributeRequest    Full Example
+
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+AttributeRequest attrReq =
+    new AttributeRequest();
+attrReq.setName("department");
+attrReq.setValue("IT");
+attrReq.setOperation(
+    ProvisioningPlan.Operation.Set
+);
+accReq.add(attrReq);
+
+()Har Attribute Operation Ka Example:-
+1. Add Operation:-
+Mostly entitlements/groups ke liye use hota hai.
+AttributeRequest attrReq =
+    new AttributeRequest();
+
+attrReq.setName("groups");
+
+attrReq.setValue("Admin_Group");
+
+attrReq.setOperation(
+    ProvisioningPlan.Operation.Add
+);
+
+2. Set Operation:-
+Purani value replace/update karta hai.
+AttributeRequest attrReq =
+    new AttributeRequest();
+attrReq.setName("department");
+attrReq.setValue("Finance");
+attrReq.setOperation(
+    ProvisioningPlan.Operation.Set
+);
+
+3. Remove Operation:-
+Attribute ya entitlement remove karta hai.
+AttributeRequest attrReq =
+    new AttributeRequest();
+attrReq.setName("groups");
+attrReq.setValue("Admin_Group");
+attrReq.setOperation(
+    ProvisioningPlan.Operation.Remove
+);
+
+
+Full Real CRUD Example:-
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+
+ProvisioningPlan plan =
+    new ProvisioningPlan();
+
+AccountRequest accReq =
+    new AccountRequest();
+
+accReq.setApplication("HR Application");
+
+accReq.setNativeIdentity("EMP1001");
+
+accReq.setOperation(
+    AccountRequest.Operation.Modify
+);
+
+AttributeRequest emailReq =
+    new AttributeRequest();
+
+emailReq.setName("email");
+
+emailReq.setValue("joker@gmail.com");
+
+emailReq.setOperation(
+    ProvisioningPlan.Operation.Set
+);
+
+accReq.add(emailReq);
+
+AttributeRequest roleReq =
+    new AttributeRequest();
+
+roleReq.setName("groups");
+
+roleReq.setValue("Manager_Group");
+
+roleReq.setOperation(
+    ProvisioningPlan.Operation.Add
+);
+
+accReq.add(roleReq);
+
+AttributeRequest removeReq =
+    new AttributeRequest();
+
+removeReq.setName("groups");
+
+removeReq.setValue("Old_Group");
+
+removeReq.setOperation(
+    ProvisioningPlan.Operation.Remove
+);
+
+accReq.add(removeReq);
+
+plan.add(accReq);
+----------------------------------------------------------------------------------------------------------------------------
+()rule of Provisioning:-
+-->>>>>AttributeRequest attr;
+
+-->Sahi Tarika 1 (Enum Constant Comparison - Best Practice):-
+Java
+ProvisioningPlan.Operation.Add.equals(attr.getOperation());
+
+// ya fir direct operator se
+-->attr.getOperation() == ProvisioningPlan.Operation.Add
+--------------------------------------------------------------
+()Sahi Tarika 2 (Sirf Name String Comparison):-
+Agar string se hi compare karna hai, toh sirf "Add" likho:-
+Java
+"Add".equals(attr.getOperation().name())
+--------------------------------------------------------------
+()sahi:-
+if (attr != null && attr.getOperation() != null && "Add".equals(attr.getOperation().toString())) {
+    // Your logic here
+}
+--------------------------------------------------------------------------------------------------------------
+()Operation op=aqq.getOperation();
+-->AccountRequest.Operation.Create == op
+
+()sahi tarika:-
+if (aqq != null && aqq.getOperation() != null) {
+    String op = aqq.getOperation().name(); // Ya aqq.getOperation().toString()
+    
+    // String comparison ke liye hamesha .equals() use karein
+    if ("Create".equals(op)) { 
+        // Aapka logic yahan aayega
+    }
+}
+-----------------------------------------------------
+()if (AccountRequest.Operation.Disable.equals(op)) {
+    // Aapka logic yahan aayega (Perfectly Null-Safe)
+}
+-----------------------------------------------------
+if (op != null && "Disable".equals(op.name())) {
+    // Aapka logic yahan aayega
+}
+--------------------------------------------------------
+import sailpoint.object.AccountRequest;
+if (aqq != null && aqq.getOperation() != null) {
+    // Enum ko String mein convert kiya (Yeh "Create" ya "Disable" return karega)
+    String opName = aqq.getOperation().name(); 
+    
+    // 1. Create Check (Null-Safe way)
+    if ("Create".equals(opName)) {
+        // TODO: Create account ka logic
+    } 
+    // 2. Disable Check (Null-Safe way)
+    else if ("Disable".equals(opName)) {
+        // TODO: Disable account ka logic
+    }
+}
+----------------------------------------------------

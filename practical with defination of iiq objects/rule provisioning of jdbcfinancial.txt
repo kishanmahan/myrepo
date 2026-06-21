@@ -1,0 +1,333 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule created="1768640000409" id="c0a83c019bcb1baa819bcb28b199002c" language="beanshell" modified="1768640389176" name="NS_Rule_FinancialAndForecasting_ProvisioningRule" type="JDBCProvision">
+  <Description>This rule is used by the JDBC connector to do provisioning of the data .</Description>
+  <Signature returnType="ProvisioningResult">
+    <Inputs>
+      <Argument name="log" type="org.apache.commons.logging.Log">
+        <Description>
+          The log object associated with the SailPointContext.
+        </Description>
+      </Argument>
+      <Argument name="context" type="sailpoint.api.SailPointContext">
+        <Description>
+          A sailpoint.api.SailPointContext object that can be used to query the database if necessary.
+        </Description>
+      </Argument>
+      <Argument name="application">
+        <Description>
+                The application whose data file is being processed.
+                </Description>
+      </Argument>
+      <Argument name="schema">
+        <Description>
+                The Schema currently in use.
+                </Description>
+      </Argument>
+      <Argument name="connection">
+        <Description>
+                A connection object to connect to database.
+                </Description>
+      </Argument>
+      <Argument name="plan">
+        <Description>
+                The ProvisioningPlan created against the JDBC application.
+                </Description>
+      </Argument>
+    </Inputs>
+    <Returns>
+      <Argument name="result">
+        <Description>
+                A Provisioning Result object is desirable to return the status.IT can be a new object or part of  Provisioning Plan
+                </Description>
+      </Argument>
+    </Returns>
+  </Signature>
+  <Source>
+  import org.SailPoint_IIQ.Utils.FinancialAndForecastingProvisioningRule;
+  import sailpoint.object.ProvisioningResult;
+  import org.apache.log4j.Logger;
+	Logger logs = Logger.getLogger("com.ns.workflow.NS_Workflow_Candidate_Joiner");
+	logs.debug("NS_Rule_FinancialAndForecasting_ProvisioningRule");
+  logs.debug("in provisioning rule;;;;;;;;;"+plan.toXml());
+
+  ProvisioningResult result = FinancialAndForecastingProvisioningRule.doProvisioning(plan, connection, context);
+  return result;
+</Source>
+</Rule>
+/////////////*
+()1. <?xml:-
+Ye batata hai:Ye ek XML document hai.
+
+()2. version='1.0'
+Matlab:-
+XML Version 1.0 use ho raha hai.
+
+()3. Encoding Kya Hota Hai?
+Computer directly:-
+A
+B
+Hindi
+Symbols
+nahi samajhta.
+Wo sabko binary numbers me convert karta hai.
+Encoding ka kaam hota hai:-
+Character  → Binary Number.
+
+()UTF-8 Kya Support Karta Hai?
+UTF-8 almost sab languages support karta hai:-
+English
+Hindi
+Chinese
+Emoji
+Symbols
+
+()<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">:-
+->
+()DTD Kya Hota Hai?
+DTD = Document Type Definition
+Ye define karta hai:-
+kaunse tags allowed hain
+kaunse attributes allowed hain
+tag order kya hoga
+required fields kya hain.
+
+()1. < !DOCTYPE
+Ye XML parser ko batata hai:-
+👉 “Is XML document ka type define kiya ja raha hai.”
+Matlab:-
+XML kis rules ko follow karega.
+
+2. Rule:-
+<!DOCTYPE Rule
+Ye root element ka naam hai.
+Matlab:
+XML ka main tag:-
+<Rule>
+hona chahiye.
+Example:-
+<Rule>
+   ...
+</Rule>
+
+3. PUBLIC:-
+PUBLIC
+Matlab:-
+DTD publicly available identifier use karega.
+Ye parser ko bolta hai:-
+👉 “External DTD file use karo validation ke liye.”
+
+()SailPoint Me Iska Kaam,
+SailPoint IdentityIQ me:-
+sailpoint.dtd
+define karta hai:-
+<Rule>
+<Workflow>
+<TaskDefinition>
+<Application>
+ka valid structure.
+
+()<Rule created="1768640000409" id="c0a83c019bcb1baa819bcb28b199002c" language="beanshell" modified="1768640389176" name="NS_Rule_FinancialAndForecasting_ProvisioningRule" type="JDBCProvision">
+->ye rule ka opening tag hai aur 
+
+()1. <Rule:-
+Matlab:-
+Ye ek SailPoint Rule object hai.
+Rule:-
+custom logic execute karta hai.
+Example:-
+provisioning
+correlation
+transformation
+workflow logic
+
+()2. created="1768640000409"
+created="1768640000409"
+Ye creation timestamp hai.
+Matlab:-
+Rule kab create hua tha.
+Usually:-
+milliseconds format me store hota hai.
+
+()3. id="c0a83c019bcb1baa819bcb28b199002c"
+id="c0a83c019bcb1baa819bcb28b199002c"
+Ye unique object ID hai.
+Har SailPoint object ka unique ID hota hai.
+Database me identify karne ke liye use hota hai.
+
+()4. language="beanshell"
+language="beanshell"
+Matlab:-
+Rule BeanShell scripting language me likha gaya hai.
+
+()5. modified="1768640389176"
+modified="1768640389176"
+Last modified timestamp.
+Matlab:-
+Rule last time kab update hua tha.
+
+()6. name="NS_Rule_FinancialAndForecasting_ProvisioningRule"
+name="NS_Rule_FinancialAndForecasting_ProvisioningRule"
+Rule ka actual name.
+Isi naam se:-
+search
+execute
+reference
+karte hain.
+
+()7. type="JDBCProvision"
+type="JDBCProvision"
+Sabse important attribute.
+Ye batata hai:-
+👉 Rule kis purpose ke liye hai.
+JDBCProvision matlab:-
+JDBC connector provisioning ke time chalega.
+
+()<Signature returnType="ProvisioningResult">
+Ye rule ka Signature section start karta hai in SailPoint IdentityIQ.
+Signature batata hai:-
+Rule kya input lega
+Rule kya return karega
+
+()returnType="ProvisioningResult"
+ye ProvisioningResult object return karega.
+ProvisioningResult Kya Hai?
+Ye provisioning ka final status object hota hai.
+Isme hota hai:-
+success
+failure
+retry
+errors
+
+()Signature Ke Andar Kya Hota Hai?
+Usually:-
+<Inputs> and <Returns>:-ke andar rule ke parameters aur output define karte hain.
+
+()1. <Inputs>:-
+Ye batata hai:-
+👉 Rule ko kaun kaun data milega.
+Matlab:-
+Rule execution ke time SailPoint kya kya objects pass karega.
+Example:-
+<Inputs>
+   <Argument name="plan"/>
+   <Argument name="context"/>
+</Inputs>
+Matlab:-
+Rule ko:-
+plan
+context
+input me milenge.
+
+()2. <Returns>:-
+Ye batata hai:-
+👉 Rule execution ke baad kya return karega.
+
+Example:-
+<Returns>
+   <Argument name="result"/>
+</Returns>
+
+Matlab:-
+Rule result object return karega.
+Tumhare Rule Me
+<Returns>
+  <Argument name="result">
+Matlab:-
+Rule provisioning result return karega.
+
+()1. log Argument:-
+<Argument name="log"
+type="org.apache.commons.logging.Log">
+Meaning:-
+Ye logging object hai.
+Iska use:-
+debug messages
+error messages
+info logs
+print karne ke liye hota hai.
+
+()Type:-
+org.apache.commons.logging.Log
+Ye Java logging class hai.
+Usage
+Example:-
+log.debug("Rule Started");
+log.error("Error occurred");
+log.info("Provisioning successful");
+
+()Real Project Me Use <Argument name="log"
+type="org.apache.commons.logging.Log"> hota hai 
+Debugging ke liye bahut important.
+Example:-
+provisioning fail kaha hua
+null value kaha aayi
+SQL execute hua ya nahi
+sab logs se pata chalta hai.
+Description
+The log object associated with the SailPointContext.
+Matlab:-
+Ye logging object current SailPoint context se related hai.
+
+()2. context Argument:-
+<Argument name="context"
+type="sailpoint.api.SailPointContext">
+aur ishka matlab context bhi input me milega,
+Meaning:-
+Ye SailPoint ka main database/context access object hai.
+Bahut important object hota hai.
+Isse Kya Kar Sakte Ho?
+Identity fetch
+Application fetch
+Role fetch
+Custom object fetch
+Query run
+
+()import org.SailPoint_IIQ.Utils.FinancialAndForecastingProvisioningRule;:-
+->
+()2. org.SailPoint_IIQ.Utils:-
+Ye package path hai.
+Folder structure jaisa samjho:-
+org
+ └── SailPoint_IIQ
+      └── Utils
+
+()3. FinancialAndForecastingProvisioningRule:-
+Ye actual class name hai.
+Matlab:-
+Is class ke methods use honge.
+Rule Me Kaha Use Hua?
+ex:-
+Tumhare rule me:-
+ProvisioningResult result =
+FinancialAndForecastingProvisioningRule
+.doProvisioning(plan, connection, context);
+Yaha imported class ka method call ho raha hai.
+
+()Logger.getLogger("com.ns.workflow.NS_Workflow_Candidate_Joiner");:-
+->"com.ns.workflow.NS_Workflow_Candidate_Joiner":-
+logger ka naam hai.
+Logger Name Kya Hota Hai?
+Logger name ek identifier hota hai.
+Is naam ke through:-
+logs group hote hain
+filter hote hain
+log file me identify hote hain
+
+->Usually Kya Hota Hai?
+
+->Generally logger name:-
+class name
+package name
+workflow name
+rakhte hain.
+Example:-
+com.company.workflow.JoinerWorkflow
+
+->Kyun Useful Hai?
+Agar system me:-
+100 rules
+50 workflows
+hain toh logger name se identify karte hain:-
+kis component ka log hai.
+*/////////////

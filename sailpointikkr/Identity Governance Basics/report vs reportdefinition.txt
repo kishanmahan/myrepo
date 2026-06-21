@@ -1,0 +1,319 @@
+()1️⃣ Report kya hai?
+Report = ek organized data output jo system se fetch kiya jata hai.
+Ye SailpointIdentityIQ ke objects ka summary ya detailed view hota hai.
+Example objects: Identity, Role, AccessRequest, Application, AuditEvent
+
+💡 Simple shabdo me:-
+"Report = system ka output sheet / list jisme tu data analyze kar sake"
+Report vs ReportDefinition:-
+Aspect	               ReportDefinition	                                                                                                                                                                                      Report
+Kya hai:-------------Report ka blueprint/template. Ye define karta hai kaunse data ko fetch karna hai, kaunse columns dikhane hai, aur filter kya apply karna hai.:---------Report ka actual output/result. Ye generate hota hai ReportDefinition ke rules ke basis par aur ye data ka snapshot hota hai.
+Stored in DB:--------Haan, as a template store hota hai. Tu ise multiple times reuse kar sakta hai.:------------------------------------------------------------------------Optional: Agar tu schedule ya export karta hai tab DB me store ho sakta hai. Mostly temporary ya export ke liye use hota hai.
+Purpose:-------------Define karna ki report ka structure aur rules kya honge.:----------------------------------------------------------------------------------------------Show karna ki actual data kaise dikhega according to template.
+Includes:------------Name, ObjectType (Identity, Role, Account, etc.), Filter, Columns, Format (CSV/PDF/XLS), Schedule.:----------------------------------------------------Actual rows/records from DB based on ReportDefinition, filtered and formatted.
+Dynamic/Static:------Static template: ek baar define kar lo, baar-baar use kar sakte ho.:-----------------------------------------------------------------------------------Dynamic result: har run me data change ho sakta hai, jaise naye users add ho gaye ho to report me dikhenge.
+Creation:------------Admin ya developer create karta hai using SailPointContext + ReportDefinition API.:--------------------------------------------------------------------Generated automatically when ReportDefinition is executed/run.
+Modify:--------------Template me columns, filters, object type change kar sakte ho.:----------------------------------------------------------------------------------------Data ko direct modify nahi kar sakte (sirf read-only snapshot hai).
+Schedule:------------Template me schedule define ho sakta hai (daily, weekly, monthly).:------------------------------------------------------------------------------------Actual report run according to schedule or manual trigger.
+Output:--------------Template ke rules + design, actual data nahi.:---------------------------------------------------------------------------------------------------------Actual data rows, formatted output (CSV, PDF, XLS).
+Reusability:---------High: ek hi template multiple times run kar sakte ho.:-------------------------------------------------------------------------------------------------Low: har run ka output alag ho sakta hai.
+
+()report karta kya hai?
+--1️⃣ Data ko fetch karta hai?
+Report system me stored objects (jaise Identity, Role, Account, AccessRequest) ko query karke fetch karta hai.
+Ye filter, type, aur columns ke basis pe sirf required data laata hai.
+Example:-
+Filter: department = IT AND status = Active
+Report → sirf IT department ke active users ka data fetch karega.
+
+2️⃣ Data ko organize karta hai?
+Report sirf fetch nahi karta, balki rows aur columns me organize karta hai.
+Columns ka order aur fields ReportDefinition ke according hote hain.
+Example:-
+Name	          Email	           Department
+joker boy	joker@company.com          IT
+alice	    alice@company.com          IT
+	
+3️⃣ Data ko filter aur sort karta hai.
+Report me Filter aur Sort lagaya ja sakta hai.
+Ye decide karta hai ki kaunsa data dikhega aur kaunsa nahi.
+Example:-
+Filter: status = Active
+Sort: name ascending
+
+4️⃣ Data ko output format me convert karta hai.
+Report ko CSV, PDF, XLS ya dashboard format me export kiya ja sakta hai.
+Ye useful hota hai analysis, audit, ya compliance reports ke liye.
+Example:-
+CSV export → Excel me open karke analyze kar sakte ho.
+
+5️⃣ Data ko schedule kar sakta hai.
+Reports ko daily, weekly, ya monthly run ke liye schedule kiya ja sakta hai.
+Automatically latest data fetch aur output generate hota hai.
+------------------------------------------------------------------------------------------------------------------------------
+1️⃣ Report Status ke common values:-
+Status	                 Description
+Pending:----------Report abhi run ke liye queue me hai, execute nahi hua.
+Running:----------Report generate ho raha hai abhi. Ye background me process hota hai.
+Completed:--------Report successfully generate ho gaya. Data ab available hai.
+Failed:-----------Report run me koi error aaya, generate nahi ho paya.
+Cancelled:--------Report run ko user ya system ne cancel kar diya.
+Scheduled:--------Report future me scheduled hai (daily, weekly, monthly). Abhi run nahi hua.
+------------------------------------------------------------------------------------------------------------------------------
+()Report ke common methods:-
+getName()
+setName(String name)
+getDescription()
+setDescription(String description)
+getObjectType()
+setObjectType(Class objectType)
+getFilter()
+setFilter(Filter filter)
+getColumns()
+setColumns(List<String> columns)
+addColumn(String column)
+removeColumn(String column)
+getFormat()
+setFormat(String format)
+getSchedule()
+setSchedule(String schedule)
+getResults()
+setResults(List<Object> results)
+getStatus()
+setStatus(String status)
+run()
+export(String format)
+runAsync()
+validate()
+-------------------------------------------------------------------------------------------------------------------------------------------------
+1️⃣ getName() / setName(String name):-
+setName → Report ka naam set karta hai.
+getName → Report ka naam return karta hai.
+Example:-
+report.setName("ActiveUsersReport");
+System.out.println(report.getName());
+-----------------------------------------------
+2️⃣ getDescription() / setDescription(String description):-
+setDescription → Report ka purpose ya description set karta hai.
+getDescription → Report ka description return karta hai.
+Example:-
+report.setDescription("List of active users in IT");
+System.out.println(report.getDescription());
+--------------------------------------------------------
+3️⃣ getObjectType() / setObjectType(Class objectType):-
+setObjectType → Specify karta hai ki report kis object ka data fetch karega (Identity, Role, AccessRequest, etc.).
+getObjectType → Object type return karta hai.
+Example:-
+report.setObjectType(Identity.class);
+System.out.println(report.getObjectType());
+Output:-
+class sailpoint.object.Identity
+---------------------------------------------------------------
+4️⃣ getFilter() / setFilter(Filter filter):-
+setFilter → Report me kaunse criteria apply karne hai ye define karta hai.
+getFilter → Current filter object return karta hai.
+Example:-
+Filter filter = Filter.eq("status", "Active");
+report.setFilter(filter);
+System.out.println(report.getFilter());
+Output (object representation):-
+Filter: status = Active
+------------------------------------------------------------------
+5️⃣ getColumns() / setColumns(List<String> columns) / addColumn(String column) / removeColumn(String column):-
+setColumns → Report me columns set karta hai.
+getColumns → Current columns list return karta hai.
+addColumn → Naya column add karta hai.
+removeColumn → Column remove karta hai.
+
+Example:-
+report.addColumn("name");
+report.addColumn("email");
+System.out.println(report.getColumns());
+report.removeColumn("email");
+System.out.println(report.getColumns());
+
+Output:-
+[name, email]
+[name]
+------------------------------------------------------------------------------------------
+6️⃣ getFormat() / setFormat(String format):-
+setFormat → Report output ka format set karta hai (CSV, PDF, XLS).
+getFormat → Current output format return karta hai.
+
+Example:-
+report.setFormat("CSV");
+System.out.println(report.getFormat());
+
+Output:-
+CSV
+---------------------------------------------------
+7️⃣ getSchedule() / setSchedule(String schedule):-
+setSchedule → Report run ka schedule set karta hai (Daily, Weekly, Monthly).
+getSchedule → Current schedule return karta hai.
+Example:-
+report.setSchedule("Daily");
+System.out.println(report.getSchedule());
+
+Output:-
+Daily
+--------------------------------------------------------
+8️⃣ getResults() / setResults(List<Object> results):-
+setResults → Generated report data store karta hai (optional).
+getResults → Report ka actual data return karta hai.
+Example:-
+List<Object> results = Arrays.asList("joker boy", "alice", "bob");
+report.setResults(results);
+System.out.println(report.getResults());
+
+Output:-
+[joker boy, alice, bob]
+---------------------------------------------------------------------
+9️⃣ getStatus() / setStatus(String status):-
+setStatus → Report ka status set karta hai (Pending, Running, Completed).
+getStatus → Current status return karta hai.
+Example:-
+report.setStatus("Completed");
+System.out.println(report.getStatus());
+Output:-
+Completed
+-----------------------------------------------------------------------------------------------------------------------------------------
+(a).CSV (Comma-Separated Values):-
+Structure: Text file jisme comma se values separate hoti hain.
+Use: Excel, Google Sheets, database import ke liye ideal.
+Example:-
+Name,Email,Department
+joker boy,joker@company.com,IT
+alice,alice@company.com,IT
+Simple, lightweight, editable, analytics ke liye best.
+-------------------------------------------------------------------------
+(b).PDF (Portable Document Format):-
+Structure: Read-only document, formatted (fonts, tables, charts).
+Use: Reporting, auditing, compliance, official documents.
+Example:
+Active Users Report
+------------------
+Name        Email                Department
+joker boy   joker@company.com    IT
+alice       alice@company.com    IT
+Non-editable by default, professional presentation ke liye best.
+-------------------------------------------------------------------------------
+c) XLS (Excel Spreadsheet):-
+Structure: Microsoft Excel file, multiple sheets, formulas, sorting, filters.
+Use: Analytics, charts, pivot tables, large datasets.
+Example:
+Sheet1:
++-----------+-------------------+------------+
+| Name      | Email             | Department |
++-----------+-------------------+------------+
+| joker boy | joker@company.com | IT         |
+| alice     | alice@company.com | IT         |
++-----------+-------------------+------------+
+Editable, formulas aur charts ke liye best, complex analysis ke liye ideal.
+--------------------------------------------------------------------------------------------------------------------------------------------
+1️⃣ run():-
+Synchronous execution method hai.
+Jab tu run() call karta hai, program tab tak rukta hai jab tak report complete na ho jaye.
+Matlab, report generate hone tak next line execute nahi hoti.
+Use hota hai jab tu immediately result chahiye aur wait kar sakta hai.
+
+Example:-
+report.run();  // Program yahan rukega jab tak report complete nahi hota
+System.out.println("Report run completed!");
+
+Output example:-
+Report run completed!
+Jab run complete hota hai, tu getResults() se data le sakta hai.
+-----------------------------------------------------------------------
+2️⃣ runAsync():-
+Asynchronous execution method hai.
+Jab tu runAsync() call karta hai, program turant next line pe chala jata hai.
+Matlab, report background me generate ho rahi hoti hai, aur tu apne program me aur kaam kar sakta hai.
+Use hota hai jab report generate me time lag sakta hai aur program ko block nahi karna chahiye.
+
+Example:-
+report.runAsync();  // Report background me generate hogi
+System.out.println("Report is running in background...");
+
+Output example:-
+Report is running in background...
+Baad me getStatus() ya getResults() call karke check kar sakte ho ki report complete hua ya nahi.
+--------------------------------------------------------------------------------------------------------------------------------------
+1️⃣ export(String format) kya karta hai?
+Ye method generated Report ko specific format me export karta hai.
+Format me tu CSV, PDF, XLS choose kar sakta hai.
+Matlab: report ka snapshot file me save karna.
+
+💡 Simple analogy:-
+run() → report generate (data fetch)
+export() → report ko file me convert / save karna.
+2️⃣ Syntax:-
+report.export("CSV"); // ya "PDF", "XLS"
+--------------------------------------------------------------------------------------
+1️⃣ validate() kya hai?
+validate() method report ya report definition ke configuration ko check karta hai.
+Matlab: ye ensure karta hai ki report sahi tarike se run ho sake bina error ke.
+Ye data validate nahi karta, balki report setup aur rules validate karta hai.
+2️⃣ validate() kaam karta hai ye cheezo me:-
+Validation	                   Explanation
+Name check:--------------Report ka name empty ya duplicate nahi hona chahiye
+Object type:-------------Identity, Role, Account, etc. sahi defined ho aur exist karta ho
+Columns:-----------------Specified columns valid aur object me exist karte ho
+Filter:------------------Filter syntax correct ho aur valid fields use kiye gaye ho
+Format:------------------Output format (CSV, PDF, XLS) supported ho
+Schedule:----------------Agar schedule defined hai, to valid cron / recurrence ho
+Mandatory fields:--------Name, ObjectType, Format jaise required fields filled ho.
+---------------------------------------------------------------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointContextFactory;
+import sailpoint.object.Filter;
+import sailpoint.object.ReportDefinition;
+import sailpoint.object.Identity;
+import sailpoint.tools.GeneralException;
+
+public class ReportDefinitionExample {
+
+    public static void main(String[] args) {
+
+        SailPointContext context = null;
+
+        try {
+            // 1️⃣ SailPointContext create karna
+            context = SailPointContextFactory.createContext();
+
+            // 2️⃣ New ReportDefinition create karna
+            ReportDefinition report = new ReportDefinition();
+            report.setName("ActiveUsersReport");            // Report name
+            report.setObjectType(Identity.class);          // Object type: Identity
+            report.setFormat("CSV");                       // Output format
+            report.addColumn("name");                      // Columns
+            report.addColumn("email");
+            report.addColumn("department");
+
+            // 3️⃣ Filter for active users
+            Filter filter = Filter.eq("status", "Active");
+            report.setFilter(filter);
+
+            // 4️⃣ Validate & save report
+            try {
+                report.validate();                       // Configuration check
+                context.saveObject(report);              // Save to DB
+                context.commitTransaction();             // Commit transaction
+                System.out.println("Report validated and saved successfully!");
+            } catch (Exception e) {
+                System.out.println("Validation failed: " + e.getMessage());
+            }
+
+        } catch (GeneralException e) {
+            e.printStackTrace();
+        } finally {
+            // 5️⃣ Release context
+            if (context != null) {
+                SailPointContextFactory.releaseContext(context);
+            }
+        }
+    }
+}
+✅ Console Output Example:-
+Agar sab sahi ho:-
+Report validated and saved successfully!
+-----------------------------------------------------------------------------------------------------------------------------------------------

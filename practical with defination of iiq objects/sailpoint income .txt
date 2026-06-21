@@ -1,0 +1,27 @@
+3) Product (Software/tool business) Ek tool/software banao.
+Examples:-
+Workflow builder/custom object builder/standard object builder
+XML validator
+Log analyzer
+Documentation generator
+
+()SailPoint AI assistant:-
+Simple flow samjho. Tum AI khud nahi banaoge, bas API ko request bhejoge.
+Architecture:-
+Frontend (HTML/React)
+        ↓ HTTP Request
+Spring Boot Backend
+        ↓
+AI API (OpenAI/Gemini/etc.)
+        ↓
+AI Response
+        ↓
+Spring Boot
+        ↓
+Frontend pe result
+
+()Tum initially ye stack se bhi tool bana sakte ho:-
+✅ HTML/CSS/JS (ya React)
+✅ Java
+✅ Spring Boot
+✅ SQL (MySQL/PostgreSQL)

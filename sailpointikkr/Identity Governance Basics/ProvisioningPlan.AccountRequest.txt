@@ -1,0 +1,272 @@
+(1).ProvisioningPlan.AccountRequest kya hai?
+👉 AccountRequest = ek specific application account ke liye request
+📌 Matlab:-
+👉 “Kisi particular application (AD / SAP / DB) me account ke saath kya karna hai”
+
+🔹 3. Example se samajh 💡
+👉 Tum bolte ho:-
+john.doe ke liye:-
+- AD me account create karo
+- SAP me role change karo
+
+👉 Internally:-
+AD → AccountRequest
+SAP → AccountRequest
+✔ Har application ke liye alag AccountRequest.
+
+🔹 4. Code example:-
+ProvisioningPlan.AccountRequest acc = 
+    new ProvisioningPlan.AccountRequest();
+
+acc.setApplication("AD");
+acc.setNativeIdentity("jdoe123");
+acc.setOperation(ProvisioningPlan.Operation.Create);
+plan.add(acc);
+-------------------------------------------------------------
+🔹 5. AccountRequest kya karta hai? ⚙️
+👉 Ye batata hai:-
+✔ Kaunsa application
+✔ Kaunsa account
+✔ Kya action (create / modify / delete)
+✔ Kaunse attributes change honge
+-------------------------------------------------------
+🔹 6. AccountRequest ke andar kya kya hota hai? 🧠
+Main fields 👇
+🔸 1. application:-
+👉 Kaunsa system
+AD / SAP / DB
+
+🔸 2. nativeIdentity:-
+👉 External system ka username
+jdoe123
+
+🔸 3. operation:-
+👉 Kya karna hai
+Create / Modify / Delete / Enable / Disable
+
+🔸 4. attributeRequests:-
+👉 Field-level changes
+email = new@mail.com
+role = Admin
+👉 Ye ek list hoti hai
+
+🔸 5. objectRequests:-
+👉 Groups / roles / entitlements ke changes
+
+🔸 6. arguments:-
+👉 Extra parameters (optional)
+
+🔸 7. instance:-
+👉 Application instance (prod/test)
+
+🔸 8. trackingId:-
+👉 Request tracking ke liye
+--------------------------------------------------------
+🔹 9. DB me store hota hai kya? 🧠
+👉 ❌ Directly AccountRequest DB me store nahi hota
+👉 Kyunki:-
+✔ Ye runtime object hai
+
+✅ Lekin indirectly store hota hai:-
+🔸 1. spt_provisioning_transaction
+👉 Provisioning logs
+
+🔸 2. spt_audit_event
+👉 Audit trail
+
+🔸 3. spt_task_result
+👉 Execution result
+----------------------------------------------------------
+🔹 2. 🔥 Core Methods:-
+🔸 1. setApplication(String app):-
+👉 Kaunsa application target hai
+acc.setApplication("AD");
+✔ Use: AD / SAP / DB set karne ke liye
+
+🔸 2. getApplication():-
+String app = acc.getApplication();
+✔ Output: "AD"
+
+🔸 3. setNativeIdentity(String id):-
+👉 External system ka username
+acc.setNativeIdentity("jdoe123");
+
+🔸 4. getNativeIdentity():-
+String id = acc.getNativeIdentity();
+✔ Output: "jdoe123"
+
+🔸 5. setOperation(Operation op):-
+👉 Kya action lena hai
+acc.setOperation(ProvisioningPlan.Operation.Create);
+Possible values:
+Create
+Modify
+Delete
+Enable
+Disable
+
+🔸 6. getOperation():-
+Operation op = acc.getOperation();
+✔ Output: Create
+------------------------------------------
+🔹 7. accReq.getResult():-
+👉 Ye return karta hai:-
+ProvisioningResult
+
+🔥 Simple samajh:-
+AccountRequest → kya karna hai (Create / Modify / Delete)
+Result → uska final output (success/failure + details)
+
+🔹 Result me kya hota hai?
+ProvisioningResult object me generally ye hota hai:
+
+✅ status (SUCCESS / FAILURE)
+❌ error messages (agar fail hua)
+📄 detailed response
+🆔 operation result info
+
+
+
+----------------------------------------------------------------------------------
+🔹 3. 🔥 AttributeRequest Methods:-
+🔸 7. add(AttributeRequest attr):-
+👉 Attribute add karne ke liye
+AttributeRequest attr = new AttributeRequest();
+attr.setName("email");
+attr.setValue("john@example.com");
+acc.add(attr);
+
+🔸 8. getAttributeRequests():-
+List attrs = acc.getAttributeRequests();
+✔ Output: List of attributes
+
+🔸 9. setAttributeRequests(List list):-
+acc.setAttributeRequests(list);
+
+🔹 4. 🔥 ObjectRequest Methods:-
+🔸 10. add(ObjectRequest obj):-
+ObjectRequest obj = new ObjectRequest();
+acc.add(obj);
+👉 Groups / roles ke liye
+
+🔸 11. getObjectRequests():-
+List objs = acc.getObjectRequests();
+
+🔹 5. 🔥 Arguments / Extra Data:-
+🔸 12. setArguments(Map args):-
+Map args = new HashMap();
+args.put("key", "value");
+acc.setArguments(args);
+
+🔸 13. getArguments():-
+Map args = acc.getArguments();
+
+🔹 6. 🔥 Instance Methods:-
+🔸 14. setInstance(String instance):-
+acc.setInstance("Production");
+
+🔸 15. getInstance():-
+String inst = acc.getInstance();
+
+🔹 7. 🔥 Tracking / Metadata:-
+
+🔸 16. setTrackingId(String id):-
+acc.setTrackingId("REQ123");
+
+🔸 17. getTrackingId():-
+String id = acc.getTrackingId();
+
+🔹 8. 🔥 Utility Methods:-
+
+🔸 18. toString():-
+👉 Object ka readable format
+System.out.println(acc.toString());
+
+🔸 19. equals(Object obj):-
+👉 Compare karta hai
+
+🔸 20. hashCode():-
+👉 Hash value generate karta hai.
+--------------------------------------------------------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.object.AccountRequest;
+import sailpoint.object.AttributeRequest;
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+
+import sailpoint.tools.GeneralException;
+
+import java.util.List;
+
+public class BeforeProvisioningExample {
+
+    public void execute(ProvisioningPlan provisioningPlan, SailPointContext context) throws GeneralException {
+
+        Identity identity = provisioningPlan.getIdentity();
+
+        if (identity == null) {
+            throw new GeneralException("Identity is null");
+        }
+
+        List accountRequests = provisioningPlan.getAccountRequests();
+
+        if (accountRequests != null) {
+
+            for (Object obj : accountRequests) {
+
+                AccountRequest accReq = (AccountRequest) obj;
+
+                // 🔹 Get attribute request
+                AttributeRequest sam = accReq.getAttributeRequest("sAMAccountName");
+
+                if (sam != null) {
+
+                    Object value = sam.getValue();
+
+                    if (value != null) {
+                        String username = value.toString();
+
+                        System.out.println("Username before provisioning: " + username);
+
+                        // 🔥 Modify value
+                        sam.setValue(username.toLowerCase());
+                    }
+                }
+
+                // Add custom attribute
+                AttributeRequest customAttr = new AttributeRequest();
+                customAttr.setName("source");
+                customAttr.setValue("BeforeProvisioning");
+                customAttr.setOperation(ProvisioningPlan.Operation.Add);
+
+                accReq.add(customAttr);
+            }
+        }
+    }
+}
+////////*
+🔹 3. accReq.getAttributeRequest("sAMAccountName") kya karta hai?
+✅ Explanation:
+sailpoint.object.AttributeRequest sam =
+    accReq.getAttributeRequest("sAMAccountName");
+👉 Ye method:-
+AccountRequest ke andar se attribute fetch karta hai
+"sAMAccountName" = AD username attribute
+
+🔹 Return kya hota hai?
+👉 Return type:-
+sailpoint.object.AttributeRequest
+Agar attribute exist karta hai:-
+object return karega
+
+🔹 4. sam.getValue() kya return karega?
+Object value = sam.getValue();
+👉 Ye return karega:-
+attribute ka actual value
+Example:-
+Agar provisioning plan me hai:-
+<sAMAccountName>john.doe</sAMAccountName>
+To:-
+sam.getValue();  // returns "john.doe"
+*////////
+----------------------------------------------------------------------------------

@@ -1,0 +1,45 @@
+()DelimitedFileConnector kya hai kya karta hai kya db me store hota hai kya kya andar hai?
+--🔹 DelimitedFileConnector kya hai?
+SailPoint IdentityIQ me DelimitedFileConnector ek file-based connector hai jo CSV / delimited files (jaise comma, pipe |, tab separated) ko read karke system me data import/export karta hai.
+
+👉 Simple language me:-
+“File (CSV etc.) se data read karke SailPoint me use karna”
+
+🔹 Ye kya karta hai?
+1️⃣ File se data read karta hai:-
+Example file:-
+sAMAccountName,displayName,department
+kumar123,Kumar Singh,IT
+rahul456,Rahul Verma,HR
+👉 Connector is file ko read karega
+
+2️⃣ Data ko Identity / Account me convert karta hai
+File ka data:-
+Identity
+Account
+Attribute
+me convert ho jata hai
+
+3️⃣ Aggregation (data fetch) karta hai:-
+👉 Ye system se data “pull” karta hai:-
+Accounts list
+Attributes
+Users
+
+4️⃣ Provisioning ke liye data generate karta hai?
+👉 File me jo data hai usko use karke:-
+Create
+Update
+Delete
+operations possible hote hain
+
+🔹 Kya ye DB me store hota hai?
+
+👉 ❌ Directly nahi
+DelimitedFileConnector ka data database me store nahi hota
+Ye external file source hota hai.
+
+👉 Lekin:-
+✔ Aggregated data IdentityIQ ke database me store ho sakta hai
+✔ Connector ka configuration DB me hota hai.
+

@@ -1,0 +1,199 @@
+()CertificationDefinition kya karta hai?
+👉 CertificationDefinition = Certification ka template / blueprint
+Matlab:-
+“Certification ka design kaise hoga” ye define karta hai
+
+🔥 Simple Example:-
+Tu bolta hai:-
+Kaunse users ka review hoga
+Kaun reviewer hoga
+Kaunsa access include hoga
+Rules kya honge
+👉 Ye sab define hota hai → CertificationDefinition.
+
+🔹 Ye kya karta hai?
+👉 Ye decide karta hai:-
+Certification ka type (Manager, Application, Role)
+Scope (kaunse users / systems)
+Review rules
+Policy checks
+Reminder / escalation rules
+
+🔹 Real Flow samajh le:-
+CertificationDefinition (template)
+        ↓
+CertificationSchedule (kab run hoga)
+        ↓
+Certification (actual run)
+        ↓
+CertificationItem (individual access)
+
+🔹 Kya DB me store hota hai?
+👉 ✅ Haan bhai, ye DB me store hota hai
+🔸 Table:-
+spt_certification_definition
+
+🔹 CertificationDefinition ke andar kya hota hai?
+🔸 1️⃣ Basic Info:-
+id
+name
+description
+
+🔸 2️⃣ Certification Type:-
+Manager Certification
+Application Certification
+Role Certification
+
+🔸 3️⃣ Scope (bahut important 🔥):-
+identities (users)
+applications
+roles
+groups
+
+🔸 4️⃣ Reviewer Setup:-
+reviewer (manager / owner)
+fallback reviewer
+escalation rules
+
+🔸 5️⃣ Rules / Logic:-
+inclusion rule
+exclusion rule
+policy violation rule
+
+🔸 6️⃣ Settings:-
+autoSignOff
+reminders
+due date
+reassign allowed
+
+🔸 7️⃣ Advanced:-
+phase configuration
+decision options
+comments required ya nahi.
+
+🔹 Methods ka idea:-
+🔸 Basic Methods:-
+getId()
+setId()
+getName()
+setName()
+🔸 Type Methods:-
+getType()
+setType()
+🔸 Scope Methods:-
+getScope()
+setScope()
+🔸 Reviewer Methods:-
+getReviewer()
+setReviewer()
+🔸 Settings Methods:-
+isAutoSignOff()
+setAutoSignOff()
+🔸 Utility Methods:-
+toString()
+equals()
+hashCode()
+🔸 Rule Methods:-
+getInclusionRule()
+setInclusionRule()
+setExclusionRule()
+getExclusionRule()
+
+🔹 🔸 getInclusionRule():-
+👉 Ye method current inclusion rule ka naam/object return karta hai
+🔸 Example:-
+System.out.println(definition.getInclusionRule());
+✅ Output:-
+OnlyActiveUsers
+👉 Matlab:-
+Certification me sirf active users include honge
+
+🔹 🔸 setInclusionRule():-
+👉 Ye method kaunsa inclusion rule use hoga wo set karta hai
+🔸 Example:-
+definition.setInclusionRule("OnlyActiveUsers");
+👉 Ab system:-
+Sirf active users ko include karega
+
+🔹 🔸 getExclusionRule():-
+👉 Ye method current exclusion rule return karta hai
+🔸 Example:-
+System.out.println(definition.getExclusionRule());
+✅ Output:-
+ExcludeAdmins
+👉 Matlab:-
+Admin users remove kiye jayenge
+
+🔹 🔸 setExclusionRule():-
+👉 Ye method kaunsa exclusion rule apply hoga wo set karta hai
+🔸 Example:-
+definition.setExclusionRule("ExcludeAdmins");
+👉 Ab system:-
+Admin users ko certification se hata dega ❌
+-----------------------------------------------------------------
+🔥 Full Flow Example (Best Samajh 🔥)
+definition.setInclusionRule("OnlyActiveUsers");
+definition.setExclusionRule("ExcludeAdmins");
+
+System.out.println(definition.getInclusionRule());
+System.out.println(definition.getExclusionRule());
+
+✅ Output:-
+OnlyActiveUsers
+ExcludeAdmins
+------------------------------------------------------------------
+()🔹 🔥 Inclusion Rule kya hai?
+👉 Inclusion Rule = Kaun include hoga certification me
+Matlab:-
+“Kin users / accounts / access ko certification me lana hai”
+
+🔸 Example:-
+definition.setInclusionRule("OnlyActiveUsers");
+
+👉 Rule logic:-
+if(user.isActive()){
+   return true; // include karo
+}
+✅ Result:-
+Sirf active users certification me aayenge.
+----------------------------------------------------------------------------
+🔹 🔥 Exclusion Rule kya hai?
+👉 Exclusion Rule = Kisko hataana hai (filter out)
+Matlab:-
+“Jo include ho chuke hain unme se kisko remove karna hai”
+
+🔸 Example:-
+definition.setExclusionRule("ExcludeAdmins");
+
+👉 Rule logic:-
+if(user.role == "Admin"){
+   return true; // exclude karo
+}
+✅ Result:-
+Admin users ❌ remove ho jayenge
+Baaki sab rahenge.
+----------------------------------------------------------------------------
+🔹 🔸 isAutoSignOff():-
+👉 Ye method batata hai:-
+“Certification automatically complete hoga ya nahi?”
+
+🔸 Example:-
+System.out.println(definition.isAutoSignOff());
+
+✅ Output:-
+true
+
+👉 Matlab:-
+System automatically certification close kar dega
+Reviewer ko manually sign-off nahi karna padega.
+--------------------------------------------------------------------
+🔹 🔸 setAutoSignOff():-
+👉 Ye method decide karta hai:-
+“Auto sign-off enable karna hai ya nahi”
+
+🔸 Example:-
+definition.setAutoSignOff(true);
+
+👉 Matlab:-
+Certification automatically complete ho jayega ✅
+-----------------------------------------------------------------

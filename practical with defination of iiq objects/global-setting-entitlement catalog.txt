@@ -1,0 +1,4 @@
+()global-setting-entitlement catalog->new attribute->
+->attribute name-ApprovalSchema-> type-String-> category-Test ->Searchable-tick->Editable-tick-> default values-Owner->
+->allowed values-Owner-enter-Manager-enter-Requester-enter-Identity->save->
+->Aplication->Entitlement-catalog->me jao->open any entitlement catalog->scroll and see ApprovalSchema.

@@ -1,0 +1,50 @@
+1️⃣ IdentityRelationship kya hai?
+👉 IdentityRelationship = do users ke beech ka relation,
+Matlab:-
+ek identity ka dusre identity se connection
+jaise: manager, mentor, delegate.
+✅ Example:-
+User	Relationship	Dusra User
+Rahul	Manager	          Amit
+Rahul	Mentor	          Neha
+➡ Ye sab IdentityRelationship objects hain
+
+🔹 2️⃣ Ye kya karta hai?
+👉 Ye define karta hai:-
+kaun kiska manager hai
+approval kisne dena hai
+delegation (proxy user)
+
+🔹 3️⃣ Kya ye DB me store hota hai?
+✅ Haan bhai, DB me store hota hai,
+📦 Structure:-
+Identity (Rahul)
+   ↓
+IdentityRelationship
+   ↓
+Manager → Amit
+
+🔹 4️⃣ Iske andar kya hota hai?
+Field	            Meaning
+type	       relation type (Manager, Mentor, etc.)
+identity	       main user
+relatedIdentity	      dusra user
+status	          active/inactive
+
+🔹 5️⃣ Important Methods:-
+🔸 Basic:-
+getType() → relationship type deta hai
+setType(String type) → type set karta hai
+🔸 Identity Link:-
+getIdentity() → main user deta hai
+setIdentity(Identity identity) → main user set karta hai
+getRelatedIdentity() → related user deta hai
+setRelatedIdentity(Identity identity) → related user set karta hai
+🔸 Status:-
+getStatus() → relationship active hai ya nahi
+setStatus(String status) → status set karta hai
+🔸 Utility:-
+toString() → readable string
+equals(Object obj) → compare karta hai
+hashCode() → hash generate karta hai.
+

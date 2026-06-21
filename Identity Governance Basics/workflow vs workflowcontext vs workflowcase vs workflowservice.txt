@@ -1,0 +1,215 @@
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+()workflow :-
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+()Workflow ka matlab hai – ek predefined sequence of tasks jo automatic ya semi-automatic chalti hai 
+jab koi event trigger hota hai. 😎
+workflow decide karta hai ki kaunsa kaam kab aur kaise hoga. Enterprise me ye Automation ka backbone hai.
+🔷 1️⃣ Workflow kya hai?
+Ye definition / design hai
+XML/config hota hai
+Static hota hai
+
+👉 Example:-
+OnboardingWorkflow.xml
+
+👉 Isme:-
+steps
+transitions
+rules
+
+🔹 1️⃣ Workflow kya hai?
+👉 Workflow = configuration + execution logic ka combination
+💡 Simple:-
+Design (XML/config)
+Steps + flow control
+Thoda Java/BeanShell logic
+
+🔹 Kya Workflow data store karta hai?
+👉 ❌ Workflow khud data store nahi karta
+👉 ✅ Workflow sirf configuration/definition hota hai
+
+🔹 1️⃣ Fir data kaha store hota hai?
+👉 Data store hota hai:-
+
+WorkflowCase ✅
+WorkItem ✅
+IdentityRequest ✅
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+()🔹 1️⃣ WorkflowCase kya hai?
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+()🔹 1️⃣ WorkflowCase kya hai?
+👉 WorkflowCase = ek running workflow ka instance
+💡 Simple samajh:-
+Workflow = template / design
+WorkflowCase = uska real running instance (runtime data)
+
+()workflowcase:-
+ SailPoint me WorkflowCase basically ek object hai jo workflow ke execution instance ko represent karta hai.
+ Matlab jab bhi koi workflow trigger hota hai, ek WorkflowCase create hota hai, aur iske andar workflow ke sare state, 
+ tasks, aur data track hote hain.WorkflowCase me work items, approvals, escalations store hote hain.
+
+❗ Short Answer (direct):-
+👉 WorkflowContext data leta hai → WorkflowCase se ✅
+👉 Workflow se nahi ❌ kyuki workflow ke basis par workflowcase banata hai sailpoint.
+
+🧠 Ab detail me samajh
+🔷 1️⃣ Workflow kya hai?
+Ye definition / design hai
+XML/config hota hai
+Static hota hai
+
+👉 Example:-
+OnboardingWorkflow.xml
+
+👉 Isme:-
+steps
+transitions
+rules
+-----------------------------------------------------------------------------
+🔷 2️⃣ WorkflowCase kya hai?
+Ye runtime instance hai
+Jab workflow run hota hai tab banta hai
+Isme actual data store hota hai
+👉 Example:-
+john.doe ka onboarding run → ek WorkflowCase banega
+👉 Isme hota hai:-
+arguments
+status
+messages
+variables
+----------------------------------------------------
+
+-------------------------------------------------------
+🔹 2️⃣ WorkflowCase me kya kya store hota hai?
+✔️ 1. Basic Info
+id → unique ID
+workflowName → kaunsa workflow chal raha hai
+status → Running / Completed / Failed
+
+✔️ 2. Variables (bahut important 🔥)
+👉 Workflow me jo bhi data pass hota hai:
+identityName
+requestId
+approvalId
+custom variables
+identityName = user1
+requestId = REQ-101
+
+✔️ 3. Current Step Info
+Abhi workflow ka kaunsa step chal raha hai
+Next step kya hai
+
+✔️ 4. Work Items (Approval tasks)
+👉 Agar approval step hai:-
+Manager approval
+Admin approval
+➡️ Ye sab WorkItem ke form me store hota hai
+
+✔️ 5. Approval Data
+Approvers list
+Approval status
+Comments
+
+✔️ 6. History / Audit
+Kis step pe kya hua
+Kisne approve/reject kiya
+Kab hua
+
+✔️ 7. Timestamps
+Created date
+Modified date
+Completion time
+-----------------------------------------------------------------------
+🔹 4️⃣ Ye data workflowcase me DB me store hota hai ya temporary?
+👉 ✅ YES — DB me store hota hai (important 🔥)
+
+✔️ Temporary bhi hota hai?
+👉 ❌ Sirf memory me nahi hota
+👉 ✅ Main data DB me persist hota hai
+💡 But:-
+Runtime me memory + DB dono use hota hai.
+--------------------------------------------------------------------------
+✔️ 3. workflowcase me data Kyun DB me store hota hai? (Very Important 🔥)
+🔸 1. System restart ke liye
+Server restart ho gaya → workflow wapas resume ho sakta hai
+🔸 2. Long running workflows
+Approval 2 din pending hai → data safe rahe
+🔸 3. Audit / tracking
+Kisne approve kiya, kab kiya → sab store hota hai
+🔸 4. Resume / retry
+Workflow fail ho gaya → dubara start ya continue kar sakte hain
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+🔷 3️⃣ WorkflowContext kya hai?
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+🔷 3️⃣ WorkflowContext kya hai?
+Ye execution helper / wrapper hai
+WorkflowCase ko access karne ka tool
+
+🔥 Relationship (sabse important):-
+Workflow (design)
+      ↓
+WorkflowCase (runtime data)
+      ↓
+WorkflowContext (access / execution)
+
+❗ Short Answer (direct):-
+👉 WorkflowContext data leta hai → WorkflowCase se ✅
+👉 Workflow se nahi ❌ kyuki workflow ke basis par workflowcase banata hai sailpoint.
+
+()WorkflowContext kya hai?
+WorkflowContext ek object/class hai jo current workflow execution ke environment aur data ko represent karta hai SailPoint me.
+Matlab: Jab bhi workflow run hoti hai, WorkflowContext me saari information available hoti hai jaise:-
+Workflow ke variables
+Arguments (inputs)
+Execution status
+Output/result
+Ye basically workflow ke “runtime environment” ka container hai.
+ye value store nahi karta.aur conversion me workflowcontext ke andar ke workflowcase/workflow use hota hai.
+🔹 1️⃣ “WorkflowContext value store nahi karta”
+👉 ✔️ Bilkul sahi (mostly)
+WorkflowContext ek runtime object hai
+Ye temporary hota hai
+Execution ke time hi exist karta hai
+👉 Isme:-
+values hold hoti hain (temporary)
+but database me store nahi hoti
+👉 Example:-
+context.getArguments();  // temporary data
+
+🔹 2️⃣ “conversion me workflowcontext ke andar ke workflowcase/workflow use hota hai”
+👉 ✔️ Ye bhi sahi hai — aur ye important concept hai
+Jab tu likhta hai:-
+context.toXml();
+
+👉 Actually hota kya hai:-
+WorkflowContext → internally → WorkflowCase / SailPointObject → toXml() me convert karta hai.
+
+--------------------------------------
+🔹 WorkflowContext ke main uses:-
+Arguments set aur get karna
+Workflow ke input ya output variables ko handle karna
+Execution status check karna
+Workflow successful hai ya failed
+Workflow ke results access karna
+Workflow me messages add karna
+Launch message, UI message, logs
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+🔹 4️⃣ WorkflowService kya hai?
+👉 WorkflowService = class jo workflows ko start / manage / execute karti hai
+👉 Package:-
+sailpoint.api.WorkflowService
+💡 Simple line me:-
+👉 “Workflow chalane ka engine” = WorkflowService
+
+🔹 3️⃣ Ye kya karta hai?
+WorkflowService ka kaam:-
+✔️ 1. Workflow start karna
+New workflow instance create karta hai
+✔️ 2. Variables pass karna
+Workflow me data bhejta hai
+✔️ 3. Workflow execute karna
+Steps run karta hai
+✔️ 4. Workflow monitor karna
+Status check karta hai
+------------------------------------------------------------------------------------------------------------------------------------

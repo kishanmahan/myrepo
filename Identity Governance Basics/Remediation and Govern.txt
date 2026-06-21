@@ -1,0 +1,72 @@
+()1️⃣ Govern ka Simple Matlab:-
+Govern = control + monitor + manage access
+Matlab ye ensure karna ki har user ke paas sirf wahi access ho jo unke kaam ke liye zaroori hai, aur koi unauthorized access na ho.
+Ye basically Identity Governance ka main purpose hai.
+Example:-
+Rahul Finance team me hai → Sirf finance apps ka access chahiye
+Agar usko IT admin app ka access mil gaya → Governance ke rules ke through detect aur fix hoga.
+
+️⃣ SailPoint me Governance Components:-
+Identity Governance – user ke access ka monitoring aur management
+Policies – define karte hain ki kaun kya access le sakta hai
+Access Reviews / Certification – managers / auditors regularly check karte hain ki users ka access sahi hai ya nahi
+Roles / Entitlements – roles ke through access simplify kiya jata hai
+Violations & Remediation – agar koi rule violate hota hai, automatically fix ya alert hota hai
+
+9️⃣ Policy
+Policy policy:-
+Kya hai: Ye rules ka set hai jo access aur entitlements ko govern karta hai.
+Kya karta hai:-
+Access reviews, SoD, Least Privilege enforce karta hai
+Violations detect karta hai,
+
+()1️⃣ Remediation ka Simple Matlab:-
+Remediation = koi problem / violation ko fix karna
+Identity Governance me iska matlab hai: jab koi user ka access policy ya rule violate karta hai,
+toh system automatically ya manually usko correct kare.
+Example:-
+Policy: Finance team ke alawa koi write access nahi le sakta.
+Rahul galti se write access le leta hai.
+Remediation → SailPoint automatically uska write access remove kar dega.
+
+2️⃣ Remediation Types:-
+()Automatic Remediation:-
+SailPoint automatically entitlement remove, account disable, role revoke kar deta hai.
+Example: context.removeLinkEntitlement(user, entitlement)
+
+()Manual Remediation:-
+Admin / manager ko alert milta hai aur woh manually action leta hai.
+Example: Manager approve/revoke access via SailPoint dashboard.
+
+🔥 3. Remediation ka kya kaam hai?
+
+✔ 1. Issue detect karna
+👉 Policy evaluator violation find karta hai
+
+✔ 2. Action lena
+👉 Fix ka action decide karta hai:
+Access remove karo
+Role revoke karo
+Ticket raise karo
+
+✔ 3. Close karna
+👉 Jab issue fix ho jata hai
+👉 violation closed ho jata hai
+
+🔥 4. Remediation ka flow (important)
+Policy Evaluation
+      ↓
+Violation Found
+      ↓
+Remediation Action
+      ↓
+Fix (Access Remove / Change)
+      ↓
+Violation Resolved
+
+
+()🔟 PolicyViolation:-
+PolicyViolation violation
+Kya hai: Ye ek incident hai jab policy breach hota hai (user ke paas extra access ya conflict roles).
+Kya karta hai:-
+Violation create karke alert aur remediation trigger karta hai.

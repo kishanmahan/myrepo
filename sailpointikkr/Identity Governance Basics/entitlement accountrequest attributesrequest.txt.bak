@@ -1,0 +1,69 @@
+1️⃣ Entitlement Request:-
+Entitlement = Permission / Access
+Example:-
+AD Group
+SAP Role
+Database Access
+Jira Permission
+Entitlement Request = kisi user ko permission dena ya remove karna
+
+Example:-
+AttributeRequest entitlement = new AttributeRequest();
+entitlement.setName("memberOf");
+entitlement.setValue("Finance_Group");
+entitlement.setOperation(ProvisioningPlan.Operation.Add);
+
+Matlab:-
+User ko Finance_Group access do
+
+2️⃣ AccountRequest:-
+AccountRequest = Application account par kya operation karna hai
+
+Ye batata hai:-
+Account create karna
+Account delete karna
+Account update karna
+
+Example:-
+AccountRequest accReq = new AccountRequest();
+accReq.setApplication("ActiveDirectory");
+accReq.setOperation(AccountRequest.Operation.Create);
+
+Matlab:-
+Active Directory me new account create karo.
+
+3️⃣ AttributeRequest:-
+AttributeRequest = Account ke andar ka attribute change karna
+
+Account ke andar attributes hote hain:-
+username
+department
+role
+email
+
+Example:-
+AttributeRequest attrReq = new AttributeRequest();
+attrReq.setName("department");
+attrReq.setValue("Finance");
+Matlab:-
+User ka department Finance set karo.
+
+()Code Structure:-
+ProvisioningPlan plan = new ProvisioningPlan();
+
+AccountRequest accReq = new AccountRequest();
+accReq.setApplication("ActiveDirectory");
+accReq.setOperation(AccountRequest.Operation.Create);
+
+AttributeRequest attrReq = new AttributeRequest();
+attrReq.setName("department");
+attrReq.setValue("Finance");
+
+AttributeRequest entitlement = new AttributeRequest();
+entitlement.setName("memberOf");
+entitlement.setValue("Finance_Group");
+
+accReq.add(attrReq);
+accReq.add(entitlement);
+
+plan.add(accReq);

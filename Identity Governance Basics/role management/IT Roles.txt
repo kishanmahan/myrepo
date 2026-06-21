@@ -1,0 +1,40 @@
+()IT Roles kya hai?
+--1️⃣ IT Roles kya hai?
+Definition: Ye wo roles hote hain jo IT systems, networks, aur applications ke management ke liye diye jaate hain.
+Purpose:-
+System aur network ko manage karna
+Security aur compliance maintain karna
+Access aur permissions control karna
+Ek line me:-
+“IT Role = system aur technology access + responsibilities ka role”
+
+2️⃣ Examples of IT Roles:-
+IT Role	                          Responsibility	                   Permissions / Access
+IT Admin------------------Servers, Network, System Config------Full admin access to servers & network devices
+System Operator------------Daily operations of IT systems------Start/Stop servers, monitor performance
+Database Admin--------------Manage databases-------------------Read/Write DB, Backup/Restore DB
+Helpdesk------------------Support & troubleshooting----------Limited access to user accounts, reset passwords
+Security Analyst----------Monitor & enforce security----------View logs, configure firewall, alert monitoring
+
+3️⃣ Relation with Technical Role & Business Role:-
+Technical Role: IT Roles ke under aate hain aur system/application specific permissions assign karte hain.
+Business Role: IT Roles Business Role ke through employees ke job functions ke liye assign hote hain.
+
+4️⃣ Code Conceptual Example (SailPoint Style):-
+Identity ravi = getIdentity("EMP67890");
+
+// Define Technical Role for IT
+TechnicalRole itAdmin = new TechnicalRole("IT Admin");
+itAdmin.setApplication("Server");
+itAdmin.addPermission("Server Admin");
+itAdmin.addPermission("Network Config");
+
+// Define Business Role
+BusinessRole itManager = new BusinessRole("IT Manager");
+itManager.addTechnicalRole(itAdmin);
+
+// Assign Business Role to user
+ravi.assignBusinessRole(itManager);
+
+// Ravi automatically gets IT Admin permissions
+System.out.println("Ravi ke permissions: " + ravi.getPermissions());

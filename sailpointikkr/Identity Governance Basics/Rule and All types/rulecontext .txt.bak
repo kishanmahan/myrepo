@@ -1,0 +1,140 @@
+1️⃣ RuleContext kya hai?
+Ye SailPoint me rule execution ka context hai.
+Matlab, jab bhi koi rule run hota hai (jaise provisioning rule, workflow rule, validation rule),
+tab SailPoint system automatically RuleContext create karta hai.
+Ye temporary / local context hai sirf us rule ke execution ke liye.
+--------------------------------------------------------------------------------------------------------------
+2️⃣ RuleContext kya karta hai?
+RuleContext ka main kaam hai:-
+
+()Input arguments provide karna:-
+Rule ke andar agar kuch data chahiye (jaise user name, role name), to RuleContext ke through milega.
+Example:-
+Map<String, Object> args = ruleContext.getArguments();
+String userName = (String) args.get("userName");
+----------------------------------------------------------
+()Output/result set karna:-
+Rule ke end me agar result return karna ho, to ye RuleContext me set hota hai.
+ruleContext.setResult("Success");
+---------------------------------------------------
+()SailPointContext provide karna:-
+Agar rule ke andar system objects ko access ya modify karna hai, to RuleContext se SailPointContext milega:-
+
+SailPointContext context = ruleContext.getSailPointContext();
+Identity id = context.getObjectByName(Identity.class, "john.doe");
+----------------------------------------------
+()Rule execution ke state ka handle:-
+Ye rule ke local state ko manage karta hai, lekin transaction commit/rollback ka kaam nahi karta.
+Transaction ka control SailPointContext ke paas hota hai.
+--------------------------------------------------------------------------------------------------------------
+public void execute(RuleContext ruleContext) {
+    // 1️⃣ Input fetch
+    Map<String, Object> args = ruleContext.getArguments();
+    String userName = (String) args.get("userName");
+
+    // 2️⃣ System access
+    SailPointContext context = ruleContext.getSailPointContext();
+    Identity id = context.getObjectByName(Identity.class, userName);
+
+    // 3️⃣ Rule logic
+    id.setDisplayName(userName.toUpperCase());
+    context.saveObject(id);
+    context.commitTransaction();  // commit changes
+
+    // 4️⃣ Output set
+    ruleContext.setResult("User updated successfully");
+}
+----------------------------------------------------------------------------------------------------------------
+()RuleContext ke andar kya kya hota hai?
+Input Arguments (arguments)
+Ye map/dictionary hota hai jo rule ko input parameters deta hai.
+Example:-username, role, account info, approval decision, etc.
+
+Access karne ke liye:-
+Map<String, Object> args = ruleContext.getArguments();
+String userName = (String) args.get("userName");
+
+Effect: Rule me ye values read karke logic execute kar sakte ho.
+------------------------------------------------------------------------
+()2️⃣ Output / Result (result):-
+Rule ke execution ka output yahan store hota hai.
+Ye result workflow ya provisioning process me wapas use hota hai.
+
+ruleContext.setResult("Success");
+Object res = ruleContext.getResult();
+
+Effect: Rule ka output system ke workflow ya caller ko milega.
+-------------------------------------------------------------------------
+3️⃣ SailPointContext (sailPointContext):-
+Ye core system objects ka access deta hai.
+
+Identity, Account, Role, Policy objects ko fetch, update, save kar sakte ho.
+
+SailPointContext context = ruleContext.getSailPointContext();
+Identity id = context.getObjectByName(Identity.class, "john.doe");
+Effect: Rule ke andar actual system objects pe changes kar sakte ho.
+--------------------------------------------------------------------------------
+(4)Current Object / Target Object:-
+Kuch rules me ek current object hota hai jiske upar rule operate kar raha hai.
+Example: Identity, Role, Account, Entitlement
+
+Object target = ruleContext.getTarget();
+
+Kaam: Rule ko pata hota hai ki ye kaunse identity, role ya account ke liye execute ho raha hai.
+---------------------------------------------------------------------------------------------------
+5️⃣ Metadata / Execution Info:-
+Rule ka execution context store hota hai:-
+Rule name
+Rule type(ProvisioningRule, WorkflowRule)
+Timestamp
+
+Example:-
+String ruleName = ruleContext.getRuleName();
+Kaam: Logging aur debugging me help karta hai.
+-----------------------------------------------------------------------------------------------------
+(6)Arguments Manipulation:-
+RuleContext ke andar arguments ko modify bhi kar sakte ho, taaki workflow me changes propagate ho jaye.
+args.put("roleAssigned", true);
+---------------------------------------------------------------------------------------------------------
+()7️⃣ Exception / Error Handling:-
+Rule ke andar error aane par handle kar sakte ho:-
+try {
+    // rule logic
+} catch(Exception e) {
+    ruleContext.setResult("Failed: " + e.getMessage());
+}
+Kaam: Rule failure ko system me inform karta hai.
+----------------------------------------------------------------------------------------
+✅ RuleContext me values kaun daalta hai?
+👉 SailPoint system automatically values daalta hai jab rule execute hota hai.
+Developer manually RuleContext create ya fill nahi karta.
+
+🔥 Kaise values aati hain RuleContext me?
+1️⃣ Workflow / Provisioning / Event se
+Jab koi process start hota hai (jaise provisioning, approval, aggregation),
+SailPoint us process ke data ko RuleContext ke arguments me daal deta hai
+Example:-
+Map<String, Object> args = ruleContext.getArguments();
+
+Yaha args me already values hongi jaise:
+
+userName = "john.doe"
+role = "Admin"
+operation = "Create"
+👉 Ye sab SailPoint ne auto inject kiya hai
+
+2️⃣ Target Object bhi SailPoint set karta hai
+Object target = ruleContext.getTarget();
+Ye object ho sakta hai:-
+Identity
+Account
+Role
+👉 Ye bhi SailPoint decide karta hai ki rule kis object pe chal raha hai
+
+3️⃣ SailPointContext bhi SailPoint deta hai
+SailPointContext context = ruleContext.getSailPointContext();
+👉 Ye bhi system hi inject karta hai, taaki tum DB objects access kar sako
+
+4️⃣ Result tum set karte ho
+ruleContext.setResult("Success");
+👉 Ye sirf developer set karta hai, SailPoint nahi

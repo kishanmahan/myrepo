@@ -1,0 +1,153 @@
+
+()SailPoint me “efficiently” propagate karna ka matlab basically ye hota hai ki changes ko target systems tak fast, accurate, 
+aur minimal overhead ke saath push karein. 😎
+
+1️⃣ Efficient Propagation ka matlab:-
+Fast: Requests aur changes jaldi target system tak pohonche.
+Accurate: Jo change approve hua, wo exactly apply ho, bina duplicate ya missing updates ke.
+Minimal load: Target system ya SailPoint engine pe unnecessary load na padhe.
+
+2️⃣ Best Practices for Efficient Propagation:-
+
+()Batch Processing:-
+Multiple requests ko batch me propagate karo instead of one by one.
+Example: 100 users ke role updates ek saath push karo.
+
+()Retry & Error Handling:-
+Agar propagation fail ho jaaye → automatic retry karo.
+Failed actions ka audit log maintain karo.
+
+()Delta Updates:-
+Sirf changed attributes push karo, puri object nahi.
+Example: Sirf email update hua → baki sab fields na bhejo.
+-------------------------------
+️⃣ Connector Optimization:-
+Matlab:-
+Connector optimization ka goal hai ki SailPoint aur target system ke beech data transfer fast aur efficient ho.
+Ye important hai jab large number of users/accounts ke updates ho rahe ho.
+Techniques:-
+
+()Filter Queries:-
+Sirf relevant objects ko fetch ya update karo.
+Example: AD me sirf active users ko sync karo, disabled users ignore karo.
+
+()Delta Queries:-
+Sirf changed attributes propagate karo, puri object push karne ki zarurat nahi.
+
+()Batch Operations:-
+Multiple requests ek saath target system me send karo.
+Example: 100 users ka role ek hi API call me update.
+
+()Connector Caching:-
+Frequently used reference data local cache me rakho.
+Example: Role IDs ya Group IDs cache me, baar-baar query na karna.
+
+()Connection Pooling:-
+Target system ke liye persistent connections use karo instead of creating a new connection each time.
+----------------------------------
+()Advantages of async propagate:-
+UI / Workflow fast: Approval ke turant baad user ko next step dikh sakta hai.
+Retry Mechanism easy: Agar propagation fail ho jaye, engine automatically retry kar sakta hai.
+Scalable: Large number of requests easily handle ho jaate hain.
+Load Balancing: Target system pe unnecessary load avoid hota hai.
+
+2️⃣ Asynchronous Propagation:-
+Normally, jab request approve hoti hai, propagation target system me apply hoti hai.
+Synchronous propagation me workflow tab tak wait karta hai jab tak propagation complete na ho → slow ho sakta hai, especially slow systems ya large batches me.
+Asynchronous propagation me propagation background me run hoti hai, workflow/UI block nahi hote.
+----------------------------------------------------------------------------------------------------------
+3️⃣ Async Propagation ka Flow (Step by Step):-
+Step 1: Request Approved:-
+User ya system request submit karta hai aur saare approvals complete ho jaate hain.
+Request state = Approved
+Workflow decide karta hai ki propagation required hai ya nahi.
+Agar required → Trigger: Workflow engine → propagate actions.
+workflow next step change request state:-Pending Propagation.
+
+Step 2: Workflow updates request state as "Pending Propagation":-
+State update:-
+Jab request approve ho jaati hai, workflow request object ka state update karta hai:-
+Approved → Pending Propagation
+Workflow responsibilities yaha:-
+Audit log update: Request ke approval aur state change ka record save karta hai.
+Propagation task prepare: Background me propagation ke liye tasks queue me dalne ki preparation karta hai.
+Optional notification: Requestor/approver ko notification send kar sakta hai ki “request approved, propagation pending”.
+Note: Actual propagation yaha workflow nahi karta, sirf “ready to propagate” mark karta hai.
+
+Step 3: Queue Propagation Tasks:-
+Task creation:-
+Workflow propagation engine ko tasks queue me dalta hai.
+
+--Queue me task structure hota hai:-
+Target system (AD, Salesforce, SAP, etc.)
+Action type: Create / Update / Delete / Revoke
+Delta attributes: Sirf changed fields push hote hain, puri object nahi.
+
+--Workflow role:-
+Propagation initiate karta hai (queue me dal ke)
+Lekin execute nahi karta, ye background threads ka kaam hai.
+Metadata set karta hai: Priority, batch info, retries.
+Matlab workflow yaha propagation engine ke liye tasks ready karta hai, aur unko background me process hone ke liye queue karta hai.
+
+Step 4: Background Processing:-
+()Background threads/processes:-
+Queue se task pick karte hain.
+Target system connectors call karte hain → actual change apply karte hain.
+Example: Account create, role assign, entitlement update.
+
+()Processing details:-
+--Batch processing: Multiple tasks ek saath process karte hain.
+--Delta updates: Sirf changed attributes push hote hain.
+--Workflow propagation ka progress monitor karta hai (success/failure track).
+--Failure handling:-
+Agar propagation fail ho jaata hai → workflow error state update aur retry mechanism trigger karta hai.
+
+Step 5: Status Update:-
+Jab propagation complete hoti hai:
+Workflow request state update karta hai:
+Success → Completed
+Failure → Failed
+Audit log update hota hai → kaunse action complete hua aur kya result
+Notifications send hoti hain (optional)
+Workflow ke through admin ya requestor ko final propagation status pata chalta hai.
+----------------------------------------------------------------------------------------------------------
+1️⃣ Workflow ka matlab:-
+Workflow basically ek sequence of steps ka process hota hai jo identity governance tasks ko automate karta hai.
+Ye define karta hai request ka lifecycle: approval, validation, notifications, propagation, etc.
+
+2️⃣ Workflow kya karta hai?
+a) Request Processing:-
+Workflow decide karta hai request approve/reject kaise hoga.
+Example: User ne access request ki → workflow check karta hai:
+Kya approval required hai?
+Kaunse approver(s) assign karne hain?
+
+b) Approval Management:-
+Workflow approval items create aur assign karta hai.
+Approvers ko notify karta hai.
+Approval ke state track karta hai: Pending / Approved / Rejected.
+
+c) Validation:-
+Workflow request ke rules validate karta hai:
+Mandatory fields check
+Compliance rules
+Policy violations
+
+d) Notifications:-
+Workflow notifications bhejta hai approvers aur requestor ko.
+Example: “Your request approved/rejected” email ya portal notification.
+
+e) Propagation Trigger:-
+Approval ke baad workflow decide karta hai propagation start karna hai ya nahi.
+Workflow state update karta hai → “Pending Propagation”
+
+f) Error Handling:-
+Workflow failed steps ko track karta hai.
+Retry logic, exception handling aur audit log maintain karta hai.
+
+g) Audit & Reporting:-
+Workflow request ke sare steps aur approvals log karta hai.
+Reports generate karna easy hota hai:
+Kaunse request approve hue, reject hue
+Approval time, escalations.
+

@@ -1,0 +1,106 @@
+🏗️ SailPoint IdentityIQ Architecture Overview:-
+🔹 High-Level Architecture
+SailPoint IdentityIQ generally 3-tier architecture follow karta hai:-
+Users (Browser UI)
+        ↓
+Application Server (IIQ)
+        ↓
+Database
+Aur external systems se connectors ke through connect hota hai.
+
+🧠 1️⃣ Presentation Layer (UI Layer)
+Browser-based web UI
+Managers yahi se:
+Access request karte hain
+Certification review karte hain
+Reports dekhte hain
+Admin yahi se configuration karta hai
+Runs on:
+Apache Tomcat (generally)
+
+⚙️ 2️⃣ Application Layer (Core Engine)
+Ye main brain hota hai 🔥
+Isme hota hai:-
+
+✅ Identity Engine
+Identity lifecycle manage karta hai
+Correlation karta hai
+
+✅ Provisioning Engine
+Account create / modify / delete karta hai
+Connectors ko call karta hai
+
+✅ Certification Engine
+Campaign generate karta hai
+Review track karta hai
+
+✅ Policy Engine
+SoD violation detect karta hai
+Risk calculate karta hai
+
+✅ Workflow Engine
+Approval flow control karta hai
+Custom workflows run karta hai
+
+✅ Task Scheduler
+Aggregation
+Identity refresh
+Certifications
+
+🗄️ 3️⃣ Database Layer:-
+Generally:-
+Oracle
+MySQL
+SQL Server
+()Store karta hai:-
+Identity data
+Roles
+Policies
+Audit logs
+Certification records
+
+🔗 4️⃣ Target Applications (External Systems)
+SailPoint connect karta hai:-
+Active Directory
+SAP
+Database
+HR System
+Cloud apps
+Through:-
+Out-of-the-box connectors
+Custom connectors
+API integration
+
+🔄 5️⃣ Aggregation Process
+External system se data aata hai:
+Application → Connector → IIQ → Identity Cube
+()Identity Cube me:-
+Accounts
+Entitlements
+Roles
+Risk
+Store hota hai.
+
+📦 6️⃣ Identity Cube
+Ye SailPoint ka core object hai 🔥
+Isme hota hai:-
+User attributes
+Account links
+Role assignments
+Risk score
+Policy violations
+Interview me ye bahut important hota hai ⚠️
+
+🔐 7️⃣ Security Layer
+Role-based admin access
+Encryption
+Audit logs
+Password masking
+
+☁️ 8️⃣ Deployment Types
+On-Premise
+Company server pe install
+Hybrid
+On-prem + cloud
+(Cloud version = SailPoint IdentityNow)
+

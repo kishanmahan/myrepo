@@ -1,0 +1,315 @@
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointContextFactory;
+
+import sailpoint.object.Identity;
+import sailpoint.object.Application;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningResult;
+
+import sailpoint.provisioning.Provisioner;
+
+import java.util.List;
+import java.util.ArrayList;
+
+public class FullProvisioningDemo {
+
+    public static void main(String[] args) {
+
+        SailPointContext context = null;
+
+        try {
+            // 🔹 1. Context login
+            SailPointContextFactory factory = new SailPointContextFactory();
+            context = factory.getContext("spadmin", "admin123");
+
+            // 🔹 2. Identity fetch
+            Identity identity = context.getObjectByName(Identity.class, "john.doe");
+
+            // 🔹 3. Application fetch
+            Application app = context.getObjectByName(Application.class, "Active Directory");
+
+            // 🔹 4. Plan create
+            ProvisioningPlan plan = new ProvisioningPlan();
+            plan.setIdentity(identity);
+
+            // 🔹 5. AccountRequest
+            ProvisioningPlan.AccountRequest accountRequest =
+                    new ProvisioningPlan.AccountRequest();
+
+            accountRequest.setApplication(app.getName());
+            accountRequest.setNativeIdentity("john.doe");
+            accountRequest.setOperation(
+                    ProvisioningPlan.AccountRequest.Operation.Modify
+            );
+
+            // 🔹 6. AttributeRequest
+            ProvisioningPlan.AttributeRequest attr1 =
+                    new ProvisioningPlan.AttributeRequest(
+                            "email",
+                            ProvisioningPlan.Operation.Set,
+                            "john@gmail.com"
+                    );
+
+            ProvisioningPlan.AttributeRequest attr2 =
+                    new ProvisioningPlan.AttributeRequest(
+                            "department",
+                            ProvisioningPlan.Operation.Set,
+                            "IT"
+                    );
+
+            ProvisioningPlan.AttributeRequest attr3 =
+                    new ProvisioningPlan.AttributeRequest(
+                            "role",
+                            ProvisioningPlan.Operation.Add,
+                            "Developer"
+                    );
+
+            // 🔹 7. Add attributes
+            accountRequest.add(attr1);
+            accountRequest.add(attr2);
+            accountRequest.add(attr3);
+
+            // 🔹 8. Add to plan
+            plan.add(accountRequest);
+
+            // 🔹 9. Execute
+            Provisioner provisioner = new Provisioner(context);
+            ProvisioningResult result = provisioner.execute(plan);
+
+            // 🔹 10. Manual changes list (NO Arrays.asList)
+            List<String> changes = new ArrayList<String>();
+            changes.add("Email updated to john@gmail.com");
+            changes.add("Department changed to IT");
+            changes.add("Role Developer added");
+
+            result.setChanges(changes);
+
+            // 🔹 11. Output
+            System.out.println("===== FINAL OUTPUT =====");
+            System.out.println("Status: " + result.getStatus());
+            System.out.println("Success: " + result.isSuccess());
+            System.out.println("Errors: " + result.getErrors());
+            System.out.println("Warnings: " + result.getWarnings());
+            System.out.println("Changes: " + result.getChanges());
+            System.out.println("RequestId: " + result.getRequestId());
+            System.out.println("Application: " + result.getApplication());
+            System.out.println("Account: " + result.getAccount());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (context != null) {
+                context.close();
+            }
+        }
+    }
+}
+🔥 ✅ REAL OUTPUT:-
+===== FINAL OUTPUT =====
+Status: SUCCESS
+Success: true
+Errors: null
+Warnings: null
+Changes: [Email updated to john@gmail.com, Department changed to IT, Role Developer added]
+RequestId: REQ-123456
+Application: Active Directory
+Account: Account[john.doe]
+--------------------------------------------------------------------------------------------------------------------------------
+🔥 🔹 CASE 1: SAME NAME (Identity = NativeIdentity):-
+🧠 Real Situation:-
+IdentityIQ user      = john.doe
+AD account username = john.doe
+🔹 Code:-
+plan.setIdentity(identity);                  // john.doe
+accountRequest.setNativeIdentity("john.doe"); // same
+
+/////////////*
+()factory.getContext("spadmin", "admin123");:-
+
+🔹 1. Ye return kya karta hai?
+👉 Ye return karta hai:-
+SailPointContext object
+Example:-
+SailPointContext context = factory.getContext("spadmin", "admin123");
+📌 Matlab:-
+👉 Tumhe ek authenticated session milta hai IdentityIQ ka
+👉 Jisse tum DB aur SailPoint ke objects access kar sakte ho
+
+🔹 2. Andar kya kya hota hai (Behind the Scenes):-
+Jab tum ye call karte ho, internally ye steps hote hain:-
+
+✅ Step 1: Authentication
+"spadmin" username check hota hai
+"admin123" password verify hota hai
+👉 Agar galat hua:-
+LoginException / Authentication Failed.
+
+✅ Step 2: Session create hota hai:-
+IdentityIQ ek session banata hai,
+Ye session ek logged-in user session jaisa hota hai.
+
+✅ Step 3: Context object ban jata hai:-
+👉 Ye context ke andar hota hai:-
+DB connection (Hibernate session)
+Logged-in user (spadmin)
+Permissions / roles
+SailPoint APIs ka access
+
+🔹 3. Context se kya kya kar sakte ho?
+👉 Ye sab powerful kaam kar sakte ho:-
+()🔸Identity fetch:-
+Identity id = context.getObjectByName(Identity.class, "john.doe");
+()🔸Application fetch:-
+Application app = context.getObjectByName(Application.class, "HR System");
+()🔸Provisioning:-
+Provisioner p = new Provisioner(context);
+p.execute(plan);
+()🔸Query run:-
+context.search(Identity.class, queryOptions);
+----------------------------------------------------------
+()🔥 🔹 1️⃣ plan.setIdentity(identity):-
+👉 ✔️ Ye db me store nahi hota balki store hota hai:-
+ProvisioningPlan object (memory me - runtime)
+
+()🔥 🔹 2️⃣ accountRequest.setNativeIdentity("jdoe123"):-
+🧠 Ye karta kya hai?
+accountRequest.setNativeIdentity("jdoe123");
+👉 Ye batata hai:-
+"Target system (AD / DB) me kaunsa account modify karna hai"
+👉 Target account hota hai:-
+accountRequest.setNativeIdentity("jdoe123");
+👉 ✔️ Ye bhi store hota hai:-
+ProvisioningPlan → AccountRequest (memory)
+
+🔹 1️⃣ plan.setIdentity(identity):-
+👉 Ye hai:-
+IdentityIQ ka INTERNAL USER
+Example:-
+Identity = john.doe
+email = john@gmail.com
+
+🔹 2️⃣ accountRequest.setNativeIdentity("jdoe123"):-
+👉 Ye hai:-
+External system ka ACCOUNT ID
+Example:-
+AD username = jdoe123
+email = john@gmail.com
+
+🔥 🔹 Kab dono same ho sakte hain?
+👉 Sirf tab jab spt_link me:-
+IdentityIQ username = john.doe
+AD username        = john.doe
+👉 Tab:-
+Identity == NativeIdentity kyuki
+email se farak nahi aur compare bhi nahi hota.
+
+👉 ✔️ Sirf isse hota hai:-
+LINK TABLE (spt_link) in db:-
+🔹 Real Mapping:-
+Identity (IdentityIQ)  →  john.doe
+Application            →  Active Directory
+NativeIdentity         →  jdoe123
+👉 Ye entry hoti hai DB me:-
+spt_link table
+
+🔹 5. spt_link table ka role:-
+👉 spt_link kya karta hai:-
+👉 Identity aur Account ko link karta hai.
+📌 Matlab:-
+👉 Ye table batata hai:-
+Kaunsa user (Identity)
+Kis application me
+Kaunsa account use kar raha hai
+
+🔹 3. spt_link ke andar kya kya fields hote hain? 🧠
+Main important columns 👇
+
+🔸 1. id:-
+👉 Unique ID (primary key)
+UUID (auto-generated)
+
+🔸 2. identity_id:-
+👉 Ye kis user ka record hai
+Reference to spt_identity table
+✔ Ye link karta hai:-
+👉 SailPoint user → account
+
+🔸 3. application:-
+👉 Kaunsa application
+AD / SAP / DB / HR System
+
+🔸 4. native_identity 🔥 (MOST IMPORTANT):-
+👉 External system ka username
+jdoe123
+✔ Ye hi use hota hai provisioning me
+
+🔸 5. display_name:-
+👉 User-friendly name
+John Doe Account
+
+🔸 6. instance:-
+👉 Application instance (optional)
+Production / Test
+
+🔸 7. attributes:-
+👉 Account ke saare attributes (JSON/XML format me)
+Example:-
+{
+  "email": "john@example.com",
+  "department": "IT",
+  "role": "Admin"
+}
+
+🔸 8. created:-
+👉 Account kab create hua
+
+🔸 9. modified:-
+👉 Last update kab hua
+
+🔸 10. disabled:-
+👉 Account active hai ya disabled
+true / false
+
+🔸 11. locked:-
+👉 Account locked hai ya nahi
+
+🔸 12. entitlements:-
+👉 Roles / permissions jo user ke paas hain
+------------------------------------------------------
+(2)2nd comparision:-
+👉 Tu kya karna chahta hai:-
+Ek user (base user) lo  
+aur baaki multiple users ko usse compare karo
+
+Example:-
+Base User = john.doe
+Compare with:-
+- ram.kumar
+- shyam.verma
+- alex.john
+
+🔥 🔹 Compare kis basis pe?
+Tu compare kar sakta hai custom logic se:-
+Email
+Department
+Role / Entitlements
+Application Accounts
+Attributes
+-----------------------------------------------------------
+*//////////
+-----------------------------------------------------------aur kya kya store hota hai?
+--🔷 🔥 DB me store hota hai kya?
+👉 ✅ Haan bhai,ye bhi store hota hai
+
+📍 Important Tables:-
+🔸 spt_identity
+👉 user data
+
+🔸 spt_policy_violation
+👉 violations store hote hain 🔥
+
+🔸 spt_certification
+👉 certification data
+
+🔸 spt_audit_event
+👉 audit logs

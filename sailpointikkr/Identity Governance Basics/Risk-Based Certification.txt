@@ -1,0 +1,211 @@
+-------------------------------------------------------------------------------------------------
+1️⃣ Risk-Based Certification kya hota hai?
+Risk-Based Certification = Access review process jisme high-risk users ko pehle review kiya jata hai.
+
+Normal certification me:-
+sab users ka review hota hai
+
+Risk-based certification me:-
+sirf high risk identities ko priority milti hai
+
+👉 Matlab system pehle check karega:-
+High privilege users
+Sensitive access users
+SoD conflict users
+Aur unka access review campaign create karega.
+
+2️⃣ Example:-
+User	     Roles	            Risk	Certification
+Rahul----Admin + Database-------High-----Required
+Amit---------Employee-----------Low------Optional
+Neha-----Finance + Approver-----High-----Required
+
+Yaha system Rahul aur Neha ko certification me bhejega.
+
+3️⃣ Risk-Based Certification ka flow:-
+
+1️⃣ Identity risk score calculate hota hai
+2️⃣ Risk threshold check hota hai
+Example:-
+Risk Score > 80
+
+3️⃣ Agar threshold cross ho gaya
+Certification Required
+
+4️⃣ Manager review karta hai
+Approve / Revoke Access
+
+4️⃣ Real IAM Certification Example:-
+Identity : Rahul
+Roles : Admin, FinanceManager
+Entitlements : DatabaseDelete
+
+Risk Score : 90
+
+Certification Status : REQUIRED
+Reviewer : Manager
+
+Risk-Based Certification Project (Multiple Users):-
+import java.util.ArrayList;
+import java.util.List;
+
+class Identity {
+
+    private String name;
+    private List<String> roles;
+    private List<String> entitlements;
+    private int riskScore;
+
+    public Identity(String name) {
+        this.name = name;
+        this.roles = new ArrayList<>();
+        this.entitlements = new ArrayList<>();
+        this.riskScore = 0;
+    }
+
+    public void addRole(String role) {
+        roles.add(role);
+    }
+
+    public void addEntitlement(String ent) {
+        entitlements.add(ent);
+    }
+
+    public void calculateRisk() {
+
+        // High privilege roles
+        for(String role : roles) {
+
+            if(role.equalsIgnoreCase("Admin")) {
+                riskScore += 50;
+            }
+
+            if(role.equalsIgnoreCase("FinanceManager")) {
+                riskScore += 40;
+            }
+
+            if(role.equalsIgnoreCase("SecurityManager")) {
+                riskScore += 45;
+            }
+
+        }
+
+        // Sensitive entitlements
+        for(String ent : entitlements) {
+
+            if(ent.equalsIgnoreCase("DatabaseDelete")) {
+                riskScore += 30;
+            }
+
+            if(ent.equalsIgnoreCase("ServerRoot")) {
+                riskScore += 35;
+            }
+
+            if(ent.equalsIgnoreCase("PaymentAccess")) {
+                riskScore += 25;
+            }
+
+        }
+
+        // Conflict roles (SoD violation)
+        if(roles.contains("PaymentCreator") && roles.contains("PaymentApprover")) {
+
+            System.out.println("⚠ Conflict Roles detected for " + name);
+            riskScore += 50;
+
+        }
+
+    }
+
+    public boolean requiresCertification() {
+
+        if(riskScore >= 80) {
+            return true;
+        }
+        return false;
+    }
+
+    public void display() {
+
+        System.out.println("\nIdentity : " + name);
+        System.out.println("Roles : " + roles);
+        System.out.println("Entitlements : " + entitlements);
+        System.out.println("Risk Score : " + riskScore);
+
+        if(requiresCertification()) {
+            System.out.println("Certification Required ✅");
+        }
+        else {
+            System.out.println("Certification Not Required");
+        }
+
+    }
+}
+
+public class RiskBasedCertificationProject {
+
+    public static void main(String[] args) {
+
+        List<Identity> identities = new ArrayList<>();
+
+
+        Identity user1 = new Identity("Rahul");
+
+        user1.addRole("Admin");
+        user1.addRole("PaymentCreator");
+        user1.addRole("PaymentApprover");
+
+        user1.addEntitlement("DatabaseDelete");
+        user1.addEntitlement("ServerRoot");
+
+        identities.add(user1);
+
+
+
+        Identity user2 = new Identity("Amit");
+
+        user2.addRole("Employee");
+        user2.addEntitlement("ReadAccess");
+
+        identities.add(user2);
+
+
+
+        Identity user3 = new Identity("Neha");
+
+        user3.addRole("FinanceManager");
+        user3.addEntitlement("PaymentAccess");
+
+        identities.add(user3);
+
+
+
+        for(Identity id : identities) {
+
+            id.calculateRisk();
+            id.display();
+
+        }
+
+    }
+}
+Example Output
+⚠ Conflict Roles detected for Rahul
+
+Identity : Rahul
+Roles : [Admin, PaymentCreator, PaymentApprover]
+Entitlements : [DatabaseDelete, ServerRoot]
+Risk Score : 165
+Certification Required ✅
+
+Identity : Amit
+Roles : [Employee]
+Entitlements : [ReadAccess]
+Risk Score : 0
+Certification Not Required
+
+Identity : Neha
+Roles : [FinanceManager]
+Entitlements : [PaymentAccess]
+Risk Score : 65
+Certification Not Required

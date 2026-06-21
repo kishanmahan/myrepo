@@ -1,0 +1,32 @@
+//////*
+<Transition expr="script:isApproved" to="Provisioning"/>
+Isko breakdown karte hain:-
+1. <Transition ... />:-
+Transition = workflow me next step kaha jana hai decide karta hai.
+
+2. expr="script:isApproved":-
+expr = condition / expression.
+Yaha:-
+script:isApproved:-
+matlab isApproved variable/script ko check karo.
+Agar isApproved = true
+→ condition pass
+→ transition chalega.
+
+Agar false
+→ ye transition nahi chalega.
+Example:-
+<Variable name="isApproved" initializer="true"/>
+
+ya script se:-
+boolean isApproved = approvalSet.isApproved();
+return isApproved;
+
+3. to="Provisioning":-
+Condition true hui to workflow Provisioning step me chala jayega.
+Current Step
+    ↓
+isApproved == true ?
+    ↓ Yes
+Provisioning
+*///////////

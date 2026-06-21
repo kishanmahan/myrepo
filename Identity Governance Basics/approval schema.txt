@@ -1,0 +1,6 @@
+🧠 Approval Scheme kya hai?
+
+👉 Approval Scheme = wo rule/plan jo decide karta hai ki role assign hone se pehle approval kaise hoga
+
+Ye role ke upar define hota hai
+Ye batata hai kaun approve karega ya direct assign hoga

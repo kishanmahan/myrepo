@@ -1,0 +1,91 @@
+()🔥 🔹 ManagerCorrelation Rule – Big Definition:-
+ManagerCorrelation Rule SailPoint ka ek special rule type hai 
+jo aggregation ke time external system se aane wale manager data(jaise managerId, managerName, email) 
+ko SailPoint ke internal Identity object se match (correlate) karta hai, taki har user ka correct manager automatically assign ho sake.
+
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="ENT_Standard_ManagerCorrelation" type="ManagerCorrelation">
+  <Description>
+    Ye rule target application se Manager ki ID nikalta hai aur IdentityIQ 
+    ke database mein us ID wale user (Manager) ko dhoond kar link karta hai.
+  </Description>
+  <Source>
+  // 1. Explicit Imports (No Wildcards)
+  import sailpoint.object.Identity;
+  import sailpoint.object.Filter;
+  import sailpoint.object.QueryOptions;
+  import sailpoint.tools.Util;
+  import java.util.Map;
+  import java.util.HashMap;
+  import org.apache.commons.logging.Log;
+  import org.apache.commons.logging.LogFactory;
+
+  // 2. Logger Setup
+  Log logger = LogFactory.getLog("custom.rule.ManagerCorrelation");
+  Map returnMap = new HashMap();
+
+  try {
+      // 3. Account se manager ka attribute nikalna 
+      // (Jaise HR system mein 'Manager_EmpID' ya 'Supervisor_ID' hota hai)
+      String managerIdFromAccount = account.getStringAttribute("Supervisor_ID");
+
+      // Agar account mein manager ki detail hi nahi hai, toh rule yahin rok do
+      if (Util.isNullOrEmpty(managerIdFromAccount)) {
+          logger.debug("Account " + account.getNativeIdentity() + " ke paas koi Manager ID nahi hai.");
+          return returnMap; // Empty map return hoga (No manager)
+      }
+
+      logger.debug("Searching Manager with ID: " + managerIdFromAccount);
+
+      // 4. SailPoint mein Manager ko dhoondna
+      // "name" internal Identity unique ID hai (Jaise humne pehle discuss kiya tha)
+      Filter managerFilter = Filter.eq("name", managerIdFromAccount);
+      QueryOptions qo = new QueryOptions();
+      qo.addFilter(managerFilter);
+
+      // 5. Duplicate Check (Kahin do logo ki same ID toh nahi?)
+      int count = context.countObjects(Identity.class, qo);
+      
+      if (count == 1) {
+          Identity managerIdentity = context.getUniqueObject(Identity.class, managerFilter);
+          
+          if (managerIdentity != null) {
+              // RETURN MAP: SailPoint ko strictly 'identity' key ke andar hi object chahiye hota hai
+              returnMap.put("identity", managerIdentity);
+              logger.info("Manager successfully correlated: " + managerIdentity.getName());
+          }
+      } else if (count > 1) {
+          // Live system alert: Data issue in Identity table
+          logger.error("CRITICAL: Multiple identities found with Manager ID: " + managerIdFromAccount);
+      } else {
+          logger.warn("Manager ID " + managerIdFromAccount + " SailPoint mein nahi mili. Orphan record.");
+      }
+
+  } catch (Exception e) {
+      logger.error("Manager Correlation mein exception: " + e.getMessage(), e);
+  }
+
+  // 6. Final Return
+  return returnMap;
+  </Source>
+</Rule>
+////////////*
+()pata kaise chalega ki kis user ke account ka value aya hai?
+--Ye ek bohot hi solid aur practical sawal hai! Jab aap live system par aggregation chalate hain 
+jisme 1 lakh (100,000) accounts aa rahe hain, toh rule ke andar ye pata lagana zaroori hota hai 
+ki "Abhi engine kis account ko process kar raha hai?"
+SailPoint mein iska pata lagane ke 2 sabse standard tarike hain.
+
+1. The Ultimate ID: NativeIdentity (Sabse Safe Tarika).
+--// Account ki unique ID nikalna
+String currentAccount = account.getNativeIdentity();
+// Logger mein print karna taaki identityiq.log mein dikhe
+logger.debug("Currently processing account: " + currentAccount);
+
+2. Specific Attribute Nikalna:-
+--// Maan lijiye aapko check karna hai ki kis email ID ka data aa raha hai
+String userEmail = account.getStringAttribute("MAIL");
+String empId = account.getStringAttribute("EMPLOYEE_NUMBER");
+logger.info("Data aa raha hai -> EmpID: " + empId + " | Email: " + userEmail);
+*////////////

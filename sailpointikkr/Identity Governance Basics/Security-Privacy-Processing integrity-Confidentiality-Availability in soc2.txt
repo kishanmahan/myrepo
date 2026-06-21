@@ -1,0 +1,50 @@
+2️⃣ SOC 2:-
+SOC 2 = Service Organization Control
+Ye mostly cloud companies ke liye hota hai.
+Isme 5 trust principles hote hain:-
+1️⃣ Security
+2️⃣ Availability
+3️⃣ Processing integrity
+4️⃣ Confidentiality
+5️⃣ Privacy
+
+()1️⃣ Security:-
+Matlab system ko unauthorized access se bachana.
+Example:-
+Firewall
+Authentication
+Access control
+Agar koi hacker system me ghusne ki koshish kare to security controls usko block karte hain.
+
+2️⃣ Availability:-
+Matlab system jab chahiye tab available ho.
+Example:-
+Server uptime
+Backup systems
+Disaster recovery
+Jaise website 24/7 chalti rahe aur crash na ho.
+
+3️⃣ Processing Integrity:-
+Matlab data processing sahi aur accurate ho.
+Example:-
+Transactions correctly process ho
+Data corrupt na ho
+System calculation galat na kare
+Jaise bank transfer amount correct process hona.
+
+4️⃣ Confidentiality:-
+Matlab sensitive data sirf authorized ladka/ladki hi dekh sake.
+Example:-
+Encryption
+Restricted access
+Secure storage
+Jaise company ke secret documents safe rehna.
+
+5️⃣ Privacy:-
+Matlab personal data ko proper rules ke saath handle karna.
+Example:-
+User consent
+Personal data protection
+Data collection rules
+Jaise user ka name, email, phone misuse na ho.
+

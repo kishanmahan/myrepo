@@ -1,0 +1,69 @@
+3. try-catch (Error Ko Handle/Solve Karna)
+Maksad: Yeh actual me error ko catch (pakadti) hai aur code ko crash hone se bachati hai.
+
+Kab use hota hai: Jis code me shak ho ki error aa sakti hai, use try me daalo, aur agar error aayi toh kya karna hai (jaise log print karna), use catch me daalo.
+
+Java
+try {
+    pro.execute(project); // Is line me error aa sakti hai
+} catch (Exception e) {
+    log.error("Provisioning fail ho gayi par code crash nahi hoga: " + e.getMessage());
+}
+
+------------------------------------------------------------------------------------------------------------
+2. throws (Error Ki Warning Dena)
+Maksad: Yeh method ke signature (naam) ke sath lagta hai. Yeh aane wale developer ko warn (chitani) karta hai ki "Bhai, is method ke andar error aa sakti hai, sambhal kar use karna."
+
+Kab use hota hai: Yeh khud error solve nahi karta, balki responsibility ko aage pass kar deta hai (caller method par).
+
+Syntax: Yeh hamesha method name ke aage lagta hai aur iske sath exception ki class ka naam hota hai.
+
+Java
+// Yeh method bol raha hai ki mere andar SailPointException aa sakti hai
+public void createADAccount() throws SailPointException {
+    // Aapka provisioning code...
+}
+
+()throws ka simple matlab hota hai "Responsibility (Zimmedari) ko aage badhana".
+Jab aap ek aisa method likh rahe ho jisme koi error (Exception) aa sakti hai, 
+lekin aap us method ke andar use try-catch laga kar solve nahi karna chahte, 
+toh aap method ke naam ke aage throws laga dete ho. Iska matlab aap bol rahe ho:-
+"Agar is method me koi galti hui, toh jo mujhe call karega, wo ise handle karega!"
+
+Flows se Samjho: throws Ka Chain Reaction ??
+Maano aapke paas teen methods hain: Method_C ko Method_B call karta hai, aur Method_B ko Method_A call karta hai.
+
+Java
+// 1. Sabse chota method (Isne responsibility aage phenk di)
+public void Method_C() throws Exception {
+    // Kucch risky kaam jisme error aa sakti hai
+    throw new Exception("C me crash ho gaya!"); 
+}
+
+// 2. Beech wala method (Isne bhi responsibility aage phenk di)
+public void Method_B() throws Exception {
+    Method_C(); // Isne C ko call kiya par handle nahi kiya, aage badha diya
+}
+
+// 3. Sabse upar wala method (Isne FINALLY try-catch lagakar handle kiya)
+public void Method_A() {
+    try {
+        Method_B(); 
+    } catch (Exception e) {
+        System.out.println("Finally! A ne galti pakad li: " + e.getMessage());
+    }
+}
+Output:-Finally! A ne galti pakad li: C me crash ho gaya!
+-----------------------------------------------------------------------------------------------------------
+1. throw (Error Paida Karna)
+Maksad: Jab aapko khud manually koi error/exception generate karni ho, tab aap throw use karte hain.
+
+Kab use hota hai: Jab koi business logic fail ho jaye (jaise user contractor nahi hai, ya age 18 se kam hai).
+
+Syntax: Iske baad hamesha exception ka ek naya object hota hai (new).
+
+Java
+if (idn == null) {
+    // Hum khud manually error phenk rahe hain
+    throw new NullPointerException("Identity nahi mili boss!"); 
+}

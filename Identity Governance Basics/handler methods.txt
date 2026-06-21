@@ -1,0 +1,1303 @@
+🔹 1️⃣ “Task ka core logic run” ka matlab:-
+Task ka core logic matlab: jo kaam task ke liye specifically design kiya gaya hai, wo sab executor ke execute() method me perform hota hai.
+Example ka scope:-
+Task Type	                          Core Logic Example
+Provisioning:--------------Identity ko role assign karna, entitlement add/remove
+Compliance:----------------Check karna ki user ke paas valid access hai ya nahi
+Notifications:-------------Email ya system alert send karna
+Workflow Integration:------Approval workflow trigger karna
+Custom Calculation:--------Data process karke TaskResult me store karna.
+
+🔹 2️⃣ public Map<String, Object> getResults():-
+Purpose:-
+Ye method task execution ke results return karta hai,
+Engine ya workflow usko read karke next step decide kar sakta hai.
+
+🔹 3️⃣ public void init(Task task):-
+Purpose:-
+Task execution ke shuru me initialization ke liye,
+Developer task-specific setup ya log messages yaha kar sakta hai.
+
+🔹 4️⃣ public void finish(TaskResult result):-
+Purpose:-
+Task complete hone ke baad cleanup aur final updates ke liye,
+TaskResult ka final status, messages, or auditing yaha set karte hain.
+
+🔹 5️⃣ public void setParameters(Map<String, Object> params):-
+Purpose:-
+Task me custom input parameters set karne ke liye,
+Executor ke andar ye parameters read karke logic me use hote hain.
+
+🔹 6️⃣ public Map<String, Object> getParameters():-
+Purpose:-
+Task execution ke beech me parameters read karne ke liye,
+Logic decide karne me ya workflow me ye kaam aata hai.
+
+
+--------------------------------------------------------------------------------------
+🔹 1️⃣ public void execute(TaskContext context):-
+Purpose:
+Ye main method hai jo task engine ke through call hota hai,
+TaskContext me Task instance, TaskResult, parameters sab available hote hain.
+Isme task ka core logic run hota hai.
+
+Example:-
+import sailpoint.task.TaskContext;
+import sailpoint.task.TaskResult;
+
+public class CustomExecutor {
+
+    public void execute(TaskContext context) {
+        TaskResult result = context.getTaskResult();
+        System.out.println("Executing task: " + context.getTask().getName());
+
+        // Simple logic
+        result.setStatus(TaskResult.Status.Running);
+        result.addMessage("Task is running...");
+
+        // Complete task
+        result.setCompletionStatus(TaskResult.Status.Completed);
+        result.addMessage("Task completed successfully.");
+    }
+}
+Sample Output:-
+Executing task: DemoTask
+TaskResult Status: Running
+TaskResult Message: Task is running...
+TaskResult Completion Status: Completed
+TaskResult Message: Task completed successfully.
+---------------------------------------------------------------------------------------------------------
+🔹 2️⃣ Real Project Style Notepad-Friendly Code
+
+Ye complete flow hai: Admin → TaskDefinition → Engine → Task → TaskResult → Executor + Handler
+
+// File: DemoTaskExecutor.java
+import java.util.HashMap;
+import java.util.Map;
+
+// Mock classes for Notepad simulation
+class Task {
+    private String name;
+    public Task(String name){ this.name = name; }
+    public String getName(){ return name; }
+}
+
+class TaskResult {
+    enum Status { Ready, Running, Completed, Failure }
+    private Status status;
+    private Status completionStatus;
+    private StringBuilder messages = new StringBuilder();
+
+    public void setStatus(Status status){ this.status = status; }
+    public void setCompletionStatus(Status completionStatus){ this.completionStatus = completionStatus; }
+    public void addMessage(String msg){ messages.append(msg).append("\n"); }
+    public Status getStatus(){ return status; }
+    public Status getCompletionStatus(){ return completionStatus; }
+    public String getMessages(){ return messages.toString(); }
+}
+
+class TaskContext {
+    private Task task;
+    private TaskResult result;
+    public TaskContext(Task task, TaskResult result){ this.task = task; this.result = result; }
+    public Task getTask(){ return task; }
+    public TaskResult getTaskResult(){ return result; }
+}
+
+public class DemoTaskExecutor {
+
+    private Map<String, Object> parameters = new HashMap<>();
+    private Map<String, Object> results = new HashMap<>();
+
+    // 1️⃣ Initialize task
+    public void init(Task task){
+        System.out.println("Initializing task: " + task.getName());
+    }
+
+    // 2️⃣ Set input parameters
+    public void setParameters(Map<String, Object> params){
+        this.parameters = params;
+        System.out.println("Parameters set: " + params);
+    }
+
+    public Map<String,Object> getParameters(){ return parameters; }
+
+    // 3️⃣ Core logic run
+    public void execute(TaskContext context){
+        Task task = context.getTask();
+        TaskResult result = context.getTaskResult();
+
+        System.out.println("Executing task: " + task.getName());
+        result.setStatus(TaskResult.Status.Running);
+        result.addMessage("Task started...");
+
+        // ===== Core Logic =====
+        // Example: Processing user provisioning
+        String username = (String) parameters.get("username");
+        if(username != null){
+            result.addMessage("Processing user: " + username);
+            // Simulate provisioning logic
+            if(username.equals("jokerboy")){
+                result.addMessage("Assigned role: Admin");
+            } else {
+                result.addMessage("Assigned role: User");
+            }
+        } else {
+            result.addMessage("No user parameter found.");
+        }
+
+        // ===== End Core Logic =====
+        result.setCompletionStatus(TaskResult.Status.Completed);
+        result.addMessage("Task completed successfully.");
+
+        // Save results
+        results.put("Status", result.getCompletionStatus());
+        results.put("Messages", result.getMessages());
+    }
+
+    // 4️⃣ Finish task
+    public void finish(TaskResult result){
+        result.addMessage("Finish method called.");
+        System.out.println("Final TaskResult Status: " + result.getCompletionStatus());
+    }
+
+    // 5️⃣ Get results
+    public Map<String,Object> getResults(){ return results; }
+
+    // 6️⃣ Optional handler
+    private void defaultHandler(Task task, TaskResult result){
+        result.addMessage("Handler logic executed for task: " + task.getName());
+    }
+
+    // 7️⃣ Run full task simulation
+    public static void main(String[] args){
+        DemoTaskExecutor executor = new DemoTaskExecutor();
+
+        // Admin creates TaskDefinition -> task name
+        Task task = new Task("DemoProvisioningTask");
+        TaskResult result = new TaskResult();
+        TaskContext context = new TaskContext(task,result);
+
+        executor.init(task);
+
+        // Set parameters
+        Map<String,Object> params = new HashMap<>();
+        params.put("username","jokerboy");
+        executor.setParameters(params);
+
+        // Execute task (core logic)
+        executor.execute(context);
+
+        // Optional internal handler
+        executor.defaultHandler(task,result);
+
+        // Finish task
+        executor.finish(result);
+
+        // Print final results
+        System.out.println("TaskResult Messages:\n" + result.getMessages());
+        System.out.println("getResults() Map: " + executor.getResults());
+    }
+}
+🔹 Sample Console Output
+Initializing task: DemoProvisioningTask
+Parameters set: {username=jokerboy}
+Executing task: DemoProvisioningTask
+TaskResult Messages:
+Task started...
+Processing user: jokerboy
+Assigned role: Admin
+Task completed successfully.
+Handler logic executed for task: DemoProvisioningTask
+Finish method called.
+
+Final TaskResult Status: Completed
+getResults() Map: {Status=Completed, Messages=Task started...
+Processing user: jokerboy
+Assigned role: Admin
+Task completed successfully.
+}
+------------------------------------------------------------------------------------------------------
+🔹 1️⃣ public void review(AccessReview review):-
+Purpose:-
+Ye method single review object ko process karta hai
+Developer yaha review ke rules ya actions define kar sakta hai.
+
+🔹 2️⃣ public void performReviewActions():-
+Purpose:-
+Ye method sab reviews ke liye actions perform karta hai,
+Example: Approve, Reject, Notify, Log messages.
+
+🔹 3️⃣ public int getReviewCount():-
+Purpose:-
+Current reviews ka count return karta hai.
+
+🔹 4️⃣ public void setReviewCount(int count):-
+Purpose:-
+Review count update karne ke liye
+Developer ya engine use set kar sakta hai.
+----------------------------------------------------------------
+🔹 ✅ Notepad-Friendly Full Example
+import java.util.ArrayList;
+import java.util.List;
+
+// Simulate AccessReview object
+class AccessReview {
+    private String username;
+    private String role;
+    private String status;
+
+    public AccessReview(String username, String role){
+        this.username = username;
+        this.role = role;
+        this.status = "NotReviewed";
+    }
+
+    public String getUsername(){ return username; }
+    public String getRole(){ return role; }
+    public String getStatus(){ return status; }
+    public void setStatus(String status){ this.status = status; }
+}
+
+// ReviewExecutor simulates Access Review logic
+public class ReviewExecutor {
+
+    private int reviewCount = 0;
+
+    public void review(AccessReview review){
+        System.out.println("Reviewing access for user: " + review.getUsername());
+        if("Admin".equals(review.getRole())){
+            review.setStatus("Pending");
+        } else {
+            review.setStatus("Approved");
+        }
+    }
+
+    public void performReviewActions(List<AccessReview> reviews){
+        for(AccessReview r : reviews){
+            review(r);
+            System.out.println("Action performed for user: " + r.getUsername() 
+                               + " Status: " + r.getStatus());
+        }
+        setReviewCount(reviews.size());
+    }
+
+    public int getReviewCount(){ return reviewCount; }
+    public void setReviewCount(int count){
+        this.reviewCount = count;
+        System.out.println("Review count set to: " + count);
+    }
+
+    // Main simulation
+    public static void main(String[] args){
+        ReviewExecutor executor = new ReviewExecutor();
+
+        List<AccessReview> reviews = new ArrayList<>();
+        reviews.add(new AccessReview("jokerboy","User"));
+        reviews.add(new AccessReview("alice","Admin"));
+
+        executor.performReviewActions(reviews);
+
+        System.out.println("Total reviews processed: " + executor.getReviewCount());
+    }
+}
+🔹 Sample Output
+Reviewing access for user: jokerboy
+Action performed for user: jokerboy Status: Approved
+Reviewing access for user: alice
+Action performed for user: alice Status: Pending
+Review count set to: 2
+Total reviews processed: 2
+-----------------------------------------------------------------------------------------------------------------------------------------------
+🔹 1️⃣ public void process():-
+Purpose:-
+Ye main entry point hai aggregation workflow ka.
+Iska kaam hai:-
+System me registered sab identities (users) ke liye aggregation run karna.
+Har identity ke sab linked accounts aggregate karna.
+Har account ke attributes process karna.
+Developer yaha core aggregation logic implement karta hai.
+
+Sample Conceptual Output:-
+Starting aggregation process...
+Aggregating identity: jokerboy
+Aggregating identity: alice
+
+🔹 2️⃣ public void aggregateIdentity(Identity identity):-
+Purpose:-
+Ye single identity ka aggregation karta hai.
+Kaam:-
+Identity ka naam log karna.
+Identity se linked sab accounts pe aggregateAccount() call karna.
+
+Sample Output:-
+Aggregating identity: jokerboy
+Aggregating identity: alice
+
+🔹 3️⃣ public void aggregateAccount(Account account):-
+Purpose:-
+Ye method account-level aggregation karta hai.
+Kaam:-
+Account ka naam log karna.
+Account ke attributes ko processAttributes() me bhejna.
+Aggregated account data ko store karna (map/dictionary me).
+Sample Output:-
+Aggregating account: JiraAccount
+Aggregating account: EmailAccount
+
+🔹 4️⃣ public void processAttributes(Map<String,Object> attrs):-
+Purpose:-
+Ye attribute-level processing karta hai.
+Ye method account ya identity attributes ko process/update karta hai.
+Kaam:-
+Missing attributes fill karna (example: email not found → default value)
+Business rules apply karna (role validation, normalization)
+Attribute transformations (uppercase username, masking data, etc.)
+
+Example:-
+Processing attributes: {username=jokerboy, role=User}
+Processing attributes: {username=alice, role=Admin, email=alice@example.com}
+
+🔹 🔹 Real Project Simulation (Notepad-Friendly Code)
+import java.util.*;
+
+// Account class
+class Account {
+    private String accountName;
+    private Map<String,Object> attributes = new HashMap<>();
+
+    public Account(String accountName){ this.accountName = accountName; }
+    public String getAccountName(){ return accountName; }
+    public Map<String,Object> getAttributes(){ return attributes; }
+    public void addAttribute(String key, Object value){ attributes.put(key,value); }
+}
+
+// Identity class
+class Identity {
+    private String username;
+    private List<Account> accounts = new ArrayList<>();
+
+    public Identity(String username){ this.username = username; }
+    public String getUsername(){ return username; }
+    public List<Account> getAccounts(){ return accounts; }
+    public void addAccount(Account account){ accounts.add(account); }
+}
+
+// Aggregation Executor
+public class AggregationExecutor {
+
+    private Map<String, Map<String,Object>> accountData = new HashMap<>();
+    private List<Identity> identities = new ArrayList<>();
+
+    public void addIdentity(Identity identity){ identities.add(identity); }
+
+    public void process(){
+        System.out.println("Starting aggregation process...");
+        for(Identity id : identities){
+            aggregateIdentity(id);
+        }
+    }
+
+    public void aggregateIdentity(Identity identity){
+        System.out.println("Aggregating identity: " + identity.getUsername());
+        for(Account acc : identity.getAccounts()){
+            aggregateAccount(acc);
+        }
+    }
+
+    public void aggregateAccount(Account account){
+        System.out.println("Aggregating account: " + account.getAccountName());
+        processAttributes(account.getAttributes());
+        accountData.put(account.getAccountName(), account.getAttributes());
+    }
+
+    public void processAttributes(Map<String,Object> attrs){
+        System.out.println("Processing attributes: " + attrs);
+        if(!attrs.containsKey("email")){
+            attrs.put("email","notfound@example.com");
+        }
+    }
+
+    public Map<String, Map<String,Object>> getAccountData(){ return accountData; }
+
+    public static void main(String[] args){
+        AggregationExecutor executor = new AggregationExecutor();
+
+        // Accounts
+        Account acc1 = new Account("JiraAccount");
+        acc1.addAttribute("username","jokerboy");
+        acc1.addAttribute("role","User");
+
+        Account acc2 = new Account("EmailAccount");
+        acc2.addAttribute("username","alice");
+        acc2.addAttribute("role","Admin");
+        acc2.addAttribute("email","alice@example.com");
+
+        // Identities
+        Identity id1 = new Identity("jokerboy");
+        id1.addAccount(acc1);
+
+        Identity id2 = new Identity("alice");
+        id2.addAccount(acc2);
+
+        executor.addIdentity(id1);
+        executor.addIdentity(id2);
+
+        // Run aggregation
+        executor.process();
+
+        System.out.println("\n--- Aggregated Account Data ---");
+        System.out.println(executor.getAccountData());
+    }
+}
+🔹 🔹 Sample Output:-
+Starting aggregation process...
+Aggregating identity: jokerboy
+Aggregating account: JiraAccount
+Processing attributes: {username=jokerboy, role=User}
+Aggregating identity: alice
+Aggregating account: EmailAccount
+Processing attributes: {username=alice, role=Admin, email=alice@example.com}
+
+--- Aggregated Account Data ---
+{JiraAccount={username=jokerboy, role=User, email=notfound@example.com},
+ EmailAccount={username=alice, role=Admin, email=alice@example.com}}
+-------------------------------------------------------------------------------------------------------------------------
+🔹 1️⃣ public List<ProvisioningPlan> getPlans()
+✅ Purpose:-
+Ye method sab provisioning plans return karta hai
+Plan = kya change karna hai system me
+Role assign karna
+Entitlement add/remove
+Account create/update
+
+🔹 Example:-
+public List<ProvisioningPlan> getPlans(){
+    List<ProvisioningPlan> plans = new ArrayList<>();
+
+    ProvisioningPlan p1 = new ProvisioningPlan("jokerboy","ADD_ROLE","Admin");
+    ProvisioningPlan p2 = new ProvisioningPlan("alice","REMOVE_ROLE","User");
+
+    plans.add(p1);
+    plans.add(p2);
+
+    return plans;
+}
+🔹 Output:
+[Plan(jokerboy, ADD_ROLE, Admin), Plan(alice, REMOVE_ROLE, User)]
+
+🔹 2️⃣ public void provision(ProvisioningPlan plan):-
+✅ Purpose:-
+Ye method actual provisioning action perform karta hai
+
+Matlab:-
+Role assign/remove
+Account create/update
+Entitlement change
+
+🔹 Real Meaning:-
+👉 Ye core provisioning logic hota hai
+
+🔹 Example:-
+public void provision(ProvisioningPlan plan){
+    System.out.println("Provisioning for user: " + plan.getUsername());
+
+    if(plan.getAction().equals("ADD_ROLE")){
+        System.out.println("Assigning role: " + plan.getValue());
+    }
+    else if(plan.getAction().equals("REMOVE_ROLE")){
+        System.out.println("Removing role: " + plan.getValue());
+    }
+}
+🔹 Output:-
+Provisioning for user: jokerboy
+Assigning role: Admin
+
+Provisioning for user: alice
+Removing role: User
+
+🔹 3️⃣ public void processResults(ProvisioningResult result):-
+✅ Purpose:-
+Ye method provisioning ke baad result handle karta hai
+Example:-
+Success/Failure check
+Logging
+Retry logic
+TaskResult update
+
+🔹 Example:-
+public void processResults(ProvisioningResult result){
+    if(result.isSuccess()){
+        System.out.println("Provisioning SUCCESS for: " + result.getUsername());
+    } else {
+        System.out.println("Provisioning FAILED for: " + result.getUsername());
+    }
+}
+🔹 Output:-
+Provisioning SUCCESS for: jokerboy
+Provisioning FAILED for: alice
+
+🔹 🔥 Full Notepad-Friendly Real Project Code
+import java.util.*;
+
+// ProvisioningPlan class
+class ProvisioningPlan {
+    private String username;
+    private String action;
+    private String value;
+
+    public ProvisioningPlan(String username, String action, String value){
+        this.username = username;
+        this.action = action;
+        this.value = value;
+    }
+
+    public String getUsername(){ return username; }
+    public String getAction(){ return action; }
+    public String getValue(){ return value; }
+
+    public String toString(){
+        return "Plan(" + username + ", " + action + ", " + value + ")";
+    }
+}
+
+// ProvisioningResult class
+class ProvisioningResult {
+    private String username;
+    private boolean success;
+
+    public ProvisioningResult(String username, boolean success){
+        this.username = username;
+        this.success = success;
+    }
+
+    public String getUsername(){ return username; }
+    public boolean isSuccess(){ return success; }
+}
+
+// Executor class
+public class ProvisioningExecutor {
+
+    // 1️⃣ Get Plans
+    public List<ProvisioningPlan> getPlans(){
+        List<ProvisioningPlan> plans = new ArrayList<>();
+
+        plans.add(new ProvisioningPlan("jokerboy","ADD_ROLE","Admin"));
+        plans.add(new ProvisioningPlan("alice","REMOVE_ROLE","User"));
+
+        return plans;
+    }
+
+    // 2️⃣ Execute provisioning
+    public ProvisioningResult provision(ProvisioningPlan plan){
+        System.out.println("\nProvisioning for user: " + plan.getUsername());
+
+        boolean success = true;
+
+        if(plan.getAction().equals("ADD_ROLE")){
+            System.out.println("Assigning role: " + plan.getValue());
+        } else if(plan.getAction().equals("REMOVE_ROLE")){
+            System.out.println("Removing role: " + plan.getValue());
+        } else {
+            success = false;
+        }
+
+        return new ProvisioningResult(plan.getUsername(), success);
+    }
+
+    // 3️⃣ Process result
+    public void processResults(ProvisioningResult result){
+        if(result.isSuccess()){
+            System.out.println("SUCCESS: " + result.getUsername());
+        } else {
+            System.out.println("FAILED: " + result.getUsername());
+        }
+    }
+
+    // Main flow
+    public static void main(String[] args){
+        ProvisioningExecutor executor = new ProvisioningExecutor();
+
+        List<ProvisioningPlan> plans = executor.getPlans();
+
+        for(ProvisioningPlan plan : plans){
+            ProvisioningResult result = executor.provision(plan);
+            executor.processResults(result);
+        }
+    }
+}
+🔹 🔥 Final Output
+Provisioning for user: jokerboy
+Assigning role: Admin
+SUCCESS: jokerboy
+
+Provisioning for user: alice
+Removing role: User
+SUCCESS: alice
+-------------------------------------------------------------------------------------------------------------------------------------------------
+🔹 🔥 Reconciliation kya hota hai?
+👉 Reconciliation = Compare + Sync
+System Data (Accounts)  VS  IdentityIQ Data (Identity)
+
+✔ Check karta hai:-
+Kya user ke paas extra access hai?
+Kya missing access hai?
+Kya mismatch hai?
+👉 Phir system ko sync/update karta hai.
+
+🔹 1️⃣ public void reconcile():-
+✅ Purpose:-
+Ye main reconciliation process start karta hai.
+Kaam:-
+System vs Identity compare karna
+Differences identify karna
+Result list me store karna
+
+🔹 Example:-
+public void reconcile(){
+    System.out.println("Starting reconciliation...");
+
+    List<Object> results = new ArrayList<>();
+
+    // Example comparison logic
+    for(String user : systemData.keySet()){
+        if(!identityData.containsKey(user)){
+            results.add("Missing Identity for: " + user);
+        } else if(!systemData.get(user).equals(identityData.get(user))){
+            results.add("Mismatch for: " + user);
+        } else {
+            results.add("Match: " + user);
+        }
+    }
+
+    setReconciliationResults(results);
+}
+
+🔹 2️⃣ public void setReconciliationResults(List<Object> list)
+✅ Purpose:-
+Reconciliation ke final results store karta hai
+Ye results baad me:-
+UI me dikhte hain
+Reports me jaate hain
+Next workflow me use hote hain
+
+🔹 Example:-
+private List<Object> reconciliationResults;
+
+public void setReconciliationResults(List<Object> list){
+    this.reconciliationResults = list;
+    System.out.println("Results stored...");
+}
+
+🔹 3️⃣ public List<Object> getReconciliationResults()
+✅ Purpose:-
+Stored reconciliation results ko retrieve karta hai
+
+Reporting, logging, auditing me use hota hai
+
+🔹 Example:-
+public List<Object> getReconciliationResults(){
+    return reconciliationResults;
+}
+
+🔹 🔥 Full Notepad-Friendly Code
+import java.util.*;
+
+public class ReconciliationExecutor {
+
+    private Map<String,String> systemData = new HashMap<>();
+    private Map<String,String> identityData = new HashMap<>();
+    private List<Object> reconciliationResults;
+
+    // Constructor - sample data
+    public ReconciliationExecutor(){
+        // System data (actual accounts)
+        systemData.put("jokerboy","Admin");
+        systemData.put("alice","User");
+        systemData.put("bob","Manager");
+
+        // IdentityIQ data
+        identityData.put("jokerboy","Admin");
+        identityData.put("alice","Admin"); // mismatch
+    }
+
+    // 1️⃣ Reconcile
+    public void reconcile(){
+        System.out.println("Starting reconciliation...\n");
+
+        List<Object> results = new ArrayList<>();
+
+        for(String user : systemData.keySet()){
+            if(!identityData.containsKey(user)){
+                results.add("Missing Identity: " + user);
+            }
+            else if(!systemData.get(user).equals(identityData.get(user))){
+                results.add("Mismatch: " + user);
+            }
+            else{
+                results.add("Match: " + user);
+            }
+        }
+
+        setReconciliationResults(results);
+    }
+
+    // 2️⃣ Store results
+    public void setReconciliationResults(List<Object> list){
+        this.reconciliationResults = list;
+        System.out.println("Reconciliation results stored.\n");
+    }
+
+    // 3️⃣ Get results
+    public List<Object> getReconciliationResults(){
+        return reconciliationResults;
+    }
+
+    // Main method
+    public static void main(String[] args){
+        ReconciliationExecutor executor = new ReconciliationExecutor();
+
+        executor.reconcile();
+
+        System.out.println("--- Reconciliation Results ---");
+        for(Object obj : executor.getReconciliationResults()){
+            System.out.println(obj);
+        }
+    }
+}
+🔹 🔥 Output
+Starting reconciliation...
+
+Reconciliation results stored.
+
+--- Reconciliation Results ---
+Match: jokerboy
+Mismatch: alice
+Missing Identity: bob
+//////////*
+🔥 systemData.keySet() kya karega?
+👉 Ye Map ke saare keys ka Set return karta hai.
+Set<String> keys = systemData.keySet();
+System.out.println(keys);
+🔹 Output
+[jokerboy, alice, bob]
+*//////////
+-------------------------------------------------------------------------------------------------------------
+🔹 1️⃣ public void start():-
+✅ Purpose:-
+Task/process ko start karna
+Initial state set karna (running)
+public void start(){
+    System.out.println("Task started...");
+    running = true;
+}
+
+🔹 2️⃣ public void stop():-
+✅ Purpose:-
+Task ko gracefully stop karna
+Ongoing process ko safely end karna
+public void stop(){
+    System.out.println("Task stopped.");
+    running = false;
+}
+
+🔹 3️⃣ public boolean isEnabled():-
+✅ Purpose:-
+Check karta hai ki task run karne allowed hai ya nahi.
+
+public boolean isEnabled(){
+    return enabled;
+}
+
+🔹 4️⃣ public void setEnabled(boolean status):-
+✅ Purpose:-
+Task ko enable/disable karna
+
+public void setEnabled(boolean status){
+    enabled = status;
+    System.out.println("Task enabled: " + enabled);
+}
+
+🔹 5️⃣ public void cleanup():-
+✅ Purpose:-
+Task ke baad resource cleanup
+memory free
+temp data delete
+connections close
+Logs finalize
+public void cleanup(){
+    System.out.println("Cleaning up resources...");
+}
+
+🔹 6️⃣ public void reset():-
+✅ Purpose:
+
+Task ko initial state me reset karna
+Task ko wapas initial state me le jaana
+Matlab:-
+Jaise task kabhi run hi nahi hua
+Saari states clear ho jaati hain
+
+public void reset(){
+    System.out.println("Resetting task...");
+    running = false;
+    finished = false;
+}
+
+🔹 7️⃣ public void terminate():-
+✅ Purpose:-
+Task ko forcefully stop karna (emergency stop 💀)
+
+public void terminate(){
+    System.out.println("Task terminated forcefully!");
+    running = false;
+    finished = true;
+}
+
+🔹 8️⃣ public boolean isFinished():-
+✅ Purpose:-
+Check karta hai ki task complete ho gaya hai ya nahi
+public boolean isFinished(){
+    return finished;
+}
+------------------------------------------------------------------------------------------------------------------------------------------------
+🔥 1️⃣ XML ka FULL Breakdown (har word samajh)
+<TaskDefinition name="Demo Provisioning Task" type="Generic">
+    <Description>Demo Task for Provisioning</Description>
+    
+    <Attributes>
+        <Map>
+            <entry key="executor" value="com.company.task.DemoTaskExecutor"/>
+        </Map>
+    </Attributes>
+
+    <Signature>
+        <Inputs>
+            <Argument name="user" type="string"/>
+        </Inputs>
+    </Signature>
+
+    <Owner>
+        <Reference class="sailpoint.object.Identity" name="spadmin"/>
+    </Owner>
+</TaskDefinition>
+
+🔥 ✅ 2️⃣ Executor Class (REAL COMPANY STYLE):-
+package com.company.task;
+
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Task;
+import sailpoint.object.TaskResult;
+import sailpoint.task.TaskContext;
+
+import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+public class DemoTaskExecutor {
+
+    private Map<String, Object> parameters = new HashMap<>();
+    private Map<String, Object> results = new HashMap<>();
+
+    // 🔹 INIT
+    public void init(Task task) {
+        System.out.println("Initializing Task: " + task.getName());
+    }
+
+    // 🔹 PARAMETERS
+    public void setParameters(Map<String, Object> params) {
+        this.parameters = params;
+    }
+
+    public Map<String, Object> getParameters() {
+        return parameters;
+    }
+
+    // 🔹 MAIN EXECUTION (CORE LOGIC)
+    public void execute(TaskContext context) {
+
+        Task task = context.getTask();
+        TaskResult result = context.getTaskResult();
+        SailPointContext spContext = context.getContext();
+
+        try {
+            result.setStatus(TaskResult.Status.Running);
+            result.addMessage("Task Started");
+
+            // =========================
+            // 🔥 AGGREGATION LOGIC
+            // =========================
+            processAggregation(result);
+
+            // =========================
+            // 🔥 CERTIFICATION LOGIC
+            // =========================
+            performReviews(result);
+
+            // =========================
+            // 🔥 PROVISIONING LOGIC
+            // =========================
+            List<Map<String, String>> plans = getPlans();
+            for (Map<String, String> plan : plans) {
+                boolean success = provision(plan);
+                processProvisionResult(plan.get("user"), success, result);
+            }
+
+            // =========================
+            // 🔥 RECONCILIATION LOGIC
+            // =========================
+            reconcile(result);
+
+            result.setStatus(TaskResult.Status.Completed);
+            result.addMessage("Task Completed Successfully");
+
+            results.put("status", "SUCCESS");
+
+        } catch (Exception e) {
+            result.setStatus(TaskResult.Status.Failed);
+            result.addMessage("Error: " + e.getMessage());
+            results.put("status", "FAILED");
+        }
+    }
+
+    // 🔹 FINISH
+    public void finish(TaskResult result) {
+        result.addMessage("Finish Method Called");
+    }
+
+    public Map<String, Object> getResults() {
+        return results;
+    }
+
+    // =========================
+    // 🔥 AGGREGATION
+    // =========================
+    private void processAggregation(TaskResult result) {
+        result.addMessage("Aggregation Started");
+
+        Map<String, Object> account = new HashMap<>();
+        account.put("username", "jokerboy");
+        account.put("role", "User");
+
+        processAttributes(account, result);
+
+        result.addMessage("Aggregation Completed");
+    }
+
+    private void processAttributes(Map<String, Object> attrs, TaskResult result) {
+        if (!attrs.containsKey("email")) {
+            attrs.put("email", "default@mail.com");
+        }
+        result.addMessage("Processed Attributes: " + attrs.toString());
+    }
+
+    // =========================
+    // 🔥 CERTIFICATION
+    // =========================
+    private void performReviews(TaskResult result) {
+
+        List<Map<String, String>> reviews = new ArrayList<>();
+
+        Map<String, String> r1 = new HashMap<>();
+        r1.put("user", "jokerboy");
+        r1.put("role", "User");
+
+        Map<String, String> r2 = new HashMap<>();
+        r2.put("user", "alice");
+        r2.put("role", "Admin");
+
+        reviews.add(r1);
+        reviews.add(r2);
+
+        for (Map<String, String> review : reviews) {
+            String status = review.get("role").equals("Admin") ? "Pending" : "Approved";
+            result.addMessage("Review: " + review.get("user") + " -> " + status);
+        }
+    }
+
+    // =========================
+    // 🔥 PROVISIONING
+    // =========================
+    private List<Map<String, String>> getPlans() {
+
+        List<Map<String, String>> plans = new ArrayList<>();
+
+        Map<String, String> p = new HashMap<>();
+        p.put("user", "jokerboy");
+        p.put("action", "ADD_ROLE");
+        p.put("value", "Admin");
+
+        plans.add(p);
+
+        return plans;
+    }
+
+    private boolean provision(Map<String, String> plan) {
+        System.out.println("Provisioning user: " + plan.get("user"));
+        return true;
+    }
+
+    private void processProvisionResult(String user, boolean success, TaskResult result) {
+        result.addMessage("Provisioning " + user + " : " + success);
+    }
+
+    // =========================
+    // 🔥 RECONCILIATION
+    // =========================
+    private void reconcile(TaskResult result) {
+
+        result.addMessage("Reconciliation Started");
+
+        Map<String, String> system = new HashMap<>();
+        system.put("jokerboy", "Admin");
+
+        Map<String, String> identity = new HashMap<>();
+        identity.put("jokerboy", "User");
+
+        for (String user : system.keySet()) {
+            if (!identity.containsKey(user)) {
+                result.addMessage("Missing Identity: " + user);
+            } else if (!system.get(user).equals(identity.get(user))) {
+                result.addMessage("Mismatch: " + user);
+            } else {
+                result.addMessage("Match: " + user);
+            }
+        }
+    }
+}
+///////////*
+🔹 <TaskDefinition ... >
+👉 Ye main root tag hai
+👉 SailPoint ko bolta hai:
+"Ye ek task define kiya ja raha hai"
+
+🔹 name="Demo Provisioning Task":-
+👉 Task ka display name (UI me dikhega)
+Admin UI → Tasks → Demo Provisioning Task
+🔹 type="Generic"
+👉 Task ka type define karta hai
+
+Type	                     Meaning
+Generic:---------------Custom task (developer ka code run karega)
+AccountAggregation:----Aggregation task
+IdentityRefresh:-------Identity update task
+Generic = Custom Executor run hoga,custom(generic) task ke liye.
+
+-----------------------------------------------------------
+🔹 <entry key="executor" value="..."/>:-
+👉 MOST IMPORTANT LINE 🔥
+key = executor
+value = class ka full path
+
+👉 Meaning:-
+"Task engine, is class ko run karo"
+
+👉 Yaha:-
+com.company.task.DemoTaskExecutor
+
+👉 Matlab:-
+➡️ Ye Java class load hogi
+➡️ iska execute() method call hoga.
+-----------------------------------------------------
+🔥 3️⃣ <Inputs> kya karta hai?
+✅ Kya hai?
+👉 Ye container hai arguments ka
+
+✅ Kya karta hai?
+👉 Multiple inputs ko group karta hai.
+
+🔥 6️⃣ Java me kaise use hota hai?
+public void execute(TaskContext context){
+
+    String user = (String) context.getTask().getArgument("user");
+    String role = (String) context.getTask().getArgument("role");
+
+    System.out.println(user + " -> " + role);
+}
+------------------------------------------------------------------------
+🔥 7️⃣ Real Project Example:-
+XML
+<Signature>
+    <Inputs>
+        <Argument name="application" type="string"/>
+        <Argument name="identity" type="string"/>
+    </Inputs>
+</Signature>
+Java me:-
+String app = (String) context.getTask().getArgument("application");
+String identity = (String) context.getTask().getArgument("identity");
+------------------------------------------------------------------------
+()Signature define karta hai inputs.
+-----------------------------------------------------
+()🔹 1️⃣ <Attributes>
+✅ Kya hai?
+👉 Ye ek container (dabba) hai
+✅ Kya karta hai?
+👉 Task ke configuration settings store karta hai.
+
+👉 Iske andar:-
+executor (skip)
+aur bhi configs ho sakte hain.
+--------------------------------------------------
+🔹 2️⃣ <Map>
+✅ Kya hai?
+👉 Ye key-value structure hai
+✅ Kya karta hai?
+👉 Data ko pair me store karta hai
+
+🔹 4️⃣ <Inputs>
+✅ Kya hai?
+👉 Inputs ka group/container
+✅ Kya karta hai?
+👉 Multiple arguments ko ek jagah rakhta hai.
+--------------------------------------------------
+🔹 5️⃣ <Argument name="user" type="string"/>
+✅ Kya hai?
+
+👉 Ye ek input variable define karta hai
+
+🔥 Breakdown:-
+🔸 Argument
+👉 Ek input field
+
+🔸 name="user"
+👉 Variable ka naam
+String user;
+
+🔸 type="string"
+👉 Data type
+
+🔥 Kya karta hai?
+👉 UI me input field banata hai:-
+Enter user: ______
+🔥 Java me kaise use hoga?
+String user = (String) context.getTask().getArgument("user");
+-----------------
+🔹 6️⃣ <Owner>
+✅ Kya hai?
+👉 Task ka owner section
+
+✅ Kya karta hai?
+👉 Define karta hai:-
+Ye task ka malik kaun hai
+
+🔥 Real Use:-
+Audit
+Permission
+Access control
+------------------
+🔹 7️⃣ <Reference ... />:-
+✅ Kya hai?
+👉 Ye object reference hai (pointer jaisa)
+
+🔥 Breakdown:-
+🔸 class="sailpoint.object.Identity"
+👉 Ye batata hai:-
+Object type = Identity (user)
+
+🔸 name="spadmin"
+👉 Ye user ka naam hai
+
+🔥 Kya karta hai?
+Owner = spadmin user
+
+🔥 Real Meaning:-
+👉 System bolega:-
+"Ye task spadmin ka hai"
+--------------------------------------------------
+()lekin yaha map me kiska data store hota hai koun karta hai aur <Inputs> kaha store aur koun argument deta hai?
+-🔹 Kaun store karta hai?
+✔️ 2 tareeke:-
+1. Admin (UI se)
+Admin → Task create/edit → config fill → save
+
+2.🔥 1️⃣ Developer XML likhta hai → import karta hai
+👉 Developer ye XML likhta hai:-
+👉 Developer ya admin is XML ko SailPoint me upload/import karta hai.
+
+🔹 Uske baad kya hota hai?
+XML → parse hota hai  
+     ↓  
+TaskDefinition object banta hai  
+     ↓  
+DB me save ho jata hai  
+
+🔥 Simple Samajh:-
+👉 Developer structure define karta hai
+👉 System usko store kar deta hai.
+
+🔥 Correct + Final Version (Pro Level):-
+👉
+XML ek configuration/template hota hai jo:-
+Structure define karta hai (task ka design)
+DB me store hota hai (TaskDefinition ke form me)
+UI generate karta hai (inputs ke liye)
+Runtime me values leta hai (user se)
+Aur phir Java code (Executor) ko run karata hai
+
+()🔹Kahan store hota hai?
+👉 Internally:-
+TaskDefinition object (DB me)
+
+👉 Java me:-
+taskDefinition.getAttributes()
+
+🔥 Runtime me kaise milta hai?
+Map<String,Object> attrs = context.getTask().getAttributes();
+
+👉 Matlab:-
+XML → DB → TaskDefinition → Task → execute() me milta hai
+----------------------------------------------------
+🔥 2️⃣ <Signature> aur <Inputs> kaha store hote hain?
+✅ Answer:-
+👉 Ye bhi TaskDefinition ke andar hi store hote hain (DB me)
+🔹 Flow:-
+XML → import → TaskDefinition object → DB me save
+----------------------------------------------------
+🔥 3️⃣ Argument kaun deta hai?
+✅ Answer:-
+👉 Admin / User deta hai jab task run hota hai
+🔹 Real Flow:-
+Admin clicks "Run Task"
+      ↓
+UI form open hota hai (Signature ke basis pe)
+      ↓
+Admin input deta hai (user = jokerboy)
+      ↓
+Task start hota hai
+----------------------------------------------------
+🔥 4️⃣ Ye argument code me kaise aata hai?
+String user = (String) context.getTask().getArgument("user");
+
+👉 Matlab:-
+UI input → Task object → execute() me milta hai
+------------------------------------------------------
+🔥 5️⃣ Full End-to-End Flow 🔥
+(1) Developer XML banata hai
+        ↓
+(2) Admin import karta hai / UI me create karta hai
+        ↓
+(3) Data DB me store hota hai (TaskDefinition)
+        ↓
+(4) Admin "Run Task" click karta hai
+        ↓
+(5) UI input form (Signature se generate hota hai)
+        ↓
+(6) Admin values deta hai
+        ↓
+(7) Task Engine run karta hai
+        ↓
+(8) execute(TaskContext context)
+        ↓
+(9) context.getTask().getArgument("user") 🔥
+
+--------------------------------------------------
+🔥 TaskContext kya hota hai?
+👉 Ye SailPoint Task Engine banata hai
+👉 Developer nahi banata ❌
+👉 Isme already hota hai:-
+Task
+TaskResult
+SailPointContext (hidden inside)
+*//////////

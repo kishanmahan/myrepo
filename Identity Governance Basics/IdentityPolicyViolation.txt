@@ -1,0 +1,122 @@
+1️⃣ IdentityPolicyViolation kya hai?
+👉 IdentityPolicyViolation = jab user ka access kisi policy ko todta hai
+Matlab:-
+system me rules (policies) defined hote hain
+agar user ka access un rules ke against ho jaye → violation create hota hai
+✅ Example:-
+Policy:
+❌ “User ek saath Admin + Auditor role nahi le sakta”
+User Rahul:-
+Admin ✅
+Auditor ✅
+➡ 🚨 Violation create ho gaya.
+
+🔹 2️⃣ Ye kya karta hai?
+👉 Ye track karta hai:-
+kaunsi policy break hui
+kis user ne break ki
+kya issue hai
+resolve hua ya nahi
+
+🔥 Use:-
+compliance (SOX, audit)
+security monitoring
+risk reduction
+
+🔹 3️⃣ Kya ye DB me store hota hai?
+✅ Haan bhai, DB me store hota hai
+📦 Structure:-
+Identity (Rahul)
+   ↓
+IdentityPolicyViolation
+   ↓
+Policy: Segregation of Duties
+Status: Open
+
+🔹 4️⃣ Iske andar kya hota hai?
+Field	          Meaning
+policyName:-----kaunsi policy break hui
+violationType:--kis type ka violation
+identity:-------kis user ka violation hai
+status:---------Open/Resolved
+severity:-------High/Medium/Low
+description:----detail of issue
+
+🔹 5️⃣ Important Methods:-
+🔸 Policy Info:-
+getPolicyName() → policy ka naam deta hai
+setPolicyName(String name) → policy naam set karta hai
+getViolationType() → violation type deta hai
+setViolationType(String type) → type set karta hai
+🔸 Identity:-
+getIdentity() → kis user ka violation hai
+setIdentity(Identity identity) → user set karta hai
+🔸 Status:-
+getStatus() → Open / Resolved
+setStatus(String status) → status set karta hai
+🔸 Severity:-
+getSeverity() → risk level deta hai
+setSeverity(String severity) → severity set karta hai
+🔸 Description:-
+getDescription() → issue detail deta hai
+setDescription(String desc) → description set karta hai
+🔸 Action:-
+resolve() → violation ko resolve karta hai
+🔸 Utility:-
+toString() → readable string
+equals(Object obj) → compare karta hai
+hashCode() → hash generate karta hai
+
+🚀 🔥 Full Code (SailPointContext ke saath)
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointFactory;
+import sailpoint.object.Identity;
+import sailpoint.object.IdentityPolicyViolation;
+
+public class PolicyViolationExample {
+
+    public static void main(String[] args) throws Exception {
+
+        SailPointContext context = SailPointFactory.getCurrentContext();
+
+        // user fetch
+        Identity user = context.getObjectByName(Identity.class, "rahul");
+
+        IdentityPolicyViolation violation = new IdentityPolicyViolation();
+
+        // Policy info
+        violation.setPolicyName("SoD Policy");
+        violation.setViolationType("Role Conflict");
+
+        // Identity
+        violation.setIdentity(user);
+
+        // Status
+        violation.setStatus("Open");
+
+        // Severity
+        violation.setSeverity("High");
+
+        // Description
+        violation.setDescription("Admin and Auditor roles conflict");
+
+        // Print
+        System.out.println(violation.getPolicyName());
+        System.out.println(violation.getStatus());
+        System.out.println(violation.getSeverity());
+
+        // Resolve
+        violation.setStatus("Resolved");
+
+        // Save
+        context.saveObject(violation);
+        context.commitTransaction();
+
+        System.out.println("✅ Violation Saved");
+    }
+}
+📤 Output:-
+SoD Policy
+Open
+High
+✅ Violation Saved

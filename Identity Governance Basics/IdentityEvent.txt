@@ -1,0 +1,212 @@
+()IdentityEvent kya hai?
+--🔹 1️⃣ IdentityEvent kya hai?
+IdentityEvent = Ye ek object hai jo Identity (user/account) ke upar hone wale changes / events ko track karta hai.
+Basically audit aur workflow purposes ke liye use hota hai.
+Simple analogy:-
+IdentityEvent = “Ravi ke account me kya change hua, kab aur kisne kiya” ka record.
+
+🔹 2️⃣ IdentityEvent ka kaam:-
+()Change Tracking:-
+Identity me hone wale changes ko track karta hai,jaise:-
+--Role assignment
+--Entitlement add/remove
+--Attribute update
+()Audit:-
+Compliance ke liye event ka record rakhta hai
+()Trigger Workflows:-
+Events ke basis pe workflows ya notifications start kar sakte hain.
+
+🔹 3️⃣ IdentityEvent ke andar kya hota hai?
+Field/Attribute	         Description
+id	Unique:-------------ID of the event
+identity:---------------Identity object jiske liye event hai
+eventType:--------------Type of event (RoleAssigned / EntitlementRemoved / AttributeUpdated)
+eventDate:--------------Kab event occur hua
+initiator:--------------Kisne event trigger kiya (Admin / System)
+target:-----------------Event ka target (Role / Entitlement / Account / Attribute)
+status:-----------------Event ka current status (Pending / Completed / Failed)
+comments:---------------Optional comments ya reason
+workflowTriggered:------Kya event ne workflow trigger kiya (true/false)
+
+🔹 6️⃣ Possible Statuses:-
+Status	                Meaning
+Pending:----Event generate hua, abhi process ho raha hai.
+Completed:--Event successfully process ho gaya.
+Failed:-----Event process me error aaya.
+
+🔹 7️⃣ DB me store hota hai?
+✅ Haan bhai, IdentityEvent DB table me store hota hai, aur har event ka audit trail maintain karta hai.
+Ye table link hota hai Identity table ke saath (identityId),
+EventType, Target, Initiator, EventDate, Status = columns.
+--------------------------------------------------------------------------------------------------------------------------------
+🔹 1️⃣ Basic ID & Identity Methods:-
+1️⃣ getId():-
+Purpose: Event ka unique ID return karta hai
+System.out.println(event.getId()); // EVT_1001
+
+2️⃣ setId(String id):-
+Purpose: Event ka ID assign karta hai
+event.setId("EVT_1001");
+
+3️⃣ hasId():-
+Purpose: Check karta hai ID set hai ya nahi
+System.out.println(event.hasId()); // true / false
+
+4️⃣ getIdentity():-
+Purpose: Event ke liye related Identity object return karta hai
+Identity user = event.getIdentity();
+System.out.println(user.getName()); // "Ravi Kumar"
+
+5️⃣ setIdentity(Identity identity):-
+Purpose: Event me Identity assign karta hai
+event.setIdentity(raviIdentity);
+
+6️⃣ hasIdentity():-
+Purpose: Identity set hai ya nahi check karta hai
+System.out.println(event.hasIdentity()); // true / false
+
+🔹 2️⃣ Event Info Methods:-
+7️⃣ getEventType():-
+Purpose: Event ka type return karta hai (RoleAssigned, EntitlementRemoved, AttributeUpdated)
+System.out.println(event.getEventType()); // "RoleAssigned"
+
+8️⃣ setEventType(String type):-
+Purpose: Event type assign karta hai
+event.setEventType("RoleAssigned");
+
+9️⃣ hasEventType():-
+Purpose: EventType set hai ya nahi
+System.out.println(event.hasEventType()); // true / false
+
+10️⃣ getEventDate():-
+Purpose: Event kab hua return karta hai
+System.out.println(event.getEventDate()); // Fri Mar 27 10:00:00 IST 2026
+
+11️⃣ setEventDate(Date date):-
+Purpose: Event date assign karta hai
+event.setEventDate(new Date());
+
+12️⃣ hasEventDate():-
+Purpose: EventDate set hai ya nahi check karta hai
+System.out.println(event.hasEventDate()); // true / false
+
+🔹 3️⃣ Initiator Methods:-
+13️⃣ getInitiator():-
+Purpose: Kisne event trigger kiya (Admin / System)
+System.out.println(event.getInitiator()); // "Admin Amit"
+
+14️⃣ setInitiator(String user):-
+Purpose: Initiator assign karta hai
+event.setInitiator("Admin Amit");
+
+15️⃣ hasInitiator():-
+Purpose: Initiator set hai ya nahi
+System.out.println(event.hasInitiator()); // true / false
+
+🔹 4️⃣ Target Methods:-
+16️⃣ getTarget():-
+Purpose: Event ka target return karta hai (Role / Entitlement / Account / Attribute)
+System.out.println(event.getTarget()); // "SAP Role"
+
+17️⃣ setTarget(Object target):-
+Purpose: Event target assign karta hai
+event.setTarget(sapRoleObject);
+
+18️⃣ hasTarget():-
+Purpose: Target set hai ya nahi
+System.out.println(event.hasTarget()); // true / false
+
+🔹 5️⃣ Status Methods:-
+19️⃣ getStatus():-
+Purpose: Event ka status return karta hai (Pending / Completed / Failed)
+System.out.println(event.getStatus()); // "Completed"
+
+20️⃣ setStatus(String status):-
+Purpose: Status assign karta hai
+event.setStatus("Completed");
+
+21️⃣ hasStatus();-
+Purpose: Status set hai ya nahi
+System.out.println(event.hasStatus()); // true / false
+
+🔹 6️⃣ Comments & Workflow Methods:-
+22️⃣ getComments():-
+Purpose: Event me comments return karta hai
+System.out.println(event.getComments()); // "Quarterly role update"
+
+23️⃣ setComments(String comments):-
+Purpose: Event me comments set karta hai
+event.setComments("Quarterly role update");
+
+24️⃣ hasComments():-
+Purpose: Comments exist karte hain ya nahi check karta hai
+System.out.println(event.hasComments()); // true / false
+
+25️⃣ isWorkflowTriggered():-
+Purpose: Kya event ne workflow trigger kiya
+System.out.println(event.isWorkflowTriggered()); // true / false
+
+26️⃣ setWorkflowTriggered(boolean triggered):-
+Purpose: Workflow trigger flag set karta hai
+event.setWorkflowTriggered(true);
+
+🔹 7️⃣ Utility Methods:-
+27️⃣ toString():-
+Purpose: Event ka readable string return karta hai
+System.out.println(event.toString());
+// IdentityEvent[id=EVT_1001, identity=Ravi Kumar, eventType=RoleAssigned, target=SAP Role, status=Completed]
+
+28️⃣ equals(Object obj):-
+Purpose: Compare karta hai do events ko
+
+29️⃣ hashCode():-
+Purpose: Unique hash code return karta hai, collections / DB ke liye.
+-----------------------------------------------------------------------------------------------------------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointContextFactory;
+import sailpoint.object.Identity;
+import sailpoint.object.IdentityEvent;
+import sailpoint.tools.GeneralException;
+import java.util.Date;
+public class IdentityEventExample {
+
+    public static void main(String[] args) {
+        SailPointContext context = null;
+        try {
+            // 1️⃣ getContext() – Naya context create karo
+            context = SailPointContextFactory.getContext();
+
+            // 2️⃣ getIdentity() – Identity retrieve karo (Identity object)
+            Identity user = context.getObjectByName(Identity.class, "ravi.kumar");
+
+            // 3️⃣ Create IdentityEvent
+            IdentityEvent event = new IdentityEvent();
+            event.setId("EVT_1001");                  // setId()
+            event.setIdentity(user);                  // setIdentity()
+            event.setEventType("RoleAssigned");       // setEventType()
+            event.setTarget("SAP Role");              // setTarget()
+            event.setEventDate(new Date());           // setEventDate()
+            event.setInitiator("Admin Amit");         // setInitiator()
+            event.setStatus("Completed");             // setStatus()
+            event.setComments("Quarterly role update");// setComments()
+            event.setWorkflowTriggered(true);         // setWorkflowTriggered()
+
+            // 4️⃣ save() – Context me persist karo
+            context.saveObject(event);
+            context.commitTransaction();
+
+            // 5️⃣ getObjectById() – Event retrieve karo by ID
+            IdentityEvent retrievedEvent = context.getObjectById(IdentityEvent.class, "EVT_1001");
+            System.out.println("Retrieved Event: " + retrievedEvent.toString());
+
+        } catch (GeneralException e) {
+            e.printStackTrace();
+        } finally {
+            // 6️⃣ closeContext() – Resource release karo
+            if (context != null) {
+                SailPointContextFactory.closeContext(context);
+            }
+        }
+    }
+}
+-------------------------------------------------------------------------------------------------------------------------------------

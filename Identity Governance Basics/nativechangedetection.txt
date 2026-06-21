@@ -1,0 +1,78 @@
+()NativeChangeDetection kya hai?
+Jab target system par direct koi admin chhedkhani karta hai (bina SailPoint ke approval ke), 
+toh use SailPoint ke andar Native Change bola jata hai. 
+Aur is poore process ko track karne ke liye SailPoint ke paas ek built-in class aur process hoti hai jise NativeChangeDetection kehte hain.
+
+1. Yeh Kab Aur Kaise Kaam Karta Hai?
+Maan lijiye aapka Active Directory (AD) ka application SailPoint se connected hai.
+
+--Direct Action: Kisi IT Helpdesk team ke member ne direct AD Users & Computers tool khola aur user Rahul ka department badal kar
+"Sales" se "Marketing" kar diya.
+
+--Aggregation Task: Raat ko jab SailPoint ka Account Aggregation task chala, 
+toh woh AD se sabhi users ka current data utha kar laya.
+
+--Detection: SailPoint ne dekha ki database mein Rahul ka department "Sales" tha, lekin AD se "Marketing" aa raha hai, 
+aur yeh change SailPoint ke kisi Provisioning Plan se nahi hua hai.
+
+--Triggering Lifecycle: Yahan par NativeChangeDetection engine active hota hai. 
+Yeh ek IdentityChangeEvent generate karta hai aur usme event.getNativeChanges() ke andar is badlav ko store kar deta hai.
+
+()2. Aggregation Task (Data ka SailPoint mein aana):-
+Yeh kahan hota hai? Jab aapka Account Aggregation Task chalta hai, 
+toh SailPoint ka Connector target system se saara raw data khinch kar lata hai.
+Iska data kahan rehta hai? Yeh data temporary roop se ResourceObject class ke andar store hota hai. 
+SailPoint is ResourceObject (jo AD se abhi-abhi aaya hai) ko user ke purane Link object 
+(jo SailPoint ke database mein pehle se save tha) ke sath compare (match) karta hai.
+
+import sailpoint.object.Link;
+import sailpoint.object.ResourceObject;
+import sailpoint.object.Identity;
+import sailpoint.tools.Util;
+
+// Maan lijiye yeh dono objects aapko rule ya task ke context se mil rahe hain
+// Link link = ... (SailPoint ke database mein save purana account data)
+// ResourceObject rObj = ... (AD se aggregation ke dauran aaya naya data)
+
+if (link != null && rObj != null) {
+
+    // 1. LINK OBJECT (Old Data from SailPoint DB)
+    // Link ke andar se purana attribute nikalna
+    String oldDepartment = (String) link.getAttribute("department");
+    String oldTitle = (String) link.getAttribute("title");
+
+    // 2. RESOURCE OBJECT (New Data coming from Active Directory)
+    // ResourceObject ke andar se naya incoming attribute nikalna
+    String newDepartment = (String) rObj.getAttribute("department");
+    String newTitle = (String) rObj.getAttribute("title");
+
+    System.out.println("--- Comparing Link (Old) vs ResourceObject (New AD Data) ---");
+
+    // -------------------------------------------------------------------------
+    // Scenario 1: Department Compare Karna
+    // -------------------------------------------------------------------------
+    // Util.nullSafeEquality use karna best practice hai taaki null hone par crash na ho
+    if (!Util.nullSafeEquality(oldDepartment, newDepartment)) {
+        
+        System.out.println("ALERT: Department badal gaya hai!");
+        System.out.println("Old Data (Link DB): " + oldDepartment);
+        System.out.println("New Data (ResourceObject AD): " + newDepartment);
+        
+        // Aap yahan apna custom logic likh sakte hain
+    } else {
+        System.out.println("Department mein koi badlav nahi hai.");
+    }
+
+    // -------------------------------------------------------------------------
+    // Scenario 2: Job Title Compare Karna
+    // -------------------------------------------------------------------------
+    if (!Util.nullSafeEquality(oldTitle, newTitle)) {
+        
+        System.out.println("ALERT: Job Title badal gaya hai!");
+        System.out.println("Old Data (Link DB): " + oldTitle);
+        System.out.println("New Data (ResourceObject AD): " + newTitle);
+        
+    } else {
+        System.out.println("Job Title mein koi badlav nahi hai.");
+    }
+}

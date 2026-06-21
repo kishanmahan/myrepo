@@ -1,0 +1,183 @@
+1️⃣ High Risk Identity kya hota hai?
+High Risk Identity = Aisa user jiske paas bahut zyada sensitive ya dangerous access ho.
+Matlab agar us identity ka misuse ho gaya to company ko bada security risk ho sakta hai.
+👉 Example:-
+Ek employee ke paas Admin + Finance + Database access sab hai
+Agar uska account hack ho gaya → company ka data leak ho sakta hai,
+Isliye system usko High Risk Identity mark kar deta hai.
+
+2️⃣ High Risk Identity kaise detect hota hai.
+Usually 3 cheezon se calculate hota hai:-
+
+1. Sensitive Roles:-
+Agar user ke paas high privilege role hai.
+Example:-
+Admin
+Root Access
+Security Manager
+
+2. Toxic Role Combination (SoD Violation):-
+Jab conflicting roles ek hi user ke paas ho.
+Example:-
+Create Payment
+Approve Payment
+Ye **Segregation of Duties violation hai.
+
+3. High Risk Entitlements:-
+Agar user ke paas dangerous permissions hain.
+Example:-
+Database delete permission
+Server root access
+Financial transaction access
+
+3️⃣ Example:-
+Identity         Roles	            Risk
+Rahul------Admin + Database---------High
+Amit--------User + Viewer-----------Low
+Neha-------Finance + Approver-------High
+
+4️⃣ High Risk Identity ko kaise handle karte hain:-
+Security teams usually ye steps follow karte hain:-
+
+1️⃣ Access Review:-
+Manager check karta hai ki access sahi hai ya nahi
+
+2️⃣ Access Removal:-
+Agar unnecessary access hai to remove kar dete hain
+
+3️⃣ Monitoring:-
+High risk identity ke actions ko monitor karte hain
+
+5️⃣ Real IAM Example:-
+Example:-
+Identity: Rahul
+Roles: Admin, FinanceManager
+Entitlements: DatabaseDelete, ServerRoot
+Risk Score: 85
+Risk Level: HIGH
+
+System automatically bol dega:-
+⚠ High Risk Identity Detected
+
+✅ Short me:-
+High Risk Identity =User + Sensitive access + High privilege + Conflict roles
+
+High Risk Identity Project (Without * Import)
+import java.util.ArrayList;
+import java.util.List;
+
+class Identity {
+
+    private String name;
+    private List<String> roles;
+    private List<String> entitlements;
+    private int riskScore;
+
+    public Identity(String name) {
+        this.name = name;
+        this.roles = new ArrayList<>();
+        this.entitlements = new ArrayList<>();
+        this.riskScore = 0;
+    }
+
+    public void addRole(String role) {
+        roles.add(role);
+    }
+
+    public void addEntitlement(String ent) {
+        entitlements.add(ent);
+    }
+
+    public void calculateRisk() {
+
+        // High privilege roles
+        for(String role : roles) {
+
+            if(role.equalsIgnoreCase("Admin")) {
+                riskScore += 50;
+            }
+
+            if(role.equalsIgnoreCase("FinanceManager")) {
+                riskScore += 40;
+            }
+
+            if(role.equalsIgnoreCase("SecurityManager")) {
+                riskScore += 45;
+            }
+
+        }
+
+        // Sensitive access
+        for(String ent : entitlements) {
+
+            if(ent.equalsIgnoreCase("DatabaseDelete")) {
+                riskScore += 30;
+            }
+
+            if(ent.equalsIgnoreCase("ServerRoot")) {
+                riskScore += 35;
+            }
+
+            if(ent.equalsIgnoreCase("PaymentAccess")) {
+                riskScore += 25;
+            }
+
+        }
+
+        // Conflict roles (SoD violation)
+        if(roles.contains("PaymentCreator") && roles.contains("PaymentApprover")) {
+
+            System.out.println("⚠ Conflict Role Detected (SoD Violation)");
+            riskScore += 50;
+
+        }
+
+    }
+
+    public void displayIdentity() {
+
+        System.out.println("\nIdentity Name: " + name);
+        System.out.println("Roles: " + roles);
+        System.out.println("Entitlements: " + entitlements);
+        System.out.println("Risk Score: " + riskScore);
+
+        if(riskScore >= 80) {
+            System.out.println("🔥 HIGH RISK IDENTITY");
+        }
+        else if(riskScore >= 40) {
+            System.out.println("⚠ MEDIUM RISK IDENTITY");
+        }
+        else {
+            System.out.println("LOW RISK IDENTITY");
+        }
+
+    }
+}
+
+public class HighRiskIdentityProject {
+
+    public static void main(String[] args) {
+
+        Identity user1 = new Identity("Rahul");
+
+        user1.addRole("Admin");
+        user1.addRole("PaymentCreator");
+        user1.addRole("PaymentApprover");
+
+        user1.addEntitlement("DatabaseDelete");
+        user1.addEntitlement("ServerRoot");
+
+        user1.calculateRisk();
+        user1.displayIdentity();
+
+
+        Identity user2 = new Identity("Amit");
+
+        user2.addRole("Employee");
+        user2.addEntitlement("ReadAccess");
+
+        user2.calculateRisk();
+        user2.displayIdentity();
+
+    }
+}

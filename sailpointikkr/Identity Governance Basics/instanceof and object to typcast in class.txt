@@ -1,0 +1,53 @@
+()1️⃣ instanceof:-
+Kya hai: Java ka ek keyword jo check karta hai ki koi object specific class ka instance hai ya nahi.
+
+Syntax:-
+if (object instanceof ClassName) { 
+    // code
+}
+Example:-
+Object obj = "Hello World";
+
+if(obj instanceof String) {
+    System.out.println("obj is a String!");
+} else {
+    System.out.println("obj is NOT a String!");
+}
+Output:-
+obj is a String!
+✅ Matlab instanceof se hum object ke type ko runtime pe check kar sakte hain.
+
+2️⃣ (CustomObject) target → Type Casting:-
+Kya hai: Agar hum sure hain ki target object actually CustomObject ka instance hai, toh hum usko explicitly CustomObject me cast karte hain.
+Syntax:-
+CustomObject co = (CustomObject) target;
+Isse hum CustomObject ke methods aur fields use kar sakte hain.
+
+()instanceof check karta hai ki kya target customobject ka object type hai ya nahi.
+
+Ex:-
+class CustomObject {
+    private String name;
+
+    public CustomObject(String name) { this.name = name; }
+    public String getName() { return name; }
+}
+
+public class Demo {
+    public static void main(String[] args) {
+        Object target = new CustomObject("ProjectAccess");
+
+        // Check type first
+        if(target instanceof CustomObject) {
+            CustomObject co = (CustomObject) target; // cast
+            System.out.println("Target Name: " + co.getName());
+        } else {
+            System.out.println("Target is not a CustomObject");
+        }
+    }
+}
+Output:-
+Target Name: ProjectAccess
+///////*
+()instanceof check karta hai ki kya target customobject ka object type hai ya nahi.
+*//////

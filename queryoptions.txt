@@ -1,0 +1,195 @@
+3. SailPoint Style: Bina SQL ke Query chalana (QueryOptions)
+Ye sabse important point hai! SailPoint me database se direct SQL chalanā (context.getJdbcConnection()) achha nahi mana jata (jab tak bohot zaroori na ho). SailPoint ka khud ka ek tarika hai jisse bina SQL likhe data nikal aata hai, use QueryOptions kehte hain.
+
+Aapka poora kaam bina ek bhi line SQL likhe aise ho sakta hai:
+
+Java
+import sailpoint.object.Filter;
+import sailpoint.object.QueryOptions;
+import sailpoint.object.Application;
+
+QueryOptions qo = new QueryOptions();
+
+// Saari conditions (Filters) yahan add kar di
+qo.addFilter(Filter.not(Filter.like("name", "Test_", Filter.MatchMode.START)));
+qo.addFilter(Filter.not(Filter.like("name", "Demo", Filter.MatchMode.ANYWHERE)));
+qo.addFilter(Filter.not(Filter.in("type", Arrays.asList("DelimitedFile", "IdentityIQ Workgroups"))));
+
+// Database se direct objects nikal liye
+Iterator it = context.search(Application.class, qo, "name");
+while (it.hasNext()) {
+    Object[] row = (Object[]) it.next();
+    String appName = (String) row[0];
+    // Aapka aage ka logic...
+}
+//////////*
+*/////////
+----------------------------------------------------------------------------------
+1. Filter ke saare Important Methods:-
+Filter class (sailpoint.object.Filter) ka kaam SQL ke WHERE clause jaisa hota hai. 
+Iske methods conditions banane ke kaam aate hain:-
+
+-->Basic Comparison Filters (Barabari ke liye):-
+🔹 Filter.eq(String property, Object value):-
+Definition: Ye check karta hai ki database ke column (property) ki value, aapki di gayi value ke ekdum barabar (exact match) hai ya nahi.
+SQL Matlab: WHERE property = value
+Kab use karein: Jab aapko kisi specific application ya identity ko dhoodhna ho.
+Example: Filter.eq("type", "JDBC") — Sirf wahi applications nikalengi jinka type exact "JDBC" hoga.
+
+🔹 Filter.ne(String property, Object value):-
+Definition: Ye eq ka bilkul ulta hai. Ye un records ko nikalta hai jo aapki di gayi value ke barabar nahi hain (Not Equal To).
+SQL Matlab: WHERE property != value
+Kab use karein: Kisi cheez ko chhod kar baaki sab nikalne ke liye.
+Example: Filter.ne("name", "Authoritative Source") — "Authoritative Source" ko chhod kar baaki saari apps nikal dega.
+
+2. Null Checks (Khaali Jagah Check Karne Wale):-
+🔹 Filter.isnull(String property)
+Definition: Ye check karta hai ki database ka wo column ekdum khaali (NULL) hai ya nahi.
+SQL Matlab: WHERE property IS NULL
+Kab use karein: Jaise check karna ho ki kis user ka email abhi tak system me set nahi hua hai.
+Example: Filter.isnull("email") — Un saari identities ki list dega jinka email khaali hai.
+
+🔹 Filter.notnull(String property):-
+Definition: Ye check karta hai ki database ke us column me kuch na kuch data zaroor hai (Khaali nahi hai).
+SQL Matlab: WHERE property IS NOT NULL
+Kab use karein: Jab aapko sirf wahi data chahiye jisme value bhari hui ho.
+Example: Filter.notnull("manager") — Sirf un users ko nikalega jinka koi manager assigned hai.
+--------------------------------------------------------------------------------------------------------
+-->String / Text Filters (Naam match karne ke liye);-
+🔹 Filter.like(String property, String value, Filter.MatchMode.START):-
+Definition: Ye check karta hai ki text aapke diye gaye word se shuru (Starts With) ho raha hai ya nahi.
+SQL Matlab: WHERE property LIKE 'value%'
+Kab use karein: Kisi fixed prefix se shuru hone wale naamon ke liye.
+Example: Filter.like("name", "Test_", Filter.MatchMode.START) — Har wo app nikalega jiska naam Test_ se shuru hota hai (jaise: Test_AD, Test_SAP).
+
+🔹 Filter.like(String property, String value, Filter.MatchMode.ANYWHERE):-
+Definition: Ye check karta hai ki aapka diya gaya word poore text me kahin bhi (Contains) maujood hai ya nahi—shuru me, beech me, ya aakhiri me.
+SQL Matlab: WHERE property LIKE '%value%'
+Kab use karein: Jab aapko poora naam nahi pata, bas ek chota sa hissa dhoodhna ho.
+Example: Filter.like("name", "Demo", Filter.MatchMode.ANYWHERE) — Jisme bhi Demo shabd hoga, 
+sab nikal aayenge (jaise: MyDemoApp, Demo_Application, NewDemo).
+
+🔹 Filter.like(String property, String value, Filter.MatchMode.END):-
+Definition: Ye check karta hai ki text aapke diye gaye word par khatam (Ends With) ho raha hai ya nahi.
+SQL Matlab: WHERE property LIKE '%value'
+Kab use karein: Kisi fixed suffix ko pakadne ke liye.
+Example: Filter.like("name", "_Source", Filter.MatchMode.END) — Un apps ko nikalega jinke naam ke aakhiri 
+me _Source aata hai (jaise: HR_Source, ActiveDirectory_Source).
+--------------------------------------------------------------------------------------------------------------
+4. Collection/List Filters (Ginti Ya Multiple Values Wale):-
+🔹 Filter.in(String property, Collection values):-
+Definition: Jab aapko ek se zyada specific values check karni hon,toh aap unhe ek List me daal kar in filter ko de dete hain. 
+Ye check karta hai ki database ki value is List ke andar maujood kisi bhi ek value se match karti hai ya nahi.
+SQL Matlab: WHERE property IN ('val1', 'val2', 'val3')
+Kab use karein: Ek sath 3-4 types ya names filter karne ke liye.
+Example: Filter.in("type", Arrays.asList("JDBC", "SAP Direct")) — Sirf wahi apps nikalengi jo ya toh JDBC hain ya SAP Direct.
+------------------------------------------------------------------
+5. Range Filters (Bade-Chote Ya Numbers Wale):-
+Ye zyadatar dates, numbers, ya counters check karne ke kaam aate hain:-
+🔹 Filter.gt(String property, Object value) (Greater Than):-
+Definition: Ye check karta hai ki database ki value aapke di gayi value se badi (Strictly Greater Than) honi chahiye.
+SQL Matlab: WHERE property > value
+Example: Filter.gt("assignedRolesCount", 5) — Un users ko nikalega jinke paas 5 se zyada roles hain.
+
+🔹 Filter.ge(String property, Object value) (Greater Than or Equal to):-
+Definition: Ye check karta hai ki database ki value aapke di gayi value se badi ya uske barabar (>=) honi chahiye.
+SQL Matlab: WHERE property >= value
+
+🔹 Filter.lt(String property, Object value) (Less Than):-
+Definition: Ye check karta hai ki database ki value aapke di gayi value se choti (Strictly Less Than) honi chahiye.
+SQL Matlab: WHERE property < value
+
+🔹 Filter.le(String property, Object value) (Less Than or Equal to):-
+Definition: Ye check karta hai ki database ki value aapke di gayi value se choti ya uske barabar (<=) honi chahiye.
+SQL Matlab: WHERE property <= value
+Example: Filter.le("created", oldDate) — Un objects ko nikalega jo kisi purani date ya usse pehle create huye the.
+------------------------------------------------------------------------
+6. Logical Filters (Conditions ko aapas me jodne wale):-
+🔹 Filter.and(Filter... filters):-
+Definition: Jab aapko do ya do se zyada filters lagane hon aur aap chahte hain ki saari conditions sach (TRUE) hon, 
+tab and ka use hota hai.
+SQL Matlab: WHERE condition1 AND condition2
+Example: Filter.and(Filter.eq("type", "JDBC"), Filter.notnull("description")) 
+— Sirf wahi app nikalegi jo JDBC bhi ho AUR jiska description bhi bhara hua ho.
+
+🔹 Filter.or(Filter... filters):-
+Definition: Jab aap chahte hain ki di gayi conditions me se koi bhi ek condition sach (TRUE) ho jaye, toh data nikal aaye.
+SQL Matlab: WHERE condition1 OR condition2
+Example: Filter.or(Filter.eq("type", "JDBC"), Filter.eq("type", "DelimitedFile"))
+ — Agar app JDBC hui toh bhi chalega, DelimitedFile hui toh bhi chalega.
+
+🔹 Filter.not(Filter filter):-
+Definition: Ye kisi bhi chalte huye filter ke aage lag kar uska ulta (Negation/Invert) kar deta hai. 
+Jo cheez match ho rahi thi, ab wo chhut jayegi.
+SQL Matlab: WHERE NOT (condition)
+Example: Filter.not(Filter.eq("type", "JDBC")) — JDBC ko chhod kar baaki saari types ki applications nikal dega.
+
+💡 Beanshell me iska use kaise dikhta hai?
+Aap apne code me jo SQL filter use kar rahe the, agar use hum in filters se badlein, toh wo aisa banega:
+Java
+// Jo Test_ se shuru NA ho, Jo Demo contain NA kare, AUR jo DelimitedFile/Workgroups NA ho
+Filter finalFilter = Filter.and(
+    Filter.not(Filter.like("name", "Test_", Filter.MatchMode.START)),
+    Filter.not(Filter.like("name", "Demo", Filter.MatchMode.ANYWHERE)),
+    Filter.not(Filter.in("type", Arrays.asList("DelimitedFile", "IdentityIQ Workgroups")))
+);
+----------------------------------------------------------------------------------------------------------------------------------
+()1. Filters ko Add karne wale Methods:-
+🔹 qo.addFilter(Filter filter) ya qo.add(Filter filter):-
+Definition: Ye method aapke banaye huye Filter condition ko QueryOptions ke jole me daal deta hai.
+
+-->Nuance (Ek Zaroori Baat): Agar aap qo.addFilter() ko 2 ya 3 baar alag-alag likhenge, 
+toh SailPoint piche se un saare filters ko automatically AND condition ke sath jod deta hai.
+Example:-
+Java
+qo.addFilter(Filter.eq("type", "JDBC"));
+qo.addFilter(Filter.eq("authoritative", true));
+// SQL me banega: WHERE type = 'JDBC' AND authoritative = 1
+
+2. Sorting karne wale Methods (Data ko orderform me lagana):-
+🔹 qo.addOrdering(String property, boolean ascending):-
+Definition: Ye database se aane wale data ko kisi column ke hisab se sequence (order) me lagata hai. 
+Isme doosra parameter true (A to Z / Chote se Bada) ya false (Z to A / Bade se Chota) ho sakta hai.
+SQL Matlab: ORDER BY property ASC ya ORDER BY property DESC
+Example: qo.addOrdering("name", true); — Saari applications ke naam Alphabetical order (A se Z) me arrange ho jayenge.
+
+3. Pagination aur Limit lagane wale Methods (Performance ke liye);-
+🔹 qo.setResultLimit(int limit):-
+Definition: Ye method set karta hai ki database se max kitne records (rows) nikal kar laane hain.
+SQL Matlab: LIMIT limit_value
+Kab use karein: Jab database me hazaron records hon aur aapko performance bachaane ke liye sirf kuch hi records chahiye hon.
+Example: qo.setResultLimit(50); — Database me chahe 5000 applications hon, ye sirf pehli 50 utha kar laayega.
+
+🔹 qo.setFirstResult(int startRow):-
+Definition: Ye batata hai ki data nikalte waqt shuruat ke kitne records ko chhod (skip) dena hai.
+SQL Matlab: OFFSET startRow
+Kab use karein: Ye setResultLimit ke sath milkar Pagination (Page 1, Page 2) banane ke kaam aata hai.
+ex:-qo.setFirstResult(10);
+
+🔹 qo.setDistinct(boolean distinct):-
+Definition:-Agar database ke result me duplicate rows aa rahi hain, toh ye method duplicate records ko saaf karke sirf **Unique (Distinct)** records hi bachaata hai.
+SQL Matlab:-SELECT DISTINCT ...`
+Example:-qo.setDistinct(true); — Agar aap sirf application types nikal rahe hain, toh duplicate types hatakar har type sirf ek hi baar dikhega.
+
+🔹qo.addGroupBy(String property):-
+Definition:-Ye data ko kisi specific property (column) ke hisab se groups me baandh deta hai. Iska use zyadatar counting ya calculations karne ke liye kiya jata hai.
+SQL Matlab:-GROUP BY property
+Example:-qo.addGroupBy("type");— Saari applications ko unke type ke hisab se group kar dega.
+ex;-
+import sailpoint.object.Filter;
+import sailpoint.object.QueryOptions;
+import java.util.Arrays;
+
+QueryOptions qo = new QueryOptions();
+
+// 1. Filter lagaya (WHERE type IN ('JDBC', 'Active Directory - Direct'))
+qo.addFilter(Filter.in("type", Arrays.asList("JDBC", "Active Directory - Direct")));
+
+// 2. Sorting lagayi (ORDER BY name DESC)
+qo.addOrdering("name", false);
+
+// 3. Limit lagayi (LIMIT 5)
+qo.setResultLimit(5);
+
+// Ab aap ise SailPoint context me search ke liye bhej sakte hain
+// Iterator it = context.search(Application.class, qo);

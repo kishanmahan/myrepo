@@ -1,0 +1,268 @@
+1. Lifecycle Workflows (LCM):-
+Ye sabse zyada use hone wale workflows hain, jo kisi Identity ke lifecycle events par trigger hote hain. 
+Jab bhi kisi user ka status change hota hai, ye back-end par provisioning ya notifications handle karte hain.
+
+1. Lifecycle Workflows (LCM):-
+Ye sabse zyada use hone wale workflows hain, jo kisi Identity ke lifecycle events par trigger hote hain. Jab bhi kisi user ka status change hota hai, ye back-end par provisioning ya notifications handle karte hain.
+
+-->LCM Lifecycle Trampoline: Jab bhi koi Lifecycle Event (Joiner, Mover, Leaver) fire hota hai, ye workflow check karta hai ki kaun sa specific sub-workflow chalana hai.
+
+-->LCM Provisioning: Kisi bhi access request, role assignment, ya account creation ke baad actual provisioning (Active Directory, JDBC, etc. me account create/modify karna) yahi workflow sambhalta hai.
+
+-->LCM Registration: Naye users ke self-registration process ko manage karne ke liye.  
+SailPoint Product Documentation
+
+-->Identity Update / Refresh: Jab IdentityRefresh task chalta hai aur koi attribute change detect hota hai, tab ye trigger ho sakta hai.
+
+2. Access Request Workflows:-
+User jab IdentityIQ ke Dashboard se koi access (Entitlement ya Role) request karta hai, tab ye workflows picture mein aate hain.
+
+-->Manager Approval Workflow: Request submit hone ke baad approval ke liye sabse pehle manager ke paas bhejne ka logic.  
+SailPoint Product Documentation
+
+-->Owner Approval Workflow: Agar kisi requested Role ya Application ka koi specific owner hai, to uske approval ke liye approval item create karna.
+
+-->Multi-Approve Workflow: Jab ek se zyada levels (Manager -> Owner -> Security Officer) par approvals ki zaroorat hoti hai.
+
+3. Certification / Compliance Workflows
+Identity Certification (User Access Review) ke dauran jab koi reviewer kisi ka access Revoke (remit) karta hai, ya certification end hoti hai, tab ye workflows back-end par automatic action lete hain.
+
+-->Certification Provisioning: Certification me jab access revoke kiya jata hai, to target system se us access ka account/entitlement remove karne ke liye ye workflow chalaya jata hai.
+
+-->Certification Remediation: Access automatically remove karne ke bajay agar kisi ticket system (like ServiceNow) me ticket raise karna ho.
+
+4. Account Aggregation & Policy Violations Workflows:-
+Ye workflows data ingestion aur risk/compliance checks ke dauran kaam aate hain.
+
+-->Target Aggregation Workflow: Jab target system se accounts aggregate ho rahe hon aur kisi specific condition par custom logic chalana ho.
+
+-->Policy Violation Workflow: Agar koi SOD (Segregation of Duties) ya Activity Policy violate hoti hai, 
+to ticket generate karne, manager ko alert bhejne, ya automatic remediation ke liye ye workflow use hota hai.
+
+5. System & Custom Workflows:-
+Inka use standard IAM flows se alag, background automation ya maintenance ke liye kiya jata hai.
+
+-->Sub-Workflows (Reusable Workflows): Chote workflows jo bade workflows ke andar se call kiye jaate hain (e.g., Email Notification send karna, ya ticket create karna). Isse code redundancy kam hoti hai.
+
+-->Scheduled Workflows / Run Rule: Aise custom workflows jinko aap kisi specific time par chalane ke liye task ke through schedule kar sakte hain.
+
+-----------------------------------------------------------------------------------------------------------------------
+()Jab aap kisi workflow ko type="IdentityLifecycle" assign karte hain, toh backup mein yeh cheezein hoti hain:
+
+1. Automatic Variables Mil Jaate Hain:-
+Is type ko use karte hi SailPoint is workflow ko kuch standard inputs/variables automatically pass kar deta hai. 
+Aapko manually identity fetch nahi karni padti:-
+identityName: Jis user par event trigger hua hai, uska naam.
+identity: User ka actual Identity object.
+event: Isme user ka purana data (old state) aur naya data (new state) hota hai, jisse aap track kar sakein ki kya badla hai.
+trigger:-o bhi deta hai.
+
+///////////*
+()Trigger Kaise Kaam Karta Hai?
+SailPoint mein jab bhi Identity Refresh task chalta hai ya HR system se data aggregate hota hai, 
+toh system check karta hai: "Kya is user par koi Lifecycle Trigger match ho raha hai?"
+Agar match ho jata hai, toh SailPoint us trigger se connected IdentityLifecycle workflow ko start kar deta hai 
+aur usme trigger variable ke andar uski saari details bhej deta hai.
+
+()Workflow ke andar is trigger variable ka kya use hai?
+Aap soch rahe honge ki jab workflow chal hi gaya, toh andar trigger variable ka kya kaam?
+Maan lijiye aapne ek hi common workflow banaya hai jo Mover (Transfer) aur Mover (Promotion) dono ke liye chalta hai. 
+Tab aap workflow ke andar code mein check kar sakte hain:-
+Java
+// Workflow ke andar ka BeanShell code
+String triggerName = trigger.getName();
+
+if ("Promotion Trigger".equals(triggerName)) {
+    // Sirf promotion wali access do
+} else if ("Transfer Trigger".equals(triggerName)) {
+    // Purani access remove karo aur nayi do
+}
+Short mein kahein toh:-Trigger woh "Switch" hai jo batata hai ki workflow kyun chala, 
+aur IdentityLifecycle workflow us switch ke dabte hi apna kaam shuru kar deta hai.
+
+()SailPoint UI mein aapko 4 main tarike ke triggers milte hain:-
+
+1. Attribute Change Trigger (Sabse Common):-
+Jab kisi user ka koi specific attribute (field) badal jata hai.
+Example: HR ne user ka status badal kar "Active" se "Terminated" kar diya.
+Action: Yeh trigger fire hoga aur Leaver Workflow ko start kar dega.
+
+2. Rule-Based Trigger:-
+Jab aapki requirement thodi complex ho aur simple attribute change se kaam na chale, tab aap ek BeanShell Rule likhte hain.
+Example: Agar user ka department "Finance" ho aur uski location "Mumbai" ho, tabhi event trigger ho.
+Action: Rule check karega, agar condition true hui toh workflow chal padega.
+
+3. Population / Filter Trigger:-
+Jab koi user kisi specific group (Population) ke andar aata hai ya bahar jata hai.
+Example: Ek user pehle normal employee tha, ab woh "Managers" ki population mein shamil ho gaya.
+Action: Manager Change/Promotion Workflow trigger ho jayega.
+
+4. Periodic Trigger (Time-Based):-
+Yeh time ya date ke hisab se fire hota hai.
+Example: User ki endDate ke 30 din pehle ek alert bhejna.
+Action: Yeh specific date par automatically workflow run kar deta hai.
+*//////////
+//////////////*ex:-
+import sailpoint.object.IdentityTrigger;
+import sailpoint.object.IdentityChangeEvent;
+import sailpoint.object.Identity;
+
+if (trigger != null) {
+    
+    // 1. Trigger ka Name (Jo aapne UI mein rakha hai, e.g., "Leaver Trigger")
+    String triggerName = trigger.getName();
+    
+    // 2. Trigger ka Type (e.g., AttributeChange, Rule, Population)
+    // Yeh identityTrigger ka type return karega
+    String triggerType = trigger.getType().toString();
+    
+    // 3. Jis Attribute ki wajah se trigger hua (e.g., "status" ya "department")
+    String attributeName = trigger.getAttributeName();
+    
+    // 4. Trigger ke andar defined baki properties (agar custom configuration ki hai)
+    String triggerId = trigger.getId();
+
+    // System logs mein check karne ke liye print karein
+    System.out.println("Trigger Name: " + triggerName);
+    System.out.println("Trigger Type: " + triggerType);
+    System.out.println("Trigger Attribute: " + attributeName);
+}
+
+if (event != null) {
+    // 5. Purani Value (Badalne se pehle kya thi)
+    Object oldValue = event.getOldValue();
+    
+    // 6. Nayi Value (Badalne ke baad kya ho gayi)
+    Object newValue = event.getNewValue();
+    
+    // 7. Identity Name (Jis user par trigger hua, e.g., "E001")
+    String uName = event.getIdentityName();
+
+    System.out.println("User Name: " + uName);
+    System.out.println("Old Value: " + oldValue);
+    System.out.println("New Value: " + newValue);
+}
+*//////////////
+///////////*
+()event Variable ke andar kya hota hai?
+Jab type="IdentityLifecycle" workflow chalta hai, toh event object ke paas main 3 cheezein hoti hain:-
+-->Old Identity Object (getOldIdentity()): Data badalne se pehle user ki profile kaisi dikhti thi.
+-->New Identity Object (getNewIdentity()): Data badalne ke baad (yaani current) user ki profile kaisi dikhti hai.
+-->Attribute Name (getAttributeName()): Woh specific field jo badli hai (agar yeh ek Attribute Change trigger tha).
+
+()Jab SailPoint ka Mover Workflow chalega, toh event variable ke andar yeh saara data hoga:-
+Method / Call	                     Kya Return Karega?
+event.getAttributeName():-----------"department" (Kyuki department badla hai)
+event.getOldValue():----------------"Sales" (Purana department)
+event.getNewValue():----------------"Marketing" (Naya department)
+
+event.getAttributeName() -> "manager"
+event.getOldValue() -> "Amit" (Purane manager ka naam/ID)
+event.getNewValue() -> "Suresh" (Naye manager ka naam/ID)
+
+event.getAttributeName() -> "lastname"
+event.getOldValue() -> "Sharma"
+event.getNewValue() -> "Verma"
+
+event.getAttributeName() -> "status"
+event.getOldValue() -> "Active"
+event.getNewValue() -> "LOA"
+
+event.getAttributeName() -> "employeeType"
+event.getOldValue() -> "Contractor"
+event.getNewValue() -> "Employee"
+ex:-
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.api.Provisioner;
+import sailpoint.tools.Util;
+import java.util.List;
+import java.util.ArrayList;
+
+// 1. Check karein ki event null toh nahi hai aur data sahi hai ya nahi
+if (event != null && "Contractor".equals(event.getOldValue()) && "Employee".equals(event.getNewValue())) {
+    
+    // Identity object fetch karna jo system ne automatically pass kiya hai
+    if (identity != null) {
+        String identityName = identity.getName();
+        
+        // Provisioning Plan create karein
+        ProvisioningPlan plan = new ProvisioningPlan();
+        plan.setIdentity(identity);
+        
+        // Active Directory ka nativeIdentity (DN) nikalna account requests ke liye
+        // Maan kar chal rahe hain ki user ke paas AD account pehle se hai
+        String adNativeIdentity = null;
+        List links = identity.getLinks();
+        if (links != null) {
+            for (Object link : links) {
+                sailpoint.object.Link l = (sailpoint.object.Link) link;
+                if ("Active Directory".equals(l.getApplicationName())) {
+                    adNativeIdentity = l.getNativeIdentity();
+                    break;
+                }
+            }
+        }
+
+        // ---------------------------------------------------------------------
+        // STEP 1: Contractor wali temporary AD groups remove karo
+        // ---------------------------------------------------------------------
+        if (Util.isNotNullOrEmpty(adNativeIdentity)) {
+            AccountRequest adReq = new AccountRequest(AccountRequest.Operation.Modify, "Active Directory", null, adNativeIdentity);
+            
+            // Example: Contractor group ko remove karna
+            // Aap multiple groups ke liye multiple AttributeRequest add kar sakte hain
+            adReq.add(new AttributeRequest("memberOf", ProvisioningPlan.Operation.Remove, "CN=Contractor-Temp-Access,OU=Groups,DC=company,DC=com"));
+            
+            plan.add(adReq);
+        }
+
+        // ---------------------------------------------------------------------
+        // STEP 2: Full-Time Employee ke automatic birthright roles assign karo
+        // ---------------------------------------------------------------------
+        // SailPoint mein direct Identity Object par Role assign karne ke liye 
+        // IIQ Application account request banayi jaati hai
+        AccountRequest iiqReq = new AccountRequest(AccountRequest.Operation.Modify, "IIQ", null, identityName);
+        
+        // "FullTime-Employee-Birthright-Role" aapke Business Role ka naam hai
+        iiqReq.add(new AttributeRequest("assignedRoles", ProvisioningPlan.Operation.Add, "FullTime-Employee-Birthright-Role"));
+        
+        plan.add(iiqReq);
+
+        // ---------------------------------------------------------------------
+        // Provisioning Plan ko Execute karna
+        // ---------------------------------------------------------------------
+        Provisioner provisioner = new Provisioner(context);
+        provisioner.compile(plan);
+        provisioner.execute();
+
+        // ---------------------------------------------------------------------
+        // STEP 3: IT Helpdesk ko ticket/email raise karo laptop dispatch ke liye
+        // ---------------------------------------------------------------------
+        // SailPoint mein ticketing tool (ServiceNow/Jira) ke liye integration 
+        // ya simple standard Email Notification use kiya jata hai.
+        
+        String emailTemplateName = "IT-Helpdesk-Laptop-Dispatch-Template";
+        sailpoint.object.EmailTemplate template = context.getObjectByName(sailpoint.object.EmailTemplate.class, emailTemplateName);
+        
+        if (template != null) {
+            sailpoint.object.EmailOptions options = new sailpoint.object.EmailOptions();
+            options.setTo("it-helpdesk@company.com");
+            
+            // Email template ke andar use hone wale variables pass karein
+            options.setVariable("employeeName", identity.getDisplayName());
+            options.setVariable("employeeId", identityName);
+            options.setVariable("managerName", identity.getManager() != null ? identity.getManager().getDisplayName() : "N/A");
+            
+            // Email send karein
+            context.sendEmailNotification(template, options);
+        } else {
+            // Agar template nahi mila toh standard log print karein (Troubleshooting ke liye)
+            System.out.println("ERROR: Email Template " + emailTemplateName + " nahi mila.");
+        }
+    }
+}
+*/////////
+----------------------------------------------------------------------------------------------------------------------------

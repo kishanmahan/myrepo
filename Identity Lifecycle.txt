@@ -1,0 +1,290 @@
+1️⃣1️⃣ Identity Lifecycle Management:-
+Lifecycle stages:-
+Joiner
+Mover
+Leaver
+
+6️⃣ Identity Lifecycle kya hai?
+Ye user ka complete lifecycle manage karta hai.
+
+Stages:-
+1️⃣ Joiner:-
+New employee join karta hai
+
+2️⃣ Mover:-
+Employee department change karta hai
+
+3️⃣ Leaver:-
+Employee company leave karta hai
+
+Example:-
+Joiner:-
+➡ Account create
+
+Mover:-
+➡ Old access remove + new access add
+
+Leaver:-
+➡ All access remove
+----------------------------------------
+1️⃣ Identity Lifecycle Overview
+ILM automate करता है:-
+✔ Account creation
+✔ Role assignment
+✔ Access modification
+✔ Account disable / delete
+Flow:-
+HR System
+   ↓
+Identity Created
+   ↓
+Access Assigned
+   ↓
+Role Change
+   ↓
+Access Updated
+   ↓
+User Exit
+   ↓
+Access Removed
+
+2️⃣ Joiner Process (New Employee):-
+जब नया employee join करता है।
+Steps:-
+1️⃣ HR system में user create होता है
+2️⃣ SailPoint aggregation करता है
+3️⃣ Identity create होती है
+4️⃣ Birthright roles assign होते हैं
+5️⃣ Accounts automatically create होते हैं
+
+Example:-
+User : Rahul
+Department : Finance
+
+System automatically assign करेगा:-
+Finance Role
+Finance Application Access
+Email Account
+VPN Access
+
+3️⃣ Joiner Configuration Methods:-
+1️⃣ Birthright Roles:-
+Automatically roles assign होते हैं।
+Example:-
+Department = HR
+Role = HR_User
+
+2️⃣ Lifecycle Events:-
+Events trigger करते हैं automation।
+Example:-
+New Identity Created
+
+Trigger:-
+Create accounts
+Assign roles
+
+3️⃣ Provisioning Plan:-
+Account creation के लिए provisioning plan बनता है।
+
+Example:-
+Operation: Create
+Application: Active Directory
+
+4️⃣ Mover Process (Role Change):-
+Mover तब होता है जब user:-
+✔ Department change करता है
+✔ Promotion होता है
+✔ Role change होता है
+
+Example:-
+Old Role: HR_User
+New Role: HR_Manager
+
+System करेगा:-
+Remove HR_User entitlements
+Add HR_Manager entitlements
+
+5️⃣ Mover Automation Methods:-
+1️⃣ Role Change Detection
+System detect करता है:
+Department change
+Location change
+Manager change
+
+2️⃣ Recalculation:-
+Identity refresh होता है।
+Identity Refresh Task
+यह check करता है:-
+Old roles remove
+New roles add
+
+6️⃣ Leaver Process (Employee Exit):-
+जब employee company छोड़ता है।
+System automatically:-
+✔ Accounts disable करता है
+✔ Access remove करता है
+✔ Roles revoke करता है
+
+Example:-
+Employee status = Terminated
+
+Action:-
+Disable accounts
+Remove roles
+Revoke entitlements
+
+7️⃣ Leaver Automation Methods:-
+1️⃣ Deprovisioning:-
+Access remove होता है।
+Example:-
+Disable AD account
+Disable Email
+Remove VPN
+
+2️⃣ Account Deletion:-
+कुछ systems में account delete भी होता है।
+Delete account operation
+
+8️⃣ Lifecycle Events:-
+Lifecycle automation events से trigger होता है।
+Examples:-
+Joiner event
+Mover event
+Leaver event
+
+Example configuration:-
+Event: Identity Created
+Action: Assign Birthright Role
+
+9️⃣ Lifecycle States:-
+Identity के states होते हैं।
+Example:-
+Active
+Inactive
+Terminated
+On Leave
+
+🔟 Identity Refresh (Important):-
+Identity refresh task ILM का core है।
+यह check करता है:
+✔ Role assignments
+✔ Policy violations
+✔ Entitlement changes
+
+Task example:-
+Identity Refresh Task
+
+Options:-
+Refresh roles
+Detect lifecycle changes
+Provision changes
+
+1️⃣1️⃣ Lifecycle Workflows:-
+Workflows automation handle करते हैं।
+Examples:-
+--Joiner Workflow:-
+Create account
+Assign roles
+Send notification
+
+--Mover Workflow:-
+Remove old access
+Assign new access
+Approval process
+
+--Leaver Workflow:-
+Disable accounts
+Revoke access
+Audit log
+--------------------------
+1️⃣2️⃣ Lifecycle Rules (Developer):-
+Developers rules लिख सकते हैं।
+Examples:-
+Before provisioning rule
+After provisioning rule
+Identity trigger rule
+Example:-
+if(identity.getDepartment().equals("Finance"))
+{
+ assignRole("Finance_Role");
+}
+
+1️⃣3️⃣ Lifecycle Policies:-
+Policies ensure security।
+Example:-
+No access after termination
+
+अगर violation हो:-
+Alert generate
+Access remove
+
+1️⃣4️⃣ Lifecycle Notifications:-
+System notifications भेजता है।
+
+Examples:-
+Manager notification
+User notification
+Admin notification
+
+1️⃣5️⃣ Lifecycle Reports:-
+Reports generate होते हैं।
+
+Examples:-
+✔ Joiner report
+✔ Mover report
+✔ Leaver report
+✔ Access change report
+
+1️⃣6️⃣ Lifecycle Integration:-
+Integration systems:-
+HR system
+Active Directory
+SAP
+Database
+Cloud apps
+
+Protocols:-
+LDAP
+JDBC
+Web Services
+REST API
+
+1️⃣7️⃣ Lifecycle Best Practices:-
+✔ HR system integration
+✔ Automatic provisioning
+✔ Regular identity refresh
+✔ Role-based access
+
+🔥 Developer Important Methods:-
+Developer को ये objects और methods समझने चाहिए:-
+()Identity object:-
+identity.getName()
+identity.getManager()
+identity.getDepartment()
+identity.getEmail()
+
+()Link object:-
+link.getApplicationName()
+link.getNativeIdentity()
+
+()Provisioning plan:-
+ProvisioningPlan
+AccountRequest
+AttributeRequest
+
+🚀 ILM Complete Flow:-
+HR System
+   ↓
+Aggregation
+   ↓
+Identity Created
+   ↓
+Joiner Process
+   ↓
+Role Change
+   ↓
+Mover Process
+   ↓
+Employee Exit
+   ↓
+Leaver Process

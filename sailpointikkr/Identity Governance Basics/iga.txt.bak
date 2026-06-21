@@ -1,0 +1,3371 @@
+
+--------------------------------
+---------------------------------------------------------------------------------------------------
+🧠 1️⃣ Identity Management Basics:-
+-------------------------------------------------------------------------------------------------------
+()Identity = Digital Person
+Identity ka purpose: Ye system ko batata hai kaun kaun hai aur kya kya access hai.
+Components of an Identity:-
+Basic Info: Name, Email, Employee ID, Department
+Credentials: Username, Password, MFA info
+Roles & Groups: Admin, Manager, Finance, IT
+Permissions: Kya kya system ya application me access hai
+Status: Active, Inactive, Suspended
+Example:-
+Rahul ka Identity object me ye ho sakta hai:-
+Name: Rahul Kumar
+Email: rahul@company.com
+Department: Finance
+Role: Finance Manager
+Applications Access: SAP, Salesforce
+Status: Active
+
+Ye Identity SailPoint me identity object ke roop me save hota hai.
+SailPoint iske basis pe access request, provisioning, and certification manage karta hai.
+--------------
+()Digital Identity lifecycle kya hai?
+--1️⃣ Joiner (Identity Creation):-
+Jab naya employee join karta hai company me.
+SailPoint me Identity object create hota hai, aur uske liye required accounts & access provision hote hain.
+Example:-
+Identity rahul = new Identity();
+rahul.setName("Rahul Kumar");
+rahul.setEmail("rahul@company.com");
+rahul.setDepartment("Finance");
+rahul.setRole("Finance Manager");
+rahul.setStatus("Active");
+
+// Provision access
+provisionAccess(rahul);
+--------------------------
+()2️⃣ Mover (Identity Update / Transfer)
+Jab employee ka role, department, ya location change hota hai.
+SailPoint me Identity update hoti hai, aur access adjust hota hai.
+
+Example:-
+// Rahul ka department change
+rahul.setDepartment("IT");
+rahul.setRole("IT Manager");
+
+// Re-evaluate access based on new role
+updateAccess(rahul);
+----------------------
+()3️⃣ Leaver (Identity Deactivation / Removal):-
+Jab employee company chhod deta hai.
+SailPoint me Identity deactivate ya delete hoti hai, aur saare access revoke hote hain.
+Example:-
+rahul.setStatus("Inactive");
+
+// Revoke all access
+deprovisionAccess(rahul);
+-------------------------
+()Identity attributes kya hai?
+--1️⃣ Common Identity Attributes
+Attribute Type	              Example	                               Description
+Basic Info--------------Name, Email, Employee ID, Phone----------User ke personal details
+Organizational Info-----Department, Location, Manager----------Company structure ke according info
+Credentials-------------Username, Password, MFA info-----------Login aur authentication ke liye
+Role & Group------------Finance Manager, IT Admin--------------Roles ya groups jisme user hai
+Application Access------SAP, Salesforce, Jira------------------User ke systems aur apps access
+Status------------------Active, Inactive, Suspended------------Identity ka current state
+Custom Attributes-------Cost Center, Project Code--------------Organization ke custom fields
+---------------------------------
+2️⃣ Example in Code (Java / SailPoint):-
+Identity rahul = new Identity();
+
+// Basic Info
+rahul.setName("Rahul Kumar");
+rahul.setEmail("rahul@company.com");
+rahul.setEmployeeId("EMP12345");
+
+// Organizational Info
+rahul.setDepartment("Finance");
+rahul.setLocation("Mumbai");
+rahul.setManager("Anil Sharma");
+
+// Role & Access
+rahul.setRole("Finance Manager");
+rahul.addApplicationAccess("SAP");
+rahul.addApplicationAccess("Salesforce");
+
+// Status
+rahul.setStatus("Active");
+
+// Custom Attribute
+rahul.setAttribute("CostCenter", "CC1001");
+----------------------------------------------
+----------------------------------------------------
+()2️⃣ Cost Center:-
+Cost Center ka matlab: Organization me ek financial bucket / department jahan se kharche track hote hain.
+Ye attribute identity ke sath link hota hai, taaki system samajh sake kis department ka employee kis project/department ke resources use kar raha hai.
+Example:-
+Rahul ka Cost Center = “CC1001” → Finance Department
+Use ye determine karne me help hoti hai:-
+Approval policies
+Access budgets
+Reporting
+------------------------------------------------------
+()Authoritative source (HR system) kya hai?
+--1️⃣ Authoritative Source kya hota hai?
+Ye wo system hai jahan se SailPoint identity attributes (user info, roles, department, email, etc.) ko verify karta hai.
+Mostly HR system ko authoritative source maana jata hai, kyunki HR me employee ka official record hota hai.
+SailPoint me aggregation process ke through ye data fetch hota hai
+
+Example: HR System as Authoritative Source
+HR system me Rahul ka record:-
+EmployeeID: EMP12345
+Name: Rahul Kumar
+Email: rahul@company.com
+Department: Finance
+Role: Finance Manager
+Cost Center: CC1001
+Status: Active
+
+💡 Tip bhai:-
+Sirf HR system nahi, aur bhi systems ho sakte hain jaise:
+Active Directory → AD accounts
+Finance system → Cost Center data
+ERP system → Project assignments
+
+--SailPoint aggregation:-
+Identity rahul = aggregateFromHR("EMP12345"); 
+// Ab Rahul ki identity SailPoint me ready hai
+Authoritative source ka fayda:-
+SailPoint me official data hamesha HR se sync hota hai
+Manual updates ki zarurat kam hoti hai
+Policies aur workflows automatically apply ho sakte hain.
+---------------------------------------------------------------------------------------------------
+🔐 2️⃣ Access Management Basics:-
+---------------------------------------------------------------------------------------------------
+()Authentication kya hai?
+--1️⃣ Authentication (()Authentication)
+Meaning: Ye check karta hai “Who you are?”
+Purpose: System ye verify karta hai ki user jo login kar raha hai, wo asli me wahi hai jo wo claim kar raha hai.
+Methods:-
+Password
+OTP (One-Time Password)
+MFA (Multi-Factor Authentication)
+Biometric (Fingerprint, Face ID)
+--------------------------------------
+()Authorization kya hai?
+--Meaning: Ye check karta hai “What you can do?”
+Purpose: System decide karta hai ki authenticated user ko kaun kaunse resources/permissions allowed hain.
+
+Methods:-
+Roles (Finance Manager, IT Admin)
+Policies (Access policies, Approval workflows)
+Groups & Permissions
+
+Example:-
+Rahul successfully login ho gaya (Authentication pass)
+
+Ab system check karta hai:-
+Rahul ko SAP me “Finance Manager” access hai?
+Salesforce me read-only ya full access hai?
+✅ Agar allowed → Action permit
+------------------------------------------
+()RBAC (Role Based Access Control) kya hai?
+--1️⃣ RBAC kya hai?
+Meaning: User ka access directly permissions se nahi, balki roles ke through assign hota hai.
+Purpose: Access management ko easy, scalable, aur secure banane ke liye.
+Core Idea:
+Roles define karte hain permissions ka group
+Users ko roles assign kiye jaate hain
+System automatically user ke liye permissions apply karta hai.
+
+2️⃣ Example Table:-
+Role	              Permissions	                       Assigned Users
+Finance Manager----SAP Full Access, Read Finance Reports----Rahul, Priya
+IT Admin-----------Server Access, Admin Dashboard-----------Anil, Ravi
+Employee-----------Email Access, Leave Portal---------------All Employees
+
+Flow:-
+Rahul ko “Finance Manager” role assign → Automatically SAP + Finance Reports access mil gaya
+Agar Rahul role change hota hai → Access automatically update ho jata hai.
+
+()3️⃣ RBAC Advantages:-
+Easy Management: Directly har user ko permission assign nahi karna
+Consistency: Same role wale sab users ka access same hota hai
+Audit & Compliance: Easy to track who has access to what
+Dynamic: Role change = Access change automatically.
+
+4️⃣ Simple Code Example (SailPoint Style)
+// Define Role
+Role financeManager = new Role("Finance Manager");
+financeManager.addPermission("SAP Full Access");
+financeManager.addPermission("Finance Reports Read");
+
+// Assign User to Role
+Identity rahul = getIdentity("EMP12345");
+rahul.assignRole(financeManager);
+
+// Check Access
+if(rahul.hasPermission("SAP Full Access")){
+    System.out.println("Access Granted!");
+}else{
+    System.out.println("Access Denied!");
+}
+--------------
+3️⃣ Enterprise RBAC Provisioning:-
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+
+Identity user = context.getObjectByName(Identity.class, "rahul");
+
+ProvisioningPlan plan = new ProvisioningPlan();
+plan.setIdentity(user);
+
+AccountRequest accReq = new AccountRequest();
+accReq.setApplication("FinanceApp");
+accReq.setOperation(AccountRequest.Operation.Create);
+
+plan.add(accReq);
+
+context.saveObject(plan);
+
+Result:
+
+Rahul → FinanceApp account create
+---------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.Role;
+import sailpoint.object.Application;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+
+Identity identity = context.getObjectByName(Identity.class, "rahul");
+
+Role role = context.getObjectByName(Role.class, "FinanceRole");
+
+Application app = context.getObjectByName(Application.class, "FinanceApp");
+
+if(identity != null && role != null){
+
+    // Assign role to user
+    identity.add(role);
+
+    // Create provisioning plan
+    ProvisioningPlan plan = new ProvisioningPlan();
+    plan.setIdentity(identity);
+
+    // Account request
+    AccountRequest accReq = new AccountRequest();
+    accReq.setApplication(app.getName());
+    accReq.setOperation(AccountRequest.Operation.Create);
+
+    // Entitlement request
+    AttributeRequest entitlement = new AttributeRequest();
+    entitlement.setName("group");
+    entitlement.setOperation(ProvisioningPlan.Operation.Add);
+    entitlement.setValue("FinanceGroup");
+
+    accReq.add(entitlement);
+
+    plan.add(accReq);
+
+    context.saveObject(identity);
+    context.commitTransaction();
+
+}
+/////////////*
+()Yaha group attribute ka naam hai jo Target system ka field / column.
+Matlab:-
+Target system ka field / attribute
+Example target systems:-
+System	               Attribute
+Active Directory------group / memberOf
+ServiceNow---------------group
+SAP----------------------role
+Jira--------------------group
+To yaha group = attribute name.
+
+()2️⃣ FinanceGroup kya hai:-
+entitlement.setValue("FinanceGroup");
+Ye actual group ka naam hai jisme user ko add karna hai.
+
+Example:-
+Active Directory Groups
+FinanceGroup
+HRGroup
+AdminGroup
+ITSupportGroup
+
+()3️⃣ setOperation(Add) kya karega:-
+entitlement.setOperation(ProvisioningPlan.Operation.Add);
+Meaning:-
+User ko group me add karo
+
+()in teeno ka matlab Rahul ko FinanceGroup me add karo.
+*/////////////
+-----------------------------------------------
+()ABAC kya hai?
+--1️⃣ ABAC kya hai?
+ABAC me user ke attributes, resource ke attributes, aur environment conditions ko check karke
+access decide hota hai.
+Purpose: Fine-grained aur dynamic access control dena.
+
+2️⃣ Example Attributes in ABAC:-
+Type	                                       Example
+User Attributes----------------------Department, Job Title, Location, Cost Center,role,
+Resource Attributes------------------File Type, Sensitivity Level, Application Name
+Environment Attributes---------------Time of Day, IP Address, Device Type
+
+3️⃣ Example Scenario:-
+Rahul (Finance, Mumbai, Manager) access request karta hai SAP file “Financial_Report_2026.pdf”
+Policy:-
+IF user.department == "Finance" AND user.location == "Mumbai" AND resource.sensitivity == "High" 
+THEN allow access
+ELSE deny access
+
+2️⃣ Simple Example:-
+Policy:-
+Agar user.department = Finance
+aur resource.type = FinancialReport
+to access allow
+Agar koi IT department ka user access karega:-
+Access Denied
+
+5️⃣ Combined ABAC Example (Code Conceptual):-
+Identity rahul = getIdentity("EMP12345");
+Resource payrollFile = getResource("Payroll_2026.xlsx");
+
+// Current time
+LocalTime currentTime = LocalTime.now();
+
+// ABAC Fine-Grained + Dynamic Policy
+if(rahul.getDepartment().equals("Finance") &&
+   rahul.getRole().equals("Manager") &&
+   payrollFile.getSensitivity().equals("High") &&
+   currentTime.isAfter(LocalTime.of(9,0)) &&
+   currentTime.isBefore(LocalTime.of(18,0))){
+       
+    grantAccess(rahul, payrollFile);
+}else{
+    denyAccess(rahul, payrollFile);
+}
+-------------------------------------------------------------------------------------------------
+1️⃣ User.java
+package abac;
+
+public class User {
+
+    private String name;
+    private String department;
+    private String location;
+    private String role;
+
+    public User(String name, String department, String location, String role) {
+        this.name = name;
+        this.department = department;
+        this.location = location;
+        this.role = role;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public String getRole() {
+        return role;
+    }
+}
+2️⃣ Resource.java
+package abac;
+
+public class Resource {
+
+    private String resourceName;
+    private String resourceType;
+    private String sensitivity;
+
+    public Resource(String resourceName, String resourceType, String sensitivity) {
+        this.resourceName = resourceName;
+        this.resourceType = resourceType;
+        this.sensitivity = sensitivity;
+    }
+
+    public String getResourceName() {
+        return resourceName;
+    }
+
+    public String getResourceType() {
+        return resourceType;
+    }
+
+    public String getSensitivity() {
+        return sensitivity;
+    }
+}
+3️⃣ Environment.java
+package abac;
+
+public class Environment {
+
+    private String location;
+    private int hour;
+
+    public Environment(String location, int hour) {
+        this.location = location;
+        this.hour = hour;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public int getHour() {
+        return hour;
+    }
+}
+4️⃣ ABACPolicyEngine.java
+package abac;
+
+public class ABACPolicyEngine {
+
+    public boolean checkAccess(User user, Resource resource, Environment env) {
+
+        if (user.getDepartment().equals("Finance")
+                && resource.getResourceType().equals("FinancialReport")
+                && env.getLocation().equals("Office")
+                && env.getHour() >= 9
+                && env.getHour() <= 18) {
+
+            return true;
+        }
+
+        return false;
+    }
+}
+5️⃣ ABACExample.java (Main Class)
+Import Lines yaha aayengi
+package abac;
+
+import abac.User;
+import abac.Resource;
+import abac.Environment;
+import abac.ABACPolicyEngine;
+
+public class ABACExample {
+
+    public static void main(String[] args) {
+
+        User user = new User(
+                "Rahul",
+                "Finance",
+                "India",
+                "Manager"
+        );
+
+        Resource resource = new Resource(
+                "QuarterReport",
+                "FinancialReport",
+                "High"
+        );
+
+        Environment env = new Environment(
+                "Office",
+                11
+        );
+
+        ABACPolicyEngine engine = new ABACPolicyEngine();
+
+        boolean access = engine.checkAccess(user, resource, env);
+
+        if (access) {
+            System.out.println("Access Allowed");
+        } else {
+            System.out.println("Access Denied");
+        }
+
+    }
+}
+▶️ Output:-
+Access Allowed
+
+Agar environment change kar do:
+
+Environment env = new Environment("Home", 11);
+
+Output:
+
+Access Denied
+
+--------------------------------------------------------------------------------------------------
+()1️⃣ Fine-Grained Access:-
+Meaning: Access control itna detailed hai ki har chhoti permission ko control kiya ja sakta hai.
+Example:-
+Rahul ko Finance folder me read access, lekin write access sirf Manager ko.
+Employee ko leave portal access, lekin salary details HR ko hi dikhe.
+Ek line me: Small, specific permissions per user/resource control.
+
+()2️⃣ Dynamic Access:-
+Meaning: Access real-time conditions aur attributes ke basis pe decide hota hai, na ki static roles se.
+Example:-
+Rahul Finance system me sirf office hours (9am–6pm) me access le sakta hai.
+Agar Rahul VPN ya unknown device se login karta → Access deny.
+Ek line me: Access automatically change hota hai based on rules or conditions.
+
+()3️⃣ Sensitivity Level:-
+Meaning: Resource ka criticality/importance level define karta hai.
+Example:-
+Resource	             Sensitivity Level	    Access Allowed
+Public HR Policies-----------Low-----------------All Employees
+Payroll Data-----------------High----------------HR + Finance Manager
+Top Secret Financial Report--Very High-----------CFO only
+SailPoint me ABAC policy me use hota hai, taaki only authorized users hi sensitive data access kare.
+
+()4️⃣ Time of Day:-
+Meaning: Access sirf specified time window me allow hota hai.
+Example:-
+Rahul ka SAP access: 9am – 6pm
+Payroll reports: 10am – 4pm
+After hours: Access denied
+
+()1️⃣ Fine-Grained Access (Detailed Permission Control):-
+import sailpoint.object.Identity;
+import sailpoint.object.Role;
+import sailpoint.object.Application;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+
+Identity identity = context.getObjectByName(Identity.class, "rahul");
+
+Application app = context.getObjectByName(Application.class, "FinanceApp");
+
+ProvisioningPlan plan = new ProvisioningPlan();
+plan.setIdentity(identity);
+
+AccountRequest accReq = new AccountRequest();
+accReq.setApplication(app.getName());
+accReq.setOperation(AccountRequest.Operation.Modify);
+
+AttributeRequest readAccess = new AttributeRequest();
+readAccess.setName("folderPermission");
+readAccess.setValue("READ");
+readAccess.setOperation(ProvisioningPlan.Operation.Add);
+
+accReq.add(readAccess);
+plan.add(accReq);
+
+context.saveObject(plan);
+//////////*
+()1️⃣ setName("folderPermission") me folderPermission kya hai
+attr.setName("folderPermission");
+Yaha folderPermission ek attribute name hai.
+Matlab:-
+Target system me jo permission field hai uska naam
+SailPoint me AttributeRequest ke through hum target system ke attribute ko modify karte hain.
+
+()2️⃣ Calendar.getInstance(); kya hai:-
+Ye Java ka method hai jo current date aur time ka object return karta hai.
+
+()3️⃣ Calendar.HOUR_OF_DAY:-
+Ye 24 hour format me current hour return karta hai.
+
+()java.util.Calendar ek class hai jo date aur time ko manage karne ke liye use hoti hai. Isse hum:
+date get kar sakte hain
+date set kar sakte hain
+date add kar sakte hain
+week / month / year calculate kar sakte hain.
+
+()1️⃣ getInstance():-
+Current system date aur time ke saath Calendar object create karta hai.
+
+()2️⃣ get(int field):-
+Specific field ka value return karta hai.
+Fields example:-
+YEAR
+MONTH
+DATE
+HOUR
+MINUTE
+SECOND
+
+Code:-
+Calendar cal = Calendar.getInstance();
+int year = cal.get(Calendar.YEAR);
+int month = cal.get(Calendar.MONTH);
+int day = cal.get(Calendar.DATE);
+
+*//////////
+
+3️⃣ Dynamic Device / Location Check:-
+
+Example:
+
+Unknown device → Access deny
+VPN → Allow
+Example Rule
+String device = request.getHeader("Device-Type");
+
+if(device != null && device.equals("Corporate-Laptop")){
+    return true;
+}else{
+    return false;
+}
+-----------
+import java.util.Date;
+import java.util.Calendar;
+import sailpoint.object.Identity;
+
+Identity identity = context.getObjectByName(Identity.class, "rahul");
+
+Calendar cal = Calendar.getInstance();
+int hour = cal.get(Calendar.HOUR_OF_DAY);
+
+boolean accessAllowed = false;
+
+if(hour >= 9 && hour <= 18) {
+    accessAllowed = true;
+}
+
+if(accessAllowed){
+    System.out.println("Access Granted");
+}else{
+    System.out.println("Access Denied");
+}
+--------------------------------------------------------------------------------------------
+()Least Privilege kya hai?
+--Meaning: User ko sirf utna hi access diya jaye jitna uske kaam ke liye zaruri ho.
+Purpose: Security increase karna aur accidental/malicious misuse reduce karna.
+Ek line me: “Need-to-know basis access”,
+2️⃣ Example:-
+User	           Job Role	       Access Assigned	                        Notes
+Rahul----------Finance Analyst--Finance Reports Read---------------Sirf required access, payroll write access nahi
+Priya----------------HR---------Employee Records Read/Write--------Finance files access nahi
+Ravi--------------IT Admin---------Server Admin Access-------------Payroll ya HR data access nahi
+
+()3️⃣ Least Privilege in SailPoint:-
+Roles + Policies + ABAC ka combination use karke implement hota hai.
+Automation & Certification:-
+SailPoint automatically check karta hai ki user ke paas extra access na ho
+Certification workflow me managers review karte hain aur unnecessary access revoke karte hain.
+
+4️⃣ Code Example Conceptual:-
+Identity rahul = getIdentity("EMP12345");
+Role financeAnalyst = new Role("Finance Analyst");
+
+// Assign only required permissions
+financeAnalyst.addPermission("Finance Reports Read");
+
+// Do not assign Payroll Write access
+rahul.assignRole(financeAnalyst);
+
+// Access check
+if(rahul.hasPermission("Payroll Write")){
+    System.out.println("Access Denied! Least Privilege enforced.");
+}else{
+    System.out.println("Access Granted!");
+}
+
+()example code of Least Privilege in SailPoint:-
+Roles + Policies + ABAC ka combination use karke implement hota hai.:-
+
+-------------------------------------------------------------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.Link;
+import sailpoint.object.Application;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.ProvisioningPlan.Operation;
+
+import java.util.List;
+
+public class LeastPrivilegeExample {
+
+    public static void applyLeastPrivilege(SailPointContext context) throws Exception {
+
+        // Identity fetch
+        Identity user = context.getObjectByName(Identity.class, "john.doe");
+
+        // Application fetch
+        Application app = context.getObjectByName(Application.class, "ActiveDirectory");
+
+        // User ke accounts
+        List<Link> links = user.getLinks();
+
+        // Provisioning Plan
+        ProvisioningPlan plan = new ProvisioningPlan();
+        plan.setIdentity(user);
+
+        for(Link link : links){
+
+            if(link.getApplicationName().equals("ActiveDirectory")){
+
+                // Example: Remove extra entitlement
+                AccountRequest accReq = new AccountRequest();
+                accReq.setApplication(app.getName());
+                accReq.setNativeIdentity(link.getNativeIdentity());
+                accReq.setOperation(Operation.Modify);
+
+                AttributeRequest attrReq = new AttributeRequest();
+                attrReq.setName("memberOf");
+                attrReq.setOperation(Operation.Remove);
+                attrReq.setValue("AdminGroup");
+
+                accReq.add(attrReq);
+
+                plan.add(accReq);
+
+            }
+
+        }
+
+        // Save provisioning plan
+        context.saveObject(plan);
+        context.commitTransaction();
+
+        System.out.println("Least Privilege applied for user: " + user.getName());
+    }
+}
+///////////*
+()AccountRequest accReq = new AccountRequest();
+accReq.setApplication("ActiveDirectory");
+accReq.setOperation(Operation.Modify);
+Matlab:-
+Active Directory account modify karo
+
+()1️⃣ attrReq.setName("memberOf");;-
+1️⃣ attrReq.setName("memberOf");
+Kya hai?
+Ye attribute ka naam set karta hai.
+Kya karta hai
+Ye batata hai ki kaunsa attribute modify karna hai.
+Example:-
+memberOf
+Active Directory me memberOf = user ke groups.
+Example:-
+john.doe
+
+memberOf:-
+AdminGroup
+FinanceGroup
+VPNUsers
+
+()3️⃣ attrReq.setValue("AdminGroup");
+Matlab:-
+Ye batata hai kaunsa entitlement remove karna hai.
+Example:-
+AdminGroup
+Matlab:-
+User ko AdminGroup se hata do.
+
+()2️⃣ attrReq.setOperation(Operation.Remove);
+Kya hai?
+Ye operation type set karta hai.
+Kya karta hai,
+Ye decide karta hai attribute ke saath kya action karna hai.
+Operations:-
+Operation	    Meaning
+Add------------access add
+Remove---------access remove
+Set------------replace value
+Yaha:-
+Remove
+Matlab group access hatao.
+
+4️⃣ accReq.add(attrReq);
+Kya hai?
+Ye AttributeRequest ko AccountRequest me add karta hai.
+Kya karta hai
+Ye bolta hai:-
+is account me ye attribute change karo.
+
+5️⃣ plan.add(accReq);
+Kya hai?
+Ye AccountRequest ko ProvisioningPlan me add karta hai.
+Kya karta hai
+Ye provisioning engine ko batata hai:-
+ye account modify karo.
+
+()👍 ye teen lines milkar AdminGroup access remove karne ke liye hi use hoti hain,
+attrReq.setName("memberOf");
+attrReq.setOperation(Operation.Remove);
+attrReq.setValue("AdminGroup");
+*//////////
+-------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
+()Privileged Access kya hai?
+Ye access high-risk aur sensitive operations ke liye hota hai.
+Normal users ke liye nahi, sirf admins, managers, aur IT/security personnel ke liye.
+Purpose: critical systems me changes safe aur controlled ho.
+Ek line me: “High-power access for trusted users”
+
+2️⃣ Examples of Privileged Access:-
+User	             Privileged Access	                    Notes
+IT Admin-----------Server Admin, Network Config------Can change system settings
+Finance Manager----Payroll approval------------------Can approve salary changes
+HR Admin-----------Employee data write/delete--------Sensitive PII data
+
+4️⃣ Privileged Access Management in SailPoint,
+SailPoint me PAM (Privileged Access Management) ka part hota hai:-
+Roles define karna for privileged users
+Approval workflow for granting temporary privileged access
+Monitoring & Certification to track misuse.
+
+5️⃣ Code Conceptual Example:-
+Identity anil = getIdentity("EMP54321");
+Role itAdmin = new Role("IT Admin");
+
+// Assign privileged permissions
+itAdmin.addPermission("Server Admin");
+itAdmin.addPermission("Network Config");
+anil.assignRole(itAdmin);
+
+// Access check
+if(anil.hasPermission("Server Admin")){
+    System.out.println("Privileged Access Granted!");
+}else{
+    System.out.println("Access Denied!");
+}
+✅ Tip bhai:-
+Privileged access risky hota hai, isliye temporary, monitored aur approved hona chahiye.
+SailPoint me ye access least privilege + time-bound + certification workflows ke sath manage hota hai.
+
+()Enterprise PAM Example (Java):-
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+class Permission {
+
+    String name;
+
+    Permission(String name) {
+        this.name = name;
+    }
+}
+
+class PrivilegedRole {
+
+    String roleName;
+    List<Permission> permissions = new ArrayList<Permission>();
+
+    PrivilegedRole(String roleName) {
+        this.roleName = roleName;
+    }
+
+    void addPermission(Permission p) {
+        permissions.add(p);
+    }
+}
+
+class Identity {
+
+    String name;
+    boolean mfaVerified;
+
+    Identity(String name) {
+        this.name = name;
+    }
+
+    void verifyMFA() {
+        mfaVerified = true;
+        System.out.println("MFA verified for " + name);
+    }
+}
+
+class PrivilegedAccessGrant {
+
+    Identity user;
+    PrivilegedRole role;
+    Date start;
+    Date end;
+
+    PrivilegedAccessGrant(Identity user, PrivilegedRole role, Date start, Date end) {
+        this.user = user;
+        this.role = role;
+        this.start = start;
+        this.end = end;
+    }
+
+    void checkAccess() {
+
+        Date today = new Date();
+
+        if (!user.mfaVerified) {
+            System.out.println("Access Denied: MFA not verified");
+            return;
+        }
+
+        if (today.after(start) && today.before(end)) {
+
+            System.out.println("Privileged Access Granted to " + user.name);
+
+            for (Permission p : role.permissions) {
+                System.out.println("Permission: " + p.name);
+            }
+
+        } else {
+            System.out.println("Privileged Access Expired");
+        }
+    }
+}
+
+class AuditLogger {
+
+    static void log(String action) {
+        System.out.println("AUDIT: " + action);
+    }
+}
+
+public class PAMExample {
+
+    public static void main(String[] args) {
+
+        Identity rahul = new Identity("Rahul");
+
+        PrivilegedRole dbAdmin = new PrivilegedRole("Database Admin");
+
+        dbAdmin.addPermission(new Permission("Read Database"));
+        dbAdmin.addPermission(new Permission("Modify Database"));
+        dbAdmin.addPermission(new Permission("Delete Database"));
+
+        rahul.verifyMFA();
+
+        Date start = new Date();
+
+        Date end = new Date(System.currentTimeMillis() + (2 * 60 * 60 * 1000));
+        // 2 hours access
+
+        PrivilegedAccessGrant grant =
+                new PrivilegedAccessGrant(rahul, dbAdmin, start, end);
+
+        grant.checkAccess();
+
+        AuditLogger.log("Privileged access used by Rahul");
+    }
+}
+Example Output
+MFA verified for Rahul
+Privileged Access Granted to Rahul
+Permission: Read Database
+Permission: Modify Database
+Permission: Delete Database
+AUDIT: Privileged access used by Rahul
+-----------------------------------------
+import java.util.Random;
+import java.util.Scanner;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+class Identity {
+
+    String name;
+    String mobileNumber;
+    String systemOtp;
+    boolean mfaVerified = false;
+
+    Identity(String name, String mobileNumber) {
+        this.name = name;
+        this.mobileNumber = mobileNumber;
+    }
+
+    void sendOTP() {
+
+        systemOtp = generateOTP();
+
+        SmsService.sendSMS(mobileNumber, systemOtp);
+
+        System.out.println("OTP sent to mobile number: " + mobileNumber);
+    }
+
+    void verifyMFA(Scanner scanner) {
+
+        System.out.print("Enter OTP for " + name + ": ");
+        String enteredOtp = scanner.nextLine();
+
+        if(systemOtp.equals(enteredOtp)) {
+            mfaVerified = true;
+            System.out.println("MFA verified for " + name);
+        } else {
+            System.out.println("Invalid OTP for " + name);
+        }
+    }
+
+    String generateOTP() {
+
+        Random r = new Random();
+        int otp = 100000 + r.nextInt(900000);
+
+        return String.valueOf(otp);
+    }
+}
+
+class SmsService {
+
+    static void sendSMS(String mobile, String otp) {
+
+        try {
+
+            String apiKey = "YOUR_API_KEY";
+
+            String message = "Your OTP is " + otp;
+
+            String data = "authkey=" + apiKey +
+                    "&mobiles=" + mobile +
+                    "&message=" + message +
+                    "&sender=OTPMSG" +
+                    "&route=4";
+
+            URL url = new URL("https://api.msg91.com/api/sendhttp.php");
+
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+            conn.setRequestMethod("POST");
+            conn.setDoOutput(true);
+
+            OutputStream os = conn.getOutputStream();
+            os.write(data.getBytes());
+            os.flush();
+            os.close();
+
+            int responseCode = conn.getResponseCode();
+
+            System.out.println("SMS API Response Code: " + responseCode);
+
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+public class MFAExample {
+
+    public static void main(String[] args) {
+
+        Scanner scanner = new Scanner(System.in);
+
+        Identity rahul = new Identity("Rahul","9876543210");
+        Identity ram = new Identity("Ram","9876543222");
+        Identity raman = new Identity("Raman","9876543333");
+
+        // Send OTP
+        rahul.sendOTP();
+        ram.sendOTP();
+        raman.sendOTP();
+
+        // User enters OTP
+        rahul.verifyMFA(scanner);
+        ram.verifyMFA(scanner);
+        raman.verifyMFA(scanner);
+
+        scanner.close();
+    }
+}
+Program Run Hone Par Flow:-
+Console me aisa dikhega:-
+OTP sent to mobile number: 9876543210
+OTP sent to mobile number: 9876543222
+OTP sent to mobile number: 9876543333
+Enter OTP for Rahul:-
+User OTP type karega:-
+482193
+MFA verified for Rahul
+/////////*
+()1️⃣ YOUR_API_KEY:-
+String apiKey = "YOUR_API_KEY"; Kya hai?
+Yeh authentication key hai.
+SMS service provider deta hai.
+Server ko batata hai:ki ye request kis account se aa rahi hai
+Example:-
+apiKey = "8f6a9c1e3bxxxx"
+
+()2️⃣ sender=OTPMSG
+"&sender=OTPMSG" Kya hai?
+SMS ka Sender ID
+User ke phone par message aise dikhega:-
+OTPMSG: Your OTP is 482193
+Example Sender ID:-
+OTPMSG
+BANKTX
+AMAZON
+PAYTM
+
+()3️⃣ route=4
+"&route=4" Kya hai?
+SMS delivery route type
+Common routes:-
+Route	   Meaning
+1-------Promotional SMS
+4-------Transactional SMS
+OTP ke liye Transactional route use hota hai.
+
+()4️⃣ URL
+URL url = new URL("https://api.msg91.com/api/sendhttp.php"); Kya hai?
+
+SMS provider ka API endpoint
+Yaha request bhejoge.
+Example:-
+https://api.msg91.com/api/sendhttp.php
+
+Simple language:-
+Java → SMS Server ko request bhej raha hai.
+
+5️⃣ HttpURLConnection
+HttpURLConnection conn Kya hai?
+Java class jo HTTP request send karne ke liye use hoti hai.
+Part of:-
+java.net package
+Isse hum:-
+API call
+Web request
+HTTP communication
+kar sakte hain.
+
+()6️⃣ url.openConnection():-
+(HttpURLConnection) url.openConnection(); Kya karta hai?
+Ye server se connection open karta hai.
+
+()7️⃣ (HttpURLConnection) Casting (HttpURLConnection) Kyu use hua?
+openConnection() return karta hai:-
+URLConnection
+but hume chahiye:-
+HttpURLConnection
+Isliye type cast kiya.
+
+8️⃣ conn.setRequestMethod("POST")
+conn.setRequestMethod("POST"); Kya hai?
+
+HTTP request type set karta hai.
+Common types:-
+Method	     Use
+GET--------data fetch
+POST-------data send
+PUT--------update
+DELETE-----remove
+OTP send karne ke liye:-
+POST request
+
+()9️⃣ conn.setDoOutput(true)
+conn.setDoOutput(true); Kya karta hai?
+Server ko data bhejne ki permission deta hai.
+Matlab:-
+Java → server ko data send karega.
+
+()1️⃣1️⃣ conn.getOutputStream()
+OutputStream os = conn.getOutputStream(); Kya karta hai?
+Server ko data bhejne ka channel open karta hai.
+Example:-
+authkey=xxxx
+mobiles=9876543210
+message=Your OTP
+
+()1️⃣2️⃣ os.write(data.getBytes())
+os.write(data.getBytes()); Kya karta hai?
+Data ko byte format me convert karke server ko bhejta hai.
+Example data:-
+authkey=abc123
+mobiles=9876543210
+message=Your OTP is 482193
+
+()1️⃣3️⃣ os.flush()
+os.flush();Kya karta hai?
+Buffer me jo data hai usko immediately server ko bhej deta hai.
+Without flush:-
+data buffer me ruk sakta hai.
+
+()1️⃣4️⃣ conn.getResponseCode()
+int responseCode = conn.getResponseCode();Kya karta hai?
+Server ka response status code check karta hai.
+Example:-
+Code	Meaning
+200-----Success
+400-----Bad request
+401-----Unauthorized
+500-----Server error
+
+Example output:-
+SMS API Response Code: 200
+
+Matlab:-
+SMS successfully send hua
+
+()2️⃣ OutputStream kya hota hai:-
+Java me OutputStream ek class hai jo data bahar bhejne ke liye use hoti hai.
+Entity reference: OutputStream
+Simple language:-
+Program → data → OutputStream → Server
+Example:-
+OutputStream os = conn.getOutputStream();
+os.write(data.getBytes());
+
+Iska matlab:-
+Java program se data server ko bhejna
+
+Real life example:-
+Pipe se paani bhejna
+Pipe = OutputStream
+
+()3️⃣ Buffer kya hota hai?
+Buffer ek temporary memory area hota hai.
+Step-by-step:-
+1 Program data banata hai
+2 Data buffer me store hota hai
+3 flush() buffer ka data server ko bhej deta hai.
+
+5️⃣ Complete request kya banega:-
+Final request:-
+POST https://api.msg91.com/api/sendhttp.php
+
+Body:-
+authkey=89ab23cdxxxxx
+mobiles=9876543210
+message=Your OTP is 456789
+sender=OTPMSG
+route=4
+
+()4️⃣ Real world me API key kaha milti hai?
+Example with MSG91:-
+Step:-
+1️⃣ account create
+2️⃣ dashboard open
+3️⃣ API key generate
+
+MSG91 kya hai?
+MSG91 ek cloud communication platform hai jo developers aur companies ko SMS,
+OTP, WhatsApp message, email, voice call APIs provide karta hai.
+Isko applications me integrate karke users ko automatic messages bheje ja sakte hain. 📱
+*/////////
+------------------------------------------------------------------------------
+()1️⃣ Granting Access:-
+Meaning: User ko koi system, app, ya resource ka permission officially dena.
+Types:-
+Automatic: SailPoint me workflow ya role ke basis pe auto assign
+Manual: Manager approval ke through
+
+Example:-
+Identity rahul = getIdentity("EMP12345");
+Role financeManager = getRole("Finance Manager");
+// Grant access
+rahul.assignRole(financeManager); // Access officially given.
+----------------------------------------------------------------
+Enterprise Grant Access Code (Clean Version):-
+import java.util.ArrayList;
+import java.util.List;
+
+class Permission {
+
+    String name;
+
+    Permission(String name) {
+        this.name = name;
+    }
+}
+
+class Role {
+
+    String roleName;
+    List<Permission> permissions = new ArrayList<Permission>();
+
+    Role(String roleName) {
+        this.roleName = roleName;
+    }
+
+    void addPermission(String permissionName) {
+        Permission p = new Permission(permissionName);
+        permissions.add(p);
+    }
+}
+
+class Identity {
+
+    String name;
+    List<Role> roles = new ArrayList<Role>();
+
+    Identity(String name) {
+        this.name = name;
+    }
+
+    void assignRole(Role role) {
+        roles.add(role);
+        System.out.println(role.roleName + " role granted to " + name);
+    }
+
+    void showAccess() {
+
+        System.out.println("\nAccess for " + name);
+
+        for (int i = 0; i < roles.size(); i++) {
+
+            Role r = roles.get(i);
+
+            System.out.println("Role: " + r.roleName);
+
+            for (int j = 0; j < r.permissions.size(); j++) {
+
+                Permission p = r.permissions.get(j);
+
+                System.out.println("Permission: " + p.name);
+            }
+        }
+    }
+}
+
+class AccessManager {
+
+    static void grantAccess(Identity user, Role role) {
+
+        user.assignRole(role);
+
+        System.out.println("Access granted successfully");
+    }
+}
+
+public class GrantAccessSystem {
+
+    public static void main(String[] args) {
+
+        // Create Roles
+        Role admin = new Role("Admin");
+        admin.addPermission("Read Data");
+        admin.addPermission("Write Data");
+        admin.addPermission("Delete Data");
+
+        Role manager = new Role("Manager");
+        manager.addPermission("Read Reports");
+        manager.addPermission("Approve Requests");
+
+        // Create Users
+        Identity rahul = new Identity("Rahul");
+        Identity ram = new Identity("Ram");
+        Identity raman = new Identity("Raman");
+
+        // Grant Access
+        AccessManager.grantAccess(rahul, admin);
+        AccessManager.grantAccess(ram, manager);
+        AccessManager.grantAccess(raman, manager);
+
+        // Show Access
+        rahul.showAccess();
+        ram.showAccess();
+        raman.showAccess();
+    }
+}
+Output Example:-
+Admin role granted to Rahul
+Access granted successfully
+
+Manager role granted to Ram
+Access granted successfully
+
+Access for Rahul
+Role: Admin
+Permission: Read Data
+Permission: Write Data
+Permission: Delete Data
+//////////*
+()Role r = roles.get(i); kya hai?
+--roles list se index i par jo role hai usko nikaalo.
+*/////////
+-------------------------------------------------------------------------------------
+2️⃣ Misuse:-
+Meaning: Jab user apne given access ka galat ya unauthorized use karta hai.
+
+Examples:-
+Rahul apne “Finance Manager” access se HR ya Payroll data edit kar de
+IT Admin server me unauthorized config changes kar de
+
+SailPoint Prevention:-
+Certification workflows: Managers regularly review access
+Least Privilege principle: Users ko sirf zaruri access mile
+Audit & Logs: Sab actions track hote hain.
+
+3️⃣ Time-Bound Access:-
+Meaning: Access ko sirf limited time ke liye allow karna.
+Purpose: Risk kam karna, misuse prevent karna
+Example:-
+IT Admin ko server config ka access sirf 2 hours ke liye diya
+Finance Manager ko payroll approval access sirf end-of-month me.
+
+example code:-
+grantTemporaryAccess(rahul, "Finance Reports Write", Duration.ofHours(2));
+
+// Automatic revoke after 2 hours
+revokeAccessAfterTime(rahul, "Finance Reports Write", 2);
+
+Enterprise Level Time-Bound Access Code
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+class Permission {
+
+    String name;
+
+    Permission(String name) {
+        this.name = name;
+    }
+}
+
+class Role {
+
+    String roleName;
+    List<Permission> permissions = new ArrayList<Permission>();
+
+    Role(String roleName) {
+        this.roleName = roleName;
+    }
+
+    void addPermission(Permission p) {
+        permissions.add(p);
+    }
+}
+
+class AccessGrant {
+
+    Role role;
+    Date startDate;
+    Date endDate;
+
+    AccessGrant(Role role, Date startDate, Date endDate) {
+        this.role = role;
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
+
+    boolean isActive() {
+
+        Date today = new Date();
+
+        return today.after(startDate) && today.before(endDate);
+    }
+}
+
+class Identity {
+
+    String name;
+    List<AccessGrant> grants = new ArrayList<AccessGrant>();
+
+    Identity(String name) {
+        this.name = name;
+    }
+
+    void grantRole(Role role, Date start, Date end) {
+
+        AccessGrant grant = new AccessGrant(role, start, end);
+        grants.add(grant);
+
+        System.out.println("Role " + role.roleName + " granted to " + name +
+                " from " + start + " to " + end);
+    }
+
+    void checkAccess() {
+
+        System.out.println("Checking active permissions for " + name);
+
+        for (AccessGrant g : grants) {
+
+            if (g.isActive()) {
+
+                for (Permission p : g.role.permissions) {
+                    System.out.println("Active Permission: " + p.name);
+                }
+
+            } else {
+                System.out.println("Access expired for role: " + g.role.roleName);
+            }
+        }
+    }
+}
+
+public class TimeBoundAccessExample {
+
+    public static void main(String[] args) {
+
+        Role financeRole = new Role("Finance Role");
+
+        financeRole.addPermission(new Permission("Read Finance Reports"));
+        financeRole.addPermission(new Permission("Write Finance Reports"));
+
+        Identity rahul = new Identity("Rahul");
+
+        Date start = new Date(); // now
+
+        Date end = new Date(System.currentTimeMillis() + (3 * 24 * 60 * 60 * 1000));
+        // 3 days access
+
+        rahul.grantRole(financeRole, start, end);
+
+        rahul.checkAccess();
+    }
+}
+Example Output
+Role Finance Role granted to Rahul from Sun Mar 08 to Wed Mar 11
+Checking active permissions for Rahul
+Active Permission: Read Finance Reports
+Active Permission: Write Finance Reports
+
+Agar date expire ho jaye:
+
+Access expired for role: Finance Role
+/////////*
+()1️⃣ today
+Date today = new Date();
+Ye current date/time hai.
+Example:-
+8 Mar 2026
+
+2️⃣ today.after(startDate)
+Check karta hai:-
+kya current date startDate ke baad hai?
+Example:-
+startDate = 7 Mar
+today = 8 Mar
+
+Result:-
+true
+
+3️⃣ today.before(endDate):-
+Check karta hai:-
+kya current date endDate se pehle hai?
+Example:-
+endDate = 10 Mar
+today = 8 Mar
+
+Result:-
+true
+*//////////
+----------------------------------------------------------------------------------------------------
+()Monitoring: System logs + certification.
+----------------------------------------------------------------------------------------------------
+🏗️ 3️⃣ Role Management:-
+----------------------------------------------------------------------------------------------------
+()Business Roles kya hai?
+--1️⃣ Business Role kya hai?
+Meaning: Ye role ek group of permissions ka logical set hai,
+jo specific business function ya job responsibilities ke liye assign hota hai.
+Purpose:-
+Access management ko simple banaye
+Business workflows ke hisaab se access automatically assign kare
+Auditing aur compliance easy ho.
+
+2️⃣ Examples of Business Roles:-
+Business Role	                    Example Users	                Permissions Included
+Finance Manager----------------------Rahul, Priya------------SAP Full Access, Finance Reports Read/Write
+HR Specialist------------------------Anil, Riya--------------Employee Records Read/Write, Leave Approvals
+IT Admin-----------------------------Ravi, Mohit-------------Server Admin, Network Config
+Employee-----------------------------All staff---------------Email, Leave Portal
+Ye roles high-level job functions ke according defined hote hain.
+Underlying permissions, applications, aur policies automatically link ho jate hain.
+
+4️⃣ Code Conceptual Example:-
+Identity rahul = getIdentity("EMP12345");
+
+// Define Business Role
+BusinessRole financeManager = new BusinessRole("Finance Manager");
+
+// Link underlying technical permissions
+financeManager.addPermission("SAP Full Access");
+financeManager.addPermission("Finance Reports Read/Write");
+
+// Assign Business Role to user
+rahul.assignBusinessRole(financeManager);
+
+Ab Rahul automatically all Finance Manager permissions inherit kar lega
+Agar role change hota hai (Mover stage) → Access automatic update.
+---------------------
+()1️⃣ Underlying Permissions:-
+Meaning: Ye actual actions ya rights hote hain jo user kisi system/application me perform kar sakta hai.
+Example:-
+SAP me Read Finance Reports
+Salesforce me Edit Leads
+Jira me Create Tickets
+
+Key Point:-
+Ye Business Role ke andar hidden hote hain
+User ko direct assign karne ki zarurat nahi, role assign karte hi ye automatically mil jaate hain,
+Ye fine-grained access control provide karte hain.
+Examples:-
+SAP: Read Finance Reports, Write Finance Reports
+Salesforce: Edit Leads, View Opportunities
+Jira: Create Tickets, Assign Tickets
+💡 Note: Ye directly user ko assign nahi hote.
+Usually Technical Role ke andar included hote hain,
+aur Business Role assign karte hi user ko indirectly mil jate hain.
+--------------------
+()3️⃣ Policies:-
+Meaning: Ye rules define karte hain ki kaun kaunse user ko access kaise milega.
+Types:-
+Segregation of Duties (SoD)
+Approval Required
+Time-Bound Access
+MFA Enforcement
+--------------------------------------------------------------------------------------------------
+()job functions kya hai?
+--“Job function = employee ka kaam ya responsibility”.
+2️⃣ Examples of Job Functions:-
+Job Function	            Example Business Role	             Notes
+Finance----------------Finance Manager, Accountant--------Access to SAP, Finance Reports
+HR---------------------------HR Specialist----------------Access to Employee Records, Leave Approvals
+IT---------------------IT Admin, System Operator----------Server Admin, Network Config
+Employee---------------Staff------------------------------Email, Leave Portal, Intranet
+
+4️⃣ Code Conceptual Example:-
+Identity rahul = getIdentity("EMP12345");
+
+// Define Job Function
+JobFunction finance = new JobFunction("Finance");
+
+// Assign Business Role based on Job Function
+BusinessRole financeManager = new BusinessRole("Finance Manager");
+financeManager.addPermission("SAP Full Access");
+financeManager.addPermission("Finance Reports Read/Write");
+
+// Map Job Function to Business Role
+finance.addBusinessRole(financeManager);
+
+// Assign to User
+rahul.assignJobFunction(finance);
+
+✅ Is example me:-
+Job Function high-level kaam define karta hai
+Business Role permissions ka package banata hai
+Identity ko assign karke automated RBAC workflow ready ho jata hai
+-----------------------------------------------------------------------------------------
+Full Java Code (Job Function → Business Role → Permissions):-
+import java.util.ArrayList;
+import java.util.List;
+
+class BusinessRole {
+
+    String roleName;
+    List<String> permissions = new ArrayList<String>();
+
+    BusinessRole(String roleName) {
+        this.roleName = roleName;
+    }
+
+    void addPermission(String permission) {
+        permissions.add(permission);
+    }
+}
+
+class JobFunction {
+
+    String name;
+    List<BusinessRole> roles = new ArrayList<BusinessRole>();
+
+    JobFunction(String name) {
+        this.name = name;
+    }
+
+    void addBusinessRole(BusinessRole role) {
+        roles.add(role);
+    }
+}
+
+class Identity {
+
+    String name;
+    List<JobFunction> jobFunctions = new ArrayList<JobFunction>();
+
+    Identity(String name) {
+        this.name = name;
+    }
+
+    void assignJobFunction(JobFunction jobFunction) {
+
+        jobFunctions.add(jobFunction);
+
+        System.out.println("User: " + name);
+        System.out.println("Assigned Job Function: " + jobFunction.name);
+
+        for (BusinessRole role : jobFunction.roles) {
+
+            System.out.println("Business Role: " + role.roleName);
+
+            for (String perm : role.permissions) {
+                System.out.println("Permission: " + perm);
+            }
+        }
+    }
+}
+
+public class JobFunctionExample {
+
+    public static void main(String[] args) {
+
+        Identity rahul = new Identity("Rahul");
+
+        // Define Job Function
+        JobFunction finance = new JobFunction("Finance");
+
+        // Define Business Role
+        BusinessRole financeManager = new BusinessRole("Finance Manager");
+        financeManager.addPermission("SAP Full Access");
+        financeManager.addPermission("Finance Reports Read/Write");
+
+        // Map Job Function → Business Role
+        finance.addBusinessRole(financeManager);
+
+        // Assign Job Function to user
+        rahul.assignJobFunction(finance);
+    }
+}
+Output
+
+Program run karne par:
+
+User: Rahul
+Assigned Job Function: Finance
+Business Role: Finance Manager
+Permission: SAP Full Access
+Permission: Finance Reports Read/Write
+--------------------------------------------------------------------
+()IT Roles kya hai?
+--1️⃣ IT Roles kya hai?
+Definition: Ye wo roles hote hain jo IT systems, networks, aur applications ke management ke liye diye jaate hain.
+Purpose:-
+System aur network ko manage karna
+Security aur compliance maintain karna
+Access aur permissions control karna
+Ek line me:-
+“IT Role = system aur technology access + responsibilities ka role”
+
+2️⃣ Examples of IT Roles:-
+IT Role	                          Responsibility	                   Permissions / Access
+IT Admin------------------Servers, Network, System Config------Full admin access to servers & network devices
+System Operator------------Daily operations of IT systems------Start/Stop servers, monitor performance
+Database Admin--------------Manage databases-------------------Read/Write DB, Backup/Restore DB
+Helpdesk------------------Support & troubleshooting----------Limited access to user accounts, reset passwords
+Security Analyst----------Monitor & enforce security----------View logs, configure firewall, alert monitoring
+
+3️⃣ Relation with Technical Role & Business Role:-
+Technical Role: IT Roles ke under aate hain aur system/application specific permissions assign karte hain.
+Business Role: IT Roles Business Role ke through employees ke job functions ke liye assign hote hain.
+
+4️⃣ Code Conceptual Example (SailPoint Style):-
+Identity ravi = getIdentity("EMP67890");
+
+// Define Technical Role for IT
+TechnicalRole itAdmin = new TechnicalRole("IT Admin");
+itAdmin.setApplication("Server");
+itAdmin.addPermission("Server Admin");
+itAdmin.addPermission("Network Config");
+
+// Define Business Role
+BusinessRole itManager = new BusinessRole("IT Manager");
+itManager.addTechnicalRole(itAdmin);
+
+// Assign Business Role to user
+ravi.assignBusinessRole(itManager);
+
+// Ravi automatically gets IT Admin permissions
+System.out.println("Ravi ke permissions: " + ravi.getPermissions());
+------------------------------------------------------------------------------------------------------------
+()Role Hierarchy kya hai?
+Definition: Ye roles ko ek hierarchy (parent-child relationship) me organize karna hai,
+jisse higher-level role automatically lower-level roles ke permissions inherit kar sake.
+Purpose:-
+Access management simplify karna
+Reuse aur consistency maintain karna
+Audit aur compliance easy karna
+
+2️⃣ Example of Role Hierarchy:-
+Business Role: Senior Manager
+   ├── Role: Manager
+   │      ├── Role: Team Lead
+   │      │      └── Role: Employee
+   
+4️⃣ Code Example (Conceptual):-
+Identity rahul = getIdentity("EMP12345");
+
+------------------------
+example code:-
+Full Java Code (Role Hierarchy + Permission Inheritance):-
+---
+import java.util.ArrayList;
+import java.util.List;
+
+class Role {
+
+    String roleName;
+    List<String> permissions = new ArrayList<String>();
+    List<Role> childRoles = new ArrayList<Role>();
+
+    Role(String roleName) {
+        this.roleName = roleName;
+    }
+
+    void addPermission(String permission) {
+        permissions.add(permission);
+    }
+
+    void addChildRole(Role role) {
+        childRoles.add(role);
+    }
+
+    List<String> getAllPermissions() {
+
+        List<String> allPermissions = new ArrayList<String>();
+
+        allPermissions.addAll(permissions);
+
+        for (Role child : childRoles) {
+            allPermissions.addAll(child.getAllPermissions());
+        }
+
+        return allPermissions;
+    }
+}
+
+class Identity {
+
+    String name;
+    List<Role> roles = new ArrayList<Role>();
+
+    Identity(String name) {
+        this.name = name;
+    }
+
+    void assignRole(Role role) {
+        roles.add(role);
+    }
+
+    List<String> getPermissions() {
+
+        List<String> allPermissions = new ArrayList<String>();
+
+        for (Role role : roles) {
+            allPermissions.addAll(role.getAllPermissions());
+        }
+
+        return allPermissions;
+    }
+}
+
+public class RoleHierarchyExample {
+
+    public static void main(String[] args) {
+
+        Identity rahul = new Identity("Rahul");
+
+        Role employee = new Role("Employee");
+        employee.addPermission("Email Access");
+        employee.addPermission("Leave Portal");
+
+        Role teamLead = new Role("Team Lead");
+        teamLead.addChildRole(employee);
+        teamLead.addPermission("Approve Team Leave");
+
+        Role manager = new Role("Manager");
+        manager.addChildRole(teamLead);
+        manager.addPermission("Finance Report Access");
+
+        Role seniorManager = new Role("Senior Manager");
+        seniorManager.addChildRole(manager);
+        seniorManager.addPermission("Payroll Approval");
+
+        rahul.assignRole(seniorManager);
+
+        System.out.println("Rahul ke permissions: " + rahul.getPermissions());
+    }
+}
+Output
+Rahul ke permissions: 
+[Payroll Approval, Finance Report Access, Approve Team Leave, Email Access, Leave Portal]
+--------------------------------------------------------------------
+()Role Mining kya hai?
+--Role Mining ka matlab hai existing users ke access aur permissions ko analyze karke
+roles automatically discover karna. Matlab, manually har ek user ke liye role define karne ki jagah,
+system ye dekhta hai ki kaun kaun se permissions ek user ke paas hain aur 
+similar permissions wale users ko group karke ek role banata hai.
+
+2️⃣ Types of Role Mining:-
+()Manual Role Mining:-Admin manually dekh ke roles define karta hai
+Time-consuming aur error-prone
+
+()Automated Role Mining:-
+Tools aur algorithms automatically analyze karte hain
+Example: SailPoint IIQ me automated role discovery hoti hai
+
+()Hybrid Role Mining:-
+Automated suggestions milte hain, admin final approve karta hai.
+
+2️⃣ Example Scenario:-
+Users & Permissions Table:-
+User	Permissions
+Rahul---Read Finance, Write Finance
+Priya---Read Finance, Write Finance
+Anil----View HR, Edit HR
+Riya----View HR, Edit HR
+
+example code:-
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+
+class Identity {
+    String name;
+    List<String> permissions = new ArrayList<String>();
+
+    Identity(String name) {
+        this.name = name;
+    }
+
+    void addPermission(String perm) {
+        permissions.add(perm);
+    }
+}
+
+class Role {
+    String roleName;
+    List<String> permissions = new ArrayList<String>();
+
+    Role(String roleName) {
+        this.roleName = roleName;
+    }
+}
+
+public class RoleMiningExample {
+
+    public static void main(String[] args) {
+
+        // Create Users
+        Identity rahul = new Identity("Rahul");
+        rahul.addPermission("Read Finance");
+        rahul.addPermission("Write Finance");
+
+        Identity priya = new Identity("Priya");
+        priya.addPermission("Read Finance");
+        priya.addPermission("Write Finance");
+
+        Identity anil = new Identity("Anil");
+        anil.addPermission("View HR");
+        anil.addPermission("Edit HR");
+
+        Identity riya = new Identity("Riya");
+        riya.addPermission("View HR");
+        riya.addPermission("Edit HR");
+
+        List<Identity> users = new ArrayList<Identity>();
+        users.add(rahul);
+        users.add(priya);
+        users.add(anil);
+        users.add(riya);
+
+        // Role Mining
+        Map<String, Role> discoveredRoles = new HashMap<String, Role>();
+
+        for (Identity user : users) {
+
+            boolean roleFound = false;
+
+            for (Role role : discoveredRoles.values()) {
+                if (role.permissions.equals(user.permissions)) {
+                    System.out.println(user.name + " assigned to existing role: " + role.roleName);
+                    roleFound = true;
+                    break;
+                }
+            }
+
+            if (!roleFound) {
+                String roleName = "Role_" + (discoveredRoles.size() + 1);
+
+                Role newRole = new Role(roleName);
+                newRole.permissions.addAll(user.permissions);
+
+                discoveredRoles.put(roleName, newRole);
+
+                System.out.println(user.name + " assigned to new role: " + roleName);
+            }
+        }
+
+        System.out.println("\nDiscovered Roles:");
+
+        for (String rName : discoveredRoles.keySet()) {
+            System.out.println(rName + " -> Permissions: " + discoveredRoles.get(rName).permissions);
+        }
+    }
+}
+
+4️⃣ Output Example:-
+Rahul assigned to new role: Role_1
+Priya assigned to existing role: Role_1
+Anil assigned to new role: Role_2
+Riya assigned to existing role: Role_2
+
+Discovered Roles:
+Role_1 -> Permissions: [Read Finance, Write Finance]
+Role_2 -> Permissions: [View HR, Edit HR]
+
+////////*
+()discoveredRoles.values() kya deta hai?
+discoveredRoles ek Map hai.
+Example:-
+Map<String, Role> discoveredRoles = new HashMap<>();
+Yahan:-
+Key = Role name (String)
+Value = Role object
+
+values() kya return karta hai?
+values() Map ke saare values ka collection deta hai.
+Matlab sirf Role objects milte hain, keys nahi.
+
+Example:-
+discoveredRoles.put("Role_1", new Role("Finance Role"));
+discoveredRoles.put("Role_2", new Role("HR Role"));
+
+Ab agar likhen:-
+discoveredRoles.values();
+
+To result milega:-
+[Finance Role Object, HR Role Object]
+*///////
+/////////*
+2️⃣ get(rName):-
+get() method Map se value nikalta hai using key.
+Example:-
+Role role = discoveredRoles.get("Role_1");
+Yahan:-
+"Role_1" → Role object mil gaya.
+
+().permissions:-➡ us Role ki permissions list deta hai.
+*////////////
+--------------------------------------------------------------------
+()Role Lifecycle kya hai?
+--Role Lifecycle IAM (Identity and Access Management) me ek process hota hai jisme role ko create,
+manage, update aur retire kiya jata hai.
+Matlab ek role ka poora life cycle — jab role banaya jata hai tab se lekar jab tak usko 
+remove/retire nahi kar diya jata. 🔐
+
+Role Lifecycle ke main stages:-
+1️⃣ Role Creation:-
+Sabse pehle role create kiya jata hai.
+Example:-
+Company me Finance Analyst job hai.
+To role banega:-
+Role Name: Finance Analyst
+Permissions:
+- Read Finance Data
+- Write Finance Reports
+
+2️⃣ Role Assignment:-
+Role ko users ko assign kiya jata hai.
+Example:-
+Rahul → Finance Analyst Role
+Priya → Finance Analyst Role
+Ab Rahul aur Priya ko automatically same permissions mil jayenge.
+
+3️⃣ Role Certification / Review:-
+Time-to-time manager ya security team review karti hai ki role sahi hai ya nahi.
+Questions:-
+Kya role me extra permissions hain?
+Kya user ko abhi bhi role chahiye?
+Kya compliance rules follow ho rahe hain?
+Example:-
+Manager review karta hai:-
+Rahul ko Finance Analyst role abhi bhi chahiye? ✔
+
+4️⃣ Role Modification:-
+Agar job change ho ya policy change ho to role update kiya jata hai.
+Example:-
+Pehle permissions:-
+Read Finance
+Write Finance
+
+Update ke baad:-
+Read Finance
+Write Finance
+Approve Finance
+
+5️⃣ Role De-assignment:-
+Agar user job change kare ya company leave kare to role remove kar diya jata hai.
+Example:-
+Rahul HR department me shift ho gaya
+→ Finance Analyst role remove
+
+6️⃣ Role Retirement:-
+Agar role ab company me use nahi ho raha to role retire/delete kar diya jata hai.
+Example:-
+Old Role: Legacy Finance Role
+→ Retired
+
+example code:-
+import java.util.ArrayList;
+import java.util.List;
+
+class Permission {
+
+    String name;
+
+    Permission(String name) {
+        this.name = name;
+    }
+}
+
+class TechnicalRole {
+
+    String roleName;
+    String application;
+    List<Permission> permissions = new ArrayList<Permission>();
+
+    TechnicalRole(String roleName, String application) {
+        this.roleName = roleName;
+        this.application = application;
+    }
+
+    void addPermission(Permission p) {
+        permissions.add(p);
+    }
+}
+
+class BusinessRole {
+
+    String roleName;
+    String status = "ACTIVE";
+    List<TechnicalRole> technicalRoles = new ArrayList<TechnicalRole>();
+
+    BusinessRole(String roleName) {
+        this.roleName = roleName;
+    }
+
+    void addTechnicalRole(TechnicalRole role) {
+        technicalRoles.add(role);
+    }
+
+    void retireRole() {
+        status = "RETIRED";
+        System.out.println("Role retired: " + roleName);
+    }
+}
+
+class Identity {
+
+    String userId;
+    List<BusinessRole> roles = new ArrayList<BusinessRole>();
+
+    Identity(String userId) {
+        this.userId = userId;
+    }
+
+    void assignRole(BusinessRole role) {
+
+        if(role.status.equals("RETIRED")) {
+            System.out.println("Cannot assign retired role");
+            return;
+        }
+
+        roles.add(role);
+        System.out.println("Role " + role.roleName + " assigned to " + userId);
+
+        applyPermissions(role);
+    }
+
+    void applyPermissions(BusinessRole role) {
+
+        for(TechnicalRole t : role.technicalRoles) {
+
+            System.out.println("Application: " + t.application);
+
+            for(Permission p : t.permissions) {
+                System.out.println("Permission granted: " + p.name);
+            }
+        }
+    }
+}
+
+class PolicyEngine {
+
+    static void checkSoD(BusinessRole role) {
+
+        boolean createVendor = false;
+        boolean approvePayment = false;
+
+        for(TechnicalRole t : role.technicalRoles) {
+            for(Permission p : t.permissions) {
+
+                if(p.name.equals("Create Vendor")) {
+                    createVendor = true;
+                }
+
+                if(p.name.equals("Approve Payment")) {
+                    approvePayment = true;
+                }
+            }
+        }
+
+        if(createVendor && approvePayment) {
+            System.out.println("SoD Violation detected in role: " + role.roleName);
+        }
+    }
+}
+
+class AuditService {
+
+    static void log(String action) {
+        System.out.println("AUDIT LOG: " + action);
+    }
+}
+
+public class EnterpriseRoleLifecycle {
+
+    public static void main(String[] args) {
+
+        Permission p1 = new Permission("Create Vendor");
+        Permission p2 = new Permission("Approve Payment");
+
+        TechnicalRole sapRole = new TechnicalRole("SAP Finance Role", "SAP");
+        sapRole.addPermission(p1);
+        sapRole.addPermission(p2);
+
+        BusinessRole financeManager = new BusinessRole("Finance Manager");
+        financeManager.addTechnicalRole(sapRole);
+
+        PolicyEngine.checkSoD(financeManager);
+
+        Identity rahul = new Identity("EMP1001");
+        Identity ram = new Identity("EMP1002");
+
+        rahul.assignRole(financeManager);
+        ram.assignRole(financeManager);
+
+        AuditService.log("Finance Manager role assigned to users");
+
+        financeManager.retireRole();
+    }
+}
+output:-
+SoD Violation detected in role: Finance Manager
+Role Finance Manager assigned to EMP1001
+Application: SAP
+Permission granted: Create Vendor
+Permission granted: Approve Payment
+Role Finance Manager assigned to EMP1002
+Application: SAP
+Permission granted: Create Vendor
+Permission granted: Approve Payment
+AUDIT LOG: Finance Manager role assigned to users
+Role retired: Finance Manager 
+--------------------------------------------------------------------
+()Role Risk kya hai?
+Role Risk = kisi role ke permissions ki wajah se security ya compliance risk.
+
+Example:-
+Example 1 (High Risk Role)
+Role: Finance Admin
+Permissions:
+- Read Financial Data
+- Modify Financial Data
+- Delete Financial Records
+
+Yeh role high risk hai kyunki user:-
+data dekh sakta hai
+data change kar sakta hai
+data delete bhi kar sakta hai
+Agar misuse ho gaya to financial fraud ho sakta hai.
+
+Example 2 (Low Risk Role):-
+Role: Finance Viewer
+Permissions:-
+- Read Financial Data
+Yeh low risk role hai kyunki sirf read access hai.
+-----------------
+()Role Risk ke common reasons:-
+1️⃣ Sensitive Permissions:-
+Example:-
+Delete Database
+Approve Payments
+Modify Payroll
+
+2️⃣ Segregation of Duties (SoD) Conflict:-
+Agar ek hi role me conflicting permissions ho.
+Example:-
+Create Vendor
+Approve Vendor Payment
+Ye dangerous hai kyunki ek hi person fraud kar sakta hai.
+
+3️⃣ Excess Privileges:-
+Role me zarurat se zyada permissions ho.
+Example:-
+Developer Role:
+- Read Code
+- Deploy Code
+- Delete Production Database
+
+()SailPoint me roles ko risk score diya jata hai.
+Example:-
+Role	          Risk Level
+Finance Viewer-----Low
+HR Manager---------Medium
+System Admin-------High
+
+()Risk reduce kaise karte hain:-
+1️⃣ Least Privilege follow karo
+2️⃣ SoD policies use karo
+3️⃣ Access review / certification karo
+4️⃣ Time-bound access do
+-----------------------------------------
+example code:-
+Java Code (Role Risk Example)
+import java.util.ArrayList;
+import java.util.List;
+
+class TechnicalRole {
+
+    String roleName;
+    List<String> permissions = new ArrayList<String>();
+
+    TechnicalRole(String roleName) {
+        this.roleName = roleName;
+    }
+
+    void addPermission(String permission) {
+        permissions.add(permission);
+    }
+
+    int calculateRisk() {
+
+        int riskScore = 0;
+
+        for (String perm : permissions) {
+
+            if (perm.equals("Delete Database")) {
+                riskScore += 50;
+            }
+
+            if (perm.equals("Modify Finance Data")) {
+                riskScore += 30;
+            }
+
+            if (perm.equals("Read Finance Reports")) {
+                riskScore += 10;
+            }
+        }
+
+        return riskScore;
+    }
+}
+
+public class RoleRiskExample {
+
+    public static void main(String[] args) {
+
+        TechnicalRole adminRole = new TechnicalRole("System Admin");
+
+        adminRole.addPermission("Read Finance Reports");
+        adminRole.addPermission("Modify Finance Data");
+        adminRole.addPermission("Delete Database");
+
+        int risk = adminRole.calculateRisk();
+
+        System.out.println("Role: " + adminRole.roleName);
+        System.out.println("Risk Score: " + risk);
+
+        if (risk > 60) {
+            System.out.println("High Risk Role!");
+        } else {
+            System.out.println("Low / Medium Risk Role");
+        }
+    }
+}
+Output Example
+Role: System Admin
+Risk Score: 90
+High Risk Role!
+-------------------------------------------------------------------------------------------------------------
+()Technical Role kya hai?
+--Technical Role (Simplest Version)
+Definition: Ye system-specific role hai jo actual permissions aur access deta hai.
+Purpose: Business Role ke high-level access ko real system me implement karna.
+Ek line me:-
+“Technical Role = system/application me real access ka package”
+
+Example Table:-
+Technical Role	     Application	                  Permissions
+SAP Admin----------------SAP------------Read/Write Finance Reports, Payroll Access
+Salesforce User--------Salesforce-------View/Edit Leads, Opportunities
+Jira Developer-----------Jira-----------Create/Assign/Update Tickets
+
+5️⃣ Example Scenario (Code Concept):-
+Identity rahul = getIdentity("EMP12345");
+
+import java.util.ArrayList;
+import java.util.List;
+
+class TechnicalRole {
+
+    String roleName;
+    String application;
+    List<String> permissions = new ArrayList<String>();
+
+    TechnicalRole(String roleName) {
+        this.roleName = roleName;
+    }
+
+    void addPermission(String permission) {
+        permissions.add(permission);
+    }
+
+    void setApplication(String application) {
+        this.application = application;
+    }
+}
+
+class BusinessRole {
+
+    String roleName;
+    List<TechnicalRole> technicalRoles = new ArrayList<TechnicalRole>();
+
+    BusinessRole(String roleName) {
+        this.roleName = roleName;
+    }
+
+    void addTechnicalRole(TechnicalRole role) {
+        technicalRoles.add(role);
+    }
+}
+
+class Identity {
+
+    String empId;
+    List<BusinessRole> businessRoles = new ArrayList<BusinessRole>();
+
+    Identity(String empId) {
+        this.empId = empId;
+    }
+
+    void assignBusinessRole(BusinessRole role) {
+
+        businessRoles.add(role);
+
+        System.out.println("Business Role Assigned: " + role.roleName);
+
+        // Apply permissions automatically
+        for (TechnicalRole tRole : role.technicalRoles) {
+
+            System.out.println("Application: " + tRole.application);
+
+            for (String perm : tRole.permissions) {
+                System.out.println("Permission Granted: " + perm);
+            }
+        }
+
+        enforcePolicies(role);
+    }
+
+    void enforcePolicies(BusinessRole role) {
+
+        System.out.println("Checking Security Policies...");
+
+        // Example SoD Policy
+        boolean hasRead = false;
+        boolean hasWrite = false;
+
+        for (TechnicalRole tRole : role.technicalRoles) {
+            for (String perm : tRole.permissions) {
+
+                if (perm.equals("Read Finance Reports")) {
+                    hasRead = true;
+                }
+
+                if (perm.equals("Write Finance Reports")) {
+                    hasWrite = true;
+                }
+            }
+        }
+
+        if (hasRead && hasWrite) {
+            System.out.println("SoD Warning: User has both Read and Write Finance access.");
+        }
+
+        // MFA Simulation
+        System.out.println("MFA Required for Finance System Access.");
+    }
+}
+
+public class IAMExample {
+
+    static Identity getIdentity(String empId) {
+        return new Identity(empId);
+    }
+
+    public static void main(String[] args) {
+
+        Identity rahul = getIdentity("EMP12345");
+
+        // Define Technical Role
+        TechnicalRole sapAdmin = new TechnicalRole("SAP Admin");
+        sapAdmin.addPermission("Read Finance Reports");
+        sapAdmin.addPermission("Write Finance Reports");
+        sapAdmin.setApplication("SAP");
+
+        // Define Business Role
+        BusinessRole financeManager = new BusinessRole("Finance Manager");
+        financeManager.addTechnicalRole(sapAdmin);
+
+        // Assign Business Role
+        rahul.assignBusinessRole(financeManager);
+    }
+}
+///////*
+()role.technicalRoles:-
+➡ TechnicalRole objects ki list return karega,
+
+()agar tumne likha ye:-
+TechnicalRole sapAdmin = new TechnicalRole("SAP Admin");
+TechnicalRole sapViewer = new TechnicalRole("SAP Viewer");
+BusinessRole financeManager = new BusinessRole("Finance Manager");
+financeManager.addTechnicalRole(sapAdmin);
+financeManager.addTechnicalRole(sapViewer);
+
+To return hoga:-
+[SAP Admin, SAP Viewer]
+*//////
+------------------------------------------------------------------------------------------------------
+()multilple users with multiple technicalRoles:-
+------------------------------------------------------------------------------------------------------
+import java.util.ArrayList;
+import java.util.List;
+
+class TechnicalRole {
+
+    String roleName;
+    String application;
+    List<String> permissions = new ArrayList<String>();
+
+    TechnicalRole(String roleName) {
+        this.roleName = roleName;
+    }
+
+    void setApplication(String app) {
+        this.application = app;
+    }
+
+    void addPermission(String perm) {
+        permissions.add(perm);
+    }
+}
+
+class BusinessRole {
+
+    String roleName;
+    List<TechnicalRole> technicalRoles = new ArrayList<TechnicalRole>();
+
+    BusinessRole(String roleName) {
+        this.roleName = roleName;
+    }
+
+    void addTechnicalRole(TechnicalRole role) {
+        technicalRoles.add(role);
+    }
+}
+
+class Identity {
+
+    String name;
+    List<BusinessRole> roles = new ArrayList<BusinessRole>();
+
+    Identity(String name) {
+        this.name = name;
+    }
+
+    void assignBusinessRole(BusinessRole role) {
+
+        roles.add(role);
+
+        System.out.println("\nUser: " + name);
+        System.out.println("Business Role: " + role.roleName);
+
+        for (TechnicalRole tRole : role.technicalRoles) {
+
+            System.out.println(" Application: " + tRole.application);
+            System.out.println(" Technical Role: " + tRole.roleName);
+
+            for (String perm : tRole.permissions) {
+                System.out.println("  Permission: " + perm);
+            }
+        }
+    }
+}
+
+public class IAMSystem {
+
+    public static void main(String[] args) {
+
+        // Technical Role 1
+        TechnicalRole sapAdmin = new TechnicalRole("SAP Admin");
+        sapAdmin.setApplication("SAP");
+        sapAdmin.addPermission("Read Finance Reports");
+        sapAdmin.addPermission("Write Finance Reports");
+
+        // Technical Role 2
+        TechnicalRole oracleDBA = new TechnicalRole("Oracle DBA");
+        oracleDBA.setApplication("Oracle DB");
+        oracleDBA.addPermission("Read Database");
+        oracleDBA.addPermission("Modify Database");
+
+        // Business Role
+        BusinessRole financeManager = new BusinessRole("Finance Manager");
+
+        financeManager.addTechnicalRole(sapAdmin);
+        financeManager.addTechnicalRole(oracleDBA);
+
+        // Multiple Users
+        Identity rahul = new Identity("Rahul");
+        Identity ram = new Identity("Ram");
+        Identity raman = new Identity("Raman");
+
+        List<Identity> users = new ArrayList<Identity>();
+
+        users.add(rahul);
+        users.add(ram);
+        users.add(raman);
+
+        // Assign role to all users
+        for (Identity user : users) {
+            user.assignBusinessRole(financeManager);
+        }
+    }
+}
+
+Output Example:-
+User: Rahul
+Business Role: Finance Manager
+ Application: SAP
+ Technical Role: SAP Admin
+  Permission: Read Finance Reports
+  Permission: Write Finance Reports
+ Application: Oracle DB
+ Technical Role: Oracle DBA
+  Permission: Read Database
+  Permission: Modify Database
+
+User: Ram
+Business Role: Finance Manager
+ Application: SAP
+ Technical Role: SAP Admin
+  Permission: Read Finance Reports
+  Permission: Write Finance Reports
+ Application: Oracle DB
+ Technical Role: Oracle DBA
+  Permission: Read Database
+  Permission: Modify Database
+-----------------------------------------------------------------------------------------------
+
+----------------------------------------------------------------------------------------------------
+⚠️ 6️⃣ Policy Management:-
+Segregation of Duties (SoD)
+Risk policy
+Password policy
+Violation detection
+Policy remediation
+
+()👉 Policies = Security rules
+जो ensure करते हैं कि company के resources safe रहें और compliance follow हो।
+1️⃣ Policy Management क्या है
+Policy Management का मतलब है:-
+Security policies बनाना
+Policies को users / roles पर apply करना
+Policy violation detect करना
+Violation fix करना
+Example:-
+Finance employee को HR database access नहीं मिलना चाहिए
+Normal employee को Admin privileges नहीं मिलना चाहिए
+अगर ऐसा access मिल गया तो policy violation होगा।
+
+3️⃣ Policy के Types (SailPoint):-
+SailPoint में mainly 3 types की policies होती हैं:
+
+1️⃣ Segregation of Duties (SoD):-
+दो conflicting permissions एक user को नहीं मिलनी चाहिए।
+Example:-
+Access 1            Access 2
+Create Payment---Approve Payment
+अगर एक ही user को दोनों मिल गए → SoD violation.
+-----------------------------------------------------------------------------
+2️⃣ Activity Based Policy (Detail):-
+Activity Based Policy user की activity / behavior / action के आधार पर check होती है।
+👉 मतलब policy user के क्या कर रहा है उस पर depend करती है।
+Example activities:-
+Login activity
+File download
+Database access
+Sensitive data access
+Privilege change
+अगर activity suspicious है → policy violation।
+
+Example 1 (Simple):-
+Policy:-
+User cannot download more than 100 files in 10 minutes
+अगर user:-
+User = Rahul
+Downloaded files = 250
+Time = 10 minutes
+➡ Violation detected
+
+Example 2 (Security):-
+Policy:-
+Admin login allowed only from office network
+User activity:-
+User = Admin
+Location = Unknown IP
+
+➡ Policy violation:-
+Example 3 (Real Banking Example)
+Policy:-
+User cannot approve transaction immediately after creating it
+Activity:-
+User created payment
+User approved same payment
+➡ Fraud risk → Violation
+-----------------------------------------
+1️⃣ Risk Policy क्या होती है
+Risk Policy ऐसी security policy होती है जो user के risk score के आधार पर access allow या block करती है।
+मतलब:-
+👉 हर user या access का risk score calculate होता है।
+अगर:-
+Risk Score > Threshold
+➡ Policy Violation
+-----------------------------------------
+1️⃣ Password Policy क्या होती है
+Password Policy ऐसी security policy होती है जो password की strength, length और complexity को enforce करती है।
+मतलब password में यह rules होने चाहिए:-
+Minimum length
+Uppercase letter
+Lowercase letter
+Number
+Special character
+अगर rule follow नहीं हुआ → Password Policy Violation.
+-----------------------------------------
+3️⃣ Identity Attribute Policy (Detail):-
+Identity Attribute Policy user के attributes (properties) के basis पर check होती है।
+👉 मतलब policy user कौन है उस पर depend करती है।
+Attributes example:-
+Department
+Role
+Location
+Manager
+Employment type
+Country
+Job title
+
+Example 1 (Department):-
+Policy:-
+Finance department users cannot have HR admin role
+User attributes:-
+Name = Rahul
+Department = Finance
+Role = HR_Admin
+➡ Violation
+
+Example 2 (Location):-
+Policy:-
+Only US employees can access US payroll system
+User attributes:-
+Country = India
+Access = US Payroll
+➡ Violation
+
+Example 3 (Employee Type):-
+Policy:-
+Contract employees cannot have admin access
+User:-
+Employment Type = Contract
+Access = Admin
+➡ Violation
+-----------------------------------------------------------
+2️⃣ Enterprise Level Java Code (SoD Detection)
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.Link;
+import sailpoint.tools.GeneralException;
+
+import java.util.List;
+
+public class SODPolicyCheck {
+
+    private SailPointContext context;
+
+    public SODPolicyCheck(SailPointContext context) {
+        this.context = context;
+    }
+
+    public void checkSODViolation(String identityName) throws GeneralException {
+
+        Identity user = context.getObjectByName(Identity.class, identityName);
+
+        if(user == null) {
+            System.out.println("User not found");
+            return;
+        }
+
+        boolean hasCreatePayment = false;
+        boolean hasApprovePayment = false;
+
+        List<Link> accounts = user.getLinks();
+
+        for(Link link : accounts) {
+
+            List entitlements = link.getEntitlements();
+
+            for(Object ent : entitlements) {
+
+                String entitlement = ent.toString();
+
+                if(entitlement.equalsIgnoreCase("Create_Payment")) {
+                    hasCreatePayment = true;
+                }
+
+                if(entitlement.equalsIgnoreCase("Approve_Payment")) {
+                    hasApprovePayment = true;
+                }
+
+            }
+
+        }
+
+        if(hasCreatePayment && hasApprovePayment) {
+
+            System.out.println("SOD POLICY VIOLATION DETECTED");
+            System.out.println("User: " + user.getName());
+            System.out.println("Conflicting Access:");
+            System.out.println("Create_Payment");
+            System.out.println("Approve_Payment");
+
+        } else {
+
+            System.out.println("No SOD violation for user: " + user.getName());
+
+        }
+
+    }
+
+}
+3️⃣ Main Class (Run Example)
+import sailpoint.api.SailPointContext;
+import sailpoint.tools.GeneralException;
+
+public class SODMain {
+
+    public static void main(String[] args) throws GeneralException {
+
+        SailPointContext context = SailPointFactory.getCurrentContext();
+
+        SODPolicyCheck checker = new SODPolicyCheck(context);
+
+        checker.checkSODViolation("rahul");
+
+    }
+
+}
+4️⃣ Enterprise Level Output:-
+Case 1 (Violation)
+User access:-
+Create_Payment
+Approve_Payment
+Output:-
+SOD POLICY VIOLATION DETECTED
+User: rahul
+Conflicting Access:
+Create_Payment
+Approve_Payment
+
+Case 2 (No Violation)
+User access:-
+Create_Payment
+View_Payment
+Output:-
+No SOD violation for user: rahul
+---------------------------------------------------------
+()Activity Based:-
+--1️⃣ Enterprise Activity Policy Code (Java)
+import java.util.HashMap;
+import java.util.Map;
+
+public class ActivityPolicyEngine {
+
+    private static Map<String, Integer> downloadTracker = new HashMap<>();
+
+    private static final int DOWNLOAD_LIMIT = 100;
+
+    public static void recordDownload(String user) {
+
+        int count = downloadTracker.getOrDefault(user, 0);
+
+        count++;
+
+        downloadTracker.put(user, count);
+
+        checkPolicy(user, count);
+    }
+
+    private static void checkPolicy(String user, int count) {
+
+        if(count > DOWNLOAD_LIMIT) {
+
+            System.out.println("ACTIVITY POLICY VIOLATION DETECTED");
+            System.out.println("User: " + user);
+            System.out.println("Downloaded Files: " + count);
+            System.out.println("Limit: " + DOWNLOAD_LIMIT);
+            System.out.println("Action: Security Alert Generated");
+
+        } else {
+
+            System.out.println("Download Allowed for user: " + user +
+                    " | Total Downloads: " + count);
+
+        }
+    }
+}
+2️⃣ Main Program (Enterprise Simulation)
+public class ActivityPolicyMain {
+
+    public static void main(String[] args) {
+
+        String user = "rahul";
+
+        for(int i = 1; i <= 105; i++) {
+
+            ActivityPolicyEngine.recordDownload(user);
+
+        }
+
+    }
+}
+3️⃣ Output (Normal Activity)
+
+First few downloads:
+
+Download Allowed for user: rahul | Total Downloads: 1
+Download Allowed for user: rahul | Total Downloads: 2
+Download Allowed for user: rahul | Total Downloads: 3
+...
+Download Allowed for user: rahul | Total Downloads: 100
+------------------------------
+3️⃣ Identity Attribute Policy (Detail):-
+1️⃣ Enterprise Policy Example:-
+Company Policy:-
+Finance Department के users को HR System access नहीं होना चाहिए
+
+Identity attributes:-
+User
+Department
+Role
+Location
+Access
+
+अगर:-
+Department = Finance
+Access = HR System
+➡ Policy Violation
+
+2️⃣ Project Structure:-
+Enterprise project structure:-
+iam-policy-project
+│
+├── Identity.java
+├── IdentityAttributePolicy.java
+└── PolicyMain.java
+
+3️⃣ Identity Class
+public class Identity {
+
+    private String name;
+    private String department;
+    private String role;
+    private String accessSystem;
+
+    public Identity(String name, String department, String role, String accessSystem) {
+        this.name = name;
+        this.department = department;
+        this.role = role;
+        this.accessSystem = accessSystem;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public String getAccessSystem() {
+        return accessSystem;
+    }
+}
+4️⃣ Identity Attribute Policy Engine
+public class IdentityAttributePolicy {
+
+    public static void evaluatePolicy(Identity identity) {
+
+        String department = identity.getDepartment();
+        String system = identity.getAccessSystem();
+
+        if(department.equals("Finance") && system.equals("HRSystem")) {
+
+            System.out.println("IDENTITY ATTRIBUTE POLICY VIOLATION");
+            System.out.println("User: " + identity.getName());
+            System.out.println("Department: " + department);
+            System.out.println("Access System: " + system);
+            System.out.println("Reason: Finance users cannot access HR System");
+
+        } else {
+
+            System.out.println("Access Allowed for user: " + identity.getName());
+
+        }
+    }
+}
+5️⃣ Main Program (Enterprise Simulation)
+public class PolicyMain {
+
+    public static void main(String[] args) {
+
+        Identity user1 = new Identity(
+                "Rahul",
+                "Finance",
+                "Manager",
+                "HRSystem"
+        );
+
+        Identity user2 = new Identity(
+                "Amit",
+                "IT",
+                "Developer",
+                "HRSystem"
+        );
+
+        IdentityAttributePolicy.evaluatePolicy(user1);
+
+        System.out.println("---------------------");
+
+        IdentityAttributePolicy.evaluatePolicy(user2);
+
+    }
+}
+6️⃣ Output:-
+Case 1 (Violation)
+IDENTITY ATTRIBUTE POLICY VIOLATION
+User: Rahul
+Department: Finance
+Access System: HRSystem
+Reason: Finance users cannot access HR System
+Case 2 (Allowed)
+Access Allowed for user: Amit
+--------------------------------------------------------
+1️⃣ Risk Policy क्या होती है
+Risk Policy ऐसी security policy होती है जो user के risk score के आधार पर access allow या block करती है।
+मतलब:-
+👉 हर user या access का risk score calculate होता है।
+अगर:-
+Risk Score > Threshold
+➡ Policy Violation
+
+2️⃣ Enterprise Example:-
+Company policy:-
+Risk Score > 70 → Access Block
+Risk Score <= 70 → Access Allowed
+
+3️⃣ Project Structure
+risk-policy-project
+│
+├── Identity.java
+├── RiskPolicyEngine.java
+└── RiskPolicyMain.java
+4️⃣ Identity Class
+public class Identity {
+
+    private String name;
+    private String role;
+    private int riskScore;
+
+    public Identity(String name, String role, int riskScore) {
+        this.name = name;
+        this.role = role;
+        this.riskScore = riskScore;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public int getRiskScore() {
+        return riskScore;
+    }
+}
+5️⃣ Risk Policy Engine
+public class RiskPolicyEngine {
+
+    private static final int RISK_THRESHOLD = 70;
+
+    public static void evaluateRisk(Identity identity) {
+
+        int risk = identity.getRiskScore();
+
+        if (risk > RISK_THRESHOLD) {
+
+            System.out.println("RISK POLICY VIOLATION");
+            System.out.println("User: " + identity.getName());
+            System.out.println("Role: " + identity.getRole());
+            System.out.println("Risk Score: " + risk);
+            System.out.println("Action: Access Blocked / Security Review");
+
+        } else {
+
+            System.out.println("Access Allowed");
+            System.out.println("User: " + identity.getName());
+            System.out.println("Risk Score: " + risk);
+
+        }
+    }
+}
+6️⃣ Main Program
+public class RiskPolicyMain {
+
+    public static void main(String[] args) {
+
+        Identity user1 = new Identity("Rahul", "Admin", 85);
+        Identity user2 = new Identity("Amit", "Developer", 40);
+
+        RiskPolicyEngine.evaluateRisk(user1);
+
+        System.out.println("----------------------");
+
+        RiskPolicyEngine.evaluateRisk(user2);
+
+    }
+}
+7️⃣ Output
+Case 1 (High Risk)
+RISK POLICY VIOLATION
+User: Rahul
+Role: Admin
+Risk Score: 85
+Action: Access Blocked / Security Review
+Case 2 (Normal Risk)
+Access Allowed
+User: Amit
+Risk Score: 40
+---------------------------------------------------------
+1️⃣ Password Policy क्या होती है
+Password Policy ऐसी security policy होती है जो password की strength, length और complexity को enforce करती है।
+मतलब password में यह rules होने चाहिए:-
+Minimum length
+Uppercase letter
+Lowercase letter
+Number
+Special character
+अगर rule follow नहीं हुआ → Password Policy Violation.
+
+3️⃣ Project Structure
+password-policy-project
+│
+├── PasswordPolicyEngine.java
+└── PasswordPolicyMain.java
+4️⃣ Password Policy Engine (Enterprise Style)
+public class PasswordPolicyEngine {
+
+    public static void validatePassword(String password) {
+
+        boolean hasUpper = false;
+        boolean hasLower = false;
+        boolean hasDigit = false;
+        boolean hasSpecial = false;
+
+        if(password.length() < 8) {
+            System.out.println("Policy Violation: Password length must be at least 8");
+            return;
+        }
+
+        for(char c : password.toCharArray()) {
+
+            if(Character.isUpperCase(c))
+                hasUpper = true;
+
+            else if(Character.isLowerCase(c))
+                hasLower = true;
+
+            else if(Character.isDigit(c))
+                hasDigit = true;
+
+            else
+                hasSpecial = true;
+        }
+
+        if(!hasUpper) {
+            System.out.println("Policy Violation: Missing uppercase letter");
+            return;
+        }
+
+        if(!hasLower) {
+            System.out.println("Policy Violation: Missing lowercase letter");
+            return;
+        }
+
+        if(!hasDigit) {
+            System.out.println("Policy Violation: Missing number");
+            return;
+        }
+
+        if(!hasSpecial) {
+            System.out.println("Policy Violation: Missing special character");
+            return;
+        }
+
+        System.out.println("Password Accepted (Strong Password)");
+
+    }
+}
+5️⃣ Main Program
+public class PasswordPolicyMain {
+
+    public static void main(String[] args) {
+
+        String password1 = "password";
+        String password2 = "Password1";
+        String password3 = "Password@1";
+
+        PasswordPolicyEngine.validatePassword(password1);
+
+        System.out.println("-------------------");
+
+        PasswordPolicyEngine.validatePassword(password2);
+
+        System.out.println("-------------------");
+
+        PasswordPolicyEngine.validatePassword(password3);
+    }
+}
+6️⃣ Output
+
+Case 1:
+
+Policy Violation: Missing uppercase letter
+
+Case 2:
+
+Policy Violation: Missing special character
+
+Case 3:
+
+Password Accepted (Strong Password)
+---------------------------------------------------------
+()Violation detection kya hai?
+1️⃣ Violation Detection क्या है
+Violation Detection:-
+एक process है जो policies (SoD, Activity, Attribute, Risk, Password) के rules check 
+करके यह पता लगाती है कि कोई     "user" या    "activity policy" को violate कर रही है या नहीं।
+
+4️⃣ Project-Level Java Code (Violation Detection Engine)
+import java.util.ArrayList;
+import java.util.List;
+
+class Violation {
+    private String user;
+    private String policyName;
+    private String reason;
+
+    public Violation(String user, String policyName, String reason) {
+        this.user = user;
+        this.policyName = policyName;
+        this.reason = reason;
+    }
+
+    public void printViolation() {
+        System.out.println("VIOLATION DETECTED");
+        System.out.println("User: " + user);
+        System.out.println("Policy: " + policyName);
+        System.out.println("Reason: " + reason);
+        System.out.println("----------------------");
+    }
+}
+
+public class ViolationDetectionEngine {
+
+    private List<Violation> violations = new ArrayList<>();
+
+    // SoD Example Check
+    public void checkSoD(String user, boolean hasCreate, boolean hasApprove) {
+        if(hasCreate && hasApprove) {
+            violations.add(new Violation(user, "SoD Policy", "User has conflicting roles: Create & Approve Payment"));
+        }
+    }
+
+    // Activity Example Check
+    public void checkActivity(String user, int downloads, int limit) {
+        if(downloads > limit) {
+            violations.add(new Violation(user, "Activity Policy", "Downloaded " + downloads + " files exceeding limit " + limit));
+        }
+    }
+
+    // Identity Attribute Example Check
+    public void checkAttribute(String user, String department, String system) {
+        if(department.equals("Finance") && system.equals("HRSystem")) {
+            violations.add(new Violation(user, "Attribute Policy", "Finance users cannot access HR System"));
+        }
+    }
+
+    public void printAllViolations() {
+        if(violations.isEmpty()) {
+            System.out.println("No violations detected");
+        } else {
+            for(Violation v : violations) {
+                v.printViolation();
+            }
+        }
+    }
+}
+5️⃣ Main Program
+public class ViolationMain {
+
+    public static void main(String[] args) {
+
+        ViolationDetectionEngine engine = new ViolationDetectionEngine();
+
+        // SoD Violation
+        engine.checkSoD("Rahul", true, true);
+
+        // Activity Violation
+        engine.checkActivity("Amit", 120, 100);
+
+        // Identity Attribute Violation
+        engine.checkAttribute("John", "Finance", "HRSystem");
+
+        // Print all violations
+        engine.printAllViolations();
+    }
+}
+6️⃣ Output (Enterprise Level)
+VIOLATION DETECTED
+User: Rahul
+Policy: SoD Policy
+Reason: User has conflicting roles: Create & Approve Payment
+----------------------
+VIOLATION DETECTED
+User: Amit
+Policy: Activity Policy
+Reason: Downloaded 120 files exceeding limit 100
+----------------------
+VIOLATION DETECTED
+User: John
+Policy: Attribute Policy
+Reason: Finance users cannot access HR System
+---------------------------------------------------------------------------------------------------------------------------------------------

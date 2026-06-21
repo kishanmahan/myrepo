@@ -1,0 +1,95 @@
+()🔹PersistenceManager kya hai?
+👉 PersistenceManager ek internal DB handling engine/service hai
+👉 Simple me:-
+“Ye SailPoint ka database manager hai jo objects ko save, update, delete karta hai”
+
+🔥 🔹 Ye karta kya hai?
+1️⃣ Save (Insert):-
+👉 Naya object DB me save karta hai
+context.saveObject(identity);
+👉 Internally → PersistenceManager call hota hai
+
+2️⃣ Update:-
+👉 Existing object update karta hai
+identity.setFirstname("Rahul");
+context.saveObject(identity);
+
+3️⃣ Delete:-
+context.deleteObject(identity);
+👉 DB se remove karta hai
+
+4️⃣ Commit / Transaction:-
+context.commitTransaction();
+👉 Changes permanently DB me save karta hai
+
+5️⃣ Query / Fetch support:-
+👉 Objects ko DB se load karne me help karta hai.
+
+🔥 🔹 Internally kaise kaam karta hai?
+👉 Flow:-
+1️⃣ Developer context.saveObject() call karta hai
+2️⃣ SailPointContext → PersistenceManager ko call karta hai
+3️⃣ PersistenceManager → Hibernate/JPA use karta hai
+4️⃣ SQL query generate hoti hai
+5️⃣ DB me execute hoti hai.
+
+🔥 🔹 DB me kya store hota hai?
+👉 PersistenceManager ke through ye objects store hote hain:
+✔ Identity
+✔ Policy
+✔ PasswordPolicy
+✔ Role
+✔ Application
+✔ PolicyViolation
+
+👉 Example tables:-
+spt_identity
+spt_policy
+spt_application
+spt_policy_violation
+-------------------------------------------------------------------------------------------------------------------
+🔥 🔹 Code Example (Real Flow)
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointContextFactory;
+import sailpoint.object.Identity;
+
+public class PersistenceDemo {
+
+    public static void main(String[] args) {
+
+        try {
+
+            SailPointContextFactory factory = new SailPointContextFactory();
+            SailPointContext context = factory.getCurrentContext();
+
+            // Create new identity
+            Identity identity = new Identity();
+            identity.setName("rahul.user");
+            identity.setFirstname("Rahul");
+            identity.setLastname("Kumar");
+
+            // Save object (PersistenceManager internally)
+            context.saveObject(identity);
+
+            // Commit
+            context.commitTransaction();
+
+            System.out.println("Identity saved in DB");
+
+            context.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+🔹 Output
+Identity saved in DB
+----------------------------------------------------------------------------------------------------------------------------------------------
+🔥 🔹 Important Methods (Conceptual):-
+👉 Direct PersistenceManager rarely use hota hai, but internally:
+saveObject()
+deleteObject()
+commitTransaction()
+rollbackTransaction()
+getObject()

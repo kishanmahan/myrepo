@@ -1,0 +1,443 @@
+()Privileged Access kya hai?
+Ye access high-risk aur sensitive operations ke liye hota hai.
+Normal users ke liye nahi, sirf admins, managers, aur IT/security personnel ke liye.
+Purpose: critical systems me changes safe aur controlled ho.
+Ek line me: “High-power access for trusted users”
+
+2️⃣ Examples of Privileged Access:-
+User	             Privileged Access	                    Notes
+IT Admin-----------Server Admin, Network Config------Can change system settings
+Finance Manager----Payroll approval------------------Can approve salary changes
+HR Admin-----------Employee data write/delete--------Sensitive PII data
+
+4️⃣ Privileged Access Management in SailPoint,
+SailPoint me PAM (Privileged Access Management) ka part hota hai:-
+Roles define karna for privileged users
+Approval workflow for granting temporary privileged access
+Monitoring & Certification to track misuse.
+
+5️⃣ Code Conceptual Example:-
+Identity anil = getIdentity("EMP54321");
+Role itAdmin = new Role("IT Admin");
+
+// Assign privileged permissions
+itAdmin.addPermission("Server Admin");
+itAdmin.addPermission("Network Config");
+anil.assignRole(itAdmin);
+
+// Access check
+if(anil.hasPermission("Server Admin")){
+    System.out.println("Privileged Access Granted!");
+}else{
+    System.out.println("Access Denied!");
+}
+✅ Tip bhai:-
+Privileged access risky hota hai, isliye temporary, monitored aur approved hona chahiye.
+SailPoint me ye access least privilege + time-bound + certification workflows ke sath manage hota hai.
+
+()Enterprise PAM Example (Java):-
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+class Permission {
+
+    String name;
+
+    Permission(String name) {
+        this.name = name;
+    }
+}
+
+class PrivilegedRole {
+
+    String roleName;
+    List<Permission> permissions = new ArrayList<Permission>();
+
+    PrivilegedRole(String roleName) {
+        this.roleName = roleName;
+    }
+
+    void addPermission(Permission p) {
+        permissions.add(p);
+    }
+}
+
+class Identity {
+
+    String name;
+    boolean mfaVerified;
+
+    Identity(String name) {
+        this.name = name;
+    }
+
+    void verifyMFA() {
+        mfaVerified = true;
+        System.out.println("MFA verified for " + name);
+    }
+}
+
+class PrivilegedAccessGrant {
+
+    Identity user;
+    PrivilegedRole role;
+    Date start;
+    Date end;
+
+    PrivilegedAccessGrant(Identity user, PrivilegedRole role, Date start, Date end) {
+        this.user = user;
+        this.role = role;
+        this.start = start;
+        this.end = end;
+    }
+
+    void checkAccess() {
+
+        Date today = new Date();
+
+        if (!user.mfaVerified) {
+            System.out.println("Access Denied: MFA not verified");
+            return;
+        }
+
+        if (today.after(start) && today.before(end)) {
+
+            System.out.println("Privileged Access Granted to " + user.name);
+
+            for (Permission p : role.permissions) {
+                System.out.println("Permission: " + p.name);
+            }
+
+        } else {
+            System.out.println("Privileged Access Expired");
+        }
+    }
+}
+
+class AuditLogger {
+
+    static void log(String action) {
+        System.out.println("AUDIT: " + action);
+    }
+}
+
+public class PAMExample {
+
+    public static void main(String[] args) {
+
+        Identity rahul = new Identity("Rahul");
+
+        PrivilegedRole dbAdmin = new PrivilegedRole("Database Admin");
+
+        dbAdmin.addPermission(new Permission("Read Database"));
+        dbAdmin.addPermission(new Permission("Modify Database"));
+        dbAdmin.addPermission(new Permission("Delete Database"));
+
+        rahul.verifyMFA();
+
+        Date start = new Date();
+
+        Date end = new Date(System.currentTimeMillis() + (2 * 60 * 60 * 1000));
+        // 2 hours access
+
+        PrivilegedAccessGrant grant =
+                new PrivilegedAccessGrant(rahul, dbAdmin, start, end);
+
+        grant.checkAccess();
+
+        AuditLogger.log("Privileged access used by Rahul");
+    }
+}
+Example Output
+MFA verified for Rahul
+Privileged Access Granted to Rahul
+Permission: Read Database
+Permission: Modify Database
+Permission: Delete Database
+AUDIT: Privileged access used by Rahul
+-----------------------------------------
+import java.util.Random;
+import java.util.Scanner;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+class Identity {
+
+    String name;
+    String mobileNumber;
+    String systemOtp;
+    boolean mfaVerified = false;
+
+    Identity(String name, String mobileNumber) {
+        this.name = name;
+        this.mobileNumber = mobileNumber;
+    }
+
+    void sendOTP() {
+
+        systemOtp = generateOTP();
+
+        SmsService.sendSMS(mobileNumber, systemOtp);
+
+        System.out.println("OTP sent to mobile number: " + mobileNumber);
+    }
+
+    void verifyMFA(Scanner scanner) {
+
+        System.out.print("Enter OTP for " + name + ": ");
+        String enteredOtp = scanner.nextLine();
+
+        if(systemOtp.equals(enteredOtp)) {
+            mfaVerified = true;
+            System.out.println("MFA verified for " + name);
+        } else {
+            System.out.println("Invalid OTP for " + name);
+        }
+    }
+
+    String generateOTP() {
+
+        Random r = new Random();
+        int otp = 100000 + r.nextInt(900000);
+
+        return String.valueOf(otp);
+    }
+}
+
+class SmsService {
+
+    static void sendSMS(String mobile, String otp) {
+
+        try {
+
+            String apiKey = "YOUR_API_KEY";
+
+            String message = "Your OTP is " + otp;
+
+            String data = "authkey=" + apiKey +
+                    "&mobiles=" + mobile +
+                    "&message=" + message +
+                    "&sender=OTPMSG" +
+                    "&route=4";
+
+            URL url = new URL("https://api.msg91.com/api/sendhttp.php");
+
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+            conn.setRequestMethod("POST");
+            conn.setDoOutput(true);
+
+            OutputStream os = conn.getOutputStream();
+            os.write(data.getBytes());
+            os.flush();
+            os.close();
+
+            int responseCode = conn.getResponseCode();
+
+            System.out.println("SMS API Response Code: " + responseCode);
+
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+public class MFAExample {
+
+    public static void main(String[] args) {
+
+        Scanner scanner = new Scanner(System.in);
+
+        Identity rahul = new Identity("Rahul","9876543210");
+        Identity ram = new Identity("Ram","9876543222");
+        Identity raman = new Identity("Raman","9876543333");
+
+        // Send OTP
+        rahul.sendOTP();
+        ram.sendOTP();
+        raman.sendOTP();
+
+        // User enters OTP
+        rahul.verifyMFA(scanner);
+        ram.verifyMFA(scanner);
+        raman.verifyMFA(scanner);
+
+        scanner.close();
+    }
+}
+Program Run Hone Par Flow:-
+Console me aisa dikhega:-
+OTP sent to mobile number: 9876543210
+OTP sent to mobile number: 9876543222
+OTP sent to mobile number: 9876543333
+Enter OTP for Rahul:-
+User OTP type karega:-
+482193
+MFA verified for Rahul
+/////////*
+()1️⃣ YOUR_API_KEY:-
+String apiKey = "YOUR_API_KEY"; Kya hai?
+Yeh authentication key hai.
+SMS service provider deta hai.
+Server ko batata hai:ki ye request kis account se aa rahi hai
+Example:-
+apiKey = "8f6a9c1e3bxxxx"
+
+()2️⃣ sender=OTPMSG
+"&sender=OTPMSG" Kya hai?
+SMS ka Sender ID
+User ke phone par message aise dikhega:-
+OTPMSG: Your OTP is 482193
+Example Sender ID:-
+OTPMSG
+BANKTX
+AMAZON
+PAYTM
+
+()3️⃣ route=4
+"&route=4" Kya hai?
+SMS delivery route type
+Common routes:-
+Route	   Meaning
+1-------Promotional SMS
+4-------Transactional SMS
+OTP ke liye Transactional route use hota hai.
+
+()4️⃣ URL
+URL url = new URL("https://api.msg91.com/api/sendhttp.php"); Kya hai?
+
+SMS provider ka API endpoint
+Yaha request bhejoge.
+Example:-
+https://api.msg91.com/api/sendhttp.php
+
+Simple language:-
+Java → SMS Server ko request bhej raha hai.
+
+5️⃣ HttpURLConnection
+HttpURLConnection conn Kya hai?
+Java class jo HTTP request send karne ke liye use hoti hai.
+Part of:-
+java.net package
+Isse hum:-
+API call
+Web request
+HTTP communication
+kar sakte hain.
+
+()6️⃣ url.openConnection():-
+(HttpURLConnection) url.openConnection(); Kya karta hai?
+Ye server se connection open karta hai.
+
+()7️⃣ (HttpURLConnection) Casting (HttpURLConnection) Kyu use hua?
+openConnection() return karta hai:-
+URLConnection
+but hume chahiye:-
+HttpURLConnection
+Isliye type cast kiya.
+
+8️⃣ conn.setRequestMethod("POST")
+conn.setRequestMethod("POST"); Kya hai?
+
+HTTP request type set karta hai.
+Common types:-
+Method	     Use
+GET--------data fetch
+POST-------data send
+PUT--------update
+DELETE-----remove
+OTP send karne ke liye:-
+POST request
+
+()9️⃣ conn.setDoOutput(true)
+conn.setDoOutput(true); Kya karta hai?
+Server ko data bhejne ki permission deta hai.
+Matlab:-
+Java → server ko data send karega.
+
+()1️⃣1️⃣ conn.getOutputStream()
+OutputStream os = conn.getOutputStream(); Kya karta hai?
+Server ko data bhejne ka channel open karta hai.
+Example:-
+authkey=xxxx
+mobiles=9876543210
+message=Your OTP
+
+()1️⃣2️⃣ os.write(data.getBytes())
+os.write(data.getBytes()); Kya karta hai?
+Data ko byte format me convert karke server ko bhejta hai.
+Example data:-
+authkey=abc123
+mobiles=9876543210
+message=Your OTP is 482193
+
+()1️⃣3️⃣ os.flush()
+os.flush();Kya karta hai?
+Buffer me jo data hai usko immediately server ko bhej deta hai.
+Without flush:-
+data buffer me ruk sakta hai.
+
+()1️⃣4️⃣ conn.getResponseCode()
+int responseCode = conn.getResponseCode();Kya karta hai?
+Server ka response status code check karta hai.
+Example:-
+Code	Meaning
+200-----Success
+400-----Bad request
+401-----Unauthorized
+500-----Server error
+
+Example output:-
+SMS API Response Code: 200
+
+Matlab:-
+SMS successfully send hua
+
+()2️⃣ OutputStream kya hota hai:-
+Java me OutputStream ek class hai jo data bahar bhejne ke liye use hoti hai.
+Entity reference: OutputStream
+Simple language:-
+Program → data → OutputStream → Server
+Example:-
+OutputStream os = conn.getOutputStream();
+os.write(data.getBytes());
+
+Iska matlab:-
+Java program se data server ko bhejna
+
+Real life example:-
+Pipe se paani bhejna
+Pipe = OutputStream
+
+()3️⃣ Buffer kya hota hai?
+Buffer ek temporary memory area hota hai.
+Step-by-step:-
+1 Program data banata hai
+2 Data buffer me store hota hai
+3 flush() buffer ka data server ko bhej deta hai.
+
+5️⃣ Complete request kya banega:-
+Final request:-
+POST https://api.msg91.com/api/sendhttp.php
+
+Body:-
+authkey=89ab23cdxxxxx
+mobiles=9876543210
+message=Your OTP is 456789
+sender=OTPMSG
+route=4
+
+()4️⃣ Real world me API key kaha milti hai?
+Example with MSG91:-
+Step:-
+1️⃣ account create
+2️⃣ dashboard open
+3️⃣ API key generate
+
+MSG91 kya hai?
+MSG91 ek cloud communication platform hai jo developers aur companies ko SMS,
+OTP, WhatsApp message, email, voice call APIs provide karta hai.
+Isko applications me integrate karke users ko automatic messages bheje ja sakte hain. 📱
+*/////////

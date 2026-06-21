@@ -1,0 +1,173 @@
+()Group क्या है?
+-> Bundle of identities based on Static attributes.
+
+population क्या है?
+-> Bundle of identities based on dynamic queries.
+
+Workgroup क्या है?
+-> Bundle of identities based on Capabilities.
+
+()1. Workgroup का मुख्य काम (Purpose):-
+Workgroup का उपयोग तब किया जाता है जब आप किसी एक व्यक्ति (Individual) को काम सौंपने के बजाय पूरी टीम को काम सौंपना चाहते हैं।
+Approvals: अगर कोई यूजर किसी एक्सेस के लिए रिक्वेस्ट करता है, तो वह रिक्वेस्ट पूरे "IT Admin Workgroup" के पास जा सकती है। उस ग्रुप का कोई भी मेंबर उसे अप्रूव कर सकता है।
+Reviews/Certifications: एक्सेस रिव्यू करने की जिम्मेदारी किसी एक मैनेजर के बजाय एक वर्कग्रुप को दी जा सकती है।
+Ownership: किसी Application या Role का मालिक (Owner) एक वर्कग्रुप हो सकता है।
+
+
+()2. Capabilities का क्या मतलब है?
+आपने सही पकड़ा है कि यह Capabilities पर आधारित होता है।
+IdentityIQ में, एक सामान्य यूजर के पास बहुत कम अधिकार होते हैं।
+जब हम किसी यूजर को Workgroup में डालते हैं, तो उस वर्कग्रुप से जुड़ी Capabilities (जैसे: SystemAdmin, CertificationAdmin, RoleAdmin) अपने आप उस यूजर को मिल जाती हैं।
+उदाहरण: अगर आपको SailPoint में 'Role' बनाने का अधिकार चाहिए, तो आपको ऐसे Workgroup में डाला जाएगा जिसके पास RoleAdmin की Capability हो।
+
+3. Population (Dynamic Queries पर आधारित):-
+Population उन Identities का समूह है जिन्हें आप एक Filter या Search Query के जरिए चुनते हैं। यह बहुत ज्यादा फ्लेक्सिबल (Flexible) होता है।
+कैसे बनता है: यह Dynamic Queries पर आधारित होता है। आप 'Advanced Analytics' में जाकर एक सर्च चलाते हैं (जैसे: "वो सभी लोग जिनकी जॉइनिंग 1 साल से ज्यादा है और जिनके पास SAP का एक्सेस है")
+ और उस रिजल्ट को एक 'Population' के तौर पर सेव कर देते हैं।
+मकसद (Goal): इसका मुख्य इस्तेमाल Certification (Access Review) और Reporting के लिए होता है। 
+अगर आपको सिर्फ किसी खास तरह के लोगों का ऑडिट करना है, तो आप उनके लिए एक Population बनाएंगे।
+उदाहरण:-
+ऐसे सभी 'Contractors' जिनका एक्सेस अगले 30 दिन में खत्म होने वाला है।
+ऐसे 'Managers' जिनके पास एडमिन लेवल के अधिकार हैं।
+Kaam: Iska sabse bada use Certification (Audit) ke liye hota hai. 
+Example: "Mujhe sirf un 50 logo ka access review karna hai jo pichle mahine join hue hain."
+
+4. Group (Static Attributes पर आधारित):-
+Group आमतौर पर उन लोगों का गुच्छा होता है जो किसी खास Attribute (जैसे Department, Location, या Job Title) को शेयर करते हैं।
+कैसे बनता है: यह Static Attributes पर आधारित होता है। जैसे ही किसी यूजर का 'Department' एट्रिब्यूट "IT" होता है, वह खुद-ब-खुद "IT Group" का हिस्सा बन जाता है।
+मकसद (Goal): इसका इस्तेमाल अक्सर Policy Violations (जैसे SOD - Segregation of Duties) चेक करने के लिए किया जाता है।
+उदाहरण:-
+सभी "Mumbai" ऑफिस के कर्मचारी।
+सभी "Finance" डिपार्टमेंट के लोग।
+Kaam: Iska zyada use Policies (SOD) lagane ke liye hota hai. Example: "Jo log Finance Group mein hain, 
+wo Purchase Group ka part nahi ho sakte."
+
+--------------------------------------------------------------
+()SailPoint IdentityIQ mein Static Attributes ka matlab hai wo fields jo direct user ki profile (Identity) par save hoti hain 
+aur badalti nahi hain jab tak koi manual change ya source system (HRMS) se update na aaye.
+Inhe hum Identity Attributes bhi kehte hain.
+->Department,Location / City,Job Title / Designation(manager,analyst,developer),Region("APAC", "EMEA", "AMER".),Cost Center.
+------------------------
+exampleflow:-
+
+()step1:-sabse pehle iiq declare karta hai kis kis user ko include karna hai.
+population iiq ka feature hai jo identities ko filter karta hai based on these attributes(role/department/loaction).
+ki kis role ya kis department/loaction ke bande include honge.
+ex->sirf "IT" ke bande include honge.
+
+Step 2 :- user ya manager access request karta hai.
+Ex -> Rahul ne request kiya -> "DB Access"
+-> System object create करता है (AccessRequest / provisioning plan)
+
+
+
+Step 3:- Group -> jab user request करता है, mujhe DB access chahiye. 
+internally system iiq check karta hai, ki ye access kaunse application का है।
+-> (AD/DB/SAP):-ye Group/Entitlement ka naam है।
+-> phir ye mapping hoti hai.
+
+ex->
+Friendly name     Actual Entitlement
+"DB Access"--------DB_READ_ROLE
+
+-> ye sab provisioning plan me convert होता है।
+Ex -> internal XML :-
+<ProvisioningPlan> <AccountRequest application="DatabaseApp">
+<AttributeRequest name="role" value="DB_READ_ROLE" op="Add"/>
+</AccountRequest>
+</ProvisioningPlan>
+
+()policy check (Risk/SOD Analysis):-
+-> Ab system check karega ki request safe hai ya nahi. (SOD / Risk score).
+Workgroup -> Ab decide hota hai kaun approve karega.
+
+()internally workgroup check karega:-
+-> जब कोई access Request करता है, (user/manager) तो wo access request Workgroup को assign होता है। 
+workgroup के members decide करते है कि Approve/reject modify करे या अब access request जो user/manager ने किया।
+-> जब-तक workgroup action नहीं लेगा Flow Ruka jata hai. Jaise hi approve flow next step pe chala jata hai (provisioning).
+-> workgroup का काम है कि access request को सही Team के पास भेजे।
+Ex -> DB access -> DB Admin workgroup
+HR access -> HR Admin workgroup
+-> अगर कोई उस access request को Approve/reject नहीं करता तो वह Request escalate हो जाता है।
+और जैसे ही workgroup में access request assign करता है iiq system में workitem create हो जाता है।
+
+Types of workgroup :-
+
+a. Approval workgroup :-
+Access request Approve करता है।
+
+b. certification workgroup :-
+Access review करता है।
+
+c. owner workgroup :-
+Application / Role का owner होता है।
+Real example :-
+-> user Rahul ने DB Access का request किया ।
+-> Request create hui
+-> policy check hui
+-> workgroup :- DB Admin select hui.
+-> Ravi (member) के workgroup में ये access request आया ।
+->ravi ya suresh ne approve kiya.
+-> ACCESS mil gaya.
+
+()internally kaise kaam karta hai workgroup :-
+workgroup = identity object (type = group)
+-> iiq में workgroup bhi ek identity type hi hota hai, iske andar members hote hai.
+workitem create होता है जैसे ही Access का koi request assign हुई system एक workgroup में और task बनाता है।
+Ex -> Id="wq123"
+<workItem> <owner> IT_Admin </owner> <type> Approval </type> </workItem>
+
+Members ko assign hota है ये task :-
+-> workgroup के members Ravi, Suresh.
+-> in dono में से koi bhi Approve / Reject कर सकता हैं।
+जैसे ही कोई approve / Reject करता workitem next step पे चला जाता है।
+
+Step 4 -> Fir workflow Execution होता है :-
+-> ye decide karta hai ab aage kya karna hai.
+-> internally: workflow Engine check करता है कि Approval ho gaya? 
+koi pending step hai? fir next step trigger karta hai -> provisioning
+
+Step 5 -> provisioning :- ye actual changes या updates create करता है Target systems में ।
+Step 6 -> connector call :- Bridge between iiq and Target system.
+-> iiq directly AD/DB/SAP को touch नहीं करता, connector के through ही बात होती है।
+connector ही Data create/update/Delete करता है Target system में जाके. (provisioning) और Data get करता है (Aggregation).
+
+->sync / Reconcilication :-
+Real system aur iiq को Sync me रखता है।
+
+-> Aggregation:- Kya hai kya karta hai? (verification) :-
+Ye data wapas lene ka process hai, system check karta hai ki jo bola tha wo hua ya nahi.
+target system se fresh data fetch karta hai, compare करता है ।
+expected vs actual.
+
+Ex -> check:-
+Rahul ke pass DB access aya ya nahi.
+Result :-
+-> match -> sab sahi
+-> mismatch -> issue
+-> jo kiya wo sach me apply hua ya nahi.
+
+Step -> identity cube update :-
+-> iiq का internal user database profile.
+-> Kya karta hai?
+-> user ki latest info update karta hai.
+-> Ex -> Rahul:
+DB_READ_ROLE
+AD Group
+और iiq को अपनी memory update करता रहता है।
+
+
+Step (9) :- Audit + ui reflect ?
+-> Audit kya karta hai?
+-> Sab record store करता है :-
+-> kishne request kiya
+-> kisne approve kiya
+-> kab access mila
+-> compiliance ke liye important.
+
+().ui Reflect kya karta hai?
+iiq screen pe dikhata hai ki:-
+-> user ke entitlements,
+-> Reports me data,
+Ex -> ui me dikhega:-
+Rahul -> DB Access.

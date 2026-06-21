@@ -1,0 +1,235 @@
+()5️⃣ ProvisioningProject:-
+Ye ek ya multiple provisioning plans ka container hai.
+Enterprise me bulk provisioning ya workflow ke liye use hota hai.
+
+()ProjectType SailPoint me ek enum hai jo define karta hai ki ProvisioningProject ka type kya hai.
+Ye basically batata hai ki project kya kaam karega(add karna, remove karna, ya sync karna).
+
+()ProjectType ke values:-
+Value	                                Purpose
+Provision-----Identity ko naya access add karna ya modify karna. Example: nayi role assign karna.
+Deprovision---Identity se access remove karna. Example: employee resign ho gaya → roles/accounts remove karna.
+Reconcile-----
+Reconcile = Sync karna
+SailPoint me ye check karta hai ki user ke current access(roles/accounts) actual system ke state ke saath
+match karte hain ya nahi.Matlab agar kisi ne manually system me role add/remove kiya,
+SailPoint me abhi tak reflect(dikhna) nahi hua → Reconcile se correct ho jata hai.
+
+2️⃣ Kaam kya karta hai?
+Step	                                       Explanation
+Fetch actual state-------------Application me user ke current roles/accounts fetch karta hai.
+Compare with SailPoint---------SailPoint me identity ke roles/accounts jo stored hain unse compare karta hai.
+Create plan------------------Agar koi mismatch hai → provisioning plan generate hota hai to add/remove access.
+Execute	Plan-------------------apply hota hai, SailPoint ka data aur actual system sync ho jata hai.
+
+Example Usage:-
+// Create a provisioning project to add access
+ProvisioningProject project = new ProvisioningProject(ProvisioningProject.ProjectType.Provision, context);
+
+// Create another project to remove access
+ProvisioningProject deprovisionProject = new ProvisioningProject(ProvisioningProject.ProjectType.Deprovision, context);
+
+// Reconcile project example
+ProvisioningProject reconcileProject = new ProvisioningProject(ProvisioningProject.ProjectType.Reconcile, context);
+--------------------------------------------------------------------------------------
+()👉 Real IdentityIQ me tum kabhi direct Provision use nahi karte
+✔ Correct aur standard way sirf ye hai:-
+Provisioner p = new Provisioner(context);
+p.execute(plan);
+
+🔹 3. Step-by-step samajh:-
+🟢 Step 1: Tum plan banate ho
+ProvisioningPlan plan = new ProvisioningPlan();
+plan.setIdentity(identity);
+👉 Matlab:-
+➡️ “Is user ke liye kuch karna hai”
+
+🟡 Step 2: Tum execute karte ho:-
+Provisioner p = new Provisioner(context);
+p.execute(plan);
+
+🔵 Step 3: System internally kya karta hai:-
+👉 Yaha magic hota hai:-
+ProvisioningPlan
+   ↓ (process / compile)
+ProvisioningProject (auto ban gaya)
+   ↓
+Execution start
+
+🔹 4. ProvisioningProject kyu zaroori hai? 🤔
+👉 Kyunki tumhara plan simple hota hai:
+Example:-
+"AD me account create karo"
+👉 Lekin system ko chahiye:-
+✔ Kaunsa connector use hoga
+✔ Account exist karta hai ya nahi
+✔ Pehle kya hoga (create ya update)
+✔ Kaunse attributes jayenge
+✔ Dependencies kya hain
+👉 Isliye system bolta hai:-
+"Ruk bhai, main isko proper structure me convert karta hoon"
+👉 Ye converted structure = ProvisioningProject
+
+✅ Provisioner kya hai?
+👉 Ye actual engine hai
+Provisioner.execute(plan);
+✔ Ye hi real execution karta hai.
+
+✅ ProvisioningProject kya hai?
+👉 Ye:-
+System khud banata hai
+Tum nahi banate
+Ye execution-ready version hai plan ka.
+--------------------------------------------------------------------------------------------------------------------
+🔹 Question:-
+👉 ProvisioningProject ko admin/developer banata hai ya system?
+
+🔹 ✅ Final Answer (IMPORTANT):-
+👉 ProvisioningProject ko na admin banata hai na developer
+👉 ✔ Ye automatically system (IdentityIQ engine) banata hai.
+---------------------------------------------------------------------------
+()
+
+ProvisioningProject =
+👉 “Kaise create hoga, kis system me, kya values jayengi”
+
+✔ ProvisioningPlan = idea
+✔ProvisioningProject = execution blueprint
+✔provisioner = execute(plan)
+
+🔹 Ek line me difference 🔥:-
+👉 ProvisioningProject = “kya aur kaise hoga” (plan ready)
+👉 Provisioner = “kaam karke dikha” (execute karta hai).
+
+🔹 1. ProvisioningProject kya karta hai? 🧠
+👉 Ye ek data structure / object hai
+✔ Plan ko process karta hai
+✔ Execution ke liye ready banata hai
+✔ Sab details rakhta hai
+
+👉 Example:-
+- Kis user ke liye
+- Kis application me
+- Kya action (create / modify)
+- Kaunse attributes
+👉 Matlab:-
+➡️ Ye sirf instructions ka bundle hai
+
+🔹 2. Provisioner kya karta hai? ⚙️
+👉 Ye ek engine / executor class hai
+Provisioner p = new Provisioner(context);
+p.execute(plan);
+✔ Ye actual kaam karta hai
+✔ Connector ko call karta hai
+✔ Target system update karta hai
+
+()🔹 1. ProvisioningProject kya hai?
+👉 ProvisioningProject = ProvisioningPlan ka processed (final) version
+📌 Matlab:-
+👉 Tumne jo plan diya (kya karna hai)
+👉 System usko tod ke, samajh ke, ready karta hai execution ke liye
+➡️ Ye readymade structure = ProvisioningProject jo execution ka blueprint.
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+🔹 4. ProvisioningProject karta kya hai? ⚙️
+👉 Ye sirf data hold nahi karta — ye smart processing bhi karta hai
+✔ Main kaam:-
+
+()🔹 1. ✅ Plan ko validate karta hai:-
+👉 System check karta hai:-
+Identity exist karta hai ya nahi
+Application (AD) exist karta hai ya nahi
+Required fields diye hain ya nahi.
+
+💡 Example:-
+❌ Galat case:-
+User: unknown.user
+Application: AD
+
+👉 Result:-
+Error: Identity not found
+
+✔ Sahi case:-
+john.doe exist karta hai → OK
+------------------------------------
+🔹 2. ✅ Application-wise todta hai:-
+👉 Agar multiple applications hain, system unko separate karta hai
+💡 Example:-
+1. AD me account create
+2. SAP me role assign
+👉 System internally banata hai:-
+AD → AccountRequest
+SAP → AccountRequest
+✔ Har application ka alag processing
+--------------------------------------
+🔹 3. ✅ Dependencies set karta hai 🔗
+👉 Kaunsa kaam pehle aur baad me hoga
+💡 Example:-
+1. Account create
+2. Role assign
+👉 Dependency:-
+Create → then Assign Role
+❌ Galat order:-
+Role assign pehle → fail (account exist nahi karta)
+✔ System correct order set karta hai.
+----------------------------------------
+🔹 4. ✅ Actions organize karta hai,
+👉 Sab actions ko clean structure me arrange karta hai
+💡 Example:-
+Tumne diya:-
+email update
+role assign
+account create
+👉 System organize karega:-
+Step 1: Account create
+Step 2: Email set
+Step 3: Role assign
+✔ Logical grouping karta hai
+
+🔹 5. ✅ Execution order decide karta hai ⚙️
+👉 Final sequence banata hai execution ke liye
+💡 Example final flow:-
+Step 1 → AD me account create
+Step 2 → Attributes set (email etc.)
+Step 3 → Role assign
+👉 Ye hi order Provisioner follow karega.
+----------------------------------------------------------------------------------------------------------------------------------------------------
+🔹 5. ProvisioningProject ke andar kya kya hota hai? 🧠
+--🔸 1. Identity:-
+👉 Kis user ke liye provisioning ho raha hai
+Example: john.doe
+
+🔸 2. AccountRequests 🔥 (MOST IMPORTANT):-
+👉 Har application ke liye request
+- AD → create account
+- SAP → modify role
+✔ Har AccountRequest me hota hai:
+application
+nativeIdentity
+operation (Create / Modify / Delete)
+
+🔸 3. ObjectRequests:-
+👉 Groups / roles / entitlements ke changes
+Example:
+Add user to group "Admin"
+
+🔸 4. AttributeRequests:-
+👉 Actual field changes
+email = new@mail.com
+role = Admin
+
+🔸 5. ProvisioningTargets:-
+👉 Kaun kaun se systems involved hain
+AD, SAP, DB
+
+🔸 6. Dependencies 🔗:-
+👉 Execution order decide karta hai
+Account create → then role assign
+
+🔸 7. Result / Status:-
+👉 Execution ke baad kya hua
+SUCCESS / FAILED / PARTIAL
+
+🔸 8. Errors / Messages:-
+👉 Agar kuch fail hua toh reason
+"Account already exists"
+----------------------------------------------------------------------------------------------------------------

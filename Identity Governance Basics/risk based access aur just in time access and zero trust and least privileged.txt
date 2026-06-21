@@ -1,0 +1,199 @@
+1️⃣8️⃣ Zero Trust Concepts kya hai?
+--Zero Trust ek security concept/model hai jisme rule simple hai:-
+👉 “Never Trust, Always Verify”
+Matlab system kisi user, device, ya network ko automatically trust nahi karta,
+chahe wo company network ke andar hi kyu na ho. Har access request ko verify kiya jata hai.
+
+()Traditional security me:-
+Company Network → Trusted
+Outside Network → Untrusted
+
+()Lekin Zero Trust me:-
+Koi bhi automatically trusted nahi
+Har request verify hogi
+
+2️⃣ Zero Trust ke Main Concepts:-
+1️⃣ Identity Verification:-
+User ko authenticate karna zaroori hai.
+Example:-
+Username / Password
+MFA (OTP)
+
+Flow:-
+User Login
+   ↓
+Identity Verify
+   ↓
+Access Decision
+
+2️⃣ Least Privilege Access:-
+User ko sirf utna hi access milega jitna kaam ke liye zaroori hai.
+Example:-
+Developer → Code repository access
+Finance data → Not allowed
+
+3️⃣ Continuous Verification:-
+Access milne ke baad bhi system continuous check karta hai.
+Example:-
+User login
+   ↓
+Access granted
+   ↓
+System continuously monitor karta hai.
+
+4️⃣ Device Trust Check:-
+System check karta hai:-
+device secure hai ya nahi
+antivirus hai ya nahi
+OS updated hai ya nahi
+Example:-
+Untrusted device → Access blocked
+
+5️⃣ Micro-Segmentation:-
+Network ko chote-chote secure zones me divide karna.
+Example:-
+HR System
+Finance System
+IT System
+Ek system compromise ho jaye to baaki safe rahenge.
+
+4️⃣ IAM / SailPoint me Zero Trust ka Role:-
+IAM systems jaise SailPoint IdentityIQ ya SailPoint IdentityNow Zero Trust implement karte hain:
+Identity verification
+Access governance
+Role-based access control
+Continuous monitoring
+
+5️⃣ Example:-
+Example user:-
+User: Rahul
+Role: Developer
+
+Zero Trust system karega:-
+Login verify
+Device check
+Role check
+Developer tools access allow
+Finance data access deny
+----------------------------insabka code developer likhta hai--------->>>>>>>>>>>>>>>>>>>>>>>>>>
+1️⃣ Identity Verification;-
+Example:-
+Username / Password
+MFA (OTP)
+
+()Ye mostly IAM / authentication systems handle karte hain jaise:-
+Okta
+Keycloak
+SailPoint IdentityIQ
+
+Developer kya karta hai:-
+if(authService.authenticate(username, password)){
+    allowAccess();
+}
+Matlab developer authentication API call karta hai, pura system nahi likhta.
+
+()2️⃣ Least Privilege Access;-
+Ye mostly RBAC (Role Based Access Control) se implement hota hai.
+Developer code likh sakta hai:-
+if(userRole.equals("Developer")){
+    allowAccess("CodeRepository");
+}else{
+    denyAccess();
+}
+Real systems me frameworks use hote hain jaise:-
+Spring Security
+Example:-
+@PreAuthorize("hasRole('ADMIN')")
+
+()3️⃣ Continuous Verification:-
+Ye mostly security monitoring systems karte hain.
+Example tools:-
+Splunk
+Azure Sentinel
+Developer kabhi-kabhi logging add karta hai:-
+log.info("User accessed finance system");
+Baaki monitoring SIEM tools karte hain.
+
+4️⃣ Device Trust Check:-
+Ye developer nahi likhta normally.
+Ye check hota hai tools se jaise:-
+Microsoft Intune
+CrowdStrike Falcon
+
+()System check karta hai:-
+device compliant hai
+antivirus installed hai
+OS updated hai
+
+()5️⃣ Micro-Segmentation:-
+Ye network security engineers configure karte hain.
+Example technologies:-
+VMware NSX
+Cisco ACI
+Developer ka role usually nahi hota isme.
+--------------------------------
+()Risk based access kya hai?
+Risk Based Access ka matlab hai ki system access dene se pehle risk level check karta hai.
+👉 Agar risk low hai → access mil jayega,
+👉 Agar risk high hai → extra verification ya access deny.
+Example:-
+User login karta hai:-
+User: Rahul
+Location: India
+Device: Known Laptop
+
+System bolega:-
+Risk Level → Low
+Access → Allow
+
+Lekin agar login aaye:-
+User: Rahul
+Location: Unknown Country
+Device: New Device
+
+System karega:-
+Risk Level → High
+Action → MFA (OTP) required
+
+Risk Factors:-
+System ye cheeze check karta hai:-
+Location
+Device
+Login time
+User behavior
+Network
+
+
+----------------------------------
+()Just-In-Time access kya hai?
+Just-In-Time Access ka matlab hai:-
+👉 User ko access sirf temporary time ke liye diya jata hai jab usko kaam ke liye zaroorat ho.
+Permanent access nahi diya jata.
+
+Example:-
+Developer ko Production Server access chahiye.
+
+Normal system:-
+Developer → Permanent access
+
+JIT system:-
+Developer request
+   ↓
+Manager approval
+   ↓
+Access granted for 1 hour
+   ↓
+Automatically removed
+
+Example Use Cases:-
+Production server access
+Database admin access
+Cloud infrastructure access
+
+()risk based access aur just in time access ka code developer likhta hai?
+--lekin real companies me pura system developer nahi likhta.
+IAM tools (jaise SailPoint IdentityIQ, Azure Active Directory) already features dete hain,
+Developer logic integrate karta hai application me.
+
+
+----------------------------------

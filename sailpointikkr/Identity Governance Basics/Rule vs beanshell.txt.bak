@@ -1,0 +1,258 @@
+🔥 1. BeanShell kya hai?
+BeanShell ek scripting language hai (Java jaisa syntax)
+Iska use hota hai code likhne ke liye
+👉 Matlab:-
+“Kaise kaam hoga” ye BeanShell batata hai
+Example:-
+String name = "Kishan";
+System.out.println(name);
+
+🔥 2. Rule kya hai?
+Rule ek SailPoint ka object hai
+Ye system me store hota hai (DB me)
+Iske andar BeanShell code likha hota hai
+👉 Matlab:-
+“Kab aur kahan kaam hoga” ye Rule decide karta hai.
+----------------------------------------------------------
+🔥 3. Relation (Sabse important 💥):-
+👉 Simple line:-
+Rule = Container + BeanShell Code
+Cheez	        Meaning
+BeanShell	   Code (logic)
+Rule	       Wrapper/Container (jisme code likha hota hai)
+--------------------------------------------------------------
+🔥 4. Real Example (SailPoint):-
+<Rule name="ExampleRule" type="BeforeProvisioning">
+    <Source>
+        String username = identity.getName();
+        System.out.println("User: " + username);
+    </Source>
+</Rule>
+👉 Yaha:-
+<Rule> = Rule object
+<Source> ke andar = BeanShell code
+----------------------------------------------------------------------------------------------------------------
+📌 🔥 All SailPoint Rule Types (Complete List):-
+-----------------------------------------------------------------------------------------------------------------
+AfterProvisioning
+BeforeProvisioning
+BuildMap
+TaskRule
+RuleReference
+Correlation
+IdentitySelector
+ManagerCorrelation
+MapToResourceObject
+
+Provisioning
+ProvisioningPlanInitializer
+QuickLink
+RuleLibrary
+Validation
+FieldValue
+DefaultValue
+PasswordPolicy
+PasswordGenerator
+PasswordConstraint
+IdentityRefresh
+LifecycleEvent
+Workflow
+Task
+TaskCompletion
+Certification
+CertificationEntityCustomization
+CertificationItemCustomization
+CertificationPreDelegation
+CertificationSignOffApprover
+CertificationExclusion
+CertificationPhaseChange
+CertificationClose
+CertificationAssignment
+CertificationDecision
+CertificationEscalation
+PolicyViolation
+PolicyRule
+PolicyApprovalAssignment
+PolicyCustomization
+ApprovalAssignment
+ApprovalForwarding
+ApprovalEscalation
+ApprovalPreProcess
+ApprovalPostProcess
+ApprovalRule
+Form
+FormField
+FormValidation
+FormInitialization
+FormPostBack
+UIConfig
+WebServiceBeforeOperation
+WebServiceAfterOperation
+JDBCBuildMap
+JDBCProvisioning
+SAPHRBuildMap
+SAPHRProvisioning
+SAPBuildMap
+SAPProvisioning
+LDAPBuildMap
+LDAPProvisioning
+ADProvisioning
+ApplicationCustomization
+ConnectorAfterCreate
+ConnectorAfterUpdate
+ConnectorAfterDelete
+ConnectorBeforeCreate
+ConnectorBeforeUpdate
+ConnectorBeforeDelete
+Integration
+Aggregation
+AggregationCustomization
+GroupAggregation
+AccountAggregation
+Customization
+OwnerRule
+RoleAssignment
+RoleDetection
+RoleExpansion
+RoleCreation
+EntitlementRule
+ManagedAttributeCustomization
+IdentityAttribute
+IdentityAttributeTarget
+IdentityCreation
+IdentityUpdate
+IdentityDeletion
+IdentityEvent
+IdentityTrigger
+AuditEvent
+AuditCustomization
+Reporting
+ReportGeneration
+ReportDataSource
+ReportColumnCustomization
+EmailTemplateRule
+NotificationRule
+EscalationRule
+RetryRule
+ErrorHandler
+ExceptionHandler
+ScriptRule
+------------------------------------------------------------------------------------------------------
+()AfterProvisioning ye rule type hai jo sirf batata hai ki kya karna hai lekin actual code hum hi likhte hai 
+jo actual task perform karta hai source ke andar jisse beanshell code kahte hai.
+----------------------------------------------------------------------------------------------------------------------------------------
+🧠 Rule kya karta hai?
+👉 Rule use hota hai:-
+
+🔹 1️⃣ Custom Logic likhne ke liye:-
+Data transform karna
+Conditions lagana
+
+🔹 2️⃣ Integration ke liye:-
+External system se data lena
+Modify karna
+
+🔹 3️⃣ Provisioning control:-
+Account create/update/delete ka logic
+
+🔹 4️⃣ Validation:-
+Data sahi hai ya nahi check karna
+
+🔹 5️⃣ Automation:-
+Auto decisions lena
+
+📦 Rule ke andar kya hota hai?
+👉 Ek rule me mainly ye hota hai:-
+🔹 Structure:-
+<Rule name="Sample Rule" type="IdentityAttribute">
+    <Source>
+        // Beanshell / Java code
+        return "Hello";
+    </Source>
+</Rule>
+🔹 Important Parts:-
+Name → Rule ka naam
+Type → Rule kis kaam ke liye hai
+Source → Actual code (logic)
+
+🗄️ Kya Rule DB me store hota hai?
+👉 ✅ YES bhai, Rule database me store hota hai
+👉 Table:-
+spt_rule
+
+👉 Isme store hota hai:-
+Rule name
+Rule type
+Code (source)
+Created date
+-------------------------------------------------
+🔥 Rule kaise run hota hai?
+👉 Jab koi event hota hai:-
+Aggregation
+Provisioning
+Identity refresh
+👉 Tab SailPoint automatically rule call karta hai.
+---------------------------------------------------------------
+🔥 Real Production BeforeProvisioning Rule:-
+👉 Use-case:
+Jab user ka access kisi critical system (jaise AD) me ja raha ho, to check karo ki user valid hai aur mandatory attribute present hai.
+Agar nahi hai → provisioning block karo ❌
+🔥 Ye Rule Live me kya karega?
+✔ Provisioning start hone se pehle run hoga
+✔ Identity ka data check karega
+✔ Agar required data missing → Exception throw → provisioning fail ❌
+✔ Agar valid → provisioning continue ✅
+
+<Rule name="BP_ValidateUser_NoStarImport" type="BeforeProvisioning">
+    <Source>
+
+        import sailpoint.object.Identity;
+        import sailpoint.object.ProvisioningPlan;
+        import sailpoint.tools.GeneralException;
+
+        // Get Identity from provisioning plan
+        Identity identity = provisioningPlan.getIdentity();
+
+        if(identity == null) {
+            throw new GeneralException("Identity not found in provisioning plan");
+        }
+
+        // Get attributes
+        String empId = (String) identity.getAttribute("employeeId");
+        String dept  = (String) identity.getAttribute("department");
+
+        // Validation
+        if(empId == null || empId.trim().equals("")) {
+            throw new GeneralException("Provisioning blocked: employeeId is missing");
+        }
+
+        if(dept == null) {
+            throw new GeneralException("Provisioning blocked: department is null");
+        }
+
+        // Business logic
+        if("IT".equalsIgnoreCase(dept)) {
+            // allow provisioning
+        } else {
+            throw new GeneralException("Provisioning blocked: only IT users allowed");
+        }
+
+    </Source>
+</Rule>
+/////////*
+1️⃣ empId.trim():-
+String ke start aur end ke spaces remove karta hai
+👉 Example:-
+empId = "   ";
+empId.trim()  // result: ""
+
+2️⃣ .equals(""):-
+Check karta hai:-
+“kya string bilkul empty hai?”
+
+🔥 Combined Meaning:-
+empId.trim().equals("")
+👉 Matlab:-
+"spaces hata ke bhi agar string empty hai → true"
+*///////
+----------------------------------------------------------------------------------------------------------------------------------------------

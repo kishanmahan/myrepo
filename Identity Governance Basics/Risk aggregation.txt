@@ -1,0 +1,242 @@
+()Risk aggregation kya hai?
+Risk Aggregation = Multiple risks ko combine karke ek overall risk exposure ya total risk nikalna
+Matlab, alag-alag departments, projects, ya systems ke risks ko ek single view me laana,
+Ye organization-level ya project-level decision making me kaam aata hai.
+
+2️⃣ Example:-
+Individual Risks
+Risk Name--------Score (₹)
+Server Crash-----20,000
+Data Leak--------1,00,000
+Project Delay----15,000
+Aggregated Risk (sum of all scores)
+Total Aggregated Risk Score=20,000+1,00,000+15,000=1,35,000.
+
+4️⃣ Risk Aggregation vs Composite Risk:-
+Composite Risk → Usually ek project ya ek system ke multiple risks combine karte hain
+Risk Aggregation → Organization-wide ya multiple systems ke risk ko combine karte hain
+Dono ka idea same hai → multiple risks ko ek number me summarize karna, bas scale alag hai.
+
+Java Project: Risk Aggregation + Composite Risk
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Scanner;
+
+// Risk class
+class Risk {
+    private String name;
+    private double probability;
+    private double impact;
+    private double score;
+    private String priority;
+
+    public Risk(String name, double probability, double impact) {
+        this.name = name;
+        this.probability = probability;
+        this.impact = impact;
+        calculateScore();
+        assignPriority();
+    }
+
+    private void calculateScore() {
+        this.score = this.probability * this.impact;
+    }
+
+    private void assignPriority() {
+        if (score >= 75000) {
+            this.priority = "High";
+        } else if (score >= 25000) {
+            this.priority = "Medium";
+        } else {
+            this.priority = "Low";
+        }
+    }
+
+    public double getScore() {
+        return score;
+    }
+
+    public String getPriority() {
+        return priority;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void displayRisk() {
+        System.out.println("  Risk Name   : " + name);
+        System.out.println("  Probability : " + probability);
+        System.out.println("  Impact      : " + impact);
+        System.out.println("  Risk Score  : " + score);
+        System.out.println("  Priority    : " + priority);
+        System.out.println("--------------------------");
+    }
+}
+
+// Project class
+class Project {
+    private String projectName;
+    private List<Risk> risks;
+
+    public Project(String name) {
+        this.projectName = name;
+        this.risks = new ArrayList<>();
+    }
+
+    public void addRisk(Risk r) {
+        risks.add(r);
+    }
+
+    public double calculateCompositeRisk() {
+        double total = 0;
+        for (Risk r : risks) {
+            total += r.getScore();
+        }
+        return total;
+    }
+
+    public void displayRisks() {
+        if (risks.isEmpty()) {
+            System.out.println("No risks added for this project.");
+            return;
+        }
+        System.out.println("\n--- Risks for Project: " + projectName + " ---");
+        // Sort risks by score descending
+        risks.sort(Comparator.comparingDouble(Risk::getScore).reversed());
+        for (Risk r : risks) {
+            r.displayRisk();
+        }
+        System.out.println("Composite Risk Score: ₹" + calculateCompositeRisk());
+    }
+
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public List<Risk> getRisks() {
+        return risks;
+    }
+}
+
+// Main class
+public class RiskAggregationProject {
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        List<Project> projects = new ArrayList<>();
+
+        System.out.println("=== Risk Aggregation & Composite Risk Management ===");
+
+        while (true) {
+            System.out.println("\n1. Add Project");
+            System.out.println("2. Add Risk to Project");
+            System.out.println("3. Show Project Risks & Composite Risk");
+            System.out.println("4. Show Aggregated Risk Across All Projects");
+            System.out.println("5. Exit");
+            System.out.print("Choose option: ");
+            int choice = sc.nextInt();
+            sc.nextLine(); // consume newline
+
+            if (choice == 1) {
+                System.out.print("Enter Project Name: ");
+                String name = sc.nextLine();
+                projects.add(new Project(name));
+                System.out.println("✅ Project added successfully!");
+
+            } else if (choice == 2) {
+                if (projects.isEmpty()) {
+                    System.out.println("No projects available. Add a project first.");
+                    continue;
+                }
+
+                System.out.println("Select Project:");
+                for (int i = 0; i < projects.size(); i++) {
+                    System.out.println((i + 1) + ". " + projects.get(i).getProjectName());
+                }
+                int pIndex = sc.nextInt() - 1;
+                sc.nextLine();
+
+                if (pIndex < 0 || pIndex >= projects.size()) {
+                    System.out.println("Invalid project selection!");
+                    continue;
+                }
+
+                System.out.print("Enter Risk Name: ");
+                String riskName = sc.nextLine();
+                System.out.print("Enter Probability (0.0 - 1.0): ");
+                double prob = sc.nextDouble();
+                System.out.print("Enter Impact (₹): ");
+                double impact = sc.nextDouble();
+                sc.nextLine();
+
+                projects.get(pIndex).addRisk(new Risk(riskName, prob, impact));
+                System.out.println("✅ Risk added successfully to project!");
+
+            } else if (choice == 3) {
+                if (projects.isEmpty()) {
+                    System.out.println("No projects available.");
+                    continue;
+                }
+
+                for (Project p : projects) {
+                    p.displayRisks();
+                }
+
+            } else if (choice == 4) {
+                double totalAggregatedRisk = 0;
+                for (Project p : projects) {
+                    totalAggregatedRisk += p.calculateCompositeRisk();
+                }
+                System.out.println("\n=== Aggregated Risk Across All Projects ===");
+                System.out.println("Total Aggregated Risk Score: ₹" + totalAggregatedRisk);
+                System.out.println("------------------------------------------");
+
+            } else if (choice == 5) {
+                System.out.println("Exiting... Bye!");
+                break;
+            } else {
+                System.out.println("Invalid choice! Try again.");
+            }
+        }
+
+        sc.close();
+    }
+}
+Output Example
+=== Risk Aggregation & Composite Risk Management ===
+
+1. Add Project
+2. Add Risk to Project
+3. Show Project Risks & Composite Risk
+4. Show Aggregated Risk Across All Projects
+5. Exit
+Choose option: 1
+Enter Project Name: Website Upgrade
+✅ Project added successfully!
+
+Choose option: 2
+Select Project:
+1. Website Upgrade
+1
+Enter Risk Name: Server Crash
+Enter Probability (0.0 - 1.0): 0.2
+Enter Impact (₹): 100000
+✅ Risk added successfully to project!
+
+Choose option: 3
+
+--- Risks for Project: Website Upgrade ---
+  Risk Name   : Server Crash
+  Probability : 0.2
+  Impact      : 100000.0
+  Risk Score  : 20000.0
+  Priority    : Low
+--------------------------
+Composite Risk Score: ₹20000.0
+
+Choose option: 4
+
+=== Aggregated Risk Across All Projects ===
+Total Aggregated Risk Score: ₹20000.0

@@ -1,0 +1,69 @@
+RuleReference kya hai kya karta hai?
+--🔹 RuleReference kya hai?
+👉 RuleReference = kisi existing Rule ka reference (pointer) hota hai.
+
+📌 Simple line:-
+RuleReference ka kaam hai ek rule ko doosri jagah use karna
+
+🧠 Easy Samajh:-
+👉 Tumne ek Rule banaya:-
+Naam: "MyTaskRule"
+👉 Ab us rule ko kisi Task / Workflow / Config me use karna hai
+👉 Tab tum likhte ho:-
+RuleReference → "MyTaskRule"
+
+💻 Example (XML Style - Real SailPoint):-
+<TaskDefinition name="My Task">
+    <Attributes>
+        <Map>
+            <entry key="taskRule">
+                <value>
+                    <RuleReference class="sailpoint.object.Rule" name="MyTaskRule"/>
+                </value>
+            </entry>
+        </Map>
+    </Attributes>
+</TaskDefinition>
+
+🔥 Real Meaning:-
+Ye khud code nahi hota
+Ye sirf rule ko call / attach karta hai.
+
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointFactory;
+import sailpoint.object.Rule;
+import sailpoint.tools.GeneralException;
+import java.util.HashMap;
+import java.util.Map;
+
+public class CallRuleExample {
+
+    public static void main(String[] args) throws GeneralException {
+
+        SailPointContext context = SailPointFactory.getCurrentContext();
+
+        try {
+
+            // 🔹 1. Rule fetch karo by name
+            Rule rule = context.getObjectByName(Rule.class, "MyCustomRule");
+
+            // 🔹 2. Arguments prepare karo
+            Map<String, Object> arguments = new HashMap<String, Object>();
+            arguments.put("name", "Kishan");
+            arguments.put("age", 25);
+
+            // 🔹 3. Rule run karo
+            Object result = context.runRule(rule, arguments);
+
+            // 🔹 4. Output print karo
+            System.out.println("Rule Output: " + result);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+🔥 Output:-
+Name: Kishan
+Age: 25
+Rule Output: Hello Kishan, Age: 25

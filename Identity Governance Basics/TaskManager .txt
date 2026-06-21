@@ -1,0 +1,666 @@
+🔹 TaskManager kya hai?
+TaskManager SailPoint ka ek core component hai jo tasks ko manage aur execute karta hai.
+
+👉 Matlab:-
+Task ko start karna
+Schedule karna
+Monitor karna
+Stop / cancel karna
+Ye sab kaam TaskManager karta hai.
+
+🔹TaskManager ke andar kya hota hai?
+1️⃣ Task launch karne ke methods
+run(TaskDefinition taskDef)
+runSync(TaskDefinition taskDef)
+runWithResult(TaskDefinition taskDef)
+👉 Ye methods task ko execute karte hain
+
+2️⃣ Schedule related methods:-
+schedule(TaskDefinition taskDef)
+reschedule(Task task)
+deleteSchedule(Task task)
+👉 Ye decide karta hai task kab chalega
+
+3️⃣ Task control methods:-
+cancel(Task task)
+terminate(Task task)
+👉 Running task ko rokne ke liye
+
+4️⃣ Task status / monitoring
+getTaskResult(Task task)
+getRunningTasks()
+getTaskById(String id)
+👉 Task ka status check karne ke liye.
+
+5️⃣ Task history / result:-
+getTaskResults()
+getLastResult(TaskDefinition taskDef)
+👉 Pichle execution ka result dekhne ke liye
+
+6️⃣ Internal components (andar kya hota hai conceptually):-
+TaskManager internally use karta hai:-
+TaskDefinition → Task ka config
+Task → Running instance
+TaskResult → Output/result
+TaskExecutor / Handler → Actual logic execute karta hai
+Scheduler (Quartz) → Timing manage karta hai.
+---------------------------------------------------------------------------------------------------------------------------------------
+🔹 1️⃣ run(TaskDefinition taskDef):-
+👉 Ye method task ko asynchronously (background me) run karta hai
+
+✔️ Kya hota hai:-
+Task start ho jata hai
+Turant control wapas mil jata hai (wait nahi karta)
+Background me task chalta rehta hai
+✔️ Example:-
+taskManager.run(taskDef);
+System.out.println("Task started...");
+👉 Output:-
+Task started...
+
+(chahe task abhi complete na hua ho)
+
+✔️ Use case:-
+Long running tasks
+Report generation
+Identity refresh
+---------------------------
+🔹 2️⃣ runSync(TaskDefinition taskDef):-
+👉 Ye method task ko synchronously (wait karke) run karta hai
+
+✔️ Kya hota hai:-
+Task start hota hai
+Jab tak complete nahi hota → program wait karta hai
+Complete hone ke baad hi aage badhta hai
+✔️ Example:-
+taskManager.runSync(taskDef);
+System.out.println("Task completed...");
+
+👉 Output:-
+(Task run hoga pehle)
+Task completed...
+✔️ Use case:-
+Jab result turant chahiye
+Testing / debugging
+Chhote tasks
+-------------------------------
+🔹 3️⃣ runWithResult(TaskDefinition taskDef):-
+👉 Ye method task run karta hai aur result bhi return karta hai
+
+✔️ Kya hota hai:-
+Task run hota hai
+Complete hone ke baad TaskResult return hota hai
+✔️ Example:-
+TaskResult result = taskManager.runWithResult(taskDef);
+System.out.println(result.getStatus());
+
+👉 Output:-
+SUCCESS / FAILED
+✔️ Use case:-
+Jab output check karna ho
+Error handling karna ho
+Custom logic me use
+--------------------------------
+🔹 1️⃣ schedule(TaskDefinition taskDef):-
+👉 Ye method task ko future me run hone ke liye schedule karta hai
+
+✔️ Kya hota hai:-
+Task abhi run nahi hota
+System me schedule ho jata hai
+Defined time pe automatically run hota hai
+✔️ Example:-
+taskManager.schedule(taskDef);
+
+👉 Matlab:-
+"Is task ko baad me chalana hai (cron/time ke hisaab se)"
+
+✔️ Real Use:-
+Daily identity refresh
+Weekly reports
+Night batch jobs
+----------------------------------
+🔹 2️⃣ reschedule(Task task):-
+👉 Ye method already scheduled task ka timing change karta hai
+
+✔️ Kya hota hai:-
+Existing schedule update hota hai
+Naya time set ho jata hai
+✔️ Example:-
+taskManager.reschedule(task);
+
+👉 Matlab:-
+"Is task ka time change kar do"
+
+✔️ Real Use:-
+Job ko delay karna
+Frequency change karna
+Emergency me timing update
+-----------------------------------
+🔹 3️⃣ deleteSchedule(Task task):-
+👉 Ye method scheduled task ko remove (cancel schedule) karta hai
+
+✔️ Kya hota hai:-
+Task future me run nahi hoga
+Schedule delete ho jata hai
+✔️ Example:-
+taskManager.deleteSchedule(task);
+
+👉 Matlab:-
+"Is task ko future me mat chalana"
+
+✔️ Real Use:-
+Job band karna
+Unnecessary schedule remove karna
+-------------------------------------
+🔹 1️⃣ cancel(Task task):-
+👉 Ye method task ko gracefully stop karta hai
+
+✔️ Kya hota hai:-
+Task ko signal diya jata hai → “stop ho jao”
+Task khud safe tarike se band hota hai
+Data corruption nahi hota
+✔️ Use case:-
+Jab task long chal raha ho
+User manually stop kare
+✔️ Simple samajh:-
+“Bhai araam se band ho ja” 😄
+---------------------------------------
+🔹 2️⃣ terminate(Task task):-
+👉 Ye method task ko forcefully band karta hai (hard stop)
+
+✔️ Kya hota hai:-
+Task ko turant kill kar diya jata hai
+Safe shutdown ka wait nahi karta
+Risk ho sakta hai (incomplete work)
+✔️ Use case:-
+Task hang ho gaya
+System slow ho raha hai
+✔️ Simple samajh:-
+“Abhi ke abhi band ho ja warna uda dunga 💀”
+----------------------------------------------
+🔹 3️⃣ getTaskResult(Task task):-
+👉 Ye method kisi aek task ka TaskResult object deta hai.
+
+✔️ Return:-
+TaskResult object
+✔️ Kya milta hai:-
+Status (SUCCESS / FAILED)
+Error count
+Logs / messages
+✔️ Example:-
+TaskResult result = taskManager.getTaskResult(task);
+System.out.println(result.getStatus());
+---------------------------------------------
+🔹 4️⃣ getRunningTasks():-
+👉 Ye method currently chal rahe sab tasks ki list deta hai
+
+✔️ Return:-
+List<Task>
+✔️ Use:-
+Monitoring
+Admin dashboard
+✔️ Example:-
+List<Task> running = taskManager.getRunningTasks();
+-------------------------------------------------------
+🔹 5️⃣ getTaskById(String id):-
+👉 Ye method specific task ko ID se find karta hai
+
+✔️ Return:-
+Task object
+✔️ Example:-
+Task task = taskManager.getTaskById("12345");
+
+👉 Matlab:-
+“Is ID wala task la ke de”
+--------------------------------------------------------
+🔹 1️⃣ getTaskResults():-
+👉 Ye method sab tasks ke results ki list deta hai
+
+✔️ Return:-
+List<TaskResult>
+✔️ Kya milta hai:-
+Har executed task ka result
+Status (SUCCESS / FAILED)
+Execution time
+Error / warning count
+✔️ Example:-
+List<TaskResult> results = taskManager.getTaskResults();
+
+for(TaskResult r : results){
+    System.out.println(r.getName() + " -> " + r.getStatus());
+}
+✔️ Use case:-
+Admin dashboard
+History check
+Audit / logs
+----------------------------------------------------------------
+🔹 2️⃣ getLastResult(TaskDefinition taskDef):-
+👉 Ye method specific task ka last (latest) result deta hai
+
+✔️ Return:-
+TaskResult
+✔️ Kya milta hai:-
+Last execution ka status
+Last run ka data
+✔️ Example:-
+TaskResult result = taskManager.getLastResult(taskDef);
+System.out.println(result.getStatus());
+✔️ Use case:-
+Check last run successful tha ya nahi
+Conditional logic (retry etc.)
+---------------------------------------------------------------
+🔹 1️⃣ getTasks():-
+👉 Ye method system me available sab tasks ki list deta hai (running ya complete, dono)
+
+✔️ Return:-
+List<Task>
+✔️ Use case:-
+Admin dashboard me sab tasks dikhane ke liye
+History + monitoring
+✔️ Example:-
+List<Task> allTasks = taskManager.getTasks();
+for(Task t : allTasks){
+    System.out.println(t.getName() + " -> " + t.getStatus());
+}
+-----------------------------------------------------------------------
+🔹 2️⃣ getTaskDefinitions():-
+👉 Ye method sab task definitions ko return karta hai
+
+✔️ Kya hai TaskDefinition:-
+Task ka blueprint / configuration
+Name, category, schedule, handler info sab hota hai
+✔️ Return:-
+List<TaskDefinition>
+✔️ Example:-
+List<TaskDefinition> defs = taskManager.getTaskDefinitions();
+for(TaskDefinition d : defs){
+    System.out.println(d.getName() + " -> " + d.getCategory());
+}
+✔️ Use case:-
+UI me dropdown / list dikhana
+Developer check kaam ke liye
+------------------------------------------------------------------------
+🔹 3️⃣ getScheduledTasks():-
+👉 Ye method currently scheduled tasks ki list deta hai
+
+✔️ Return:-
+List<Task>
+✔️ Example:-
+List<Task> scheduled = taskManager.getScheduledTasks();
+for(Task t : scheduled){
+    System.out.println(t.getName() + " -> " + t.getNextRunTime());
+}
+✔️ Use case:-
+Automation monitor karna
+Scheduled jobs ko update ya cancel karna
+---------------------------------------------------------------------------
+🔹 4️⃣ isTaskRunning(Task task):-
+👉 Ye method check karta hai task abhi run ho raha hai ya nahi
+
+✔️ Return:-
+boolean → true / false
+✔️ Example:-
+if(taskManager.isTaskRunning(task)){
+    System.out.println(task.getName() + " is running");
+} else {
+    System.out.println(task.getName() + " is stopped");
+}
+✔️ Use case:-
+Conditional execution
+Avoid duplicate runs
+--------------------------------------------------------------------------------------------------------------------------------------------------
+🔹 Project Structure
+SailPointTaskManagerDemo/
+├── src/
+│   ├── com/sailpoint/demo/
+│   │   ├── model/
+│   │   │   ├── TaskDefinition.java
+│   │   │   ├── Task.java
+│   │   │   └── TaskResult.java
+│   │   ├── executor/
+│   │   │   ├── TaskHandler.java
+│   │   │   └── TaskExecutor.java
+│   │   ├── manager/
+│   │   │   └── TaskManager.java
+│   │   ├── handlers/
+│   │   │   ├── IdentityRefreshHandler.java
+│   │   │   └── ReportGenerationHandler.java
+│   │   └── Main.java
+1️⃣ TaskDefinition.java
+package com.sailpoint.demo.model;
+
+import com.sailpoint.demo.executor.TaskHandler;
+
+public class TaskDefinition {
+
+    private String id;
+    private String name;
+    private String category;
+    private TaskHandler handler;
+
+    public TaskDefinition(String id, String name, String category, TaskHandler handler) {
+        this.id = id;
+        this.name = name;
+        this.category = category;
+        this.handler = handler;
+    }
+
+    public String getId() { return id; }
+    public String getName() { return name; }
+    public String getCategory() { return category; }
+    public TaskHandler getHandler() { return handler; }
+}
+2️⃣ Task.java
+package com.sailpoint.demo.model;
+
+import java.time.LocalDateTime;
+
+public class Task {
+    private TaskDefinition definition;
+    private TaskResult result;
+    private boolean running;
+    private LocalDateTime nextRunTime;
+
+    public Task(TaskDefinition definition) {
+        this.definition = definition;
+    }
+
+    public TaskDefinition getDefinition() { return definition; }
+    public TaskResult getResult() { return result; }
+    public void setResult(TaskResult result) { this.result = result; }
+    public boolean isRunning() { return running; }
+    public void setRunning(boolean running) { this.running = running; }
+    public LocalDateTime getNextRunTime() { return nextRunTime; }
+    public void setNextRunTime(LocalDateTime nextRunTime) { this.nextRunTime = nextRunTime; }
+}
+3️⃣ TaskResult.java
+package com.sailpoint.demo.model;
+
+public class TaskResult {
+    private String status; // SUCCESS / FAILED
+    private String message;
+
+    public TaskResult(String status, String message) {
+        this.status = status;
+        this.message = message;
+    }
+
+    public String getStatus() { return status; }
+    public String getMessage() { return message; }
+}
+4️⃣ TaskHandler.java
+package com.sailpoint.demo.executor;
+
+import com.sailpoint.api.SailPointContext;
+import com.sailpoint.demo.model.TaskResult;
+
+public interface TaskHandler {
+    TaskResult execute(SailPointContext context);
+}
+5️⃣ TaskExecutor.java
+package com.sailpoint.demo.executor;
+
+import com.sailpoint.api.SailPointContext;
+import com.sailpoint.demo.model.Task;
+import com.sailpoint.demo.model.TaskResult;
+
+public class TaskExecutor {
+
+    private SailPointContext context;
+
+    public TaskExecutor(SailPointContext context) {
+        this.context = context;
+    }
+
+    public TaskResult run(Task task) {
+        try {
+            task.setRunning(true);
+            TaskResult result = task.getDefinition().getHandler().execute(context);
+            task.setResult(result);
+            return result;
+        } finally {
+            task.setRunning(false);
+        }
+    }
+}
+6️⃣ IdentityRefreshHandler.java – No lambda, classic style
+package com.sailpoint.demo.handlers;
+
+import com.sailpoint.api.SailPointContext;
+import com.sailpoint.demo.executor.TaskHandler;
+import com.sailpoint.demo.model.TaskResult;
+
+public class IdentityRefreshHandler implements TaskHandler {
+
+    public IdentityRefreshHandler() { }
+
+    @Override
+    public TaskResult execute(SailPointContext context) {
+        // Simulate work
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) { }
+        return new TaskResult("SUCCESS", "Identity refreshed successfully");
+    }
+}
+7️⃣ ReportGenerationHandler.java
+package com.sailpoint.demo.handlers;
+
+import com.sailpoint.api.SailPointContext;
+import com.sailpoint.demo.executor.TaskHandler;
+import com.sailpoint.demo.model.TaskResult;
+
+public class ReportGenerationHandler implements TaskHandler {
+
+    public ReportGenerationHandler() { }
+
+    @Override
+    public TaskResult execute(SailPointContext context) {
+        return new TaskResult("SUCCESS", "Weekly report generated");
+    }
+}
+8️⃣ TaskManager.java – All methods
+package com.sailpoint.demo.manager;
+
+import com.sailpoint.api.SailPointContext;
+import com.sailpoint.demo.model.Task;
+import com.sailpoint.demo.model.TaskDefinition;
+import com.sailpoint.demo.model.TaskResult;
+import com.sailpoint.demo.executor.TaskExecutor;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class TaskManager {
+
+    private Map<String, Task> tasks = new HashMap<String, Task>();
+    private TaskExecutor executor;
+
+    public TaskManager(SailPointContext context) {
+        this.executor = new TaskExecutor(context);
+    }
+
+    // ----- Launch Methods -----
+    public void run(TaskDefinition taskDef) {
+        final Task task = new Task(taskDef);
+        tasks.put(taskDef.getId(), task);
+        new Thread() {
+            public void run() {
+                executor.run(task);
+            }
+        }.start();
+    }
+
+    public void runSync(TaskDefinition taskDef) {
+        Task task = new Task(taskDef);
+        tasks.put(taskDef.getId(), task);
+        executor.run(task);
+    }
+
+    public TaskResult runWithResult(TaskDefinition taskDef) {
+        Task task = new Task(taskDef);
+        tasks.put(taskDef.getId(), task);
+        return executor.run(task);
+    }
+
+    // ----- Schedule -----
+    public void schedule(TaskDefinition taskDef, LocalDateTime runTime) {
+        Task task = new Task(taskDef);
+        task.setNextRunTime(runTime);
+        tasks.put(taskDef.getId(), task);
+    }
+
+    public void reschedule(Task task, LocalDateTime newTime) {
+        task.setNextRunTime(newTime);
+    }
+
+    public void deleteSchedule(Task task) {
+        task.setNextRunTime(null);
+    }
+
+    // ----- Task Control -----
+    public void cancel(Task task) {
+        task.setRunning(false);
+        System.out.println(task.getDefinition().getName() + " cancelled gracefully");
+    }
+
+    public void terminate(Task task) {
+        task.setRunning(false);
+        System.out.println(task.getDefinition().getName() + " terminated forcefully 💀");
+    }
+
+    // ----- Monitoring -----
+    public TaskResult getTaskResult(Task task) { return task.getResult(); }
+    public List<Task> getRunningTasks() {
+        List<Task> running = new ArrayList<Task>();
+        for (Task t : tasks.values()) {
+            if (t.isRunning()) running.add(t);
+        }
+        return running;
+    }
+    public Task getTaskById(String id) { return tasks.get(id); }
+
+    // ----- History -----
+    public List<TaskResult> getTaskResults() {
+        List<TaskResult> results = new ArrayList<TaskResult>();
+        for(Task t : tasks.values()) if(t.getResult() != null) results.add(t.getResult());
+        return results;
+    }
+
+    public TaskResult getLastResult(TaskDefinition taskDef) {
+        Task t = tasks.get(taskDef.getId());
+        return t != null ? t.getResult() : null;
+    }
+
+    // ----- Helpers -----
+    public List<Task> getTasks() { return new ArrayList<Task>(tasks.values()); }
+    public List<TaskDefinition> getTaskDefinitions() {
+        List<TaskDefinition> defs = new ArrayList<TaskDefinition>();
+        for(Task t : tasks.values()) defs.add(t.getDefinition());
+        return defs;
+    }
+    public List<Task> getScheduledTasks() {
+        List<Task> scheduled = new ArrayList<Task>();
+        for(Task t : tasks.values()) if(t.getNextRunTime() != null) scheduled.add(t);
+        return scheduled;
+    }
+    public boolean isTaskRunning(Task task) { return task.isRunning(); }
+}
+9️⃣ Main.java – Working demo with SailPointContextFactory
+package com.sailpoint.demo;
+
+import com.sailpoint.api.SailPointContext;
+import com.sailpoint.api.SailPointContextFactory;
+import com.sailpoint.demo.model.TaskDefinition;
+import com.sailpoint.demo.model.Task;
+import com.sailpoint.demo.manager.TaskManager;
+import com.sailpoint.demo.handlers.IdentityRefreshHandler;
+import com.sailpoint.demo.handlers.ReportGenerationHandler;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+public class Main {
+
+    public static void main(String[] args) throws Exception {
+
+        // 🔹 SailPoint Context
+        SailPointContext context = SailPointContextFactory.createContext();
+
+        TaskManager taskManager = new TaskManager(context);
+
+        // 🔹 Task Definitions
+        TaskDefinition identityTask = new TaskDefinition("1", "Identity Refresh", "Daily Job", new IdentityRefreshHandler());
+        TaskDefinition reportTask = new TaskDefinition("2", "Weekly Report", "Weekly Job", new ReportGenerationHandler());
+
+        // 🔹 Run Async
+        taskManager.run(identityTask);
+        System.out.println("Identity task started...");
+
+        // 🔹 Run Sync
+        taskManager.runSync(reportTask);
+        System.out.println("Report task completed synchronously");
+
+        // 🔹 Schedule
+        taskManager.schedule(identityTask, LocalDateTime.now().plusMinutes(5));
+        System.out.println("Scheduled Identity task for later: " + identityTask.getName());
+
+        // 🔹 Monitor
+        List<Task> running = taskManager.getRunningTasks();
+        System.out.println("Running tasks count: " + running.size());
+
+        Task t = taskManager.getTaskById("1");
+        Thread.sleep(3000); // Wait for async task to complete
+        System.out.println("Identity Task Status: " + taskManager.getTaskResult(t).getStatus());
+    }
+}
+🔹 Expected Output
+Identity task started...
+Report task completed synchronously
+Scheduled Identity task for later: Identity Refresh
+Running tasks count: 1
+Identity Task Status: SUCCESS
+///////////////*
+()finally block:-try {return result;} finally { task.setRunning(false);:-
+Java me finally block hamesha execute hota hai, chahe try me exception aaye ya return statement chale.
+Iska matlab hai ki return result ke baad bhi task.setRunning(false) execute hoga.
+
+()1️⃣ SailPointContextFactory.createContext():-
+Ye SailPoint ka standard method hai jo SailPointContext banata hai.
+SailPointContext = main object jo IAM system me kaam karta hai, jaise:
+Identities read/write karna
+Account provisioning
+Rules aur tasks execute karna
+Audit / logging access
+Kya hota hai:
+Ye internally connection establish karta hai system ke backend ke saath (database, config, etc.)
+Tumhare handlers ko ye context pass kiya jata hai taaki wo system data access kar sake.
+
+()3️⃣ final Task task:-
+Jab hum Thread me task run karte hain,toh Java me inner class(Thread ke andar) me task variable ko final ya effectively final declare karna padta hai.
+Kya hota hai:-
+final ensures Thread ke andar variable change na ho
+Thread safe banata hai
+final Task task = new Task(taskDef);
+Matlab ye task instance ab thread ke andar safely use ho sakta hai.
+
+()4️⃣ new Thread() { public void run() { executor.run(task); } }.start();:-
+Ye async execution ka standard Java way hai (lambdas nahi use kiye).
+Kya hota hai:-
+Nayi thread create hoti hai
+Thread me executor.run(task) call hota hai → Task background me run hota hai
+.start() se thread chalna start hota hai
+Async ka matlab:-
+Main program wait nahi karta
+Turant aage execute hota hai
+
+()6️⃣ task.getDefinition().getHandler().execute(context);
+Ye handler ka core logic call hai
+Kya hota hai:
+TaskDefinition me jo handler assign hai, uska execute method call hota hai
+SailPointContext pass hota hai → handler IAM system me kaam kar sakta hai
+Result return hota hai → TaskResult
+*//////////////

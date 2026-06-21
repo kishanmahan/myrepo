@@ -1,0 +1,34 @@
+1️⃣ IdentityAttribute kya hai?
+👉 IdentityAttribute = user (Identity) ka ek single attribute / property
+Matlab:-
+Identity = pura user object
+IdentityAttribute = uske andar ka ek field
+✅ Example:-
+Agar ek user hai:-
+Name: Rahul
+Email: rahul@gmail.com
+Department: IT
+Manager: Amit
+➡ Ye sab alag-alag IdentityAttribute hain.
+
+🔹 2️⃣ Ye kya karta hai?
+👉 Ye user ke attributes ko store aur manage karta hai
+user ka data hold karta hai
+workflows aur policies me use hota hai
+provisioning aur access decisions me use hota hai.
+
+🔹 3️⃣ Kya ye DB me save hota hai?
+✅ Haan bhai, DB me store hota hai
+Kaise?
+Identity object DB me save hota hai
+Uske andar attributes bhi store hote hain.
+
+🔹 4️⃣ IdentityAttribute ke andar kya hota hai?
+👉 Basically key-value pair + metadata:-
+Field	             Meaning
+name:-------Attribute ka naam (email, department)
+value:------Uska value (rahul@gmail.com, IT)
+type:-------String / Boolean / Number
+readOnly:---Change kar sakte ho ya nahi
+required:---Mandatory hai ya nahi
+

@@ -1,0 +1,97 @@
+schema.validate():-
+import sailpoint.object.Schema;
+import sailpoint.object.Attribute;
+import sailpoint.tools.GeneralException;
+
+import java.util.List;
+
+public class SchemaValidateFullExample {
+
+    public static void main(String[] args) {
+
+        try {
+
+            // 1️⃣ Create Schema
+            Schema schema = new Schema();
+            schema.setName("EmployeeAccountSchema");
+            schema.setDisplayName("Employee Account Schema");
+
+            // 2️⃣ Create Attributes
+            Attribute usernameAttr = new Attribute("username", "String", true);
+            Attribute passwordAttr = new Attribute("password", "String", true);
+            Attribute emailAttr = new Attribute("email", "String", false);
+            Attribute roleAttr = new Attribute("role", "String", false);
+            Attribute departmentAttr = new Attribute("department", "String", false);
+            Attribute statusAttr = new Attribute("status", "Boolean", false);
+
+            // 3️⃣ Add Attributes to Schema
+            schema.addAttribute(usernameAttr);
+            schema.addAttribute(passwordAttr);
+            schema.addAttribute(emailAttr);
+            schema.addAttribute(roleAttr);
+            schema.addAttribute(departmentAttr);
+            schema.addAttribute(statusAttr);
+
+            // 4️⃣ Print Schema Info
+            System.out.println("Schema Name: " + schema.getName());
+            System.out.println("Schema Display Name: " + schema.getDisplayName());
+
+            System.out.println("\nAttributes in Schema:");
+
+            List<Attribute> attributes = schema.getAttributes();
+
+            for (Attribute attr : attributes) {
+
+                System.out.println("Attribute Name: " + attr.getName());
+                System.out.println("Attribute Type: " + attr.getType());
+                System.out.println("Required: " + attr.isRequired());
+                System.out.println("-----------------------");
+
+            }
+
+            // 5️⃣ Validate Schema
+            schema.validate();
+
+            System.out.println("\n✅ Schema validation successful");
+
+        }
+        catch (GeneralException e) {
+
+            System.out.println("\n❌ Schema validation failed: " + e.getMessage());
+
+        }
+
+    }
+}
+Output Example
+Schema Name: EmployeeAccountSchema
+Schema Display Name: Employee Account Schema
+
+Attributes in Schema:
+
+Attribute Name: username
+Attribute Type: String
+Required: true
+-----------------------
+Attribute Name: password
+Attribute Type: String
+Required: true
+-----------------------
+Attribute Name: email
+Attribute Type: String
+Required: false
+-----------------------
+Attribute Name: role
+Attribute Type: String
+Required: false
+-----------------------
+Attribute Name: department
+Attribute Type: String
+Required: false
+-----------------------
+Attribute Name: status
+Attribute Type: Boolean
+Required: false
+-----------------------
+
+✅ Schema validation successful

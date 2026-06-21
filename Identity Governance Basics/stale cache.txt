@@ -1,0 +1,5 @@
+Stale Cache → Jab:-
+Cache me data purana ho jaye
+Original source (database, API, etc.) me update ho gaya ho
+Lekin cache me woh update reflect nahi hua
+→ Ab cache stale ho gaya.

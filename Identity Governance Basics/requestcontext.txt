@@ -1,0 +1,275 @@
+🔹 6️⃣ Request Context (🔥 real data):-
+👉 Request Context = wo data jo batata hai ki request kis liye, kis pe, kisne aur kaise ki hai.
+-------------------------------------------------------------
+6(1)Target Identity = wo user (identity) jiske upar change apply hoga
+
+6.2️⃣ Requested By (kisne request kiya)
+👉 Request kisne initiate ki
+Requested By: manager1 / self / admin
+
+6.3️⃣ Request Type
+👉 Kis type ka request hai
+ACCESS_REQUEST
+ROLE_REQUEST
+ACCOUNT_REQUEST
+PASSWORD_RESET
+
+6.4️⃣ Target Object / Resource
+👉 Kis object pe action ho raha hai
+Role: IT Admin
+Application: Salesforce
+Entitlement: Read Access
+
+6.5️⃣ Action Details
+👉 Kya change hona hai
+ADD
+REMOVE
+UPDATE
+ENABLE
+DISABLE
+
+6.6️⃣ Application / System Context
+👉 Kis system me change ho raha hai
+Application: SAP / Salesforce / AD
+
+6.7️⃣ Business Justification (🔥 important)
+👉 Kyun request kiya gaya
+"User ko project ke liye access chahiye"
+👉 Audit me bahut important hota hai
+
+6.8️⃣ Priority / Urgency
+👉 Kitna urgent hai
+LOW / MEDIUM / HIGH
+
+6.9️⃣ Time / Schedule Info
+👉 Kab apply hoga
+Immediate
+Scheduled (future date)
+
+6.🔟 Additional Attributes (Custom data):
+👉 Extra info jo developer add kare
+projectName: "BankingApp"
+location: "India"
+--------------------------------------------------------
+()Purpose / Kaam:-
+
+()Execution Environment:-
+Ye batata hai ki request kaunse point par hai, kaunsa work item execute ho raha hai,
+aur workflow case me request ka status kya hai.
+
+()Attributes & Parameters:-
+Request ke key-value attributes aur approval items hold karta hai.
+
+()Workflow Integration:-
+WorkflowCase aur WorkItem ko track karta hai, taaki system samajh sake ki kaun sa step complete hua, kaun sa pending hai.
+
+()Comments & Notifications:-
+Approver ke comments aur notification templates manage karta hai.
+
+()Validation & Approval:-
+Runtime me request ke validation rules aur approval mode check karne me use hota hai.
+----------------------------------------------------------------------------------------
+()Kya RequestContext DB me store hota hai?
+Answer:-
+Nahi, RequestContext khud DB me directly store nahi hota.
+Ye ek runtime object hai jo request ke execution ke dauran memory me exist karta hai.
+
+()Detail Explanation:-
+Runtime vs Persistent Data
+RequestContext sirf workflow execution ke liye runtime me hota hai.
+Isme wo sab info hoti hai jo current request ke execution ke liye zaruri hai:-
+Current work item
+Workflow case
+Approval items
+Attributes
+Comments, notification template, state
+Persistent Storage
+Jo data permanent chahiye (jaise Request, ApprovalItem, WorkflowCase) wo database me save hota hai.
+Matlab agar system crash ho jaye, ye runtime RequestContext khatam ho jayega,
+lekin DB me stored Request aur approvalitems aur workflowcase safe rahenge.
+
+Flow Example:-
+Admin ya user request submit karta hai → Request object DB me save hota hai.
+Workflow engine request execute karta hai → RequestContext runtime me create hota hai.
+Approval, validation, comments processing → RequestContext ke through hota hai.
+Execution complete → changes (approval status, comments, workflow state) DB me persist hoti hain.
+RequestContext destroy ho jata hai (memory se clear).
+--------------------------------------------------------
+🔹 RequestContext Methods:-
+-----------------------------------
+getRequest()
+setRequest(Request request)
+getRequestDefinition()
+setRequestDefinition(RequestDefinition requestDefinition)
+getAttributes()
+setAttributes(Attributes attributes)
+getAttribute(String name)
+setAttribute(String name, Object value)
+getApprovalItems()
+setApprovalItems(List<ApprovalItem> items)
+addApprovalItem(ApprovalItem item)
+removeApprovalItem(ApprovalItem item)
+getValidationRules()
+setValidationRules(List<ValidationRule> rules)
+addValidationRule(ValidationRule rule)
+removeValidationRule(ValidationRule rule)
+getCurrentWorkItem()
+setCurrentWorkItem(WorkItem workItem)
+getWorkflowCase()
+setWorkflowCase(WorkflowCase workflowCase)
+getState()
+setState(String state)
+getOwner()
+setOwner(String owner)
+getCreated()
+setCreated(Date date)
+getCompleted()
+setCompleted(Date date)
+getComments()
+addComment(String comment)
+getNotificationTemplate()
+setNotificationTemplate(String template)
+getApprovalMode()
+setApprovalMode(String mode)
+clone()
+toMap()
+fromMap(Map map)
+toXml()
+fromXml(String xml)
+-----------------------------------------------------------
+1️⃣ getRequest() / setRequest(Request request):-
+Purpose:-
+getRequest() → Runtime me request object fetch karta hai.
+setRequest(Request request) → RequestContext me specific Request object assign karta hai.
+
+Example:-
+Request req = new Request();
+req.setId("REQ123");
+RequestContext context = new RequestContext();
+context.setRequest(req);
+System.out.println(context.getRequest().getId());
+Output:-
+REQ123
+--------------------------------------------------------
+2️⃣ getRequestDefinition() / setRequestDefinition(RequestDefinition requestDefinition):-
+Purpose:-
+getRequestDefinition() → Request ke blueprint/template ko fetch karta hai.
+setRequestDefinition() → Runtime context me specific template assign karta hai.
+
+Example:-
+RequestDefinition def = new RequestDefinition();
+def.setName("AccessRequest");
+
+RequestContext context = new RequestContext();
+context.setRequestDefinition(def);
+
+System.out.println(context.getRequestDefinition().getName());
+Output:-
+AccessRequest
+------------------------------------------------------------------
+3️⃣ Attributes Methods:-
+()getAttributes() / setAttributes(Attributes attributes):-
+Poore attributes object ko fetch ya set karte hain.
+()getAttribute(String name) / setAttribute(String name, Object value):-
+Single key-value attribute ko fetch ya set karte hain.
+
+Example:-
+RequestContext context = new RequestContext();
+context.setAttribute("priority", "High");
+System.out.println(context.getAttribute("priority"));
+Output:-
+High
+-----------------------------------------------------------------------
+4️⃣ Approval Items Methods:-
+getApprovalItems() → Approval items list fetch
+setApprovalItems(List<ApprovalItem> items) → Poore list set
+addApprovalItem(ApprovalItem item) → Single approval add
+removeApprovalItem(ApprovalItem item) → Single approval remove
+
+Example:-
+RequestContext context = new RequestContext();
+ApprovalItem a1 = new ApprovalItem("Manager1");
+context.addApprovalItem(a1);
+
+System.out.println(context.getApprovalItems());
+Output:-
+[ApprovalItem{name=Manager1}]
+------------------------------------------------------------------------
+5️⃣ Validation Rules Methods:-
+getValidationRules() → List of validation rules fetch
+setValidationRules(List<ValidationRule> rules) → Poore list set
+addValidationRule(ValidationRule rule) → Single rule add
+removeValidationRule(ValidationRule rule) → Single rule remove
+
+Example:-
+RequestContext context = new RequestContext();
+ValidationRule rule = new ValidationRule("Must have manager approval");
+context.addValidationRule(rule);
+System.out.println(context.getValidationRules());
+Output:-
+[ValidationRule{name='Must have manager approval'}]
+-----------------------------------------------------------------------------
+6️⃣ WorkItem & WorkflowCase Methods:-
+getCurrentWorkItem() / setCurrentWorkItem(WorkItem workItem) → Current workflow step track karte hain
+getWorkflowCase() / setWorkflowCase(WorkflowCase workflowCase) → Poore workflow case ko track karte hain
+
+Example:-
+WorkItem wi = new WorkItem();
+wi.setId("WI123");
+
+RequestContext context = new RequestContext();
+context.setCurrentWorkItem(wi);
+System.out.println(context.getCurrentWorkItem().getId());
+-------------------------------------------------------------------------
+7️⃣ State & Owner Methods:-
+--getState() / setState(String state) → Current state of request (Pending, Approved, Rejected)
+Ye method RequestContext me request ka owner set karta hai.
+Owner matlab wo user ya manager jo request ko approve/reject karega.
+Runtime me ye information system ko batati hai ki kaun se approver ke pass current work item hai.
+
+--getOwner() / setOwner(String owner) → Request ka owner jo request ko approve karega(usually approver)
+
+Example:-
+RequestContext context = new RequestContext();
+context.setState("Pending");
+context.setOwner("Manager1");
+System.out.println(context.getState() + " by " + context.getOwner());
+Output:-
+Pending by Manager1
+---------------------------------------------------------------------------------
+8️⃣ Created & Completed Dates:-
+getCreated() / setCreated(Date date) → Request creation time
+getCompleted() / setCompleted(Date date) → Request completion time
+Example:-
+RequestContext context = new RequestContext();
+context.setCreated(new Date());
+System.out.println(context.getCreated());
+Output:-
+Thu Mar 23 10:45:00 IST 2026
+-------------------------------------------------------------------------
+9️⃣ Comments Methods:-
+getComments() → List of comments fetch
+addComment(String comment) → New comment add
+Example:-
+RequestContext context = new RequestContext();
+context.addComment("Approved by manager");
+System.out.println(context.getComments());
+Output:-
+[Approved by manager]
+-----------------------------------------------------------------
+🔟 Notification & Approval Mode:-
+getNotificationTemplate() / setNotificationTemplate(String template) → Notification template manage
+getApprovalMode() / setApprovalMode(String mode) → Approval mode (SEQUENTIAL / PARALLEL / NONE)
+----------------------------------------------------------------------
+1️⃣1️⃣ Clone / Map / XML Methods:-
+clone() → RequestContext ka deep copy
+toMap() / fromMap(Map map) → Runtime object ko Map me convert / restore
+toXml() / fromXml(String xml) → RequestContext ko XML me convert / restore
+Example (Map):-
+RequestContext context = new RequestContext();
+context.setState("Pending");
+Map<String,Object> map = context.toMap();
+System.out.println(map);
+Output:-
+{state=Pending, attributes={}, approvalItems=[], comments=[]}
+---------------------------------------------------------------------------

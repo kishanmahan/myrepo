@@ -1,0 +1,64 @@
+()Wrapper call aur Core engine call me antar kya?
+--1️⃣ Core Engine Call
+Definition:-
+Core engine call matlab directly SailPoint ka backend engine use karna.
+Ye wo logic hai jo system ke andar kaam karta hai, jaise workflow run karna, task execute karna, identity create/update karna.
+
+Characteristics:-
+()Direct execution: Ye directly engine ke methods ko call karta hai.
+()Low-level operations: Database operations, transactions, state changes sab directly engine handle karta hai.
+()No abstraction: Developer ko khud hi input validation, error handling aur logging handle karna padta hai.
+()Advanced users ke liye: Mainly internal modules aur custom code me use hota hai.
+()Powerful but risky: Agar galat input de do to exception ya system crash ho sakta hai.
+
+Example (Workflow launch using core engine):-
+// Core engine call example
+SailPointContext context = new SailPointContext();
+Workflow workflow = workflowService.getWorkflow("UserOnboarding");
+Attributes args = new Attributes();
+args.put("identityName", "jokerboy");
+
+WorkflowCase wfCase = workflowService.launchWorkflow(workflow, args);
+// Direct engine call, returns WorkflowCase
+
+Yahan kya ho raha hai:-
+workflowService.getWorkflow() = Core engine se workflow definition fetch kiya
+launchWorkflow() = Directly engine ke andar workflow execute kiya
+Developer ko khud ensure karna hoga ki args valid ho aur exceptions handle ho.
+------------------------------------------------------------------------------------------------
+2️⃣ Wrapper Call:-
+Definition:-
+Wrapper call ek high-level interface hai jo core engine calls ke upar banta hai. Matlab ye core engine ko internally call karta hai,
+lekin extra safety aur convenience provide karta hai.
+
+Characteristics:-
+()Abstraction layer: Complex engine calls simple interface ke through accessible hote hai.
+()Built-in validation: Arguments check ho jate hai, errors handle ho jate hai.
+()Logging and notifications: Engine call ke sath extra functionality include hoti hai.
+()Safe and easy: Mostly UI, API, aur integration modules me use hota hai.
+()Less control than core engine: Agar deep customization chahiye, to wrapper limited ho sakta hai.
+
+Example (Workflow launch using wrapper):-
+
+// Wrapper call example
+WorkflowHelper workflowHelper = new WorkflowHelper(context);
+Map<String, Object> args = new HashMap<>();
+args.put("identityName", "jokerboy");
+
+// Wrapper internally core engine call karta hai
+WorkflowCase wfCase = workflowHelper.launch("UserOnboarding", args);
+
+Yahan kya ho raha hai:-
+workflowHelper.launch() = ek wrapper method
+Internally ye workflowService.launchWorkflow() (core engine) ko call karta hai,
+Wrapper ne argument validation, logging, aur post-processing handle kar diya,
+Developer ko sirf workflow name aur arguments provide karne hote hai.
+-----------------------------------------------------------------------------------------------------------------
+()Wrapper vs Core:-
+Wrapper call (custom project)
+wfService.resumeWorkflow(String workflowCaseId);
+wfService.resumeWorkflow(WorkflowCase workflowCase);
+
+()Core engine call:-
+wfService.resume(WorkflowCase workflowCase);
+wfService.resume(String workflowCaseId); // internally fetch + resume

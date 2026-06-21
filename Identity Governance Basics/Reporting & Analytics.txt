@@ -1,0 +1,167 @@
+🔍 9️⃣ Reporting & Analytics:-
+1️⃣ Reporting kya hota hai?
+Reporting = System data ka structured report banana.
+Matlab system se information nikal ke table / summary format me dikhana.
+Example Report:-
+User        Role           Status
+----------------------------------
+Rahul       Admin          Active
+Amit        Employee       Active
+Neha        HR             Disabled
+Isko Report bolte hain.
+
+2️⃣ Analytics kya hota hai?
+Analytics = Data ko analyse karke insights nikalna.
+Matlab sirf data dikhana nahi, balki pattern aur risk detect karna.
+Example:-
+System analyse kare:-
+10 users ke paas Admin access hai
+3 users ke paas high risk access hai
+Ye Analytics hai.
+
+3️⃣ Difference:-
+Reporting	                Analytics
+Data show karta hai-----Data analyse karta hai
+Tables / reports--------Patterns / insights
+Simple summary----------Risk detection
+
+4️⃣ IAM System Example:-
+()Reporting:-
+User Access Report
+Rahul → DatabaseAdmin
+Amit → FinanceAccess
+
+()Analytics:-
+High Risk Users
+Rahul → Admin + DatabaseDelete
+
+5️⃣ Reporting & Analytics ka use:-
+✔ Compliance report
+✔ Access review report
+✔ Risk analysis
+✔ Audit investigation
+
+1️⃣ Risk & Violation Reporting Project
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.QueryOptions;
+import sailpoint.object.Filter;
+import sailpoint.object.AuditEvent;
+import sailpoint.tools.GeneralException;
+
+import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.List;
+
+public class RiskViolationReportingService {
+
+    public void runReport(SailPointContext context) throws GeneralException {
+
+        QueryOptions qo = new QueryOptions();
+
+        Iterator<Identity> identities = context.search(Identity.class, qo);
+
+        List<String> highRiskUsers = new ArrayList<String>();
+        int violationCount = 0;
+
+        System.out.println("===== RISK & VIOLATION REPORT =====");
+
+        while (identities.hasNext()) {
+
+            Identity id = identities.next();
+
+            String userName = id.getName();
+            String roles = String.valueOf(id.getAssignedRoles());
+
+            int riskScore = 0;
+            boolean violation = false;
+
+            // Sensitive Access Risk
+            if (roles.contains("DatabaseAdmin")) {
+                riskScore += 40;
+            }
+
+            // High Privilege Risk
+            if (roles.contains("Admin")) {
+                riskScore += 30;
+            }
+
+            // Conflict Roles
+            if (roles.contains("Finance") && roles.contains("Audit")) {
+                riskScore += 50;
+                violation = true;
+            }
+
+            System.out.println("User : " + userName);
+            System.out.println("Roles : " + roles);
+            System.out.println("Risk Score : " + riskScore);
+
+            if (violation) {
+
+                violationCount++;
+
+                System.out.println("Violation : SoD Conflict Detected");
+
+                // Save Audit Event
+                AuditEvent event = new AuditEvent();
+                event.setAction("PolicyViolation");
+                event.setTarget(userName);
+                event.setString1("Finance + Audit Conflict");
+
+                context.saveObject(event);
+            }
+
+            if (riskScore >= 60) {
+                highRiskUsers.add(userName);
+            }
+
+            System.out.println("-----------------------------");
+        }
+
+        // Analytics Section
+        System.out.println("\n===== ANALYTICS =====");
+
+        System.out.println("High Risk Users : " + highRiskUsers.size());
+        System.out.println("Total Violations : " + violationCount);
+
+        for (String user : highRiskUsers) {
+
+            System.out.println("High Risk Identity : " + user);
+        }
+
+        context.commitTransaction();
+    }
+}
+2️⃣ Rule / Task jo isko call karega
+import sailpoint.api.SailPointContext;
+
+public Object execute(SailPointContext context) throws Exception {
+
+    RiskViolationReportingService service = new RiskViolationReportingService();
+
+    service.runReport(context);
+
+    return "Risk Report Generated";
+
+}
+
+4️⃣ Example Output:-
+===== RISK & VIOLATION REPORT =====
+
+User : Rahul
+Roles : [Admin, DatabaseAdmin]
+Risk Score : 70
+
+User : Amit
+Roles : [Finance, Audit]
+Risk Score : 50
+Violation : SoD Conflict Detected
+
+-----------------------------
+
+===== ANALYTICS =====
+
+High Risk Users : 1
+Total Violations : 1
+
+High Risk Identity : Rahul

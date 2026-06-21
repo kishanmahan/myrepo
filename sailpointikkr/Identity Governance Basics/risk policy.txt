@@ -1,0 +1,97 @@
+1️⃣ Risk Policy क्या होती है
+Risk Policy ऐसी security policy होती है जो user के risk score के आधार पर access allow या block करती है।
+मतलब:-
+👉 हर user या access का risk score calculate होता है।
+अगर:-
+Risk Score > Threshold
+➡ Policy Violation
+
+2️⃣ Enterprise Example:-
+Company policy:-
+Risk Score > 70 → Access Block
+Risk Score <= 70 → Access Allowed
+
+3️⃣ Project Structure
+risk-policy-project
+│
+├── Identity.java
+├── RiskPolicyEngine.java
+└── RiskPolicyMain.java
+4️⃣ Identity Class
+public class Identity {
+
+    private String name;
+    private String role;
+    private int riskScore;
+
+    public Identity(String name, String role, int riskScore) {
+        this.name = name;
+        this.role = role;
+        this.riskScore = riskScore;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public int getRiskScore() {
+        return riskScore;
+    }
+}
+5️⃣ Risk Policy Engine
+public class RiskPolicyEngine {
+
+    private static final int RISK_THRESHOLD = 70;
+
+    public static void evaluateRisk(Identity identity) {
+
+        int risk = identity.getRiskScore();
+
+        if (risk > RISK_THRESHOLD) {
+
+            System.out.println("RISK POLICY VIOLATION");
+            System.out.println("User: " + identity.getName());
+            System.out.println("Role: " + identity.getRole());
+            System.out.println("Risk Score: " + risk);
+            System.out.println("Action: Access Blocked / Security Review");
+
+        } else {
+
+            System.out.println("Access Allowed");
+            System.out.println("User: " + identity.getName());
+            System.out.println("Risk Score: " + risk);
+
+        }
+    }
+}
+6️⃣ Main Program
+public class RiskPolicyMain {
+
+    public static void main(String[] args) {
+
+        Identity user1 = new Identity("Rahul", "Admin", 85);
+        Identity user2 = new Identity("Amit", "Developer", 40);
+
+        RiskPolicyEngine.evaluateRisk(user1);
+
+        System.out.println("----------------------");
+
+        RiskPolicyEngine.evaluateRisk(user2);
+
+    }
+}
+7️⃣ Output
+Case 1 (High Risk)
+RISK POLICY VIOLATION
+User: Rahul
+Role: Admin
+Risk Score: 85
+Action: Access Blocked / Security Review
+Case 2 (Normal Risk)
+Access Allowed
+User: Amit
+Risk Score: 40

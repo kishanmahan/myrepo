@@ -1,0 +1,255 @@
+()1️⃣ ReportDefinition kya hai?
+ReportDefinition ek object hai jo SailPoint me reports ka structure define karta hai.
+Ye batata hai:
+Report ka name
+Report ka type (Identity, Role, Account, AccessRequest, etc.)
+Kaunsa filter/criteria use hoga
+Kaunsa format me report generate hogi (CSV, PDF, XLS)
+Basically: "ReportDefinition = blueprint for generating reports"
+
+2️⃣ ReportDefinition ke andar kya hota hai?
+Name → Report ka naam
+Description → Report ka purpose
+Filter → Kaunsa data include karna hai
+Type / ObjectType → Identity, Role, Account, etc.
+Columns → Report me kaunse fields show honge
+Schedule / Recurrence → Kab aur kitni baar report generate hogi
+Format → CSV, PDF, XLS
+
+3️⃣ ReportDefinition ke common methods:-
+getName()
+setName(String name)
+getDescription()
+setDescription(String description)
+getType()
+setType(String type)
+getObjectType()
+setObjectType(Class objectType)
+getColumns()
+setColumns(List<String> columns)
+addColumn(String column)
+removeColumn(String column)
+getFilter()
+setFilter(Filter filter)
+getSchedule()
+setSchedule(String schedule)
+getFormat()
+setFormat(String format)
+validate()
+--------------------------------------------------------------------------------------------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointContextFactory;
+import sailpoint.object.Filter;
+import sailpoint.object.ReportDefinition;
+import sailpoint.object.Identity;
+import sailpoint.tools.GeneralException;
+
+public class ReportDefinitionExample {
+
+    public static void main(String[] args) {
+
+        SailPointContext context = null;
+
+        try {
+            // 1️⃣ SailPointContext create karna
+            context = SailPointContextFactory.createContext();
+
+            // 2️⃣ New ReportDefinition create karna
+            ReportDefinition report = new ReportDefinition();
+            report.setName("ActiveUsersReport");
+            report.setDescription("List of active users in IT");
+            report.setObjectType(Identity.class); // Identity objects ke liye
+            report.setFormat("CSV"); // Output format
+
+            // 3️⃣ Filter for active IT users
+            Filter filter = Filter.and(
+                Filter.eq("department", "IT"),
+                Filter.eq("status", "Active")
+            );
+            report.setFilter(filter);
+
+            // 4️⃣ Columns add karna
+            report.addColumn("name");
+            report.addColumn("email");
+            report.addColumn("department");
+
+            // 5️⃣ Validate & save report
+            report.validate(); // Validate rules check karega
+            context.saveObject(report); // DB me save
+            context.commitTransaction(); // Transaction commit
+
+            System.out.println("ReportDefinition created: " + report.getName());
+
+        } catch (GeneralException e) {
+            e.printStackTrace();
+        } finally {
+            // 6️⃣ Context release karna
+            if (context != null) {
+                SailPointContextFactory.releaseContext(context);
+            }
+        }
+    }
+}
+✅ Output (console) example:-
+ReportDefinition created: ActiveUsersReport
+------------------------------------------------------------------------------------------------------------------------------------------------
+1️⃣ getName() / setName(String name):-
+setName → ReportDefinition ka unique name set karta hai.
+getName → Current name return karta hai.
+
+Example:-
+report.setName("ActiveUsersReport");
+System.out.println(report.getName());
+
+Output:-
+ActiveUsersReport
+------------------------
+1️⃣ getName() / setName(String name):-
+setName → ReportDefinition ka unique name set karta hai.
+getName → Current name return karta hai.
+Example:
+
+report.setName("ActiveUsersReport");
+System.out.println(report.getName());
+
+Output:-
+ActiveUsersReport
+-------------------------
+3️⃣ getType() / setType(String type):-
+setType → Report ka type set karta hai, jaise "Standard", "Audit", "Compliance".
+getType → Current type return karta hai.
+
+Example:-
+report.setType("Audit");
+System.out.println(report.getType());
+
+Output:-
+Audit
+--------------------------
+4️⃣ getObjectType() / setObjectType(Class objectType):-
+setObjectType → Specify karta hai ki report ka data kaunse object ka hoga (Identity, Role, Account).
+getObjectType → Current object type return karta hai.
+
+Example:-
+report.setObjectType(Identity.class);
+System.out.println(report.getObjectType());
+
+Output:-
+class sailpoint.object.Identity
+-----------------------------------
+5️⃣ getColumns() / setColumns(List<String> columns) / addColumn(String column) / removeColumn(String column):-
+Columns → Report me show hone wale fields define karte hain.
+addColumn → Column add karta hai.
+removeColumn → Column remove karta hai.
+Example:-
+report.addColumn("name");
+report.addColumn("email");
+report.addColumn("department");
+System.out.println(report.getColumns());
+report.removeColumn("email");
+System.out.println(report.getColumns());
+
+Output:-
+[name, email, department]
+[name, department]
+----------------------------------------------
+6️⃣ getFilter() / setFilter(Filter filter):-
+Filter → Report me kaunse data rows include karne hain, ye define karta hai.
+setFilter → Filter apply karta hai.
+getFilter → Current filter return karta hai.
+
+Example:-
+Filter filter = Filter.eq("status", "Active");
+report.setFilter(filter);
+System.out.println(report.getFilter());
+
+Output (object representation):-
+Filter: status = Active
+--------------------------------------------------
+7️⃣ getSchedule() / setSchedule(String schedule):-
+Schedule → Report ka execution schedule define karta hai (Daily, Weekly, Monthly).
+Example:-
+report.setSchedule("Daily");
+System.out.println(report.getSchedule());
+Output:-
+Daily
+-------------------------------------------------------------
+8️⃣ getFormat() / setFormat(String format):-
+Format → Report ka output format set karta hai (CSV, PDF, XLS).
+getFormat → Current format return karta hai.
+Example:-
+report.setFormat("CSV");
+System.out.println(report.getFormat());
+Output:-
+CSV
+----------------------------------------------------------------
+ReportDefinition Types:-
+Type	                                                    Description
+Standard:--------Normal report jo day-to-day data show karta hai. Ye mostly ad-hoc queries aur routine reporting ke liye use hota hai.
+Audit:-----------Audit aur compliance ke liye specific report. Ye generally sensitive data ka record rakhta hai jaise access reviews, violations, 
+ya policy checks.
+Compliance:------Compliance-specific report jo regulatory requirements ke liye bana hota hai, jaise SOX, GDPR, HIPAA.
+Ye ensure karta hai ki data aur access rules comply kar rahe hain.
+Access Review:-----Ye report users ke access ko check karta hai aur review cycle ke liye generate hota hai. Managers aur auditors use karte hain.
+Provisioning:------Ye report provisioning events track karta hai jaise account creation, modification, ya de-provisioning.
+Entitlement:-------Ye report roles, groups, privileges aur unke assignments track karta hai.
+Lifecycle:---------Users ke lifecycle events track karta hai, jaise hire, transfer, promotion, termination.
+Custom:------------Agar koi report unique ya organization-specific hai jo above categories me fit nahi hoti, to custom type use hota hai.
+---------------------------------------------------------------------------------------------------------------------------------------------
+1️⃣ “Ye types mostly metadata ke liye use hote hain, actual report generation me koi restriction nahi”
+Matlab: Report ka type sirf label/metadata hai.
+Report generate karne me type ka direct effect nahi hota.
+Example:-
+Agar report type Audit hai, tab bhi tu usse CSV/PDF/XLS me run aur export kar sakta hai.
+✅ Summary: Type = sirf tag, report ko run/stop nahi karta.
+
+1️⃣ “Report category ke hisaab se audit/compliance rules apply ho sakte hain matlab kya?
+Jab report ka type Audit ya Compliance set hota hai, to SailPoint me internal rules ya checks automatically apply ho sakte hain.
+Ye rules report ke metadata aur workflow se related hote hain, report ke data ya generation ko block nahi karte.
+💡 Example analogy:-
+Tumhare pass ek normal report (Standard type) hai → tu ise freely run kar sakta hai.
+Tumhare pass Audit report hai → system check karega ki report ka data sensitive hai ya nahi, aur agar rules hain (jaise approval required) to notification ya audit log generate karega.
+3️⃣ Example in code:-
+report.setType("Audit"); // Audit type report
+report.validate();       // Validate checks metadata, columns, filter
+
+// Run report
+report.run();             // Data fetch hota hai normally
+report.export("CSV");     // CSV me export bhi normal hota hai
+
+// Internal system effects
+// - Audit log generate hota hai
+// - Manager ko notification ja sakta hai
+// - Dashboard me Audit folder me show hota hai
+
+Output (console):-
+Report validated and run successfully!
+Audit log created for report: ActiveUsersReport
+Notification sent to: audit.manager@company.com
+
+3️⃣ “setType("Audit") ya setType("Compliance") karne se SailPoint me report classify ho jata hai, jo dashboards, schedules, ya auditing me important hai”
+Matlab: Report ko system me group/identify karne ke liye type assign karte hain.
+Example:
+Dashboard me sirf Audit reports show karna hai → system type check karta hai.
+Scheduled jobs me compliance report ko automatic email send karna hai → type check karta hai.
+✅ Summary: Ye report ko special rules ke liye mark karta hai, report ka data ya generation process nahi change hota.
+
+4️⃣ “Default type agar set nahi karte, to mostly Standard assume kiya jata hai”
+Agar tu setType() call nahi karta, to system report ko Standard type ka label assign kar deta hai.
+Ye koi restriction nahi lagata, bas metadata ke liye default value hai.
+------------------------------------------------------------------------------------------------------------
+()1️⃣ validate() ka purpose:-
+Report ko run ya save karne se pehle safe check karna.
+Ensure karta hai ki report ka structure, filter, columns, aur metadata sahi hai.
+Agar kuch galat hai → exception throw karta hai, warna report safe hai run/export ke liye.
+
+2️⃣ validate() check karta hai ye cheezein:-
+Check	                       Explanation	                                                                     Example / Output
+Name check:------Report ka name empty ya duplicate nahi hona chahiye:--------------------Agar name empty → ValidationException: Name cannot be empty
+ObjectType:------Identity, Role, Account etc. object type valid aur exist karna chahiye:---Invalid object → ValidationException: Invalid object type
+Columns:---------Specified columns exist karte ho aur valid field names hai:--Invalid column → ValidationException: Column 'fullname' does not exist
+Filter:----------Filter syntax sahi ho aur fields valid ho:-----------------Invalid filter → ValidationException: Filter field 'dept' does not exist
+Format:----------Format (CSV, PDF, XLS) supported ho:----------------------------------Unsupported → ValidationException: Format 'TXT' not supported
+Schedule:--------Agar schedule defined hai, to valid cron/recurrence ho:----------------------Invalid → ValidationException: Invalid schedule syntax
+Mandatory fields:-----------Name, ObjectType, Format jaise required fields filled ho:----------------Missing → ValidationException: Name is required
+

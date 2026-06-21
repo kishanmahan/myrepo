@@ -1,0 +1,6 @@
+()1️⃣ Bulk Provisioning ka Simple Matlab:-
+Bulk Provisioning = ek saath bohot saare users ke liye accounts aur entitlements create/modify/delete karna.
+Matlab ek user ke liye plan banana normal provisioning, aur multiple users ke liye ek saath plan execute karna = bulk provisioning.
+Example:-
+50 nayi employees join ho rahe hain → ek ek karke account create karna time-consuming
+Bulk Provisioning se ek hi workflow me sab ke liye accounts aur roles assign ho jaate hain.

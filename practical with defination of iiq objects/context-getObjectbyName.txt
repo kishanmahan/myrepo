@@ -1,0 +1,144 @@
+////////////*
+identityName vs Link Name: context.getObjectByName() kisi object ko uske Unique Name se dhoondta hai.
+Identity ka name uska username/employee ID hota hai (jaise john.doe), isliye Identity.class ke saath identityName pass karna ekdum sahi hai.
+Lekin SailPoint ke database mein Link (Account) ka name identityName nahi hota! 
+Link ka name aamtaur par target system ka unique identifier hota hai (jaise AD ka Distinguished Name: CN=John Doe,OU=Users,DC=domain,DC=com) ya fir ek random hex ID. 
+Isliye identityName se search karne par SailPoint ko koi Link nahi milega, aur link variable hamesha null rahega.
+Multiple Links ka Confusion: Ek user ke paas kai saare links ho sakte hain (AD, HR, SAP, GitHub, etc.). 
+Agar aap seedha Link.class dhoondoge, toh SailPoint ko kaise pata chalega ki aapko sirf AD ka hi link chahiye?
+---------------------------------------------------------------------------------------------------------------------
+()mujhe getObjectbyName se sare object ko fetch karna hai toh example code sabka:-
+import sailpoint.object.Identity;
+
+String identityName = "john.doe"; // Username
+Identity idn = context.getObjectByName(Identity.class, identityName);
+
+if (idn != null) {
+    log.info("User ka email: " + idn.getEmail());
+}
+----------------
+import sailpoint.object.Application;
+
+String appName = "Active Directory"; 
+Application app = context.getObjectByName(Application.class, appName);
+
+if (app != null) {
+    log.info("Application ka Type: " + app.getType()); // e.g., Active Directory
+}
+-----------------
+import sailpoint.object.Bundle;
+
+String roleName = "Finance Analyst Role";
+Bundle role = context.getObjectByName(Bundle.class, roleName);
+
+if (role != null) {
+    log.info("Role ka Display Name: " + role.getDisplayName());
+}
+----------------
+import sailpoint.object.ManagedAttribute;
+
+// Entitlement ka name generally unique format me hota hai
+String entitlementName = "CN=Vpn_Group,OU=Groups,DC=domain,DC=com"; 
+ManagedAttribute group = context.getObjectByName(ManagedAttribute.class, entitlementName);
+
+if (group != null) {
+    log.info("Group ka Owner: " + group.getOwner().getName());
+}
+----------------------------------
+import sailpoint.object.Custom;
+
+String customConfigName = "MyCompany_Global_Properties";
+Custom customObject = context.getObjectByName(Custom.class, customConfigName);
+
+if (customObject != null) {
+    String apiURL = customObject.getString("targetApiUrl");
+    log.info("Custom API URL: " + apiURL);
+}
+------------------------
+import sailpoint.object.Rule;
+
+String ruleName = "Custom_Utility_Rule";
+Rule targetRule = context.getObjectByName(Rule.class, ruleName);
+
+if (targetRule != null) {
+    log.info("Rule ka Type: " + targetRule.getType());
+}
+----------------------
+import sailpoint.object.Workflow;
+
+String wfName = "LCM Provisioning";
+Workflow wf = context.getObjectByName(Workflow.class, wfName);
+
+if (wf != null) {
+    log.info("Workflow Description: " + wf.getDescription());
+}
+-----------------------
+// LINK KE LIYE YEH TARIKA SAHI HAI:
+List links = idn.getLinks();
+----------------------------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE Rule PUBLIC "sailpoin.dtd" "sailpoint.dtd">
+<Rule name="AD_Group" type="Custom">
+<Source>
+import sailpoint.object.Identity;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.api.Provisioner;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.api.SailpointContextFactory;
+import sailpoint.object.Link;
+Logger log=Logger.getLogger("sailpoint.Rules.AD_Group.rule");
+if(identityName!=null)
+{
+Link linkk=null;
+Identity idn=context.getObjectByName(Identity.class,identityName);
+if(idn!=null){
+String status=(idn.getStatus()=="InActive")?"InActive":"Active";
+List links=idn.getLinks();
+for(Object link:links){
+linkk=(Link)link;
+if("AD".equals(linkk.getApplicationName()))
+break;
+}
+if("Active".equals(status)&amp;&amp;linkk!=null)
+{
+ProvisioningPlan plan=new ProvisioningPlan();
+AccountRequest aqq=new AccountRequest(AccountRequest.Operation.Modify,"AD",null,linkk.getNativeIdentity());
+AttributeRequest att=new AttributeRequest(ProvisioningPlan.Operation.Add,"memberOf","Vpn_Group");
+Provisioner pro=new Provisioner(context);
+ProvisioningProject project=null;
+
+aqq.add(att);
+plan.add(aqq);
+project=pro.compile(plan);
+pro.execute(project);
+log.info("completed executed");
+}else{
+log.error("user is InActive");
+return null;
+}
+
+}else{
+log.error("Identity not found");
+return null;
+}
+
+}
+
+return null;
+
+</Source>
+</Rule>
+///////////////*
+1. Loop Type Conflict (for(Link link:links))
+Aapne loop likha hai: for(Link link:links) aur uske andar kiya hai linkk=(Link)link;.
+Galti: Java/Beanshell mein idn.getLinks() hamesha ek raw List return karta hai jisme elements generic Object type ke hote hain. 
+Agar aap direct Link link likhoge toh casting conflict ki wajah se error aa sakta hai.
+Fix: Loop ko for(Object link : links) likhna sabse safe aur best practice hai, 
+kyunki aap loop ke andar use waise bhi (Link) mein cast kar hi rahe ho.
+
+
+*//////////////

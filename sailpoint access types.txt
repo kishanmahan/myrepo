@@ -1,0 +1,19 @@
+()how to open debug page?
+->http://localhost:8080/identity/debug/
+()doc page sailpoint ke sare methods aur classes batata hai?
+->http://localhost:8080/identity iq/doc/javadoc
+-----------------------
+()Architecture sailpoint:-
+->identity iqq application hai jo database se hibernate file ke through connect hota hai,
+aur identity iq application connector ke through application/apps se connect hota hai.
+
+How to make application?
+
+-> http://localhost:8080/identityiq/application/applications.jsf <- ->
+
+-> Add new Application -> फिर Name -> test -> owner -> spadmin (kata hua) -> The Administrator -> Application type -> DelimitedFile -> save -> Configuration -> File Path -> C:\Training\Training Data\AuthEmployee.csv -> save.
+-----------------------------------------------------------------------------------------------------------------------------------------
+()SailPoint me do tarah ke access hote hain:-
+--Target System Access: User ko Active Directory me kaun sa group milega, SAP me kya role milega (Yeh Target Systems par hota hai).
+--SailPoint Console Access: Jab user http://localhost:8080/identityiq kholkar SailPoint ke andar login karega, 
+toh usko SailPoint ke dashboard par kya-kya dikhega aur wo kya-kya daba sakta hai (Yeh SailPoint platform par hota hai).

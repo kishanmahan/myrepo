@@ -1,0 +1,303 @@
+1. Internal Application (IIQ): SailPoint apne khud ke system (yani jahan users ke Identity Cubes, Roles, 
+aur Entitlements store hote hain) ko bhi ek application maanta hai, jise wo "IIQ" kehta hai.
+Toh, ProvisioningPlan.APP_IIQ ka use hum tab karte hain jab hume external target system (jaise AD) mein nahi,
+balki SailPoint ke andar hi kisi Identity (User) ke data mein changes karne hote hain.
+
+2. leaverPlan Kahan Hai?
+leaverPlan koi inbuilt SailPoint feature nahi hai, balki ye wo Variable Name hai jo humne apne Workflow mein define kiya tha.
+Declaration: Ye workflow ke top par <Variable name="leaverPlan"> section mein declare hota hai.
+Usage: Step 2_3_Build_Revoke_Disable_Plan mein humne resultVariable="leaverPlan" likha tha.
+Iska matlab hai ki us script ka jo bhi output (Provisioning Plan object) niklega, wo is leaverPlan naam ke bag mein save ho jayega.
+Execution: Agle step (Execute_Provisioning) mein hum isi variable ko utha kar provisioner.execute(leaverPlan) karte hain taaki saare changes apply ho jayein.
+2.a <Script> (The Creator/Generator): Tumhare code mein script ke andar saara logic likha hai
+(Account disable ka request banana, Role hatane ka request banana) aur aakhir mein ek line hai: return plan;. 
+Yeh <Script> hi hai jo us ProvisioningPlan ka actual data (output) generate karti hai aur usko bhejti hai.
+
+2.b <Step> (The Catcher/Receiver): Jo step ki line hai <Step ... resultVariable="leaverPlan">,
+usme resultVariable bas ek "basket" (tokri) ki tarah kaam karta hai.
+Iska kaam hai yeh dekhna ki uske andar wale <Script> ne finally kya return kiya.
+Jo bhi script return karti hai, yeh usko automatically catch karke leaverPlan mein save kar deta hai.
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow explicitTransitions="true" libraries="Identity,Role,LCM" name="Custom - Enterprise Leaver Lifecycle" type="IdentityLifecycle">
+
+  <Variable input="true" name="identityName">
+    <Description>The name of the identity that is leaving.</Description>
+  </Variable>
+  
+  <Variable name="leaverPlan">
+    <Description>Provisioning plan to hold disable and revoke requests.</Description>
+  </Variable>
+
+  <Step icon="Start" name="Start" posX="20" posY="20">
+    <Transition to="1_Deactivate_Identity"/>
+  </Step>
+
+  <Step icon="Task" name="1_Deactivate_Identity" posX="150" posY="20">
+    <Script>
+      <Source>
+        import sailpoint.object.Identity;
+        
+        Identity leaver = context.getObjectByName(Identity.class, identityName);
+        if(leaver != null) {
+            // Marking identity as inactive
+            leaver.setInactive(true);
+            context.saveObject(leaver);
+            context.commitTransaction();
+        }
+      </Source>
+    </Script>
+    <Transition to="2_3_Build_Revoke_Disable_Plan"/>
+  </Step>
+
+  <Step icon="Task" name="2_3_Build_Revoke_Disable_Plan" resultVariable="leaverPlan" posX="350" posY="20">
+    <Script>
+      <Source>
+        import sailpoint.object.*;
+        import java.util.*;
+
+        Identity leaver = context.getObjectByName(Identity.class, identityName);
+        ProvisioningPlan plan = new ProvisioningPlan();
+        plan.setIdentity(leaver);
+
+        // 2️⃣ Account Disable: Loop through all linked applications (AD, Email, etc.)
+        List links = leaver.getLinks();
+        if (links != null) {
+            for (Link link : links) {
+                // Creates a disable request for every connected account
+                AccountRequest disableReq = new AccountRequest(AccountRequest.Operation.Disable, 
+                                                               link.getApplicationName(), 
+                                                               link.getInstance(), 
+                                                               link.getNativeIdentity());
+                plan.add(disableReq);
+            }
+        }
+
+        // 3️⃣ Access Revoke: Remove all assigned Business/IT Roles
+        List assignedRoles = leaver.getAssignedRoles();
+        if (assignedRoles != null) {
+            AccountRequest iiqReq = new AccountRequest(AccountRequest.Operation.Modify, 
+                                                       ProvisioningPlan.APP_IIQ, 
+                                                       null, 
+                                                       leaver.getName());
+            for (Bundle role : assignedRoles) {
+                // Request to remove the role
+                iiqReq.add(new AttributeRequest("assignedRoles", ProvisioningAction.Remove, role.getName()));
+            }
+            if (!iiqReq.getAttributeRequests().isEmpty()) {
+                plan.add(iiqReq);
+            }
+        }
+        
+        return plan;
+      </Source>
+    </Script>
+    <Transition to="Execute_Provisioning"/>
+  </Step>
+
+  <Step icon="Task" name="Execute_Provisioning" posX="550" posY="20">
+    <Script>
+      <Source>
+         import sailpoint.api.Provisioner;
+         
+         if (leaverPlan != null) {
+             Provisioner provisioner = new Provisioner(context);
+             provisioner.compile(leaverPlan);
+             provisioner.execute();
+         }
+      </Source>
+    </Script>
+    <Transition to="4_5_Session_And_Data_Handling"/>
+  </Step>
+
+  <Step icon="Task" name="4_5_Session_And_Data_Handling" posX="750" posY="20">
+    <Script>
+      <Source>
+        import org.apache.commons.logging.Log;
+        import org.apache.commons.logging.LogFactory;
+        import sailpoint.object.Identity;
+        
+        Log logger = LogFactory.getLog("rule.LiveLeaverProcess");
+        Identity leaver = context.getObjectByName(Identity.class, identityName);
+        
+        // 4️⃣ Session Terminate:
+        // SailPoint natively doesn't close active Windows/Web sessions. 
+        // Live projects me yahan hum ek REST API trigger karte hain IAM Gateway ya SSO (Okta/Ping) ko.
+        logger.info("Triggering API to terminate active SSO sessions for user: " + identityName);
+        // Custom REST API call logic goes here...
+
+        // 5️⃣ Data Handling (Optional):
+        // Transfer Manager's direct reports to their higher-up manager
+        Identity leaverManager = leaver.getManager();
+        if (leaverManager != null) {
+             logger.info("Reassigning direct reports or files to manager: " + leaverManager.getName());
+             // Trigger PowerShell rule for AD Home Directory/OneDrive transfer
+        }
+      </Source>
+    </Script>
+    <Transition to="6_Notify_Manager"/>
+  </Step>
+
+  <Step action="call:sendEmail" icon="Email" name="6_Notify_Manager" posX="950" posY="20">
+    <Arg name="to" value="script:return context.getObjectByName(Identity.class, identityName).getManager().getEmail();"/>
+    <Arg name="template" value="Leaver Notification Template"/>
+    <Arg name="identityName" value="ref:identityName"/>
+    <Description>Sends final offboarding summary to the user's manager.</Description>
+    <Transition to="Stop"/>
+  </Step>
+
+  <Step icon="Stop" name="Stop" posX="1100" posY="20"/>
+
+</Workflow>
+-------------------------------------------------------------------------------------------------------------------------------------
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow explicitTransitions="true" libraries="Identity,LCM" name="Enterprise Leaver Process - Live" type="IdentityLifecycle">
+
+  <Variable input="true" name="identityName" required="true">
+    <Description>Name of the user who is leaving.</Description>
+  </Variable>
+
+  <Variable name="leaverPlan">
+    <Description>Master Provisioning Plan for Disabling and Revoking.</Description>
+  </Variable>
+
+  <Variable name="managerEmail">
+    <Description>Store manager's email for final step.</Description>
+  </Variable>
+
+  <Step icon="Start" name="Start" posX="20" posY="20">
+    <Transition to="Step 1 - Deactivate Identity"/>
+  </Step>
+
+  <Step icon="Task" name="Step 1 - Deactivate Identity" posX="150" posY="20">
+    <Script>
+      <Source>
+        import sailpoint.object.Identity;
+        import org.apache.commons.logging.Log;
+        import org.apache.commons.logging.LogFactory;
+
+        Log logger = LogFactory.getLog("workflow.LeaverProcess");
+        logger.info("Step 1: Deactivating Identity -> " + identityName);
+
+        Identity leaver = context.getObjectByName(Identity.class, identityName);
+        if (leaver != null) {
+            leaver.setInactive(true);
+            
+            // Getting Manager Email for Step 6
+            if (leaver.getManager() != null) {
+                workflow.put("managerEmail", leaver.getManager().getEmail());
+            }
+
+            context.saveObject(leaver);
+            context.commitTransaction();
+        }
+      </Source>
+    </Script>
+    <Transition to="Step 2 and 3 - Build Plan"/>
+  </Step>
+
+  <Step icon="Task" name="Step 2 and 3 - Build Plan" resultVariable="leaverPlan" posX="300" posY="20">
+    <Script>
+      <Source>
+        import sailpoint.object.*;
+        import java.util.List;
+
+        Identity leaver = context.getObjectByName(Identity.class, identityName);
+        ProvisioningPlan plan = new ProvisioningPlan();
+        plan.setIdentity(leaver);
+
+        // 👉 Step 2: Disable all linked accounts (AD, Email, etc.)
+        List links = leaver.getLinks();
+        if (links != null) {
+            for (Link link : links) {
+                AccountRequest disableReq = new AccountRequest(AccountRequest.Operation.Disable, 
+                                                               link.getApplicationName(), 
+                                                               link.getInstance(), 
+                                                               link.getNativeIdentity());
+                plan.add(disableReq);
+            }
+        }
+
+        // 👉 Step 3: Revoke Access (Roles & Entitlements)
+        List assignedRoles = leaver.getAssignedRoles();
+        if (assignedRoles != null &amp;&amp; !assignedRoles.isEmpty()) {
+            AccountRequest iiqReq = new AccountRequest(AccountRequest.Operation.Modify, 
+                                                       ProvisioningPlan.APP_IIQ, 
+                                                       null, 
+                                                       leaver.getName());
+            for (Bundle role : assignedRoles) {
+                iiqReq.add(new AttributeRequest("assignedRoles", ProvisioningAction.Remove, role.getName()));
+            }
+            plan.add(iiqReq);
+        }
+
+        return plan;
+      </Source>
+    </Script>
+    <Transition to="Execute Plan"/>
+  </Step>
+
+  <Step icon="Task" name="Execute Plan" posX="450" posY="20">
+    <Script>
+      <Source>
+        import sailpoint.api.Provisioner;
+        if (leaverPlan != null) {
+            Provisioner provisioner = new Provisioner(context);
+            provisioner.compile(leaverPlan);
+            provisioner.execute(leaverPlan);
+        }
+      </Source>
+    </Script>
+    <Transition to="Step 4 - Terminate Sessions"/>
+  </Step>
+
+  <Step icon="Task" name="Step 4 - Terminate Sessions" posX="600" posY="20">
+    <Script>
+      <Source>
+        import org.apache.commons.logging.Log;
+        import org.apache.commons.logging.LogFactory;
+        
+        Log logger = LogFactory.getLog("workflow.LeaverProcess");
+        logger.warn("Step 4: Initiating SSO Session Kill for -> " + identityName);
+        
+        // Industry Standard: Call an external API (like Okta/Ping/Azure) via Rule to kill active tokens
+        // Rule name: "Rule-API-Kill-SSO-Sessions"
+      </Source>
+    </Script>
+    <Transition to="Step 5 - Data Handling"/>
+  </Step>
+
+  <Step icon="Task" name="Step 5 - Data Handling" posX="750" posY="20">
+    <Script>
+      <Source>
+        import sailpoint.object.Identity;
+        import java.util.List;
+
+        Identity leaver = context.getObjectByName(Identity.class, identityName);
+        Identity manager = leaver.getManager();
+
+        if (manager != null) {
+            // Transfer Direct Reports to Manager's Manager (or just to Leaver's Manager)
+            // This is a common industry requirement
+        }
+        
+        // Custom Rule call to trigger PowerShell script for OneDrive/Home Directory transfer
+      </Source>
+    </Script>
+    <Transition to="Step 6 - Notification"/>
+  </Step>
+
+  <Step action="call:sendEmail" icon="Email" name="Step 6 - Notification" posX="900" posY="20">
+    <Arg name="to" value="ref:managerEmail"/>
+    <Arg name="cc" value="iam-admins@company.com"/>
+    <Arg name="template" value="Leaver Offboarding Completion Template"/>
+    <Arg name="identityName" value="ref:identityName"/>
+    <Description>Email Manager and Admin about successful termination.</Description>
+    <Transition to="Stop"/>
+  </Step>
+
+  <Step icon="Stop" name="Stop" posX="1050" posY="20"/>
+
+</Workflow>

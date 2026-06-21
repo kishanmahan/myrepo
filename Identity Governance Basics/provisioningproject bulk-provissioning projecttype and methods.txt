@@ -1,0 +1,190 @@
+()1️⃣ Bulk Provisioning ka Simple Matlab:-
+Bulk Provisioning = ek saath bohot saare users ke liye accounts aur entitlements create/modify/delete karna.
+Matlab ek user ke liye plan banana normal provisioning, aur multiple users ke liye ek saath plan execute karna = bulk provisioning.
+Example:-
+50 nayi employees join ho rahe hain → ek ek karke account create karna time-consuming
+Bulk Provisioning se ek hi workflow me sab ke liye accounts aur roles assign ho jaate hain.
+
+()5️⃣ ProvisioningProject:-
+Ye ek ya multiple provisioning plans ka container hai.
+Enterprise me bulk provisioning ya workflow ke liye use hota hai.
+
+()ProjectType SailPoint me ek enum hai jo define karta hai ki ProvisioningProject ka type kya hai.
+Ye basically batata hai ki project kya kaam karega(add karna, remove karna, ya sync karna).
+
+()ProjectType ke values:-
+Value	                                Purpose
+Provision-----Identity ko naya access add karna ya modify karna. Example: nayi role assign karna.
+Deprovision---Identity se access remove karna. Example: employee resign ho gaya → roles/accounts remove karna.
+Reconcile-----
+Reconcile = Sync karna
+SailPoint me ye check karta hai ki user ke current access(roles/accounts) actual system ke state ke saath
+match karte hain ya nahi.Matlab agar kisi ne manually system me role add/remove kiya,
+SailPoint me abhi tak reflect(dikhna) nahi hua → Reconcile se correct ho jata hai.
+2️⃣ Kaam kya karta hai?
+Step	                                       Explanation
+Fetch actual state-------------Application me user ke current roles/accounts fetch karta hai.
+Compare with SailPoint---------SailPoint me identity ke roles/accounts jo stored hain unse compare karta hai.
+Create plan------------------Agar koi mismatch hai → provisioning plan generate hota hai to add/remove access.
+Execute	Plan-------------------apply hota hai, SailPoint ka data aur actual system sync ho jata hai.
+
+Example Usage:-
+// Create a provisioning project to add access
+ProvisioningProject project = new ProvisioningProject(ProvisioningProject.ProjectType.Provision, context);
+
+// Create another project to remove access
+ProvisioningProject deprovisionProject = new ProvisioningProject(ProvisioningProject.ProjectType.Deprovision, context);
+
+// Reconcile project example
+ProvisioningProject reconcileProject = new ProvisioningProject(ProvisioningProject.ProjectType.Recon
+*//////////
+
+()ProvisioningProject kya hai?
+--Ye ek ya multiple provisioning plans ka container hai.
+Enterprise me bulk provisioning ya workflow ke liye use hota hai.
+simple words me:-
+ProvisioningPlan = kya  karna hai,
+ProvisioningProject = kaise provisioningplan execute karna hai.
+
+--ProvisioningProject SailPoint connectors ke through:-
+Active Directory
+SAP
+Salesforce
+Database
+Cloud apps
+me provisioning execute karta hai.
+
+()1️⃣ ProvisioningPlan:-
+ProvisioningPlan = kya change karna hai
+Matlab plan me define hota hai:
+kis user par change hoga
+kis application me change hoga
+kya operation hoga (Add / Remove / Modify)
+kaunsa account / entitlement change hoga
+vs
+()2️⃣ ProvisioningProject;-
+ProvisioningProject = plan ko execute karne ka container
+Matlab:-
+ek ya multiple ProvisioningPlan ko run karta hai
+provisioning engine ko bhejta hai
+result track karta hai.
+vs
+()Provisioning = kisi user ko system me account aur access dena,
+Matlab jab kisi employee ko login, role, ya permission di jati hai, us process ko Provisioning bolte hain.
+
+()Important ProvisioningProject Methods:-
+
+()2️⃣ getPlan():-
+Description:-
+Project ke andar ka ProvisioningPlan return karta hai.
+Developer debugging ke liye use karta hai.
+
+Code:-
+ProvisioningPlan p = project.getPlan();
+
+()4️⃣ getStatus()
+Description:-
+Provisioning execution ka status return karta hai.
+Possible values:-
+Status	           Meaning
+SUCCESS-------provisioning successful
+FAILED--------provisioning fail
+IN_PROGRESS---process running
+
+Code:-
+System.out.println(project.getStatus());
+
+()5️⃣ addAccountRequest(AccountRequest req):-
+Description:-
+Project execution ke time extra account request add kar sakte hain.
+
+Code:-
+project.addAccountRequest(accountReq);
+----------------
+()4️⃣ getResults() (ProvisioningProject)
+🔹 Description
+
+getResults() method provisioning execution ke detailed results return karta hai.
+Ye batata hai:-
+provisioning successful hua ya nahi
+kaun sa connector run hua
+kaun sa account create hua
+koi error aaya ya nahi.
+
+🔹 Example Output:-
+Application: ActiveDirectory
+Status: SUCCESS
+Account Created: rahul.ad
+
+🔹 Code Example:-
+List results = project.getResults();
+
+for(Object r : results){
+    System.out.println(r);
+}
+--------------
+()1️⃣ ProvisioningProject(ProvisioningPlan plan)
+🔹 Kya hai?
+Ye ProvisioningProject class ka constructor hai jo ProvisioningPlan ko execution project me convert karta hai.
+ProvisioningProject banne ke baad SailPoint connectors ke through actual target systems me changes apply karta hai.
+
+Example target systems:-
+Active Directory
+SAP
+Salesforce
+Database
+LDAP
+Cloud applications
+
+()Simple words:-
+ProvisioningPlan  →  kya karna hai (instructions)
+ProvisioningProject → us plan ko run karna
+
+Matlab:-
+ProvisioningPlan me instructions hoti hain,
+ProvisioningProject un instructions ko execute karta hai.
+-----------------------------
+4️⃣ Simple Code Example:-
+SailPointContext context =
+        SailPointFactory.getCurrentContext();
+
+Identity user =
+        context.getObjectByName(Identity.class,"rahul");
+
+ProvisioningPlan plan = new ProvisioningPlan();
+
+plan.setIdentity(user);
+
+ProvisioningProject project =
+        new ProvisioningProject(plan);
+
+Ab project execution ke liye ready hai.
+---------------------------------------------------------------------
+4️⃣ Full Example (ProvisioningPlan + ProvisioningProject)
+SailPointContext context = SailPointFactory.getCurrentContext();
+
+Identity user = context.getObjectByName(Identity.class,"rahul");
+
+ProvisioningPlan plan = new ProvisioningPlan();
+plan.setIdentity(user);
+plan.setOperation(ProvisioningPlan.Operation.Create);
+
+ProvisioningPlan.AccountRequest accountReq =
+        new ProvisioningPlan.AccountRequest();
+
+accountReq.setApplicationName("ActiveDirectory");
+accountReq.setNativeIdentity("rahul.ad");
+accountReq.setOperation(ProvisioningPlan.Operation.Create);
+
+accountReq.addEntitlement("EMPLOYEE_ROLE");
+
+plan.add(accountReq);
+
+ProvisioningProject project = new ProvisioningProject(plan);
+
+context.provision(project);
+
+context.commitTransaction();
+
+System.out.println("Provisioning Status: "+project.getStatus());
+-----------------------------------------------------------------------

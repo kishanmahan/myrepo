@@ -1,0 +1,490 @@
+----------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?> 
+<!DOCTYPE sailpoint PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<sailpoint>
+<Workflow explicitTransitions="true" library="Identity" name="Lifecycle Event - Manager Approval for all native changes" type="IdentityLifecycle">
+<Variable name="Identity" input="true" initializer="script:return &quot;kkr&quot;;"></variable>
+<Variable name="event" input="true"></variable>
+<Variable name="trigger" input="true"></variable>
+<Variable name="trace" initializer="true"></Variable>
+<Variable name="operations" initializer="" input="true"></Variable>
+<Variable name="approvalSet" input="true"></Variable>
+<Variable name="item" input="true"></Variable>
+<Variable name="launcher" input="true"></Variable>
+<Variable name="fallbackApprover" input="true" initializer="spadmin"></Variable>
+<Variable name="identityDisplayName" initializer="Script:(identityDisplayName!=null)?identityDisplayName:resolveDisplayName(identityName);" input="true"></Variable>
+<Variable name="workItemDescription" input="true"></Variable>
+<Variable name="workItemNotificationTemplate" input="true"></Variable>
+<Variable name="workItemPriority" input="true"></Variable>
+<Variable name="workItemRequester" input="true"></Variable>
+<Variable name="plan" input="true">
+<Variable name="source" input="true" initializer="script:(event != null) ? event.getName() : &quot;LCM&quot;"/>
+<Variable name="policyScheme" input="true">
+<Variable name="requireViolationReviewComments" input="true">
+<Variable name="optimisticProvisioning" input="true" initializer="false">
+<Variable name="project" input="true">
+<Variable name="trace" input="true" initializer="false">
+<Variable name="doRefresh" input="true">
+<Variable name="allowRequestsWithViolations" input="true">
+<Variable name="enableRetryRequest" input="true">
+<Variable name="identityRequestId" input="true">
+<Step name="start">
+<Script>
+<Source>
+import sailpoint.tools.Utils;
+if(trace)
+{
+System.out.println("Identityname="+Identity.getName());
+System.out.println("                 Trigger name="+trigger.getName()+" and trigger attributename="+trigger.getAttributeName()+" triggerid="+trigger.getId()+" triggertype="trigger.getType() +" triggerxml="+trigger.toXml());
+System.out.println("                 event="+event.getAttributeName()+"event value="event.getValue() +" getold and new value of event="event.getOldValue() + event.getNewValue() +"and event in xml="+event.toXml());
+}
+</Source>
+</Script>
+<Transition to="next1">
+</Step>
+<Step name="next1" resultVariable="operations">
+<Script>
+<Source>
+import Sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.NativeChangeDetection;
+import sailpoint.tools.Util;
+import sailpoint.object.AttributeChange;
+import sailpoint.object.AttributeChange.ObjectOperation;
+
+List changes=event.getNativeChanges();
+for(object change:changes)
+{
+AttributeChange nchange=(AttributeChange)change;
+String att=nchange.getAttributeName();
+object attvalue=nchange.getValue();
+System.out.println("  attributeName or key="+att +"and   attributeValue="+ attvalue);
+if(nchange.getOperation().toString().equalsIgnoreCase("Set"))
+System.out.println("set operation");
+if(nchange.getOperation().toString().equalsIgnoreCase("Add"))
+System.out.println("add operation");
+if(nchange.getOperation().toString.equalsIgnoreCase("Remove"))
+System.out.println("modify operation");
+
+ObjectOperation op=nchange.getOperation();
+if(ObjectOperation.Set.equals(op))
+System.out.println("set operation");
+else if(ObjectOperation.Add.equals(op))
+System.out.println("Add operation");
+else(ObjectOperation.Remove.equals(op))
+System.out.println("Remove operation");
+}
+
+List ops = new ArrayList();
+
+if (event != null) {
+    List ncs = event.getNativeChanges();
+    if (ncs != null) {
+        
+        // 1. Loop mein generic 'Object' ka use kiya standard casting ke liye
+        for (Object obj : ncs) {
+            AttributeChange nc = (AttributeChange) obj;
+            
+            // 2. AccountRequest.Operation ki jagah AttributeChange.ObjectOperation use kiya
+            ObjectOperation op = nc.getOperation();
+            String opString = ""; // 3. Variable ko loop ke andar declare kiya
+            
+            if (op == null) {
+                opString = "Modify";
+            } else {
+                opString = op.toString(); // Yeh "Set", "Add", ya "Remove" return karega
+            }
+
+            if (!ops.contains(opString)) {
+                ops.add(opString);
+            }
+        }
+    }
+}
+
+// Ops list ko Comma-Separated String (CSV) mein convert karke return karega (e.g., "Set,Add")
+return Util.listToCsv(ops);
+</Source>
+</Script>
+<Transition to="next2">
+</Step>
+<Step name="next2"  action="buildApprovalSetFromNativeChanges" resultVariable="approvalSet">
+<Arg name="event" value="ref:approvalSet"/>
+<Return name="approvalSet" to="approvalSet"/>
+<Transition to="next3" when="Script:approvalSet!=null?true:false">
+</Step>
+<Step name="next3">
+<Approval render="nativeChangeApprovalRenderer.xhtml" mode="parallel" send="identityName,identityDisplayName" owner="script:getManagerName(identityName, launcher, fallbackApprover)">
+<AfterScript>
+<Source>
+import sailpont.workflow.identityRequestLibrary;
+if(item==null)
+return;
+assimilateWorkItemApprovalSet(wfcontext,item,approvalSet);
+auditDecisions(item);
+</Source>
+</AfterScript>
+<Arg name="approvalSet" value="ref:approvalSet">
+<Arg name="launcher" value="Script:wfcontext.getWorkflow().getLauncher();">
+<Arg name="identity" value="Script:wfcontext.getIdentity();">
+<Arg name="workItemRequester" value="$(launcher)"/>
+<Arg name="workItemDescription" value="approve kar baba ishko $(identityDisplayName) warna reject karde">
+<Arg name="workItemNotificationTemplate" value="ref:ownerEmailTemplate">
+<Arg name="workItemPriority" value="ref:workItemPriority">
+</Approval>
+<Transition to="next4" when="Script: &quot;Approved&quot;.equals(item.getApprovalState())">
+</Step>
+<Step action="call:processNativeChangesApprovalDecisions" name="next4" posX="575" posY="20" resultVariable="plan">
+<Transition to="Provision Native Change Reversal"/>
+</Step>
+<Step name="Provision Native Change Reversal" condition="script:( Util.otob(provisionRejectedItems) &amp;&amp; plan != null )">
+<Arg name="flow" value="EntitlementsRequest"/>
+<Arg name="flow" value="EntitlementsRequest"/>
+    <Arg name="identityName" value="ref:identityName"/>
+    <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+    <Arg name="optimisticProvisioning" value="ref:optimisticProvisioning"/>
+    <Arg name="plan" value="ref:plan"/>
+    <Arg name="policyScheme" value="none"/>
+    <Arg name="priority" value="ref:workItemPriority"/>
+    <Arg name="approvalScheme" value="none"/>
+    <Arg name="source" value="ref:source"/>
+    <Arg name="requireViolationReviewComments" value="false"/>
+    <Arg name="allowRequestsWithViolations" value="true"/>
+    <Arg name="enableRetryRequest" value="false"/>
+    <Arg name="launcher" value="ref:launcher"/>
+    <Arg name="doRefresh" value="true"/>
+    <Arg name="trace" value="ref:trace"/>
+    <Return name="project" to="project"/>
+    <Return name="identityRequestId" to="identityRequestId"/>
+    <Return merge="true" name="workItemComments" to="workItemComments"/>
+	<WorkflowRef>
+      <Reference class="sailpoint.object.Workflow" name="LCM Provisioning"/>
+    </WorkflowRef>
+<Transition to="end">
+</Step>
+<Step catches="complete" icon="Catches" name="Complete" posX="658" posY="185">
+    <Arg name="priority" value="ref:workItemPriority"/>
+    <Arg name="project" value="ref:project"/>
+    <Arg name="trace" value="ref:trace"/>
+    <Arg name="approvalSet" value="ref:approvalSet"/>
+    <Arg name="identityRequestId" value="ref:identityRequestId"/>
+    <Description>
+      Call the standard subprocess that can audit/finalize the request if they are in play. 
+    </Description>
+    <WorkflowRef>
+      <Reference class="sailpoint.object.Workflow" name="Identity Request Finalize"/>
+    </WorkflowRef>
+    <Transition to="end"/>
+  </Step>
+<Step name="end"/>
+</Workflow>
+</sailpoint>
+</xml>
+/////////////*
+()<Variable name="operations" input="true"></Variable>
+Jab bhi yeh workflow chalega, toh isko chalane wala (Parent ya SailPoint) is box ke andar batayega ki kaun sa operation 
+(jaise Enable, Disable, Modify) perform karna hai.
+Aapka doosra sawal sabse important hai: Iske andar value SailPoint dega ya fir Parent dega?
+Iska seedha jawaab hai: Dono de sakte hain.
+
+()Case A: Identity Lifecycle Event se (Trigger):-
+Maan lijiye aapne is workflow ko ek Termination Lifecycle Event ke sath map kiya hai. 
+Jab SailPoint kisi user ka termination detect karega, toh SailPoint ka Lifecycle Engine background mein is workflow ko trigger karega.
+Agar aapne Lifecycle Event setting mein koi static ya dynamic value pass ki hai, toh SailPoint use is variable mein fill kar dega.
+
+()Case B: QuickLink ya LCM Form se:-
+Maan lijiye aapne SailPoint UI mein ek custom form banaya hai jahan Manager dropdown se select karta hai: "Disable User".
+Jab Manager form submit karega, toh SailPoint UI us selected value ko uthayega aur aapke workflow ke operations variable mein pass kar dega.
+
+1. Kya yeh koi bhi value (Create, Modify, etc.) store kar sakta hai?
+Haan, bilkul kar sakta hai. SailPoint mein workflow variables default roop se ek generic java.lang.String ya java.lang.Object ki tarah treat hote hain. Aap isme koi bhi text value store kar sakte hain.
+
+Case A: Ek baar mein sirf EK value store karni ho (String format)
+Agar aapka workflow ek baar mein sirf ek hi kaam karta hai (jaise sirf Disable ya sirf Enable), toh aap isme single text store karenge:
+
+operations = "Create"
+
+operations = "Disable"
+
+Case B: Ek baar mein MULTIPLE values store karni hon (List format)
+Agar aap chahte hain ki yeh ek se zyada values store kare (jaise ek sath Disable bhi kare aur Delete bhi), 
+toh aapko is variable ka type java.util.List define karna padega.
+
+XML mein yeh aisa dikhega:-
+XML
+<Variable name="operations" type="java.util.List" input="true" />
+Ab Parent Workflow ya SailPoint isme ek sath multiple values bhej sakta hai: ["Modify", "Enable"].
+*//////////
+////////////*
+()note:-ObjectOperation.Set/ObjectOperation.Add/ObjectOperation.Remove ye Enum Objects hai, 
+yeh koi string variable nahi hai. Aap Enum class ke upar direct .equalsIgnoreCase() nahi chala sakte.
+
+()NativeChangeDetection kya hai?
+Jab target system par direct koi admin chhedkhani karta hai (bina SailPoint ke approval ke), 
+toh use SailPoint ke andar Native Change bola jata hai. 
+Aur is poore process ko track karne ke liye SailPoint ke paas ek built-in class aur process hoti hai jise NativeChangeDetection kehte hain.
+
+1. Yeh Kab Aur Kaise Kaam Karta Hai?
+Maan lijiye aapka Active Directory (AD) ka application SailPoint se connected hai.
+
+--Direct Action: Kisi IT Helpdesk team ke member ne direct AD Users & Computers tool khola aur user Rahul ka department badal kar
+"Sales" se "Marketing" kar diya.
+
+--Aggregation Task: Raat ko jab SailPoint ka Account Aggregation task chala, 
+toh woh AD se sabhi users ka current data utha kar laya.
+
+--Detection: SailPoint ne dekha ki database mein Rahul ka department "Sales" tha, lekin AD se "Marketing" aa raha hai, 
+aur yeh change SailPoint ke kisi Provisioning Plan se nahi hua hai.
+
+--Triggering Lifecycle: Yahan par NativeChangeDetection engine active hota hai. 
+Yeh ek IdentityChangeEvent generate karta hai aur usme event.getNativeChanges() ke andar is badlav ko store kar deta hai.
+
+()2. Aggregation Task (Data ka SailPoint mein aana):-
+Yeh kahan hota hai? Jab aapka Account Aggregation Task chalta hai, 
+toh SailPoint ka Connector target system se saara raw data khinch kar lata hai.
+Iska data kahan rehta hai? Yeh data temporary roop se ResourceObject class ke andar store hota hai. 
+SailPoint is ResourceObject (jo AD se abhi-abhi aaya hai) ko user ke purane Link object 
+(jo SailPoint ke database mein pehle se save tha) ke sath compare (match) karta hai.
+
+import sailpoint.object.Link;
+import sailpoint.object.ResourceObject;
+import sailpoint.object.Identity;
+import sailpoint.tools.Util;
+
+// Maan lijiye yeh dono objects aapko rule ya task ke context se mil rahe hain
+// Link link = ... (SailPoint ke database mein save purana account data)
+// ResourceObject rObj = ... (AD se aggregation ke dauran aaya naya data)
+
+if (link != null && rObj != null) {
+
+    // 1. LINK OBJECT (Old Data from SailPoint DB)
+    // Link ke andar se purana attribute nikalna
+    String oldDepartment = (String) link.getAttribute("department");
+    String oldTitle = (String) link.getAttribute("title");
+
+    // 2. RESOURCE OBJECT (New Data coming from Active Directory)
+    // ResourceObject ke andar se naya incoming attribute nikalna
+    String newDepartment = (String) rObj.getAttribute("department");
+    String newTitle = (String) rObj.getAttribute("title");
+
+    System.out.println("--- Comparing Link (Old) vs ResourceObject (New AD Data) ---");
+
+    // -------------------------------------------------------------------------
+    // Scenario 1: Department Compare Karna
+    // -------------------------------------------------------------------------
+    // Util.nullSafeEquality use karna best practice hai taaki null hone par crash na ho
+    if (!Util.nullSafeEquality(oldDepartment, newDepartment)) {
+        
+        System.out.println("ALERT: Department badal gaya hai!");
+        System.out.println("Old Data (Link DB): " + oldDepartment);
+        System.out.println("New Data (ResourceObject AD): " + newDepartment);
+        
+        // Aap yahan apna custom logic likh sakte hain
+    } else {
+        System.out.println("Department mein koi badlav nahi hai.");
+    }
+
+    // -------------------------------------------------------------------------
+    // Scenario 2: Job Title Compare Karna
+    // -------------------------------------------------------------------------
+    if (!Util.nullSafeEquality(oldTitle, newTitle)) {
+        
+        System.out.println("ALERT: Job Title badal gaya hai!");
+        System.out.println("Old Data (Link DB): " + oldTitle);
+        System.out.println("New Data (ResourceObject AD): " + newTitle);
+        
+    } else {
+        System.out.println("Job Title mein koi badlav nahi hai.");
+    }
+}
+*///////////
+/////////////*
+()1.renderer="nativeChangeApprovalRenderer.xhtml" toh Yeh Line Karti Kya Hai?
+SailPoint me jab koi manager ya approver apna Inbox / Dashboard kholta hai, toh use approvals ki list dikhti hai.
+Lekin har approval ek jaisa nahi hota (kuch normal access requests hoti hain, toh kuch native changes hote hain). 
+renderer attribute SailPoint ko batata hai ki is specific approval set ko screen par dikhane ke liye kis UI template ya design ka use karna hai.
+nativeChangeApprovalRenderer.xhtml ek pre-defined JSF (JavaServer Faces) page hai.
+Yeh page manager ke saamne ek specific layout kholta hai jo native changes ke liye hi design kiya gaya hai.
+
+2. Manager ko Screen Par Kya Dikhega?
+Jab yeh renderer load hoga, toh approver ko screen par kuch is tarah ka data saaf-saaf dikhega:-
+Field                         Description
+Identity / User-----------Kis employee ke account me badlav hua hai.
+Application-----Kis target system (jaise Active Directory, SAP) me change hua.
+Native Change---Exact kya change hua (e.g., "Added to Domain Admins Group").
+Action Buttons--Approve (is change ko valid maano) ya Reject/Remediate (is change ko rollback karo).
+*//////////
+/////////////*
+()<Approval mode="parallel" owner="script:getManagerName(identityName, launcher, fallbackApprover);" 
+	renderer="nativeChangeApprovalRenderer.xhtml" send="identityDisplayName,identityName">
+script:getManagerName(identityName, launcher, fallbackApprover);:-
+1. Teeno Parameters Ka Kya Kaam Hai?
+जब SailPoint yeh script chalayega, toh woh in teen cheezon ko check karega:-
+-->identityName: Yeh us employee/user ki Identity hai jiske account me native change hua hai. 
+Script sabse pehle is user ke profile (Identity Cube) par jaakar iske manager ka naam dhoodhne ki koshish karegi.
+
+-->launcher: Yeh us user ki Identity hai jisme is workflow ko start (launch) kiya. 
+Kyunki yeh native change hai (jo background aggregation se pakda gaya hai), toh aksar launcher spadmin ya System hota hai.
+
+-->fallbackApprover: Yeh aapka Backup Plan (Safety Net) hai.Agar kisi wajah se target user ka koi manager assigned nahi hai 
+(jaise CEO ka koi manager nahi hota, ya HR data me manager missing hai), 
+toh approval request hawa me na ghumne ki jagah is default fallbackApprover (jaise ki Compliance Team ya System Administrator) ke paas chali jayegi.
+*/////////
+
+/////////////*
+<Script> (Data Loader / Value Script)
+Kaam kya hai: Iska kaam field ke andar data ko load ya populate karna hota hai.
+Ye batata hai ki us box me user ko kya dikhega.
+ex:-
+1. <Script> Ka Kaam (Step ke Shuru me):-
+Yeh step ke shuru hote hi chalta hai taaki approval ke liye taiyari ki ja sake.
+XML
+<Script>
+  // Step shuru hone se pehle manager ka naam dhoodho
+  String manager = getManagerName(identityName, launcher, "Default Workgroup");
+  workflow.put("approverName", manager); 
+</Script>
+
+2. <AfterScript> Ka Kaam (Step Khatam hone ke Baad):
+Ab manager ne screen par "Approve" ya "Reject" button daba diya aur step khatam ho gaya. 
+ex:-
+Ab <AfterScript> trigger hoga yeh dekhne ke liye ki manager ne kya faisla liya:-
+XML
+<AfterScript>
+  // Step khatam hone ke baad check karo manager ne kya kiya
+  String decision = item.getApprovalState(); // Approve ya Reject check karna
+  log.error("Manager ka decision tha: " + decision);
+  
+  if("Rejected".equals(decision)) {
+      // Agar reject kiya toh koi alert trigger karo
+      sendAlertToSecurityTeam(identityName);
+  }
+</AfterScript>
+
+3. <ValidationScript> (Data Checker / Guard):-
+Kaam kya hai: Iska kaam user ke bhare hue data ko check (verify) karna hota hai ki wo sahi hai ya galat.
+Kab chalta hai: Jab user form poora bharne ke baad "Save" ya "Next" button daba kar submit karta hai. 
+Return Type: * Agar data galat hai, to ye ek Error Message (String) return karta hai 
+(jo screen par red color me dikhta hai aur workflow ko aage badhne se rok deta hai).
+Agar data sahi hai, to ye null ya kuch return nahi karta, jisse workflow aage badh jata hai.
+
+toh yeh script check karti hai ki jo data submit kiya ja raha hai, woh sahi hai ya nahi.
+1. Yeh Kab Aur Kaise Chalta Hai?
+Jab workflow kisi Form ya Approval step par ruka hota hai aur user button click karta hai, 
+toh SailPoint agle step par jaane se pehle <ValidationScript> ko chalata hai.
+ex:-
+2. Ek Real-World Example Se Samjhein:-
+Maan lijiye aapke native change approval workflow me aapne manager ko ek text box diya hai jisme use likhna hai: "Aap is native change ko kyun approve kar rahe hain? (Reason)"
+Aap chahte hain ki manager bina reason likhe "Approve" na kar paye. Wahan aap <ValidationScript> ka use karenge:
+XML
+<ValidationScript>
+  <Source>
+    // Manager ne jo comments likhe hain use nikalye
+    String comments = item.getComments(); 
+    
+    // Agar comments khali hain ya bohot chhote hain
+    if (comments == null || comments.trim().length() &lt; 10) {
+        // Form rok do aur screen par error dikhao
+        return "Error: Native change ko approve karne ke liye kam se kam 10 characters ka reason likhna zaroori hai!";
+    }
+    
+    return null; // Sab sahi hai, aage badhne do
+  </Source>
+</ValidationScript>
+*///////////////////
+//////////*
+()launcher kaise nikale?
+launcher me value SailPoint khud automatic tarike se daal kar deta hai. Aapko isse alag se define karne ki ya isme koi value manually bharne ki zaroorat nahi hoti.
+Direct Variable: SailPoint workflows me launcher naam ka variable pehle se implicit (built-in) hota hai. 
+Aap direct launcher use kar sakte hain.
+
+Context Se Nikalna: Agar aapko script ke andar nikalna hai, 
+toh aap workflow.getLauncher() ya wfcontext.getWorkflow().getLauncher() ka use karte hain.
+*/////////////
+////////////////*
+pehle variable ko declare karte hai:-<Variable name="launcher" input="true"></Variable>
+fir value kahi bhi koi bhi step me dalkar ush variable ko use karte hai:-<Arg name="workItemRequester" value="$(launcher)"/>
+*///////////////
+//note:-ApprovalSet jishme sare approvals/items bante hai wo ApprovalSet ke approver ko send hone ke baad hi WorkItem bante hai.
+
+//////*
+note:-Galti yeh hai ki item.getApprovalSet() aapko koi text (String) return nahi karta, 
+balki yeh pura ka pura ApprovalSet Object return karta hai (jisme saare native changes aur attributes ki details hoti hain).
+Ek poore object ko aap direct "Approve" text ke sath .equals() se compare nahi kar sakte.
+ex:-script:item.getApprovalSet().equals(&quot;Approve&quot;)-->ye galat hai.-----------------galat hai ye line.
+Script: &quot;Approved&quot;.equals(item.getApprovalState())-->sahi ye hai.
+Script: item.getApprovalSet() != null &amp;&amp; item.getApprovalSet().isApproved()-->sahi ye hai.
+------------------------------------------------------------------------------------------------------------------
+()when="script:item.getApprovalState().equals(&quot;Approved&quot;)" ye sahi hai ki nahi,
+ye kaam karega lekin crash bhi ho jayega.
+--->Isme Risk Kya Hai?
+Aapne likha hai: item.getApprovalState().equals("Approved")
+
+Maan lijiye kisi wajah se us approval item ka state abhi update nahi hua hai, 
+ya woh null (khali) hai. Aise me jab system null.equals("Approved") karne ki koshish karega, 
+toh workflow wahi par crash ho jayega (NullPointerException dega) aur aapka poora task ruk jayega.
+
+Iska 100% Sahi aur Safe Version Kya Hai?
+Java aur BeanShell me isse bachne ka ek universal rule hai—hamesha fixed text ("Approved") ko pehle likho, aur variable ko .equals() ke andar daalo.
+
+Aap isse badalkar aise likhiye:-
+XML
+when="Script: &quot;Approved&quot;.equals(item.getApprovalState())"
+
+Java aur SailPoint (BeanShell) me yeh ek bohot bada niyam (rule) hai: Aap kisi poore Object (jaise ApprovalSet) ko
+ek simple text (String jaise "Approve") se seedhe compare nahi kar sakte.
+Agar aap aisa karenge, toh dono ka data type alag hone ki wajah se result hamesha false aayega ya fir code crash ho jayega.
+*/////
+/////////*
+()resolveDisplayName() SailPoint IdentityIQ (IIQ) ka ek bohot hi useful utility method hai, 
+jo aamtaor par sailpoint.object.Identity class ya SailPoint ki internal API classes (jaise sailpoint.api.ObjectUtil) ka hissa
+hota hai.
+resolveDisplayName thik yahi kaam karta hai:-
+Aap is method ko koi Identity Name (ID) dete hain.
+Yeh database me jaakar us Identity ka displayName dhoodhta hai (jaise: First Name + Last Name).
+Agar user ka display name set hai, toh yeh use return kar dega (e.g., "Rahul Sharma").
+Backup Plan: Agar kisi user ka display name set nahi hai (null hai), toh yeh workflow ko crash nahi karta, 
+balki backup me uska Unique Username/ID hi return kar deta hai taaki screen khali na dikhe.
+*/////////
+--------------------------------------------------------------------------------------------------------------
+//////////////*
+()semicolon(;):-
+kyunki SailPoint me semicolon (;) lagana hai ya nahi, 
+yeh is baat par depend karta hai ki aap script ko XML ke kis attribute ya tag ke andar likh rahe hain.
+
+-->Rule 1: Agar aap <Transition> tag ke andar hain (Semicolon NAHI lagana hai)
+Jab aap kisi step se dusre step par jaane ke liye single-line condition likhte hain (jaise when="Script:..."), toh wahan semicolon nahi lagaya jata.
+Kyun? Kyunki SailPoint wahan ek "Expression" expect karta hai jo turant true ya false (ya koi value) return kare. Semicolon lagane se BeanShell use ek statement maan leta hai aur kabhi-kabhi kuch return nahi karta (void ho jata hai), jisse workflow ruk jata hai.
+❌ Galat: when="Script: "Approved".equals(item.getApprovalState());"
+Sahi: when="Script: "Approved".equals(item.getApprovalState())"
+
+Rule 2: Agar aap <Source> ya <Script> tag ke andar hain (Semicolon ZAROORI hai).
+
+Rule 3:-
+Agar aap <Approval> tag ke attributes jaise ownerExpression, argIdentity, ya when ke andar script: prefix ke sath single-line expression likh rahe hain, toh wahan semicolon nahi lagana hai.
+
+Kyun? Kyunki SailPoint yahan direct ek dynamic value ya object return chahta hai. Semicolon lagane se logic break ho sakta hai.
+
+❌ Galat:
+
+XML
+<Approval name="Manager Approval" ownerExpression="script:getManagerName(identityName, launcher, fallbackApprover);" renderer="nativeChangeApprovalRenderer.xhtml">
+*   ✅ **Sahi:**
+    ```xml
+    <Approval name="Manager Approval" ownerExpression="script:getManagerName(identityName, launcher, fallbackApprover)" renderer="nativeChangeApprovalRenderer.xhtml">
+Scenario 2: Agar aap Approval ke andar <Script> ya <ValidationScript> block bana rahe hain (Semicolon HAMESHA lagega)
+*///////////
+///////////////*
+()provisionRejectedItems SailPoint IdentityIQ (IIQ) ke workflows me ek bohot hi important Configuration Variable (Setting) hai.
+Aasan bhasha me samjhein toh yeh ek Switch (On/Off Button) ki tarah hai,
+jo SailPoint ko yeh batata hai ki: "Agar manager ne kisi request ya change ko 'Reject' kar diya hai, 
+toh kya SailPoint ko target system me jaakar us access ko sach me delete/remediate karna hai ya nahi?"
+true hone pe karta hai aur fale hone pe nahi karega deprovision/remediation.
+-->value koun deta hai:-
+provisionRejectedItems variable ki value SailPoint khud automatic tarike se deta hai(uski default settings se), 
+lekin developers ya administrators iski value ko manually badal (override) bhi sakte hain.
+*////////////
+()<Arg name="flow" value="EntitlementsRequest"/>called pipeline(jisse bhi call kar rahe chahe action="method"/workflow) ko bata rahe hai ki
+value="EntitlementsRequest":matlab Yeh batata hai ki is workflow trigger ka main maqsad kya hai.Yahan iska maqsad hai kisi user ke liye kisi specific target system (jaise Active Directory) ke Entitlement (Group, Role, ya Attribute) ko request karna.
+
+
+*/////////////

@@ -1,0 +1,39 @@
+🔹 1️⃣ Action kya hai?
+Action = IdentityTrigger fire hone par perform hone wali operation / command
+Matlab trigger fire → action execute
+Examples:
+Role assign karna
+Entitlement revoke karna
+Email send karna
+Account disable karna
+
+🔹 2️⃣ Action predefined hai ya custom?
+()Predefined Actions (built-in):-
+SailPoint me common actions pehle se define hote hain
+Example:-
+AssignRoleAction → Role assign karta hai
+RemoveRoleAction → Role remove karta hai
+SendEmailAction → Email send karta hai
+DisableAccountAction → Account disable karta hai
+Action emailAction = new SendEmailAction("admin@company.com", "Welcome to system!");
+trigger.setActions(List.of(emailAction));
+
+()Custom Actions:-
+Developer apna Action class bana sakta hai by extending Action class
+Example: CustomNotificationAction, CustomWorkflowAction
+public class CustomNotificationAction extends Action {
+    @Override
+    public void execute(Identity identity) {
+        System.out.println("Custom notification for " + identity.getName());
+    }
+}
+Action customAction = new CustomNotificationAction();
+trigger.setActions(List.of(customAction));
+
+🔹 3️⃣ Actions banane ke tarike:-
+Action Type           	            Description	                                                Example
+Predefined / Built-in:----Already SailPoint ke SDK me available:-----------SendEmailAction, AssignRoleAction, DisableAccountAction
+Custom Java class:--------Developer define karta hai, Action extend karke:---------------CustomNotificationAction
+Workflow-based:-----------Action workflow ko trigger karta hai:------------------------WorkflowAction("ApprovalWorkflow")
+-----------------------------------------------------------------------------------------------------------------------------------------
+

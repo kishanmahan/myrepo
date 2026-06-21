@@ -1,0 +1,12 @@
+()Identifiers programming me names hote hain jo variables, functions, classes, objects, packages, ya modules ko identify karte hain.
+Matlab, har cheez ka ek naam jo program me use hota hai, wo identifier hai.
+Ye compiler ya interpreter ko batata hai ki ye particular cheez ka reference hai.
+
+()Rules (Common for Java/Python):-
+Letters (A-Z, a-z), digits (0-9), underscore _ use kar sakte ho.
+Name digit se start nahi hona chahiye.
+
+int 1number; // ❌ Invalid
+int number1; // ✅ Valid
+Spaces allowed nahi hain.
+Keywords (like int, class, for) identifier nahi ho sakte.

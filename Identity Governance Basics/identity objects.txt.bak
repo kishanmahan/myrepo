@@ -1,0 +1,426 @@
+1️⃣ Core Identity Objects:-
+Object/Class	                              Description
+Identity:---------------------------------Main user object, jo employee ya contractor ko represent karta hai
+IdentityAttribute:------------------------Identity ke attributes store karta hai (email, manager, department, etc.)
+IdentityAttributeDefinition:--------------Attribute ka metadata define karta hai (type, required, read-only, etc.)
+IdentityRole:-----------------------------User ke assigned roles ka representation
+IdentityGroup:----------------------------User ke groups ka representation
+IdentityAccount:--------------------------User ke linked accounts across systems (like AD, SAP, etc.)
+IdentityCertification:--------------------User ke certification info (access review / approval status)
+IdentityRequest:--------------------------User ke access requests ya provisioning requests
+2️⃣ Related/Utility Objects:-
+Object	                              Description
+IdentityEntitlement:-------------Specific entitlements / permissions user ke paas
+IdentityRelationship:------------Manager, mentor, deputy relationships define karta hai
+IdentityHistory:-----------------Past actions aur events ke liye audit trail
+IdentityPolicyViolation:---------Policy ke against identity actions ko track karta hai.
+
+🔹1️⃣ IdentityService kya hai?
+IdentityService = SailPoint SDK / API ka service class
+Purpose: Identity objects ke upar CRUD operations aur business logic handle karna
+Basically, Identity ke liye central service layer
+Ye directly Identity objects ko create, update, delete, search, ya query karne ke liye use hota hai.
+
+🔹2️⃣ IdentityService ka kaam:-
+Kaam	                                             Explanation
+Create/Update/Delete Identity:----------------Nayi identity create karna, existing update karna, ya delete karna
+Search/Lookup Identity:-----------------------Identity naam / email / id se find karna
+Manager assignment:---------------------------Identity ke manager set ya update karna
+Role/Entitlement assignment:------------------Identity ko roles aur entitlements assign karna
+Certification/Workflow support:---------------Identity ke upar certifications ya triggers run karna
+Validation:-----------------------------------Identity ke data ko validate karna before save
+Batch operations:-----------------------------Multiple identities ko ek sath handle karna
+
+🔹 4️⃣ DB me relation:-
+IdentityService Identity object ko DB me persist karne ka layer hai
+Example:-
+Identity → main table (id, name, email, status, department, manager_id)
+Identity_Accounts → linked accounts
+Identity_Roles → roles
+Identity_Entitlements → permissions
+Service methods internally SailPointContext.saveObject(identity) aur commitTransaction() ka use karte hain.
+-----------------------------------------------------------------------------------------------------------------------------------
+🔹 IdentityService Methods According to Functional Areas:-
+1️⃣ Create/Update/Delete Identity:-
+Method	                                                 Explanation
+createIdentity(Identity identity):--Nayi identity create karta hai aur context me save karta hai
+updateIdentity(Identity identity):--Existing identity update karta hai (fields / roles / accounts)
+deleteIdentity(Identity identity):--Identity delete karta hai aur context me remove karta hai
+lockIdentity(Identity identity):----Identity ko suspend ya lock karta hai
+unlockIdentity(Identity identity):--Identity ko unlock / activate karta hai
+
+2️⃣ Search/Lookup Identity:-
+Method	                                                            Explanation
+getIdentityById(String id):--------------------------ID ke basis pe Identity retrieve karta hai
+getIdentityByName(String name):----------------------Name ke basis pe Identity retrieve karta hai
+getIdentityByEmail(String email):--------------------Email ke basis pe Identity retrieve karta hai
+searchIdentities(Map<String,Object> criteria):-------Advanced search; multiple criteria ke hisaab se Identity list return karta hai.
+getAllIdentities():----------------------------------Sare identities list me return karta hai
+
+3️⃣ Manager Assignment:-
+Method	                                                           Explanation
+assignManager(Identity identity, Identity manager):-----------Identity ke liye manager assign karta hai
+updateManager(Identity identity, Identity newManager):--------Existing manager update karta hai
+getManager(Identity identity):--------------------------------Identity ka current manager return karta hai
+
+4️⃣ Role / Entitlement Assignment:-
+Method	                                                                          Explanation
+assignRoles(Identity identity, List<Role> roles):-----------------------Identity ke liye multiple roles assign karta hai
+removeRoles(Identity identity, List<Role> roles):-----------------------Identity se roles remove karta hai
+assignEntitlements(Identity identity, List<Entitlement> entitlements):--Identity ke liye entitlements assign karta hai
+removeEntitlements(Identity identity, List<Entitlement> entitlements):--Identity se entitlements remove karta hai
+getRoles(Identity identity):--------------------------------------------Assigned roles return karta hai
+getEntitlements(Identity identity):-------------------------------------Assigned entitlements return karta hai
+
+7️⃣ Batch Operations:-
+Method	                                                   Explanation
+createIdentities(List<Identity> identities):----------Multiple identities ek sath create karta hai
+updateIdentities(List<Identity> identities):----------Multiple identities ek sath update karta hai
+deleteIdentities(List<Identity> identities):----------Multiple identities ek sath delete karta hai
+assignRolesBatch(Map<Identity,List<Role>> batchRoles):----------------Batch me roles assign karta hai
+assignEntitlementsBatch(Map<Identity,List<Entitlement>> batchEnts):---Batch me entitlements assign karta hai
+
+5️⃣ Certification / Workflow Support:-
+Method	                                                      Explanation
+triggerCertifications(Identity identity):---------Identity ke liye certification process start karta hai
+runIdentityTriggers(Identity identity):-----------Identity me defined triggers execute karta hai
+getCertificationStatus(Identity identity):--------Identity ke certifications ka current status return karta hai.
+
+6️⃣ Validation:-
+Method	                                       Explanation
+validateIdentity(Identity identity):-------Identity ke fields aur data rules validate karta hai before save
+isValidEmail(Identity identity):-----------Email format check karta hai
+isValidStatus(Identity identity):----------Status value check karta hai (Active / Inactive / Suspended)
+------------------------------------------------------------------------------------------------------------------------------------
+()createIdentity(Identity identity):-
+Kya karta hai: Nayi identity create karta hai aur DB/context me save karta hai
+Example / Output:-
+Identity newUser = new Identity();
+newUser.setName("Ravi Kumar");
+newUser.setEmail("ravi.kumar@company.com");
+newUser.setStatus("Active");
+
+identityService.createIdentity(newUser);
+System.out.println(newUser.getId()); 
+// Output: ID_1001 (Auto-generated unique ID)
+
+()updateIdentity(Identity identity):-
+Kya karta hai: Existing identity update karta hai (name, email, status, roles, etc.)
+newUser.setStatus("Inactive");
+identityService.updateIdentity(newUser);
+System.out.println(newUser.getStatus()); 
+// Output: Inactive
+
+()deleteIdentity(Identity identity):-
+Kya karta hai: Identity ko DB/context se remove karta hai
+identityService.deleteIdentity(newUser);
+System.out.println(identityService.getIdentityById(newUser.getId())); 
+// Output: null
+
+()lockIdentity(Identity identity):-
+Kya karta hai: Identity ko suspend / lock karta hai
+identityService.lockIdentity(newUser);
+System.out.println(newUser.getStatus()); 
+// Output: Suspended
+
+()unlockIdentity(Identity identity):-
+Kya karta hai: Identity ko activate karta hai
+identityService.unlockIdentity(newUser);
+System.out.println(newUser.getStatus()); 
+// Output: Active
+
+()getIdentityById(String id):-
+Kya karta hai: ID ke basis pe identity return karta hai
+Identity user = identityService.getIdentityById("ID_1001");
+System.out.println(user.getName()); 
+// Output: Ravi Kumar
+
+()getIdentityByName(String name):-
+Kya karta hai: Name ke basis pe identity return karta hai
+Identity user = identityService.getIdentityByName("Ravi Kumar");
+System.out.println(user.getEmail()); 
+// Output: ravi.kumar@company.com
+
+()getIdentityByEmail(String email):-
+Kya karta hai: Email ke basis pe identity return karta hai
+Identity user = identityService.getIdentityByEmail("ravi.kumar@company.com");
+System.out.println(user.getStatus()); 
+// Output: Active
+
+()searchIdentities(Map<String,Object> criteria):-
+Kya karta hai: Multiple criteria ke basis pe identity list return karta hai
+Map<String,Object> criteria = new HashMap<>();
+criteria.put("department", "IT");
+criteria.put("status", "Active");
+
+List<Identity> users = identityService.searchIdentities(criteria);
+System.out.println(users.size()); 
+// Output: 5 (Number of active IT employees)
+
+()getAllIdentities():-
+Kya karta hai: Sare identities return karta hai
+List<Identity> allUsers = identityService.getAllIdentities();
+System.out.println(allUsers.size()); 
+// Output: 120 (Total identities in DB)
+
+()assignManager(Identity identity, Identity manager):-
+Kya karta hai: Identity ka manager set karta hai
+Identity manager = identityService.getIdentityByName("Sunil Sharma");
+identityService.assignManager(newUser, manager);
+System.out.println(newUser.getManager().getName()); 
+// Output: Sunil Sharma
+
+()updateManager(Identity identity, Identity newManager):-
+Kya karta hai: Existing manager update karta hai
+Identity newManager = identityService.getIdentityByName("Priya Verma");
+identityService.updateManager(newUser, newManager);
+System.out.println(newUser.getManager().getName()); 
+// Output: Priya Verma
+
+()getManager(Identity identity):-
+Kya karta hai: Identity ka current manager return karta hai
+Identity mgr = identityService.getManager(newUser);
+System.out.println(mgr.getName()); 
+// Output: Priya Verma
+
+()assignRoles(Identity identity, List<Role> roles):-
+Kya karta hai: Identity ke liye multiple roles assign karta hai
+identityService.assignRoles(newUser, List.of(role1, role2));
+System.out.println(newUser.getRoles()); 
+// Output: [Developer, Admin]
+
+()removeRoles(Identity identity, List<Role> roles):-
+Kya karta hai: Roles remove karta hai
+identityService.removeRoles(newUser, List.of(role2));
+System.out.println(newUser.getRoles()); 
+// Output: [Developer]
+
+()assignEntitlements(Identity identity, List<Entitlement> entitlements):-
+Kya karta hai: Permissions assign karta hai
+identityService.assignEntitlements(newUser, List.of(ent1, ent2));
+System.out.println(newUser.getEntitlements()); 
+// Output: [Read_DB, Write_DB]
+
+()removeEntitlements(Identity identity, List<Entitlement> entitlements):-
+Kya karta hai: Entitlements remove karta hai
+identityService.removeEntitlements(newUser, List.of(ent2));
+System.out.println(newUser.getEntitlements()); 
+// Output: [Read_DB]
+
+()getRoles(Identity identity):-
+Kya karta hai: Assigned roles return karta hai
+System.out.println(identityService.getRoles(newUser)); 
+// Output: [Developer]
+
+()getEntitlements(Identity identity):-
+Kya karta hai: Assigned entitlements return karta hai
+System.out.println(identityService.getEntitlements(newUser)); 
+// Output: [Read_DB]
+
+()createIdentities(List<Identity> identities):-
+Kya karta hai: Multiple identities create karta hai
+identityService.createIdentities(List.of(user1, user2, user3));
+System.out.println(user1.getId()); 
+// Output: ID_1002
+
+()updateIdentities(List<Identity> identities):-
+Kya karta hai: Multiple identities update karta hai
+user1.setStatus("Inactive");
+user2.setStatus("Inactive");
+identityService.updateIdentities(List.of(user1,user2));
+
+()deleteIdentities(List<Identity> identities):-
+Kya karta hai: Multiple identities delete karta hai
+identityService.deleteIdentities(List.of(user1,user2));
+
+()assignRolesBatch(Map<Identity,List<Role>> batchRoles):-
+Kya karta hai: Multiple identities ke roles batch me assign karta hai
+Map<Identity,List<Role>> rolesMap = new HashMap<>();
+rolesMap.put(user3, List.of(role1, role2));
+identityService.assignRolesBatch(rolesMap);
+
+()assignEntitlementsBatch(Map<Identity,List<Entitlement>> batchEnts):-
+Kya karta hai: Multiple identities ke entitlements batch me assign karta hai
+Map<Identity,List<Entitlement>> entMap = new HashMap<>();
+entMap.put(user3, List.of(ent1, ent2));
+identityService.assignEntitlementsBatch(entMap);
+
+✅ Summary Output Example:-
+Created Identity: ID_1001
+Manager assigned: Priya Verma
+Roles: [Developer]
+Entitlements: [Read_DB]
+Batch created 3 identities
+Deleted 2 identities
+-----------------------------------------------------------------------------------------------------------------------------
+()1️⃣ triggerCertifications(Identity identity):-
+Kya karta hai:-
+Identity ke liye Certification campaign / review process start karta hai
+Example: Manager ko notification send hoti hai, reviewer ko approval task create hota hai
+Ye directly Identity ke assigned certifications ko initiate karta hai
+Example / Output:
+Identity user = identityService.getIdentityByName("Ravi Kumar");
+identityService.triggerCertifications(user);
+
+System.out.println(identityService.getCertificationStatus(user)); 
+// Output: PENDING_REVIEW
+Flow:-
+Certification trigger hota hai
+Reviewers ko tasks assign hote hain
+Status change hota hai: PENDING_REVIEW → APPROVED / REJECTED
+
+
+🔹 1️⃣ triggerCertifications(Identity identity) – EXACT kya hota hai
+❓ Tera sawal:-
+Kya isse sare users review me jate hain?
+Naya campaign banta hai ya existing chalta hai?
+
+✅ Correct samajh (IMPORTANT):-
+👉 Ye method sirf ek specific Identity (user) ke liye certification trigger karta hai
+👉 Saare users nahi jate review me ❌
+
+🔥 Actual Flow:-
+triggerCertifications(user)
+        ↓
+System check karta hai CertificationDefinition
+        ↓
+Us user ke liye CertificationEntity create hota hai
+        ↓
+Uske access ke liye CertificationItems bante hain
+        ↓
+Reviewer (manager) ko task milta hai
+🧠 Deep Samajh:-
+🔸 1. Kya naya CertificationCampaign banta hai?
+❌ Direct nahi
+✅ Existing CertificationDefinition use hota hai
+👉 But:-
+System ek runtime campaign instance generate kar sakta hai internally
+
+🔸 2. Kya sare users jate hain?
+❌ Nahi
+✅ Sirf wo Identity (user) jisko pass kiya hai
+identityService.triggerCertifications(ravi);
+👉 Sirf Ravi review me jayega, pura company nahi
+
+🔸 3. Kya banta hai internally?
+Object	               Kya hota hai
+CertificationEntity:---Ravi ke liye
+CertificationItem:-----Ravi ke roles / entitlements
+Reviewer:--------------Ravi ka manager
+
+🎯 Example:-
+identityService.triggerCertifications(user);
+System.out.println(identityService.getCertificationStatus(user));
+Output:-
+PENDING_REVIEW
+👉 Matlab:-
+Certification start ho gaya
+Manager ko review task mil gaya
+-----------------------------------------------------------------------------------------------------------
+2️⃣ runIdentityTriggers(Identity identity):-
+Kya karta hai:-
+Identity me defined triggers execute karta hai
+Trigger = predefined action or workflow (jaise manager assignment, role provisioning, account creation)
+Example: Jab identity create hoti hai, default roles ya entitlements automatically assign ho jate hain
+Example / Output:
+identityService.runIdentityTriggers(user);
+
+System.out.println(user.getRoles()); 
+// Output: [Developer, IT_Admin] (Assigned automatically by trigger)
+Flow:-
+Identity triggers load hote hain (from IdentityDefinition or system config)
+Sab triggers sequentially execute hote hain
+Result: Roles/Entitlements/Notifications applied automatically
+
+3️⃣ getCertificationStatus(Identity identity):-
+Kya karta hai:-
+Identity ke certification process ka current status return karta hai
+Status values typically: NOT_STARTED, PENDING_REVIEW, APPROVED, REJECTED
+Example / Output:-
+String status = identityService.getCertificationStatus(user);
+System.out.println(status); 
+// Output: APPROVED
+Use case:-
+Compliance team ya admin check kar sakta hai ki identity ke certifications complete hue ya pending hain.
+-----------------------------------------------------------------------------------------------------------------------
+1️⃣ validateIdentity(Identity identity):-
+Kya karta hai:
+Identity ke fields aur business rules validate karta hai
+Check karta hai: required fields, email format, status, manager assignment, role conflicts etc.
+Agar invalid data hai → exception throw karta hai ya validation error return karta hai
+Example / Output:
+try {
+    identityService.validateIdentity(user);
+    System.out.println("Validation Passed");
+} catch (ValidationException e) {
+    System.out.println("Validation Failed: " + e.getMessage());
+}
+// Output: Validation Passed
+
+🔍 Ye kya kya validate karta hai:-
+1️⃣ Required Fields Check:-
+Name empty nahi hona chahiye
+Email required
+Status required
+Name = null ❌
+
+2️⃣ Email Format Check:-
+ravi@company.com ✅
+ravi.company.com ❌
+
+3️⃣ Status Validation:-
+Allowed:-
+Active
+Inactive
+Suspended
+Deleted ❌
+
+4️⃣ Manager Validation:-
+Manager exist hona chahiye
+Self manager nahi hona chahiye
+Ravi → Ravi (manager) ❌
+
+5️⃣ Role Conflict (SoD – Segregation of Duties):-
+Example:
+Admin + Auditor ❌
+👉 Security risk
+
+6️⃣ Entitlement Validation:-
+Duplicate nahi hona chahiye
+Invalid entitlement nahi hona chahiye
+
+7️⃣ Account Validation:-
+Same system ke duplicate accounts nahi
+Invalid account link nahi
+
+8️⃣ Custom Business Rules:-
+Company specific:-
+IT role → IT department
+Finance access → approval required
+--------------------------------------------------------------------------------------------------------------------------
+2️⃣ isValidEmail(Identity identity):-
+Kya karta hai:
+Identity ka email valid format me hai ya nahi check karta hai
+Invalid email → false return karta hai
+Example / Output:
+user.setEmail("ravi.kumarcompany.com"); // Invalid email
+System.out.println(identityService.isValidEmail(user)); 
+// Output: false
+
+user.setEmail("ravi.kumar@company.com"); // Correct email
+System.out.println(identityService.isValidEmail(user)); 
+// Output: true
+
+3️⃣ isValidStatus(Identity identity);-
+Kya karta hai:
+Identity ka status check karta hai
+Valid values: "Active", "Inactive", "Suspended"
+Agar invalid status → false return karta hai
+Example / Output:
+user.setStatus("Active");
+System.out.println(identityService.isValidStatus(user)); 
+// Output: true
+
+user.setStatus("Deleted");
+System.out.println(identityService.isValidStatus(user)); 
+// Output: false

@@ -1,0 +1,310 @@
+🔥 StringUtil kya hai?
+👉 StringUtil ek helper / utility class hoti hai
+👉 Jo String (text) pe kaam karne ke ready-made methods deti hai
+
+🧠 Simple Language:-
+👉 "String ke saare common kaam ek jagah pe ready mil jaate hain"
+/////////*
+1️⃣ str.trim():-
+String ke starting aur ending ke extra spaces hata deta hai
+String str = "   hello   ";
+System.out.println(str.trim());  // "hello"
+2️⃣ .isEmpty():-
+Check karta hai ki string empty hai ya nahi
+String str = "";
+System.out.println(str.isEmpty());  // true
+*////////
+--------------------------------------------------------------------
+💡 Kyu use hota hai?
+Normal Java me tu likhega:-
+if(str != null && !str.trim().isEmpty())
+
+👉 Lekin StringUtil me ye simple ho jata hai:-
+StringUtil.isNotEmpty(str)
+✅ Code clean
+✅ Time save
+✅ Reusable
+----------------------------------------------------------------------------------
+🔥 1️⃣ Basic Check Methods:-
+isEmpty(String str)
+isNotEmpty(String str)
+isBlank(String str)
+isNotBlank(String str)
+💡 Use
+empty / null check
+
+🔥 2️⃣ Safe Methods (Null-safe):-
+safeTrim(String str)
+safeEquals(Object o1, Object o2)
+safeToString(Object obj)
+
+🔥 3️⃣ Conversion Methods:-
+stringToList(String str)
+stringToList(String str, String delimiter)
+listToString(List list)
+listToString(List list, String delimiter)
+csvToList(String str)
+listToCsv(List list)
+
+🔥 4️⃣ Join & Split:-
+join(Collection col, String delimiter)
+split(String str, String delimiter)
+
+🔥 5️⃣ Default Value:-
+coalesce(Object... values)
+defaultIfNull(String str, String defaultVal)
+
+🔥 6️⃣ Case Handling:-
+capitalize(String str)
+uncapitalize(String str)
+toUpperCase(String str)
+toLowerCase(String str)
+
+🔥 7️⃣ Trim / Clean:-
+trim(String str)
+trimToNull(String str)
+trimToEmpty(String str)
+
+🔥 8️⃣ Replace / Remove:-
+replace(String str, String search, String replace)
+remove(String str, String remove)
+removeWhitespace(String str)
+
+🔥 9️⃣ Escape / Unescape:-
+escapeXml(String str)
+unescapeXml(String str)
+escapeHtml(String str)
+unescapeHtml(String str)
+
+🔥 🔟 Compare Methods:-
+equals(String str1, String str2)
+equalsIgnoreCase(String str1, String str2)
+contains(String str, String search)
+
+🔥 1️⃣1️⃣ Length / Substring:-
+length(String str)
+substring(String str, int start)
+substring(String str, int start, int end)
+
+🔥 1️⃣2️⃣ Prefix / Suffix:-
+startsWith(String str, String prefix)
+endsWith(String str, String suffix)
+
+🔥 1️⃣3️⃣ Misc Utility:-
+reverse(String str)
+repeat(String str, int times)
+abbreviate(String str, int maxWidth)
+---------------------------------------------------------------------------------------
+🔥 1️⃣ Basic Check:-
+String str1 = "";
+String str2 = "   ";
+String str3 = "Hello";
+
+System.out.println(StringUtil.isEmpty(str1));
+System.out.println(StringUtil.isBlank(str2));
+System.out.println(StringUtil.isNotEmpty(str3));
+
+✅ Output:-
+true
+true
+true
+--------------------------
+✅ safeTrim(String str):-
+👉 null-safe trim (spaces hataata hai)
+System.out.println(StringUtil.safeTrim("  Hello  "));
+System.out.println(StringUtil.safeTrim(null));
+✅ Output:-
+Hello
+""
+
+✅ safeEquals(Object o1, Object o2):-
+👉 null-safe comparison
+System.out.println(StringUtil.safeEquals("abc", "abc"));
+System.out.println(StringUtil.safeEquals(null, "abc"));
+✅ Output:-
+true
+false
+
+✅ safeToString(Object obj):-
+👉 object → string (null safe)
+System.out.println(StringUtil.safeToString(123));
+System.out.println(StringUtil.safeToString(null));
+✅ Output:-
+123
+""
+----------------------------------------------------------
+✅ stringToList(String str):-
+System.out.println(StringUtil.stringToList("A,B,C"));
+👉 String → List
+
+✅ Output:-
+[A, B, C]
+
+✅ stringToList(String str, String delimiter)
+System.out.println(StringUtil.stringToList("A|B|C", "|"));
+
+✅ Output:-
+[A, B, C]
+
+✅ listToString(List list):-
+List<String> list = Arrays.asList("A", "B", "C");
+System.out.println(StringUtil.listToString(list));
+👉 List → String
+✅ Output:-
+A,B,C
+
+✅ listToString(List list, String delimiter):-
+List<String> list = Arrays.asList("A", "B", "C");
+System.out.println(StringUtil.listToString(list, "-"));
+✅ Output:-
+A-B-C
+
+✅ csvToList(String str):-
+List<String> list = Arrays.asList("A", "B", "C");
+System.out.println(StringUtil.csvToList("X,Y,Z"));
+✅ Output:-
+[X, Y, Z]
+
+✅ listToCsv(List list):-
+List<String> list = Arrays.asList("A", "B", "C");
+System.out.println(StringUtil.listToCsv(list));
+✅ Output:-
+A,B,C
+----------------------------------------------------------------------------------------------------------
+✅ join(Collection col, String delimiter):-
+List<String> list = Arrays.asList("A", "B", "C");
+System.out.println(StringUtil.join(list, ":"));
+👉 items ko jodta hai
+✅ Output:-
+A:B:C
+
+✅ split(String str, String delimiter):-
+List<String> list = Arrays.asList("A", "B", "C");
+System.out.println(StringUtil.split("A:B:C", ":"));
+👉 string todta hai
+✅ Output:-
+[A, B, C]
+-----------------------------------------------
+✅ coalesce(Object... values):-
+System.out.println(StringUtil.coalesce(null, null, "First", "Second"));
+👉 first non-null value
+✅ Output:-
+First
+
+✅ defaultIfNull(String str, String defaultVal)
+System.out.println(StringUtil.defaultIfNull(null, "Default"));
+👉 null ho toh default
+✅ Output:-
+Default
+
+✅ Example 1:-
+String str = null;
+String result = defaultIfNull(str, "Hello");
+System.out.println(result);
+👉 Output:-
+Hello
+✔️ Kyunki str null tha → default value mil gayi
+
+✅ Example 2:
+String str = "Hi";
+String result = defaultIfNull(str, "Hello");
+System.out.println(result);
+👉 Output:-
+Hi
+✔️ Kyunki str already value rakhta hai
+----------------------------------------------------------
+✅ capitalize(String str):-
+System.out.println(StringUtil.capitalize("hello"));
+👉 first letter capital
+✅ Output:-
+Hello
+
+✅ uncapitalize(String str):-
+System.out.println(StringUtil.uncapitalize("Hello"));
+👉 first letter small
+✅ Output:-
+hello
+
+✅ toUpperCase(String str):-
+System.out.println(StringUtil.toUpperCase("java"));
+✅ Output:-
+JAVA
+
+✅ toLowerCase(String str):-
+System.out.println(StringUtil.toLowerCase("JAVA"));
+✅ Output:-
+java
+-------------------------------------------------------------
+✅ trim(String str):-
+System.out.println(StringUtil.trim("  Hi  "));
+
+✅ Output:-
+Hi
+
+✅ trimToNull(String str):-
+System.out.println(StringUtil.trimToNull("   "));
+👉 empty → null
+✅ Output:-
+null
+
+✅ trimToEmpty(String str):-
+System.out.println(StringUtil.trimToEmpty(null));
+👉 null → ""
+✅ Output:-
+""
+-------------------------------------------------------------
+✅ replace(String str, String search, String replace):-
+System.out.println(StringUtil.replace("Hello World", "World", "Java"));
+✅ Output:-
+Hello Java
+
+✅ remove(String str, String remove):-
+System.out.println(StringUtil.remove("Hello World", "World"));
+✅ Output:-
+Hello 
+
+✅ removeWhitespace(String str):-
+System.out.println(StringUtil.removeWhitespace("H e l l o"));
+✅ Output:-
+Hello
+---------------------------------------------------------------------
+✅ escapeXml(String str):-
+System.out.println(StringUtil.escapeXml("<tag>"));
+✅ Output:-
+&lt;tag&gt;
+
+✅ unescapeXml(String str):-
+System.out.println(StringUtil.unescapeXml("&lt;tag&gt;"));
+✅ Output:-
+<tag>
+
+✅ escapeHtml(String str):-
+System.out.println(StringUtil.escapeHtml("<h1>Hi</h1>"));
+✅ Output:-
+&lt;h1&gt;Hi&lt;/h1&gt;
+
+✅ unescapeHtml(String str):-
+System.out.println(StringUtil.unescapeHtml("&lt;h1&gt;Hi&lt;/h1&gt;"));
+✅ Output:-
+<h1>Hi</h1>
+----------------------------------------------------------------------------
+✅ equals(String str1, String str2):-
+System.out.println(StringUtil.equals("abc", "abc"));
+✅ Output:-
+true
+
+✅ equalsIgnoreCase(String str1, String str2):-
+System.out.println(StringUtil.equalsIgnoreCase("ABC", "abc"));
+✅ Output:-
+true
+
+✅ contains(String str, String search):-
+System.out.println(StringUtil.contains("Hello World", "World"));
+✅ Output:-
+true
+-----------------------------------------------------------------------
+✅ length(String str):-
+System.out.println(StringUtil.length("Hello"));
+✅ Output:-
+5
+----------------------------------------------------------------

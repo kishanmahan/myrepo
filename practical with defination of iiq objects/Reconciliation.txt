@@ -1,0 +1,78 @@
+()Full Reconciliation kya hai?
+-> poore system ka complete data compare karna.
+-> sab users, sab accounts, Sab Entitlement
+Har cheez dubara check Hota hai.
+isme connector se full data fetch होता है, iiq ke data se compare Hota hai.
+Jo bhi mismatch -> Fix/update.
+
+()Delta Reconciliation क्या है?
+-> sirf changes (kata hua) hue identities को check करता है।
+-> New users, updated users, Delete users
+-> kaise kaam karta hai :-
+System track karta hai:-
+'last run time',
+-> sirf uske baad ke changes fetch karta hai.
+और उन identities ko sync karta ha Target system se aur iiq me identities ko update karta hai.
+
+()Reconciliation करता kya hai?
+-> mismatch detect करता है:-
+-> iiq vs target system compare करता है।
+
+()Difference identify karta hai:-
+-> extra access hai
+-> missing access hai.
+
+()Decision leta hai (config pe depend):-
+Option A:- iiq ko update करो ।
+Option B:- target system ko update करो ।
+Sync kar deta hai:-
+-> dono same ho jaate hai.
+
+()Types of Reconciliation:-
+
+()Authoritative Reconciliation :-
+source system (truth)
+-> HR system
+-> Ex -> HR system में user delete हो गया तो iiq भी delete करेगा।
+1. Authoritative App (Example: HR System / Workday):-
+Yeh aapke company ka main source hai. 
+Iska kaam hai Identity (User Cube) banana aur uske main attributes ko control karna.
+Kya hota hai: Jab Workday ka reconciliation (aggregation) chalta hai, 
+toh IIQ seedha user ke Identity Attributes (jo Identity object ke andar hote hain, 
+jaise First Name, Last Name, Department, Manager) ko update karta hai.
+Kyun hota hai: Kyunki IIQ maanta hai ki agar HR ne Workday me department badla hai, 
+toh user ka asli department badal gaya hai.
+Flow: Workday Account ➔ updates ➔ Identity Cube (Main Attributes).
+
+()NON-Authoritative Reconciliation:-
+-> iiq sirf data sync करता है, (control nahi).
+Ex -> AD system
+-> iiq sirf update karega apna data.
+1. Non-Authoritative App Ka Asli Kaam Kya Hai?
+Iska simple matlab hai: Yeh app user ki identity (asli pehchan) nahi banata,yeh sirf user ko Access (Entitlements) deta hai.
+Examples: Active Directory (AD), Salesforce, GitHub, Linux Servers.
+Jab iska reconciliation hota hai, toh SailPoint sirf yeh check karta hai ki:-
+"Is target system me user ke paas kya-kya accounts aur permissions hain,taaki main use IIQ me sahi se dikha saku."
+
+2. Reconciliation Ke Waqt Backend Me Kya Hota Hai? (Step-by-Step)
+Jab aap kisi Non-Authoritative App ka Account Aggregation task chalate hain, toh IIQ yeh steps follow karta hai:-
+Schema Check: IIQ target app se accounts ka data pull karta hai (using Connector architecture).
+Correlation (Sabse Important Step):-
+IIQ ke paas target app ka account data aa gaya (jaise AD ka sAMAccountName = rsharma).
+Ab IIQ apne Correlation Rule ya Account Correlation configuration ko dekhta hai ki yeh account kis bande (Identity) ka hai.
+Maan lo rule ke mutabik sAMAccountName match kar gaya Identity ke employeeId ya userId se. 
+Toh IIQ us account ko us Identity ke sath Link kar deta hai. Is link ko backend me spt_link table me save kiya jata hai.
+
+()Data Comparison & Update (Jo aapne poocha tha):-
+Agar woh account pehle se link tha, toh IIQ dekhta hai ki kya target system me koi badlav hua hai?
+Scenario A: Agar AD me us user ko manually kisi ne Finance-Group me daal diya tha, 
+toh IIQ use detect karega aur IIQ ke andar jo us user ka AD Link hai, usme woh group update kar dega.
+Scenario B (Violation): Agar aapne IIQ me koi policy bana rakhi hai (SOD Policy), 
+aur user ne target system me directly koi galat group le liya hai, 
+toh is reconciliation ke baad IIQ use Policy Violation me daal dega.
+
+3. Ek Bahut Zaroori Confusion Dur Karo: Identity vs Link:-
+-->Identity Attributes: Name, Employee ID, Email, Manager, Department. (Yeh sirf Authoritative app badal sakta hai).
+
+-->Account Attributes: sAMAccountName, MemberOf, Account Status, Last Login. (Yeh Non-Authoritative app ke reconciliation se update hote hain).
+

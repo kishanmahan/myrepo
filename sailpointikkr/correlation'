@@ -1,0 +1,209 @@
+5. Correlation:-
+Identity correlation
+Correlation rules
+Account linking
+
+1️⃣ Correlation Kya Hota Hai
+Correlation ka matlab hai:-
+➡ Application se aaya hua account ko
+➡ SailPoint ke identity se match karna.
+Example:-
+Application account:-
+username = kishan.singh
+email = kishan@gmail.com
+Identity me:-
+name = Kishan Singh
+email = kishan@gmail.com
+Agar email match ho gaya → account link ho jayega.
+
+2️⃣ Identity Correlation:-
+Identity correlation ka kaam hai:-
+Account ko correct identity se match karna
+Duplicate identities avoid karna
+Identity cube update karna
+
+3️⃣ Correlation Methods (Most Important):-
+1️⃣ Attribute Based Correlation
+Attributes match kiye jate hain.
+
+Example:-
+email
+username
+employeeId
+Example rule:-
+if(account.getAttribute("email").equals(identity.getEmail())){
+    return true;
+}
+
+2️⃣ Rule Based Correlation;-
+Developer custom rule likhta hai.
+Use cases:-
+Complex matching
+Multiple attributes check
+
+Example:-
+String empId = account.getAttribute("employeeId");
+if(empId != null && empId.equals(identity.getEmployeeId())){
+    return true;
+}
+
+3️⃣ Multiple Attribute Correlation:-
+Ek se zyada attributes match karte hain.
+Example:-
+firstname
+lastname
+department
+Example:-
+if(account.getAttribute("firstname").equals(identity.getFirstname())
+ && account.getAttribute("lastname").equals(identity.getLastname())){
+    return true;
+}
+
+4️⃣ Manager Based Correlation:-
+Manager attribute ke base par match.
+Example:-
+account.manager = john
+identity.manager = john
+
+5️⃣ Email Based Correlation:-
+Sabse common method.
+
+Example:-
+account.email = kishan@gmail.com
+identity.email = kishan@gmail.com
+
+4️⃣ Correlation Rules:-
+Developer custom BeanShell rule likh sakta hai.
+Rule type:-
+Correlation Rule
+
+Use cases:-
+Complex identity match
+Custom logic
+
+Example:-
+String email = account.getAttribute("mail");
+
+if(email != null && email.equals(identity.getEmail())){
+    return true;
+}
+return false;
+
+5️⃣ Account Linking:-
+Account linking ka matlab hai:-
+➡ Application account
+➡ Identity cube ke andar attach ho jata hai.
+
+Example:-
+Identity:-
+Kishan Singh
+
+Linked accounts:-
+AD account
+SAP account
+Database account
+
+6️⃣ Link Object:-
+Link object store karta hai:-
+Account attributes
+Entitlements
+Application name
+
+Example attributes:-
+nativeIdentity
+application
+displayName
+entitlements
+
+Example code:-
+Link link = identity.getLink("ActiveDirectory");
+
+7️⃣ Correlation Configuration:-
+Admin UI me bhi configure kar sakta hai.
+
+Steps:-
+Application open karo
+Correlation tab open karo
+Attribute select karo
+
+Example:-
+Account attribute = email
+Identity attribute = email
+
+8️⃣ Uncorrelated Accounts:-
+Agar match nahi hota:-
+➡ Account uncorrelated reh jata hai.
+Solutions:-
+Manual correlation
+Correlation rule
+Identity creation
+
+9️⃣ Manual Correlation:-
+Admin manually link karta hai.
+Steps:-
+Identity search
+Account open
+Link to identity
+
+🔟 Auto Identity Creation:-
+Agar identity exist nahi karti.
+➡ SailPoint automatically identity create kar sakta hai.
+
+1️⃣1️⃣ Correlation During Aggregation:-
+Correlation aggregation ke time run hota hai.
+Steps:-
+1️⃣ Account aggregation
+2️⃣ Correlation check
+3️⃣ Link creation
+4️⃣ Identity cube update
+
+1️⃣2️⃣ Correlation Debugging:-
+Developer debugging kar sakta hai.
+Tools:-
+Debug page
+Log files
+Rule testing
+
+Example log:-
+Correlation rule executed
+Account matched with identity
+
+1️⃣3️⃣ Correlation Best Practices:-
+Unique attribute use karo
+Email ya employeeId best hota hai
+Duplicate avoid karo
+
+1️⃣4️⃣ Correlation Problems:-
+Common issues:-
+Duplicate identities
+Account mismatch
+Attribute null value
+
+Solutions:-
+Custom rule
+Attribute mapping fix
+
+1️⃣5️⃣ Correlation Flow (Real Project):-
+Flow:-
+Application Account
+        ↓
+Aggregation
+        ↓
+Correlation Check
+        ↓
+Identity Match
+        ↓
+Account Linking
+        ↓
+Identity Cube Update
+
+🔥 Important Classes (Developer):-
+Developer in objects ke saath kaam karta hai:-
+Identity
+Account
+Link
+Application
+
+Example:-
+Identity identity = context.getObjectByName(Identity.class, "kishan");
+Link link = identity.getLink("ActiveDirectory");

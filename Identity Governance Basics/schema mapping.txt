@@ -1,0 +1,21 @@
+()Schema mapping kya karta hai?
+--Schema Mapping ka matlab hai application ke fields ko SailPoint ke fields se match karna.
+Application aur SailPoint ke field names alag ho sakte hain.
+
+Example:-
+Application fields:-
+uid
+mail
+department
+
+SailPoint fields:-
+name
+email
+dept
+
+Mapping:-
+uid → name
+mail → email
+department → dept
+
+Isko schema mapping bolte hain.

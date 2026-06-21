@@ -1,0 +1,28 @@
+()Connector kya hai?
+--Connector = SailPoint aur Target System ke beech ka bridge (connection)
+Matlab SailPoint directly system se baat nahi karta.
+Wo connector use karta hai taaki target system se data le sake aur access manage kar sake.
+
+Simple Example:-
+Company me employee Rahul hai.
+Uska account Active Directory me banana hai.
+Flow:-
+
+Rahul
+↓
+SailPoint
+↓
+Connector
+↓
+Active Directory
+↓
+Account Create
+
+Yaha Connector SailPoint ko Active Directory se connect kar raha hai.
+Connector kya kya karta hai
+Connector 3 main kaam karta hai:-
+
+Kaam	                         Meaning
+Aggregation-----target system se users aur accounts ka data lana
+Provisioning----accounts create / update / delete karna
+Reconciliation--SailPoint aur target system data sync karna

@@ -1,0 +1,485 @@
+7️⃣ Access Profile:-
+Kya hai?
+Access Profile = Application access ka bundle / package.
+Isme entitlements (permissions) group kiye jate hain taaki ek hi request me access mil jaye.
+Short Answer:-
+👉 Access Profile में user application के entitlements (permissions / groups / roles) के लिए request करता है।
+Access Profile kyu bhejte (request) hai?
+Access Profile isliye bhejte hain taaki user ko kisi application ka access mil sake.
+
+()Access Profile Important Attributes:-
+Attribute	Kya karta hai
+name------------Access profile ka naam
+source----------Application source
+entitlements----Permissions list
+requestable-----User request kar sakta hai ya nahi
+description-----Access ka purpose
+
+()Access Profile में क्या-क्या होता है:-
+Access Profile के अंदर:-
+Entitlements
+Approval workflow
+Owner
+Description
+Source (Application)
+
+()Example:-
+Access Profile:-
+HR App Access
+
+Inside Access Profile:-
+Entitlement 1 → HR_Read
+Entitlement 2 → HR_Report
+
+अगर user HR App Access request करेगा तो दोनों entitlements मिल सकते हैं।
+
+()IdentityNow Access Request Flow:-
+User
+↓
+Access Request
+↓
+Access Profile choose
+↓
+Manager / Owner approval
+↓
+Provisioning
+↓
+Application में access create
+------------------------------------------------------------------------------------------------------------
+()system/admin side se Access Profile create aur manage kar raha hai.
+Ye sab SailPoint IdentityNow ke REST APIs ko call karke hota hai.
+hummne abhi tak koi access request nahi kiya access profile ko choose karne ke liye:-
+-----------------------------------------:-----------------------------------
+
+1️⃣ Java Code – Access Profile Create (API Call)
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.io.OutputStream;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
+
+public class CreateAccessProfile {
+
+    public static void main(String[] args) {
+        try {
+
+            URL url = new URL("https://tenant.api.identitynow.com/v3/access-profiles");
+
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Authorization", "Bearer ACCESS_TOKEN");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setDoOutput(true);
+
+            String jsonInput = "{"
+                    + "\"name\":\"SAP Finance Access\","
+                    + "\"description\":\"Finance team SAP access profile\","
+                    + "\"requestable\":true"
+                    + "}";
+
+            OutputStream os = conn.getOutputStream();
+            os.write(jsonInput.getBytes());
+            os.flush();
+
+            BufferedReader br = new BufferedReader(
+                    new InputStreamReader(conn.getInputStream()));
+
+            String line;
+            while ((line = br.readLine()) != null) {
+                System.out.println(line);
+            }
+
+            conn.disconnect();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+2️⃣ JSON Request Body
+{
+  "name": "SAP Finance Access",
+  "description": "Finance team SAP access profile",
+  "requestable": true
+}
+3️⃣ Output (API Response)
+{
+  "id": "2c9180857a6f9999997a6f999999abcd",
+  "name": "SAP Finance Access",
+  "description": "Finance team SAP access profile",
+  "requestable": true,
+  "enabled": true
+}
+
+Matlab:-
+Access Profile Successfully Created
+//////////////*
+()1️⃣ URL banana:-
+URL url = new URL("https://tenant.api.identitynow.com/v3/access-profiles");
+Kya hai?
+URL = Java class jo web address ko represent karti hai.
+
+Yaha kya ho raha hai
+https://tenant.api.identitynow.com/v3/access-profiles
+
+Iska matlab:-
+IdentityNow server ko request bhejni hai
+endpoint = access-profiles
+method = create access profile
+
+()2️⃣ Connection open karna:-
+HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+Kya hai?
+HttpURLConnection = Java class jo HTTP request bhejne ke liye use hoti hai
+
+Yaha kya ho raha hai?
+Java program
+      ↓
+Internet connection open
+      ↓
+IdentityNow API server
+
+url.openConnection()
+→ server se connection open karta hai.
+
+()3️⃣ HTTP Method set karna:-
+conn.setRequestMethod("POST");
+Kya hai?
+HTTP methods:-
+GET → data read
+POST → data create
+PUT → data update
+DELETE → data delete
+Yaha
+POST = new Access Profile create
+
+()4️⃣ Header set karna:-
+conn.setRequestProperty("Authorization", "Bearer ACCESS_TOKEN");
+Kya hai?
+Authorization header server ko batata hai:
+
+kaun request bhej raha hai?
+Format:-
+Bearer TOKEN
+
+Example:-
+Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+Server verify karta hai.
+
+()5️⃣ Content type:-
+conn.setRequestProperty("Content-Type", "application/json");
+Matlab:-
+Server ko bata rahe ho:-
+data JSON format me aa raha hai
+Example JSON:-
+{
+"name":"SAP Finance Access"
+}
+
+()9️⃣ Flush:-
+os.flush();
+Matlab:-
+Buffer me jo data hai usko forcefully server ko send karo
+
+()1️⃣1️⃣ Response print karna:-
+String line;
+
+while ((line = br.readLine()) != null) {
+    System.out.println(line);
+}
+Kya ho raha hai?
+Server response line by line read ho raha hai.
+
+Example output:-
+{
+"id":"12345",
+"name":"SAP Finance Access"
+}
+Console me print hoga.
+
+1️⃣2️⃣ Response Code
+conn.getResponseCode();
+Kya hai
+
+Server ka status code
+
+Code	Meaning
+200	   Success
+201	   Created
+400	   Bad request
+401	   Unauthorized
+500	   Server error
+
+()1️⃣3️⃣ Connection close:-
+conn.disconnect();
+Matlab:-
+Server connection close
+resources free
+
+()1️⃣ BufferedReader:-
+BufferedReader Kya hai?
+Java ki class hai (java.io package).
+Kya karta hai?
+Text ko line by line read karta hai
+
+()1️⃣ conn.setDoOutput(true);
+conn.setDoOutput(true);:-
+setDoOutput():-
+HttpURLConnection ka method hai.
+Ye batata hai ki request body bhejni hai ya nahi.
+Agar:-
+false → data send nahi hoga
+true → data send hoga
+
+()2️⃣ OutputStream os = conn.getOutputStream();:-
+OutputStream os = conn.getOutputStream();
+
+()OutputStream:-
+Java ki class (java.io)
+Data ko bahar bhejne ka stream,
+OutputStream → program se server ko data bhejne ka pipe.
+
+()getOutputStream():-
+Method of HttpURLConnection.
+Kya karta hai?
+request body bhejne ke liye stream deta hai.
+
+3️⃣ os.write(jsonInput.getBytes());:-
+
+()write() OutputStream ka method hai.
+Kaam:-
+data ko stream me bhejna.
+
+()getBytes():-
+String ka method.
+Kya karta hai?
+String → bytes converrt karta hai,
+Kyuki network me data bytes form me send hota hai.
+
+Example:-
+"Hello"
+↓
+[72,101,108,108,111]
+
+()BufferedReader br =new BufferedReader(new InputStreamReader(conn.getInputStream()));:-
+--
+BufferedReader(...):-
+Yaha BufferedReader object create ho raha hai memory me.
+Lekin isko ek Reader object chahiye jisse data read kare.
+Isliye hum InputStreamReader pass kar rahe hain.
+
+3️⃣ new InputStreamReader(
+new InputStreamReader(
+InputStreamReader
+Java class (java.io).
+Kaam:-
+bytes → characters me convert karta hai,
+Kyuki network me data bytes form me aata hai.
+
+()getInputStream():-
+Ye HttpURLConnection ka method hai.
+Kaam:-
+server ka response stream return karta hai
+Example:-
+Server response:-
+{
+"id":"12345",
+"name":"SAP Finance Access"
+}
+Ye response InputStream me aata hai.
+*//////////////
+--------------------------------------------------------------------------------------------------------
+1️⃣ Project Structure (Java REST Client)
+identitynow-project
+│
+├── AccessProfileCreate.java
+├── AccessProfileList.java
+├── AccessRequest.java
+2️⃣ Access Profile Create Code
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+public class AccessProfileCreate {
+
+    public static void main(String[] args) throws Exception {
+
+        String apiUrl = "https://tenant.api.identitynow.com/v3/access-profiles";
+
+        URL url = new URL(apiUrl);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Authorization", "Bearer YOUR_ACCESS_TOKEN");
+        conn.setRequestProperty("Content-Type", "application/json");
+        conn.setDoOutput(true);
+
+        String jsonInput = "{"
+                + "\"name\": \"Salesforce Read Access\","
+                + "\"description\": \"Access to Salesforce read data\","
+                + "\"sourceId\": \"2c9180847e9b1a1f017e9c1234567890\""
+                + "}";
+
+        OutputStream os = conn.getOutputStream();
+        os.write(jsonInput.getBytes());
+        os.flush();
+
+        System.out.println("Response Code: " + conn.getResponseCode());
+    }
+}
+3️⃣ Access Profile List Code
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
+public class AccessProfileList {
+
+    public static void main(String[] args) throws Exception {
+
+        URL url = new URL("https://tenant.api.identitynow.com/v3/access-profiles");
+
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Authorization", "Bearer YOUR_ACCESS_TOKEN");
+
+        BufferedReader br = new BufferedReader(
+                new InputStreamReader(conn.getInputStream()));
+
+        String line;
+
+        while ((line = br.readLine()) != null) {
+            System.out.println(line);
+        }
+    }
+}
+4️⃣ Access Request Code
+
+User access profile request karega.
+
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+public class AccessRequest {
+
+    public static void main(String[] args) throws Exception {
+
+        URL url = new URL("https://tenant.api.identitynow.com/v3/access-requests");
+
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Authorization", "Bearer YOUR_ACCESS_TOKEN");
+        conn.setRequestProperty("Content-Type", "application/json");
+
+        conn.setDoOutput(true);
+
+        String requestBody = "{"
+                + "\"requestedFor\": \"2c9180847e9b1a1f017e9c1111111111\","
+                + "\"accessProfileIds\": [\"2c9180847e9b1a1f017e9c2222222222\"]"
+                + "}";
+
+        OutputStream os = conn.getOutputStream();
+        os.write(requestBody.getBytes());
+        os.flush();
+
+        System.out.println("Access Request Response: " + conn.getResponseCode());
+    }
+}
+output:-
+✅ Success Output
+Response Code: 201
+
+Meaning:
+
+Access Profile successfully create ho gaya
+
+API response (example JSON):
+
+{
+ "id": "2c9180847e9b1a1f017e9c9999999999",
+ "name": "Salesforce Read Access",
+ "description": "Access to Salesforce read data",
+ "sourceId": "2c9180847e9b1a1f017e9c1234567890"
+}
+
+2️⃣ AccessProfileList.java Output
+
+Ye code API response print karta hai.
+
+Example Output:
+
+[
+ {
+   "id": "2c9180847e9b1a1f017e9c1111111111",
+   "name": "Salesforce Read Access",
+   "description": "Access to Salesforce read data"
+ },
+ {
+   "id": "2c9180847e9b1a1f017e9c2222222222",
+   "name": "HR App Access",
+   "description": "HR application access"
+ }
+]
+
+Console Output:
+
+[
+ {"id":"2c9180847e9b1a1f017e9c1111111111","name":"Salesforce Read Access","description":"Access to Salesforce read data"},
+ {"id":"2c9180847e9b1a1f017e9c2222222222","name":"HR App Access","description":"HR application access"}
+]
+
+3️⃣ AccessRequest.java Output
+
+Code:
+
+System.out.println("Access Request Response: " + conn.getResponseCode());
+✅ Success Output
+Access Request Response: 202
+
+Meaning:
+
+Access request accepted
+workflow start ho gaya
+-----------------------------------------------------------------------------------------------------------
+()system/admin side se Access Profile create aur manage kar raha hai.
+Ye sab SailPoint IdentityNow ke REST APIs ko call karke hota hai.
+hummne abhi tak koi access request nahi kiya access profile ko choose karne ke liye,
+lekin abb hum access profile ko choose karenge access request karne ke liye:-
+
+1️⃣ requestedFor ID kya hai?
+"requestedFor": "2c9180847e9b1a1f017e9c1111111111"
+Ye Identity (User) ID hoti hai.
+Matlab:-
+User → Rahul
+User ID → 2c9180847e9b1a1f017e9c1111111111
+
+System ko pata chale:-
+kis user ke liye access request ho rahi hai
+
+2️⃣ accessProfileIds kya hai?
+"accessProfileIds": [
+"2c9180847e9b1a1f017e9c2222222222"
+]
+Ye Access Profile ID hoti hai.
+
+Example:-
+Access Profile → Salesforce Read Access
+Access Profile ID → 2c9180847e9b1a1f017e9c2222222222
+
+Matlab:-
+user kis access profile ka access maang raha hai
+
+
+3️⃣ Access Request JSON ka matlab:-
+{
+ "requestedFor": "UserID",
+ "accessProfileIds": ["AccessProfileID"]
+}
+Meaning:-
+UserID → kis user ko access chahiye
+AccessProfileID → kaunsa access chahiye.
+

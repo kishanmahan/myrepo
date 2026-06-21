@@ -1,0 +1,137 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Form PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Form name="KKR_Form_Financial_Planning_AccountCreate" type="Application">
+  <Attributes>
+    <Map>
+      <entry key="pageTitle" value="KKR_Form_Financial_Planning_AccountCreate"/>
+    </Map>
+  </Attributes>
+  <Section label="Financial Account Details" name="financialPlanningAccountSection">
+    <Field displayName="Employee" name="employee" type="string">
+      <Script>
+        <Source>return identity.getAttribute("firstname") + " " + identity.getAttribute("lastname");</Source>
+      </Script>
+    </Field>
+    <Field displayName="First Name" name="firstName" type="string">
+      <Script>
+        <Source>return identity.getAttribute("firstname");</Source>
+      </Script>
+    </Field>
+    <Field displayName="Last Name" name="lastName" type="string">
+      <Script>
+        <Source>return identity.getAttribute("lastname");</Source>
+      </Script>
+    </Field>
+    <Field displayName="Employment Status" name="empStatus" type="string">
+      <Script>
+        <Source>return "Active";</Source>
+      </Script>
+    </Field>
+    <Field displayName="Department" name="department" type="string">
+      <Script>
+        <Source>return "IT";</Source>
+      </Script>
+    </Field>
+    <Field displayName="User Level" name="userLevel" type="string">
+      <Script>
+        <Source>return "professional";</Source>
+      </Script>
+    </Field>
+    <Field displayName="Hire Date" name="hireDate" type="string">
+      <Script>
+        <Source>return "08/08/2026";</Source>
+      </Script>
+    </Field>
+    <Field displayName="Salary Class" name="salaryClass" type="string">
+      <Script>
+        <Source>return "20000";</Source>
+      </Script>
+    </Field>
+    <Field displayName="Termination Date" name="terminationDate" type="string">
+     <Script>
+        <Source>return "01/01/2026";</Source>
+      </Script>
+    </Field>
+    <Field displayName="Work State" name="workState" type="string">
+      <Script>
+        <Script>
+        <Source>return "*";</Source>
+      </Script>
+      </Script>
+    </Field>
+    <Field displayName="Email" name="email" type="string">
+      <Script>
+        <Source>return identity.getAttribute("email");</Source>
+      </Script>
+    </Field>
+    <Field displayName="Country Code" name="countryCode" type="string">
+      <Script>
+        <Script>
+        <Source>return "**";</Source>
+      </Script>
+      </Script>
+    </Field>
+    <Field displayName="Work Country" name="workCountry" type="string">
+      <Script>
+        <Source>return "India";</Source>
+      </Script>
+    </Field>
+    <Field displayName="Manager" name="manager" type="string">
+      <Script>
+        <Source>
+		import sailpoint.object.Identity;
+		Identity managerIdentity= identity.getManager();
+        if(managerIdentity!=null)
+    	return managerIdentity.getDisplayableName();
+		 </Source>
+      </Script>
+    </Field>
+    <Field displayName="Supervisor ID" name="superviserId" type="string">
+      <Script>
+        <Source>
+		import sailpoint.object.Identity;
+		Identity managerIdentity= identity.getManager();
+        if(managerIdentity!=null)
+    	return managerIdentity.getAttribute("employeeId");
+		</Source>
+      </Script>
+    </Field>
+    <Field displayName="Employee ID" name="employeeId" type="string">
+      <Script>
+        <Source>return identity.getAttribute("employeeId");</Source>
+      </Script>
+    </Field>
+    <Field displayName="Business Unit" name="bussinessUnit" type="string">
+      <Script>
+        <Script>
+        <Source>return "IT";</Source>
+      </Script>
+      </Script>
+    </Field>
+    <Field displayName="Annual Hours" name="annualHours" type="string">
+      <Script>
+        <Script>
+        <Source>return "1920";</Source>
+      </Script>
+      </Script>
+    </Field>
+    <Field displayName="Job Title" name="jobTitle" type="string">
+      <Script>
+        <Script>
+        <Source>return "cyber";</Source>
+      </Script>
+      </Script>
+    </Field>
+    <Field displayName="Is Manager" name="isManager" type="string">
+      <Script>
+        <Source>
+		boolean managerStatus=identity.getManagerStatus();
+		if(managerStatus)
+		return "Yes";
+		else
+		return "No";
+		</Source>
+      </Script>
+    </Field>
+  </Section>
+</Form>

@@ -1,0 +1,223 @@
+()SailPoint IdentityNow ek cloud-based IAM (Identity and Access Management) platform hai.
+Simple words me:-
+IdentityNow ek system hai jo company me
+users ko kaunsa application access milega
+ye control karta hai.
+
+1️⃣ IdentityNow kya karta hai?
+Ye company me user access manage karta hai.
+Example:-
+Employee → Rahul
+Applications → Salesforce, SAP, Jira
+
+()IdentityNow decide karega:-
+Rahul ko kaun sa access milega
+kaun approve karega
+kab revoke hoga
+
+6️⃣ IdentityNow ka main purpose
+Right user
+Right access
+Right time
+Matlab:-
+Galat user ko access nahi milega
+
+()Flow:-
+Rahul
+↓
+Access Request
+↓
+Manager Approval
+↓
+IdentityNow
+↓
+Salesforce access mil gaya
+
+3️⃣ IdentityNow kya manage karta hai
+IdentityNow ye sab manage karta hai:-
+Identities (users)
+Accounts
+Entitlements
+Access Profiles
+Roles
+Access Requests
+Approvals
+Provisioning
+
+
+1️⃣ Identity:-
+Identity = User / Employee
+Example:-
+Rahul
+Amit
+Priya
+Identity ke attributes ho sakte hain:-
+firstname
+lastname
+email
+department
+manager
+
+Example:-
+Name: Rahul
+Department: IT
+Email: rahul@company.com
+
+2️⃣ Source:-
+Source = System jahan se user data aata hai
+Examples:-
+Active Directory
+HR system
+Database
+Salesforce
+
+Flow:-
+HR System
+   ↓
+IdentityNow Source
+   ↓
+Identity create
+
+3️⃣ Aggregation:-
+Aggregation = Source se users aur accounts import karna
+Example:-
+Active Directory
+      ↓
+Aggregation
+      ↓
+IdentityNow me users load
+
+4️⃣ Identity Profile:-
+Identity Profile = Identity create karne ka rule
+Ye decide karta hai:-
+kaun sa source use hoga
+kaun se attributes identity me aayenge
+Example mapping:-
+HR.firstName → Identity.firstName
+HR.email → Identity.email
+
+5️⃣ Transform:-
+Transform = Data modify karna
+Example:-
+firstname + lastname → displayName
+Example output:-
+Rahul + Kumar = Rahul Kumar
+
+6️⃣ Role:-
+Role = Access ka group
+Example:-
+Finance Role
+IT Admin Role
+HR Role
+Role me multiple permissions hote hain.
+
+Example:-
+Finance Role
+   ↓
+SAP access
+Database access
+
+7️⃣ Access Profile:-
+Access Profile = Application access ka package
+Example:-
+Application: SAP
+Access Profile: SAP Finance Access
+
+8️⃣ Entitlement:-
+Entitlement = Specific permission
+Example:-
+SAP_READ
+SAP_WRITE
+ADMIN_ACCESS
+
+9️⃣ Lifecycle State:-
+Lifecycle State = User ka status
+Example:-
+Joiner
+Active
+Leave
+
+Flow:-
+Employee Join
+      ↓
+Joiner State
+      ↓
+Access assign
+
+🔟 Provisioning:-
+Provisioning = Access create / update / remove
+Example:-
+User request SAP access
+        ↓
+Provisioning
+        ↓
+SAP account create
+1️⃣1️⃣ Access Request
+
+User khud access request karta hai.
+
+Example:
+
+Rahul requests SAP access
+Manager approves
+Access granted
+
+1️⃣2️⃣ Access Certification:-
+Access review process
+Manager check karta hai:-
+Employee ko ye access chahiye ya nahi
+Example:-
+Manager Review
+   ↓
+Keep / Remove access
+
+1️⃣3️⃣ Governance:-
+Security aur compliance manage karna
+Example:-
+Policy
+Access Review
+Audit
+---------------------------------------------------
+🔹 Complete IdentityNow Flow:-
+HR System / Active Directory (Source)
+            ↓
+        Aggregation
+            ↓
+        Identity Profile
+            ↓
+        Identity Create
+            ↓
+        Transform
+            ↓
+        Role Assignment
+            ↓
+        Access Profile
+            ↓
+        Entitlement
+            ↓
+        Access Request
+            ↓
+        Approval Workflow
+            ↓
+        Provisioning
+            ↓
+        Application Access
+            ↓
+        Access Certification
+            ↓
+        Governance / Audit
+---------------------------------------------
+1️⃣ Project Structure:-
+IdentityNowFlowProject
+│
+└── src
+    ├── Identity.java
+    ├── Source.java
+    ├── Entitlement.java
+    ├── AccessProfile.java
+    ├── Role.java
+    ├── AccessRequest.java
+    ├── ProvisioningService.java
+    ├── CertificationService.java
+    └── Main.java		
+

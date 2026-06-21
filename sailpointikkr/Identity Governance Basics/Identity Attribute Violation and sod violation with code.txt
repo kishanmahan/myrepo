@@ -1,0 +1,216 @@
+-------------------------
+2️⃣ Enterprise Example:-
+SoD Violation:-
+Policy:-
+User cannot have Create_Payment + Approve_Payment role
+
+Violation:-
+Rahul has both roles
+
+Remediation Options:-
+Automatic → Revoke Approve_Payment role
+Manual → Send alert to manager for approval
+------------------------------------------------------------------------------
+()Identity Attribute Violation:-
+🔥 1. Identity Attribute Violation kya hai?
+👉 Jab Identity ke kisi attribute ki value policy/rule ko violate kare,
+👉 usko bolte hai Identity Attribute Violation
+📌 Example:-
+Identity ke attributes:-
+email
+department
+location
+manager
+employeeType
+
+👉 Ab policy hai:-
+❗ “Email mandatory hona chahiye”
+👉 Lekin:-
+email = null
+👉 ❌ Ye violation hai
+👉 ✅ Identity Attribute Violation
+
+🔥 4. SailPoint me kaise detect hota hai?
+
+👉 PolicyEvaluator / Identity Refresh ke time
+
+Flow:
+
+Identity Refresh
+      ↓
+Attribute Check
+      ↓
+Policy Validation
+      ↓
+Violation Detect
+      ↓
+Violation Create
+-----------------------------------
+🔥 5. Kaun detect karta hai?
+👉 PolicyEvaluator
+👉 Identity Refresh Task
+
+🔥 6. Violation kaha store hota hai?
+👉 ❌ DB me directly attribute nahi
+👉 ✅ Lekin violation object store hota hai
+👉 Tables / objects:-
+Identity
+PolicyViolation
+ComplianceViolation
+----------------------------------------
+ex:-
+Policy:-
+Finance users cannot access HRSystem
+
+Violation:-
+John from Finance accessed HRSystem
+
+Remediation Options:-
+Automatic → Remove HRSystem access
+Manual → Alert security / manager
+---------------------------------------------------------
+1️⃣ Project Structure:-
+iam-project
+│
+├── Identity.java
+├── Violation.java
+├── PolicyEngine.java
+└── Main.java
+
+2️⃣ Identity Class
+public class Identity {
+
+    private String name;
+    private boolean hasCreateRole;
+    private boolean hasApproveRole;
+
+    public Identity(String name, boolean hasCreateRole, boolean hasApproveRole) {
+        this.name = name;
+        this.hasCreateRole = hasCreateRole;
+        this.hasApproveRole = hasApproveRole;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean hasCreateRole() {
+        return hasCreateRole;
+    }
+
+    public boolean hasApproveRole() {
+        return hasApproveRole;
+    }
+
+    // Automatic remediation: revoke Approve role
+    public void revokeApproveRole() {
+        if(hasApproveRole) {
+            hasApproveRole = false;
+            System.out.println("Automatic Remediation: Approve Role revoked for " + name);
+        }
+    }
+}
+3️⃣ Violation Class
+public class Violation {
+
+    private Identity user;
+    private String policyName;
+    private String reason;
+
+    public Violation(Identity user, String policyName, String reason) {
+        this.user = user;
+        this.policyName = policyName;
+        this.reason = reason;
+    }
+
+    public void printViolation() {
+        System.out.println("VIOLATION DETECTED");
+        System.out.println("User: " + user.getName());
+        System.out.println("Policy: " + policyName);
+        System.out.println("Reason: " + reason);
+        System.out.println("----------------------");
+    }
+
+    public void remediate() {
+        System.out.println("REMEDIATION STARTED for " + user.getName());
+        user.revokeApproveRole();
+        System.out.println("----------------------");
+    }
+}
+4️⃣ Policy Engine (Detect + Remediate)
+import java.util.ArrayList;
+import java.util.List;
+
+public class PolicyEngine {
+
+    private List<Violation> violations = new ArrayList<>();
+
+    public void evaluateSoD(Identity user) {
+        if(user.hasCreateRole() && user.hasApproveRole()) {
+            Violation v = new Violation(user, "SoD Policy", "User has conflicting roles: Create & Approve");
+            violations.add(v);
+        }
+    }
+
+    public void processViolations() {
+        if(violations.isEmpty()) {
+            System.out.println("No violations detected");
+        } else {
+            for(Violation v : violations) {
+                v.printViolation();
+                v.remediate();
+            }
+        }
+    }
+}
+5️⃣ Main Program (Enterprise Simulation)
+public class Main {
+
+    public static void main(String[] args) {
+
+        // Users
+        Identity rahul = new Identity("Rahul", true, true); // Has conflicting roles
+        Identity amit = new Identity("Amit", true, false);  // No conflict
+
+        // Policy Engine
+        PolicyEngine engine = new PolicyEngine();
+
+        // Evaluate SoD Policy
+        engine.evaluateSoD(rahul);
+        engine.evaluateSoD(amit);
+
+        // Process Violations
+        engine.processViolations();
+
+        // Check final state
+        System.out.println("Final Role State:");
+        System.out.println("Rahul - Approve Role: " + rahul.hasApproveRole());
+        System.out.println("Amit - Approve Role: " + amit.hasApproveRole());
+    }
+}
+
+
+6️⃣ Output (Workable Enterprise Simulation):-
+VIOLATION DETECTED
+User: Rahul
+Policy: SoD Policy
+Reason: User has conflicting roles: Create & Approve
+----------------------
+REMEDIATION STARTED for Rahul
+Automatic Remediation: Approve Role revoked for Rahul
+----------------------
+Final Role State:
+Rahul - Approve Role: false
+Amit - Approve Role: false
+
+////////////*
+()जो तुमने code लिखा है:-ye store kaha honge violations me add hone se pehle?
+Identity rahul = new Identity("Rahul", true, true); // Has conflicting roles
+Identity amit = new Identity("Amit", true, false);  // No conflict
+
+()1️⃣ Memory / Object Creation:-
+जब ये line run होती है, दो अलग-अलग Identity objects memory में बनते हैं।
+rahul object → heap memory में store होता है।
+amit object → अलग heap location में store होता है।
+ये same class का instance हैं, लेकिन completely independent objects हैं।
+*////////////

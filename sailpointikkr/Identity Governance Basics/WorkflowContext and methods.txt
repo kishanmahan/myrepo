@@ -1,0 +1,488 @@
+()WorkflowContext kya hai?
+WorkflowContext ek object/class hai jo current workflow execution ke environment aur data ko represent karta hai SailPoint me.
+Matlab: Jab bhi workflow run hoti hai, WorkflowContext me saari information available hoti hai jaise:-
+Workflow ke variables
+Arguments (inputs)
+Execution status
+Output/result
+Ye basically workflow ke “runtime environment” ka container hai.
+ye value store nahi karta.aur conversion me workflowcontext ke andar ke workflowcase/workflow use hota hai.
+🔹 1️⃣ “WorkflowContext value store nahi karta”
+👉 ✔️ Bilkul sahi (mostly)
+WorkflowContext ek runtime object hai
+Ye temporary hota hai
+Execution ke time hi exist karta hai
+👉 Isme:-
+values hold hoti hain (temporary)
+but database me store nahi hoti
+👉 Example:-
+context.getArguments();  // temporary data
+
+🔹 2️⃣ “conversion me workflowcontext ke andar ke workflowcase/workflow use hota hai”
+👉 ✔️ Ye bhi sahi hai — aur ye important concept hai
+Jab tu likhta hai:-
+context.toXml();
+
+👉 Actually hota kya hai:-
+WorkflowContext → internally → WorkflowCase / SailPointObject → toXml() me convert karta hai.
+
+--------------------------------------
+🔹 WorkflowContext ke main uses:-
+Arguments set aur get karna
+Workflow ke input ya output variables ko handle karna
+Execution status check karna
+Workflow successful hai ya failed
+Workflow ke results access karna
+Workflow me messages add karna
+Launch message, UI message, logs
+
+--------------------------------------------
+()sare methods workflowcontext ke:-
+------------------------------------------
+getArguments
+setArguments
+getExecutionResult
+getLastExecutionStatus
+getExecutionTime
+
+getLaunchMessage
+setLaunchMessage
+addLaunchMessage
+addMessage
+getMessage
+getProperty
+isProperty
+commit
+rollback
+
+getWorkflow
+getWorkflowName
+getWorkflowDefinition
+getApplication
+setApplication
+getScope
+setScope
+getPopulation
+setPopulation
+getCreated
+getModified
+getCreatedBy
+getModifiedBy
+toXml
+fromXml
+toMap
+fromMap
+validate
+clone
+equals
+hashCode
+toString
+---------------------------------------------------------------------------
+✅ 1️⃣ getArguments()
+👉 Kya karta hai:-
+Workflow ko jo input mila hai (UI / request / previous step se) wo return karta hai.
+Type → Map<String, Object>
+
+✅ Code:-
+Map args = context.getArguments();
+
+System.out.println("Arguments: " + args);
+🟢 Output:-
+Arguments: {identity=john.doe, role=EmployeeRole, requestId=12345}
+💡 Real Use:-
+Role, identity, form fields yahi se milte hain,
+Har workflow step isi se data uthata hai.
+
+✅ 2️⃣ setArguments()
+👉 Kya karta hai:-
+Workflow ke arguments ko update ya replace karta hai,
+Next steps ko data pass karne ke liye use hota hai.
+
+✅ Code:-
+Map args = context.getArguments();
+
+args.put("approvalStatus", "APPROVED");
+
+context.setArguments(args);
+🟢 Output:-
+Arguments updated: {identity=john.doe, role=EmployeeRole, approvalStatus=APPROVED}
+
+💡 Real Use:-
+Approval ke baad status pass karna
+
+✅ 3️⃣ getExecutionResult()
+👉 Kya karta hai:-
+Workflow execution ka final result return karta hai.
+
+✅ Code:-
+Object result = context.getExecutionResult();
+System.out.println("Execution Result: " + result);
+🟢 Output:-
+Execution Result: SUCCESS
+
+✅ 4️⃣ getLastExecutionStatus():-
+👉 Kya karta hai:-
+Last executed step ka status return karta hai.
+
+✅ Code:-
+String status = context.getLastExecutionStatus();
+
+System.out.println("Last Step Status: " + status);
+🟢 Output:-
+Last Step Status: COMPLETED
+
+✅ 5️⃣ getExecutionTime():-
+👉 Kya karta hai:-
+Workflow ko run hone me kitna time laga (milliseconds me)
+
+✅ Code:-
+long time = context.getExecutionTime();
+
+System.out.println("Execution Time: " + time + " ms");
+🟢 Output:-
+Execution Time: 1523 ms
+-----------------------------------------------
+🔥 Full Combined Example (WorkflowContext):-
+// 1. Get arguments
+Map args = context.getArguments();
+System.out.println("Args: " + args);
+
+// 2. Update arguments
+args.put("processed", true);
+context.setArguments(args);
+
+// 3. Get execution result
+Object result = context.getExecutionResult();
+System.out.println("Result: " + result);
+
+// 4. Last step status
+String status = context.getLastExecutionStatus();
+System.out.println("Last Status: " + status);
+
+// 5. Execution time
+long time = context.getExecutionTime();
+System.out.println("Time: " + time + " ms");
+-----------------------------------------------------------------------------------------
+()✅ 1️⃣ getLaunchMessage():-
+👉 Kya karta hai:-
+Workflow start hone pe jo UI me message show hota hai, wo return karta hai
+
+✅ Code:-
+String msg = context.getLaunchMessage();
+System.out.println("Launch Message: " + msg);
+🟢 Output:-
+Launch Message: Workflow started successfully
+
+✅ 2️⃣ setLaunchMessage():-
+👉 Kya karta hai:-
+Existing launch message ko replace karta hai
+
+✅ Code:-
+context.setLaunchMessage("Provisioning started...");
+🟢 Output (UI):-
+Provisioning started...
+
+✅ 3️⃣ addLaunchMessage()
+👉 Kya karta hai:-
+Launch message me extra message add karta hai (append)
+
+✅ Code:-
+context.addLaunchMessage("Role assignment in progress...");
+🟢 Output (UI):-
+Workflow started successfully
+Role assignment in progress...
+
+✅ 4️⃣ addMessage():-
+👉 Kya karta hai:-
+Workflow case me message add karta hai (logs / UI messages)
+
+✅ Code:-
+context.addMessage("Provisioning plan created");
+🟢 Output:-
+Workflow Messages:-
+- Provisioning plan created
+
+✅ 5️⃣ getMessage()
+👉 Kya karta hai:-
+Stored / localized message return karta hai
+✅ Code:-
+String message = context.getMessage("provision.success");
+System.out.println("Message: " + message);
+🟢 Output:-
+Message: Provisioning completed successfully
+
+✅ 6️⃣ getProperty()
+👉 Kya karta hai:-
+Workflow ya system property ka value return karta hai
+✅ Code:-
+String env = context.getProperty("environment");
+System.out.println("Environment: " + env);
+🟢 Output:-
+Environment: production
+
+✅ 7️⃣ isProperty():-
+👉 Kya karta hai:-
+Check karta hai property exist karti hai ya nahi
+✅ Code:-
+boolean exists = context.isProperty("environment");
+System.out.println("Property exists: " + exists);
+🟢 Output:-
+Property exists: true
+
+✅ 8️⃣ commit():-
+👉 Kya karta hai:-
+Workflow ke changes database me save (permanent) karta hai
+✅ Code:-
+context.commit();
+🟢 Output:-
+Transaction committed successfully
+
+✅ 9️⃣ rollback():-
+👉 Kya karta hai:-
+Workflow ke changes undo (revert) karta hai
+✅ Code:-
+context.rollback();
+🟢 Output:-
+Transaction rolled back
+-----------------------------
+🔥 Full Combined Example:-
+// Launch message
+context.setLaunchMessage("Workflow started");
+context.addLaunchMessage("Processing request...");
+
+// Add workflow message
+context.addMessage("Provisioning initiated");
+
+// Get property
+String env = context.getProperty("environment");
+
+// Check property
+if (context.isProperty("environment")) {
+    context.addMessage("Environment: " + env);
+}
+
+// Commit changes
+context.commit();
+🟢 Output:-
+Workflow started
+Processing request...
+Provisioning initiated
+Environment: production
+Transaction committed successfully
+---------------------------------------------------------------------------------------------------
+🔷 1️⃣ Workflow Info Methods:-
+getWorkflow():-
+👉 Current workflow object return karta hai
+
+Object wf = context.getWorkflow();
+System.out.println(wf);
+
+🟢 Output:-
+Workflow object: IdentityRequestWorkflow
+---
+()getWorkflowName():-
+👉 Workflow ka naam return karta hai
+
+String name = context.getWorkflowName();
+System.out.println("Workflow Name: " + name);
+
+🟢 Output:-
+Workflow Name: IdentityRequestWorkflow
+----
+()getWorkflowDefinition():-
+👉 Workflow ka full definition (XML/config) deta hai
+
+Object def = context.getWorkflowDefinition();
+System.out.println(def);
+
+🟢 Output:-
+<Workflow name="IdentityRequestWorkflow">...</Workflow>
+----
+()getApplication() / setApplication():-
+👉 Application (jaise AD, SAP) get/set karta hai
+
+Object app = context.getApplication();
+System.out.println(app);
+
+context.setApplication(app);
+
+🟢 Output:-
+Application: Active Directory
+----
+()getScope() / setScope():-
+👉 Scope define karta hai (kis area / org ke liye workflow run hoga)
+
+Object scope = context.getScope();
+context.setScope(scope);
+
+🟢 Output:-
+Scope: IT Department
+----
+()getPopulation() / setPopulation():-
+👉 Users ka group (population) get/set karta hai
+
+Object pop = context.getPopulation();
+context.setPopulation(pop);
+
+🟢 Output:-
+Population: All Employees
+----
+()getCreated() / getModified():-
+👉 Object kab create / update hua
+
+System.out.println(context.getCreated());
+System.out.println(context.getModified());
+
+🟢 Output:-
+Created: 2026-03-01
+Modified: 2026-03-10
+----
+()getCreatedBy() / getModifiedBy():-
+👉 Kisne create / modify kiya
+
+System.out.println(context.getCreatedBy());
+System.out.println(context.getModifiedBy());
+
+🟢 Output:-
+Created By: admin
+Modified By: manager1
+----
+
+()toXml():-
+👉 Object ko XML me convert karta hai
+
+String xml = context.toXml();
+System.out.println(xml);
+
+🟢 Output:-
+<WorkflowCase>...</WorkflowCase>
+
+👉 Nahi, context.toXml() ka output WorkflowContext ka XML nahi hota ❌
+👉 Ye actually WorkflowCase / SailPoint object ka XML hota hai ✅
+kyuki toxml() workflowcontext pe kaam nahi karta.
+
+----
+()fromXml(String xml):-
+👉 XML se object banata hai
+
+context.fromXml(xmlData);
+🟢 Output:-
+WorkflowCase loaded from XML
+
+----
+()toMap():-
+👉 Object ko Map me convert karta hai
+
+Map map = context.toMap();
+System.out.println(map);
+
+🟢 Output:-
+{name=Workflow1, status=SUCCESS}
+
+-----
+()fromMap(Map map):-
+👉 Map se object populate karta hai
+context.fromMap(map);
+
+🟢 Output:-
+WorkflowCase populated from map
+-----
+()clone():-
+👉 Object ka copy banata hai
+
+Object copy = context.clone();
+System.out.println(copy);
+
+🟢 Output:-
+Cloned WorkflowCase object
+----------
+()equals(Object obj):-
+👉 Do objects same hain ya nahi
+
+boolean eq = context.equals(copy);
+System.out.println(eq);
+
+🟢 Output:-
+true
+----
+hashCode():-
+👉 Object ka unique hash code
+
+int hash = context.hashCode();
+System.out.println(hash);
+
+🟢 Output:-
+12345678
+------------------------
+()toString():-
+👉 Object ka string representation
+System.out.println(context.toString());
+🟢 Output:-
+WorkflowCase[name=IdentityRequestWorkflow, status=SUCCESS]
+-----------------------
+()🔹 validate() ka real purpose:-
+Check karta hai ki object valid state me hai ya nahi
+Required fields missing to nahi
+Data structure sahi hai ya nahi
+
+🔹 WorkflowContext ke case me:-
+👉 WorkflowContext khud:-
+runtime object hai
+temporary hai
+
+👉 Isliye:-
+validate() → indirectly WorkflowCase / internal data ko check karta hai
+
+✅ Kya-kya check ho sakta hai:-
+
+✔️ 1. Required data present hai ya nahi
+identity present hai?
+plan present hai?
+arguments null to nahi?
+✔️ 2. Object structure valid hai
+ProvisioningPlan correct hai?
+Workflow variables sahi type ke hain?
+✔️ 3. Internal consistency
+workflow state valid hai?
+execution me koi missing dependency to nahi?
+--------------------------------------------------
+❗ Short Answer (direct):-
+👉 WorkflowContext data leta hai → WorkflowCase se ✅
+👉 Workflow se nahi ❌ kyuki workflow ke basis par workflowcase banata hai sailpoint.
+
+🧠 Ab detail me samajh
+🔷 1️⃣ Workflow kya hai?
+Ye definition / design hai
+XML/config hota hai
+Static hota hai
+
+👉 Example:-
+OnboardingWorkflow.xml
+
+👉 Isme:-
+steps
+transitions
+rules
+
+🔷 2️⃣ WorkflowCase kya hai?
+Ye runtime instance hai
+Jab workflow run hota hai tab banta hai
+Isme actual data store hota hai
+👉 Example:-
+john.doe ka onboarding run → ek WorkflowCase banega
+👉 Isme hota hai:-
+arguments
+status
+messages
+variables
+
+🔷 3️⃣ WorkflowContext kya hai?
+Ye execution helper / wrapper hai
+WorkflowCase ko access karne ka tool
+
+🔥 Relationship (sabse important):-
+Workflow (design)
+      ↓
+WorkflowCase (runtime data)
+      ↓
+WorkflowContext (access / execution)

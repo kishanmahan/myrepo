@@ -1,0 +1,231 @@
+()globalsetting-Audit Configuration->
+
+->1. Audit Configuration aur Search:-
+​Pehle point mein bataya gaya hai ki SailPoint IdentityIQ mein auditing kaise kaam karti hai:
+​Process: Global Setting \rightarrow Audit Configuration \rightarrow General Action.
+​Logic: Yahan aap jin Actions ko copy karte hain, unhe baad mein track kiya ja sakta hai.
+​Search: In actions ko dekhne ke liye aapko Intelligence \rightarrow Advanced Analytics mein
+jaakar Search Type ko Audit aur Action par wo copy kiya hua action paste karde aur run search dabaye,
+fir wo system ke sare action jisse apne paste kiya wo action past me kab hue hai  dikhayega.
+
+
+1. Access aur Session (Login/Logout):-
+--Login: Jab bhi koi user (Admin ya Employee) SailPoint mein ghusta hai, uska record rakhta hai.
+--Logout: Jab user manually logout karta hai.
+--Login Failure: Agar koi galat password daalta hai ya unauthorized access ki koshish karta hai (Security audit ke liye sabse important).
+--Session Timeout: Agar user screen khuli chhod de aur system use apne aap bahar nikal de.
+
+2. Background Tasks aur Data:-
+--Import File: Jab koi CSV ya XML file system mein load ki jati hai.
+--Run Task: Jab koi background job (jaise Aggregation, Refresh, ya Email Task) shuru ki jati hai.
+
+3. Communications (Email):-
+--Email Sent: System ne kitne emails successfully bheje (e.g., Welcome email ya Approval notification).
+--Email Failure: Agar koi email technical wajah se nahi ja paya (e.g., SMTP server down hai).
+
+4. Delegation (Kaam saunpna):-
+--Delegate Certification Item: Jab ek manager apna access review ka kaam kisi dusre ko (Delegate) de deta hai.
+--Delegation Completion: Jab delegate ne wo kaam poora kar liya ho.
+--Delegation Revocation: Jab original manager delegation wapas le leta hai.
+
+5. Certification Management (Access Reviews):-
+--Reassign Certification: Jab review ka kaam ek insaan se hata kar dusre ko permanently assign kiya jaye.
+--Rescind Certification: Jab kisi active review (Certification) ko admin cancel ya wapas le le.
+--Remediate Certification Item: Jab review ke waqt manager "Revoke" (access hatana) ka button dabata hai, 
+toh us action ka record yahan banta hai.
+
+6. Certification & Signoff (Review ka khatma):-
+--Certification Signoff: Jab ek reviewer (manager) poora access review khatam karke final digital sign karta hai.
+--Certification Signoff Approval: Agar system mein aisi policy hai ki signoff ke baad bhi kisi senior ki approval chahiye,toh uska record yahan banta hai.
+
+7. Work Items (Tasks aur Approvals):-
+--Escalate Work Item: Jab task ka samay khatam hone wala ho aur system use automatically senior manager ko bhej de.
+--Expire Work Item: Jab task ki deadline nikal jaye aur wo apne aap band ho jaye.
+--Approve / Reject Work Item: Kisi access request ko haan ya na kehne ka record.
+--WorkItem Forwarded: Jab ek insaan apna task kisi dusre ko aage bhej deta hai (Aapne ise tick kiya hua hai, jo ki achhi baat hai audit ke liye).
+--Assign Work Item: Naya task pehli baar kisi ko milna.
+--Forward Inactive User Work Items: Agar koi manager company chhod gaya hai, toh uske pending tasks ko automatically naye manager ko bhejna.
+
+8. Role & Workflow:-
+--Start Workflow Process: Naya workflow (jaise Joiner/Leaver) shuru hona.
+--Update / Disable Role: Business ya IT roles ki definition mein badlav ya unhein band karna.
+
+4. Pruning (Database ki Safaayi):-
+--"Prune" ka matlab hai purane records ko delete karke database ka size kam karna. 
+In options ko audit karne se pata chalta hai ki kisne aur kab data delete kiya.
+--Prune Histories / Task Results / Requests: Purani audit history aur tasks ke purane results saaf karna.
+--Prune Syslog Events: System ke internal logs ko delete karna.
+--Prune Certifications / Certification Archives: Purane access reviews ke records ko hatana.
+
+5. Advanced Certification Actions:-
+--Finish Certifications: Kisi campaign ko poori tarah se band karna.
+--Archive Certifications: Purane reviews ko compression ke liye archive folder mein dalna.
+--Scan Remediations: Yeh check karna ki kya "Revoke" kiye huye access sach mein target system (jaise AD) se hat gaye hain.
+--Certifications Phased / Items Phased: Bade reviews ko alag-alag phases mein chalane ka record.
+
+6. Scoping:-
+--Denormalize Scopes: Yeh ek backend process hai jo scoping ki performance badhane ke liye data ko "flat" karta hai. 
+Iska audit troubleshoot karne mein kaam aata hai.
+
+()Assign Remediation Item ka audit option tab kaam aata hai jab Access Review (Certification) ke dauran koi 
+"Revocation" (access hatane ka faisla) liya jata hai aur use theek karne ki zimmedari kisi ko saunpi jati hai.
+
+7. Advanced Pruning (Safaayi ke logs):-
+--Prune Provisioning Transactions: Purane provisioning records (jo tasks poore ho chuke hain) ko database se delete karne ka audit.
+--Prune Attachments / Pending Attachments: System mein upload ki gayi purani files ya pending documents ko hatana.
+--Prune Native Identity Change Events: Target systems (jaise AD) mein huye identity badlavon ke purane logs ko saaf karna.
+--Prune Inoperable Intercepted Deletes: Woh delete requests jo kisi wajah se execute nahi ho payin aur ab purani ho chuki hain, unhein hatana.
+--Prune Post Commit Notification Objects: Provisioning khatam hone ke baad jo notifications queue mein rehte hain, unke purane records saaf karna.
+
+8. Provisioning & Core Identity Actions:-
+--Provision: Sabse important! Target system mein account create/update karne ka main log.
+--Provisioning Expansion: Jab ek bada request chhote-chhote provisioning steps mein toot-ta hai, toh us detail ka audit.
+--Attribute Sync: Jab Identity ka koi data (jaise Last Name) automatically saari connected applications mein update kiya jaye.
+--Identity Manually Correlated: Jab koi admin kisi la-waaris account (Uncorrelated) ko kisi Identity se zabardasti jode.
+--Link manually moved from one identity to another: Ek account ko ek insaan ki profile se hata kar dusre ki profile mein transfer karna (Yeh audit point security ke liye bahut zaroori hai).
+--Native identity rename detected: Agar AD ya kisi app mein kisi ka username badal gaya ho aur SailPoint use detect kare.
+
+9. Lifecycle & Roles (Aapne tick kiye huye hain):-
+--Identity Event: Joiner, Mover, ya Leaver triggers ka record.
+--Role Sunrise: Role ka kisi tay samay par apne aap activate hona (e.g., naya project shuru hone par).
+--Role Sunset: Role ka expiration date aane par apne aap hat jana.
+
+10. Policy Violations (SOD):-
+--Allow Exception on Violation: Policy violate hone par bhi "Reason" dekar use allow karna (Auditors ispar bahut dhyan dete hain).
+--Correct Violation: Jab koi user ya admin kisi violation ko theek kar de.
+--Delegate Violation: Policy violation ko review ke liye kisi aur ko bhej dena.
+
+11. Plugin Management:-
+--IdentityIQ mein extra features ke liye jo Plugins install hote hain, unki activity:
+--Plugin Installed / Upgraded / Uninstalled: Naya plugin dalna ya purana hatana.
+--Plugin Enabled / Disabled: Plugin ko chalu ya band karna.
+--Plugin Configuration Changed: Plugin ki settings mein koi badlav karna.
+
+12. Alerts aur Workgroups:-
+--Alert Processed/Alert Action Created:System mein jab koi security alert aata hai ya us par koi action liya jata hai 
+(jaise SIEM integration), uska audit record.
+--Identity Added to/Removed from Workgroup:Jab kisi user ko kisi SailPoint Workgroup(jaise Admin team ya Helpdesk team) mein dala
+ya hataya jaye. Yeh internal access control ke liye zaroori hai.
+
+13. System Configuration aur Notifications:-
+--Login Configuration Changed: Agar koi admin login settings (jaise MFA ya authentication rules) badalta hai.
+--Chat Notification Success / Failure: Microsoft Teams ya Slack par bheje gaye alerts ka status.
+--Debug Object Browser Change: Yeh "Super Admin" activity hai.Jab koi admin Debug Page (XML) mein jaakar kisi object ko seedha edit karta
+hai. Ise tick rakhna bohot zaroori hai.
+
+14. Account Lifecycle (Actual Access):-
+--Create / Delete / Disable / Enable: Target systems (AD, SAP, etc.) mein account banna, mitaana, band karna, ya chalu karna.
+--Modify: Account ke attributes (jaise Last Name ya Department) mein badlav.
+--Entitlement Added / Removed: Kisi specific group ya permission ka milna ya hatna.
+--Approve Line Item: Certification ya request ke dauran kisi specific permission ko approve karna.
+
+15. Request Management:-
+--Accounts Request Started / Entitlements Request Started: Jab koi user naya account ya access mangne ka process shuru karta hai.
+--Identity Create / Edit Request Started: Nayi identity banane ya existing profile update karne ki request.
+--Comment Added: Request ke dauran jab koi manager ya admin koi remark ya comment likhta hai.
+--Manual Provisioning: Woh tasks jo system ne automatically nahi kiye, balki kisi insaan ne ticket dekh kar manually theek kiye hain.
+
+16. Self-Service Passwords:-
+--Expired Password Start/Forgot Password Start:-Jab user apna purana password reset karne ya bhula hua password wapas pane ki koshish shuru karta hai.
+
+17. Password aur Security (Reset/Changes):-
+--Password Request Start / Changed: User ne password badalne ki koshish shuru ki aur woh successfully badal gaya.
+--Password Change Failure: Jab naya password policy ke hisab se na ho ya system error ki wajah se fail ho jaye.
+--Forgot / Expired Password Changed: Self-service reset aur expired password badalne ki activity ka final result.
+--Authentication Answer Incorrect: Jab user security sawalon (KBA) ka galat jawab de. Yeh hacker ko pakadne mein kaam aata hai.
+--Password Policy Changed: Jab koi admin password ki complexity (jaise length ya special characters) ke rules badalta hai
+
+18. Provisioning Result (Kaam hua ya nahi?):-
+--Provisioning Complete: Jab SailPoint ne target system (jaise Active Directory) mein account successfully bana diya ya update kar diya.
+--Provisioning Failure: Agar network issue ya permissions ki wajah se provisioning fail ho gayi. Troubleshooting ke liye yeh sabse important hai.
+
+19. Roles aur Access Requests:-
+--Role Added / Removed: User ko business ya IT role milna ya usse wapas liya jana.
+--Roles Request Started: Naye roles mangne ka process shuru hona.
+--Access Request Started: Kisi bhi tarah ka naya access (Entitlement/App) mangne ka start point.
+--Reject Line Item: Certification ya Approval ke dauran jab manager kisi specific access ko "Na" (Reject) kar deta hai.
+
+20.Account Status (Lock/Unlock):-
+--Identity Locked / Unlocked: Galat login attempts ki wajah se account ka lock hona aur admin ya self-service dwara unlock hona.
+--Unlock: Specific unlock command chalne ka record.
+
+21. System aur API Health:-
+--Registration Started: Naye user ka self-registration process.
+--Server Up/Down: SailPoint application server kab restart hua ya crash hua. Isse system availability track hoti hai.
+--API Configuration Changed: API se judi settings (jaise OAuth ya Client secrets) mein badlav.
+
+22. Assigned Roles:-
+--Kya hai?: Jab kisi user ko koi naya Business ya IT Role diya jata hai ya purana hataya jata hai.
+--Kyun?: Yeh auditing ke liye sabse zaroori hai taaki pata chale ki kisne user ko extra access diya.
+
+23. Capabilities:-
+--Kya hai?: SailPoint ke andar ki permissions (jaise Admin, Helpdesk, ya Viewer rights).
+--Kyun?: Agar kisi normal user ko galti se "SystemAdmin" ki capability mil jaye, toh uska record yahan se mil jayega.
+
+24. Authorized Scopes:-
+Kya hai?: Woh list jo batati hai ki yeh user system ke kin-kin hisson (Scopes) ko dekh sakta hai.
+Kyun?: Visibility permissions mein badlav ko track karne ke liye.
+
+25. Password:-
+Kya hai?: User ke SailPoint login password mein hone wale badlav.
+Note: Yeh sirf password change hone ka event record karta hai, actual password nahi.
+
+26. Assigned Scope:-
+Kya hai?: User ki apni profile par laga hua main scope (e.g., User pehle 'India' scope mein tha, ab 'USA' mein shift ho gaya).
+
+27. Correlation Status:-
+Kya hai?: Jab kisi application ka account user se "Correlate" (link) hota hai ya "Uncorrelate" hota hai.
+Kyun?: Agar koi account galti se kisi galat user se jud gaya hai, toh troubleshoot karne mein kaam aata hai.
+
+28.Jab aap inhein tick karte hain, toh SailPoint ke audit log mein yeh details save hoti hain:-
+Create: Naya object kab aur kisne banaya?
+Update: Kisne purane configuration mein kya badlav kiya (Old Value vs New Value)?
+Delete: Kisne aur kab koi zaroori rule ya setting mita di?
+Yahan poore 25 options ka breakdown hai unke actions ke asar ke sath:-
+
+#            Class(Object)                  Create (Naya banana)                  Update (Badalna)                  Delete (Mitana)
+1-----------ActivityDataSource:---------Naya data source configure karna:----Source ki settings/URL badalna:--Source ko system se hatana.
+2-------------Application:--------------Nayi App (AD, SAP) connect karna:----App ka password/URL badalna:-----Poori Application delete karna.
+3-------------AuditConfig:-----------Audit settings pehli baar set karna:----Audit checkboxes ko badalna:-----Audit settings reset karna.
+4-----------------Role:------------------Naya Business/IT Role banana:-----Role ke andar permissions badalna:---Role ko permanently hatana.
+5---------------Category:--------------Nayi grouping category banana:-------Category ka naam/type badalna:-------Category ko mita dena.
+6--------------Capability:-------Naya Admin right (e.g. Auditor) banana:----Capability ke rights modify karna:--Capability ko delete karna.
+7------------Configuration:-------Nayi global setting add karna:---------System Setup mein badlav karna:---Configuration parameters hatana.
+8------------EmailTemplate:-------Naya email format banana:-----------Email ki language/body badalna:-------Template ko delete karna.
+9------------GroupFactory:--------Naya automatic group logic banana:----Factory ke filters/rules badalna:-----Group Factory ko hatana.
+10-----------JasperTemplate:------Nayi report design upload karna:-------Report ka layout/XML badalna:-----Report template mita dena.
+11------------MessageTemplate:-------Naya system message banana:---------Notifications ka text badalna:-----Message template hatana.
+12-----------MiningConfig:------------Role mining ka naya model banana:-----Mining ke parameters badalna:----Mining configuration hatana.
+13---------ObjectConfig	Naya identity attribute (field) banana:-----Purane attribute ki properties badalna:--Attribute field ko delete karna.
+14---------------Policy--------------Naya SOD rule banana--------------Policy ki limits/logic badalna----------Poori Policy mita dena.
+15----------RequestDefinition:----Naya access request form banana:-------Form ke fields/approval path badalna----Request process hatana.
+16------------RightConfig:---------Naya technical right define karna:-------Rights ki mapping update karna:---Right configuration delete karna.
+17-----------Rule----------------Naya Beanshell code likhna.-------------Existing code mein badlav karna.------Zaroori Rule ko delete karna.
+18-------ScoreConfig-------------Naya risk scoring model banana.---------Risk weightage (0-1000) badalna.-----Scoring configuration hatana.
+19------TaskDefinition---------Naya Aggregation/Refresh task banana.-----Task ke filters ya logic badalna.---Task definition ko mita dena.
+20------TaskSchedule----------Task ka naya schedule set karna.----------Task chalne ka waqt badalna.----------Schedule ko delete karna.
+21------TimePeriod-----------Naya holiday/office hour banana.-----------Dates ya working hours badalna.--------Time period mita dena.
+22------UIConfig------------Nayi UI theme/layout banana.-------------Dashboard ya colors badalna.------------UI settings reset karna.
+23------Workflow-----------Naya approval/JML flow banana.-------------Workflow ke steps/logic badalna.-------Poora workflow delete karna.
+24------Attachment------------Nayi file/doc upload karna.----------Attachment ki details badalna.---------File ko system se delete karna.
+25------Identity-----------DB level par nayi identity banana.-------Identity ka core data badalna.----Identity ko DB se permanently hatana.
+
+29. Bhai, jab aap in 12 SCIM resources ko audit ke liye select karte hain, 
+toh IdentityIQ har ek API call par nazar rakhta hai.Agar koi third-party tool(jaise Postman, Python script, ya cloud integrator) 
+SailPoint ke data ko chhedta hai, toh woh in 4 tareekon se audit hoga:-
+
+#          Resource Name          Read(Sirf Dekhna)           Create (Naya Banana)        Update (Badalna)           Delete (Hatana)
+1--------------User----------API se user info check karna.----Naya user API se banana.---User details badalna.-----User ko API se hatana.
+2-----------Application------App ki settings read karna.------Nayi app API se jodna.----App configuration badalna.---App ko delete karna.
+3-----------Entitlement-------Permissions ki list dekhna.-----Nayi permission banana.----Permission modify karna.--Permission delete karna.
+4--------------Role---------Roles aur members check karna.----Naya Role API se banana.---Role membership badalna.--Role ko delete karna.
+5-------------Account-------Linked accounts dekhna.-----------Naya account link karna.----Account details badalna.--Account un-link karna.
+6------------Workflow-------Workflow steps read karna.--------Naya workflow design karna.---Workflow logic badalna.---Workflow mita dena.
+7----------TaskResult-------Task ka status check karna.-------Naya result record banana.---Result info update karna.--Task result delete karna.
+8--------LaunchedWorkflow----Chalu workflows dekhna.-----Naya workflow trigger karna.---Workflow status badalna.-Chalu workflow stop karna.
+9---------ObjectConfig-------Field settings read karna.---Naya field config banana.-----Existing config badalna.--Configuration hatana.
+10-------PolicyViolation----Violations ki list nikalna.--Nayi violation record karna.--Violation status badalna.--Violation record hatana.
+11----CheckedPolicyViolation---Check results read karna.--Naya check result banana.---Result details badalna.-----Check result mita dena.
+12-------Alert----------------System alerts read karna.----Naya alert create karna.---Alert status (Open/Close).--Alert record delete karna.
+
+

@@ -1,0 +1,250 @@
+()CertificationEntity kya hai?
+CertificationEntity ek single reviewable object hai ek certification ke andar.
+Ye ek unit of review represent karta hai, jaise sirf ek user, accounts, roles, ya applications jiska access check ho raha hai.
+
+Soch:-
+Certification = pura campaign (100 users ka review)
+CertificationEntity = ek user ya account ka review
+
+Flow samajh:-
+Certification Campaign
+        ↓
+Certification
+        ↓
+CertificationEntity (User Ravi)
+        ↓
+CertificationItem (Access 1, Access 2, Access 3)
+
+🔹 2️⃣ CertificationEntity ka kaam:-
+()Single review unit ko represent karna:-
+Ek user/account ka access check karna.
+()Identity / Account track karna:-
+Kis user/account ka review ho raha hai.
+()CertificationItems hold karna:-
+Us entity ke sab access/permissions ka record.
+()Reviewer assign karna:-
+Kaun approve/reject karega.
+()Status & Decision maintain karna:-
+Pending, Approved, Revoked, Completed.
+()Dates track karna:-
+Kab created, kab completed.
+
+🔹 3️⃣ CertificationEntity ke andar kya hota hai (Fields / Attributes):-
+Field / Attribute	      Description
+id:-------------------Unique ID of entity
+name:-----------------Entity ka naam (user / account / role)
+type:-----------------USER / ACCOUNT / ROLE / APPLICATION
+identity:-------------Identity object (user info)
+account:--------------Account object (agar account-based review)
+items:----------------List of CertificationItem (access items under this entity)
+reviewer:-------------Jo is entity ka review karega
+status:---------------Pending / Approved / Revoked / Completed
+decision:-------------Final decision (APPROVE/REVOKE)
+createdDate:----------Entity kab create hua
+completedDate:--------Kab complete hua
+
+🔹 4️⃣ Example Code:-
+CertificationEntity entity = new CertificationEntity();
+
+// Basic info
+entity.setId("CE101");
+entity.setName("Ravi Kumar");
+entity.setType("USER");
+
+// Identity & Account
+entity.setIdentity(userObject);
+entity.setAccount(accountObject);
+
+// Certification items
+List<CertificationItem> items = new ArrayList<>();
+items.add(item1);  // Role access
+items.add(item2);  // App access
+entity.setItems(items);
+
+// Reviewer & status
+entity.setReviewer("Manager Amit");
+entity.setStatus("Pending");
+
+// Dates
+entity.setCreatedDate(new Date());
+
+Output example:-
+System.out.println(entity.getName());       // Ravi Kumar
+System.out.println(entity.getType());       // USER
+System.out.println(entity.getItems().size()); // 2
+System.out.println(entity.getReviewer());   // Manager Amit
+System.out.println(entity.getStatus());     // Pending
+
+🔹 5️⃣ Real Life Example:-
+Certification Campaign → “Quarterly Access Review”
+Certification → “Managers Access Certification”
+CertificationEntity → “User Ravi”
+CertificationItem → Ravi ke access jaise SAP Role, HR App Access, Finance App Access
+
+🔹 6️⃣ DB me store hota hai?
+✅ Haan
+CertificationEntity ko DB me child table ke form me store kiya jata hai
+DB relation:-
+Certification (parent) 
+      ↓
+CertificationEntity (child) 
+      ↓
+CertificationItem (child of entity)
+Ye structure ensure karta hai ki har user/account ka access easily track ho aur report generate ho sake.
+
+🔹 Owner / Responsible Role – Detailed Breakdown:-
+Object	                  Owner/Responsible Ka Matlab	              Kaun Banata Hai/Assign Karta Hai	                                                Notes/Extra Detail
+CertificationGroup:-------Group ka responsible banda:---------------Ye usually Admin / Compliance team assign karta hai:-------Jo group ke andar multiple certifications ko manage kare. Owner ensure karta hai ki group ke sab certifications track ho rahe hain.
+CertificationManager:-----Certification ka manager/controller:------System ya Admin assign karta hai:---------------------------Manager decide karta hai certification flow, review assignments aur escalation rules.
+CertificationDefinition:--Template/definition ka owner:-------------Admin/Compliance team:--------------------------------------Define karta hai kaun sa certification ka type hai, rules, frequency, reviewers, etc.
+CertificationSchedule:----Schedule ka owner:------------------------Admin/Compliance team:--------------------------------------Ye decide karta hai kab certification run karega, duration, reminders, etc.
+Certification:------------Campaign ka responsible banda:------------Admin/Compliance team/Certification creator:----------------Ye poora review campaign hai, multiple entities cover karta hai. Owner ensure karta hai campaign complete ho.
+CertificationEntity:------Entity ke liye responsible reviewer:------Ye owner assign hota hai Certification ke flow me,usually entity ka Manager/App Owner:--------Ek entity ek user/account/role ko represent karta hai. Reviewer access approve/revoke karta hai.
+CertificationItem:--------Access item ka decision maker:------------Ye CertificationEntity ka reviewer handle karta hai:--------Ek entity ke andar multiple items ho sakte hain. Reviewer approve/revoke ka decision deta hai.
+
+🔹 1️⃣ Basic Fields Methods:-
+1️⃣ getId():-
+Purpose: Entity ka unique ID return karta hai
+String id = entity.getId();
+System.out.println(id);
+
+2️⃣ setId(String id):-
+Purpose: Entity ka ID set karta hai
+entity.setId("CE101");
+
+3️⃣ hasId():-
+Purpose: Check karta hai ID set hai ya nahi
+System.out.println(entity.hasId()); // true / false
+
+4️⃣ getName():-
+Purpose: Entity ka name return karta hai (user/account/role)
+System.out.println(entity.getName());
+
+5️⃣ setName(String name):-
+Purpose: Entity ka name set karta hai
+entity.setName("Ravi Kumar");
+
+6️⃣ hasName():-
+Purpose: Check karta hai name set hai ya nahi
+System.out.println(entity.hasName());
+
+🔹 2️⃣ Type Methods:-
+7️⃣ getType():-
+Purpose: Entity ka type return karta hai (USER / ACCOUNT / ROLE / APPLICATION)
+System.out.println(entity.getType());
+
+8️⃣ setType(String type):-
+Purpose: Entity ka type set karta hai
+entity.setType("USER");
+
+9️⃣ hasType():-
+Purpose: Type set hai ya nahi
+System.out.println(entity.hasType());
+
+🔹 3️⃣ Identity / Account Methods:-
+10️⃣ getIdentity():-
+Purpose: Entity ka Identity object return karta hai
+Identity user = entity.getIdentity();
+System.out.println(user.getName());
+
+11️⃣ setIdentity(Identity identity):-
+Purpose: Identity assign karta hai
+entity.setIdentity(userObject);
+
+12️⃣ hasIdentity():-
+Purpose: Identity set hai ya nahi
+System.out.println(entity.hasIdentity());
+
+13️⃣ getAccount():-
+Purpose: Agar account-based entity hai → Account object return
+Account acc = entity.getAccount();
+
+14️⃣ setAccount(Account account):-
+Purpose: Account assign karta hai
+entity.setAccount(accountObject);
+
+15️⃣ hasAccount():-
+Purpose: Account set hai ya nahi
+System.out.println(entity.hasAccount());
+
+🔹 4️⃣ Certification Items Methods:-
+16️⃣ getItems():-
+Purpose: Entity ke sab CertificationItems return karta hai
+List<CertificationItem> items = entity.getItems();
+System.out.println(items.size());
+
+17️⃣ setItems(List<CertificationItem> items):-
+Purpose: Entity ke items assign karta hai
+entity.setItems(itemsList);
+
+18️⃣ hasItems():-
+Purpose: Items exist karte hain ya nahi
+System.out.println(entity.hasItems());
+
+🔹 5️⃣ Reviewer Methods:-
+19️⃣ getReviewer():-
+Purpose: Entity ka reviewer return karta hai
+System.out.println(entity.getReviewer());
+
+20️⃣ setReviewer(String reviewer):-
+Purpose: Reviewer assign karta hai
+entity.setReviewer("Manager Amit");
+
+21️⃣ hasReviewer():-
+Purpose: Reviewer assign hai ya nahi
+System.out.println(entity.hasReviewer());
+
+🔹 6️⃣ Status & Decision Methods:-
+22️⃣ getStatus():-
+Purpose: Current status (Pending / Approved / Revoked / Completed)
+System.out.println(entity.getStatus());
+
+23️⃣ setStatus(String status):-
+Purpose: Status set karta hai
+entity.setStatus("Pending");
+24️⃣ hasStatus():-
+Purpose: Status set hai ya nahi
+System.out.println(entity.hasStatus());
+
+25️⃣ getDecision():-
+Purpose: Final decision (APPROVE / REVOKE)
+System.out.println(entity.getDecision());
+
+26️⃣ setDecision(String decision):-
+Purpose: Decision assign karta hai
+entity.setDecision("APPROVE");
+
+27️⃣ hasDecision():-
+Purpose: Decision set hai ya nahi
+System.out.println(entity.hasDecision());
+
+🔹 7️⃣ Date Methods:-
+28️⃣ getCreatedDate():-
+Purpose: Kab entity create hui
+System.out.println(entity.getCreatedDate());
+
+29️⃣ setCreatedDate(Date date):-
+Purpose: Create date set karta hai
+entity.setCreatedDate(new Date());
+
+30️⃣ getCompletedDate():-
+Purpose: Kab entity complete hui
+System.out.println(entity.getCompletedDate());
+
+31️⃣ setCompletedDate(Date date):-
+Purpose: Completed date assign karta hai
+entity.setCompletedDate(new Date());
+
+🔹 8️⃣ Utility Methods:-
+32️⃣ toString():-
+Purpose: Entity ka readable string return karta hai
+System.out.println(entity.toString());
+Output example:-
+CertificationEntity[id=CE101, name=Ravi Kumar, type=USER]
+
+33️⃣ equals(Object obj):-
+Purpose: Compare karta hai 2 entities ko
+
+34️⃣ hashCode():-
+Purpose: Unique hash value deta hai, DB / Collections me use hota hai.
+--------------------------------------------------------------------------------------------------------------------------------------

@@ -1,0 +1,143 @@
+RequestDefinition
+
+1️⃣ Request:-
+Request ek actual instance hai jo represent karta hai ki kisi user ne koi action initiate kiya hai.
+Ye runtime object hai, jo database me save hota hai aur workflow engine ke through process hota hai.
+Ye ApprovalItems, requester, target, workflowCase, state, result, attributes sab store karta hai.
+Example:-
+John Doe ne Salesforce account create karne ki request ki → ek Request object create hua.
+
+🔹 Kya hota hai Request me?
+Field / Property	                 Description	                                                     Example
+Requester:-----------------------Kisne request initiate ki:-----------------------------------------Identity("john.doe")
+Target:--------------------------Kis account/application/role pe action ho raha hai;-------------Account("Salesforce:john.doe")
+ApprovalItems:-------------------Kaun approve/reject karega aur unka state:---------------------[ApprovalItem(Manager1, Pending)]
+State:-----------------------------Request ka current status:--------------------------------Pending, Approved, Rejected, Cancelled
+WorkflowCase:---------------------Workflow instance associated with request:-------------------"ProvisioningWorkflow" instance
+Attributes:---------------------------Extra metadata:--------------------------------------------priority="High", department="IT"
+Comments:--------------------------Approvers ke notes / audit:---------------------------------------"Approved by manager"
+Result:--------------------------------Final outcome:-----------------------------------------------"Success" ya "Failure"
+Partition / Host / Thread:------------Internal workflow execution info:-----------------------"partition-1", "host1", "thread-12"
+Error / Warning Count:-------------------Execution errors or minor warnings;-------------------------ErrorCount=0, WarningCount=1
+Retry Count:-----------------------Retry attempts if request execution failed:-----------------------------RetryCount=2
+
+🔹 Kya karta hai?
+Represent karta hai real action initiated by user
+Track karta hai approval progress, state, result, workflow execution
+Trigger karta hai workflow engine, jisme:
+Provisioning
+Notifications
+State updates
+Error / warning handling
+
+🔹 Kaun banata hai?
+Normally user initiate karta hai request
+System ya workflow engine RequestDefinition ke rules follow karke ek Request object create karta hai
+-------------------------------------------------------------------------------------------------------------------
+2️⃣ RequestDefinition:-
+RequestDefinition ek template / blueprint hai jo define karta hai ki future me banne wale Request objects ka structure aur rules kya honge.
+Ye basically request ka design-time configuration hai.
+Ye runtime request ke liye rules define karta hai, jaise:-
+Kaun approve karega
+Kaun target ho sakta hai
+Required attributes / validations
+WorkflowCase kaun sa use hoga
+Example:-
+Salesforce Account Request ka RequestDefinition define karta hai ki manager approval required hai, HR review optional, target = Account.
+Jab user request create karta hai, ye definition follow hoti hai aur ek actual Request object generate hota hai.
+
+🔹 Summary Table:-
+Aspect	      RequestDefinition	                                                     Request
+Type:---------Template / blueprint:----------------------------------------------Actual instance
+Represents:---Rules for request creation:----------------------------------------Specific user request
+Contains:-----Target type, approval rules, workflow case, validation:---------Requester, target, approval items, state, attributes, comments, result
+Created By:---Admin / Developer:-------------------------------------------------User / System (runtime)
+Stored:-------Configuration (XML/UI):--------------------------------------------Database (runtime)
+Purpose:------Guide & validate requests:-----------------------------------------Track & execute real request
+
+🔹 Kya hota hai RequestDefinition me?
+Field / Property	        Description                                                   Example
+Name / Type:-------------Request ka type ya naam:---------------------------------"Salesforce Account Request"
+Target Type:------------Kis type ka object request ka target ho sakta hai:---------Account, Role, Application
+Approval Rules:---------Kaun approve karega, aur kaise:--------------------------Manager, HR, Role Owner; sequential ya parallel approval
+Workflow Case;----------Kaunsa workflow execute hoga request ke liye:---------------"ProvisioningWorkflow"
+Required Attributes:----Request create karte time mandatory fields:------------------department, priority, location
+Validation Rules:-------Fields aur values ka validation:----------------------------priority must be "High", "Medium", "Low"
+
+RequestDefinition Type	                            Purpose
+AccountRequest:------------------------------User ke liye new account create / delete / modify karna
+RoleRequest:---------------------------------User ke liye role assign / revoke karna
+EntitlementRequest:--------------------------Specific entitlement assign / remove karna
+PasswordRequest:-----------------------------User ka password reset karna
+ApplicationRequest:--------------------------Koi application-level request (like provisioning app access)
+CertificationRequest:------------------------Certification / review process ke liye request
+CustomRequest:-------------------------------Custom defined request type (organization-specific)
+Ye types mostly IdentityIQ me predefined hote hai, aur admin custom types bhi create kar sakta hai.
+-------------------------------------------------------------------------------------------------------------------------
+2️⃣ Target Type:-
+Target Type ye define karta hai ki request kis cheez ke upar operate karega.
+
+Common Target Types:-
+Target Type	             Description
+Identity:-------------User / Employee account
+Account:--------------Account on a specific application (Salesforce, SAP, etc.)
+Role:-----------------Role in system (e.g., Admin role, Finance role)
+Application:----------Entire application access
+Entitlement:----------Specific permission / access right
+Custom Object:--------Organization-specific object
+
+Kya karta hai Target Type:-
+Ye RequestDefinition ko guide karta hai ki user request ka target kya ho sakta hai
+Jab Request generate hota hai → target type decide karta hai ki ApprovalItems aur workflow kahan apply hoga
+Example:-
+RequestDefinition type = AccountRequest, target type = Account → request create karega Salesforce account.
+-------------------------------------------------------------------------------------------------------------------------------
+3️⃣ Validation Rules:-
+Validation Rules define karte hai ki request create hone se pehle kaunse conditions check honge.
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+4️⃣ Request generation aur Approval logic /flow:-
+Ye important hai bhai, dhyan se samajh:-
+()Request generate hota hai RequestDefinition se
+User / system RequestDefinition ko read karta hai
+Ek Request object create hota hai
+Request me ApprovalItems generate hote hai automatically
+
+()ApprovalItem kya hai:-
+Ek unit of approval
+Specify karta hai kaun approve karega aur state kya hai,
+Multiple ApprovalItems → multiple approvers
+Example: Manager + HR approvals
+Request approve hota hai → jab saare required ApprovalItems approve ho jate hai
+
+Flow Example:-
+--Admin define karta hai Salesforce Account RequestDefinition
+--Approval Rule: Manager → HR
+--Required Attributes: department, priority
+--User request create karta hai → ek Request object ban jata hai
+--ApprovalItems generate hote hai:-
+ApprovalItem 1 → Manager (Pending)
+ApprovalItem 2 → HR (Pending)
+-Manager approve karta hai → ApprovalItem 1 = Approved
+-HR approve karta hai → ApprovalItem 2 = Approved
+-Request state automatically = Approved
+
+1️⃣ Approval Rules in RequestDefinition:-
+RequestDefinition me ApprovalItem ka rule define hota hai,
+kyunki ye decide karta hai ki request create hone ke baad kaun kaun approve karega aur kaunse conditions me.
+
+🔹 Kya define hota hai Approval Rules me:
+Rule Type	                    Description	                                             Example
+Approver Role:------------------Kaun approve karega:----------------------------Manager, HR, Role Owner
+Approval Sequence:--------------Sequential ya parallel approval:------------Manager → HR sequentially, ya dono parallel
+Approval Condition:-------------Approval required hone ki condition:--------Agar request priority = High → manager approval required
+Threshold / Policy:-------------Kitne approvals required:-------------------2 approvers me se 1 approve → request approved (majority)
+
+Flow:-
+RequestDefinition define karta hai ApprovalItems template
+Jab Request generate hota hai → ApprovalItems automatically create hote hai
+Each ApprovalItem track karta hai approver aur state (Pending / Approved / Rejected)
+Request state update hota hai jab saare required ApprovalItems approve ho jate hai
+✅ Matlab: RequestDefinition me ApprovalItem rules define hote hai, Request me ApprovalItems actual runtime objects hote hai.
+

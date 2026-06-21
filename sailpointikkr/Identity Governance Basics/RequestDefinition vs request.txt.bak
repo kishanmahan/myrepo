@@ -1,0 +1,558 @@
+
+1️⃣ Request:-
+Request ek actual instance hai jo represent karta hai ki kisi user ne koi action initiate kiya hai.
+Ye runtime object hai, jo database me save hota hai aur workflow engine ke through process hota hai.
+Ye ApprovalItems, requester, target, workflowCase, state, result, attributes sab store karta hai.
+Example:-
+John Doe ne Salesforce account create karne ki request ki → ek Request object create hua.
+
+🔹 Kya hota hai Request me?
+Field / Property	                 Description	                                                     Example
+Requester:-----------------------Kisne request initiate ki:-----------------------------------------Identity("john.doe")
+Target:--------------------------Kis account/application/role pe action ho raha hai;-------------Account("Salesforce:john.doe")
+ApprovalItems:-------------------Kaun approve/reject karega aur unka state:---------------------[ApprovalItem(Manager1, Pending)]
+State:-----------------------------Request ka current status:--------------------------------Pending, Approved, Rejected, Cancelled
+WorkflowCase:---------------------Workflow instance associated with request:-------------------"ProvisioningWorkflow" instance
+Attributes:---------------------------Extra metadata:--------------------------------------------priority="High", department="IT"
+Comments:--------------------------Approvers ke notes / audit:---------------------------------------"Approved by manager"
+Result:--------------------------------Final outcome:-----------------------------------------------"Success" ya "Failure"
+Partition / Host / Thread:------------Internal workflow execution info:-----------------------"partition-1", "host1", "thread-12"
+Error / Warning Count:-------------------Execution errors or minor warnings;-------------------------ErrorCount=0, WarningCount=1
+Retry Count:-----------------------Retry attempts if request execution failed:-----------------------------RetryCount=2
+
+🔹 Kya karta hai?
+Represent karta hai real action initiated by user
+Track karta hai approval progress, state, result, workflow execution
+Trigger karta hai workflow engine, jisme:
+Provisioning
+Notifications
+State updates
+Error / warning handling
+
+🔹 Kaun banata hai?
+Normally user initiate karta hai request
+
+1️⃣ Request ka origin:-
+Request SailPoint me do tarah se create ho sakta hai:-
+
+()User-initiated request (Manual request):-
+Ye tab hota hai jab user ya admin khud request karta hai.
+Example:-
+User “mujhe new account chahiye Salesforce me” ya “Access revoke karo” ke liye portal me form fill karta hai.
+Is case me:-
+User UI (SailPoint IdentityNow portal ya IdentityIQ portal) se request submit karta hai.
+System ya workflow engine RequestDefinition ke rules(validation, approval, target, etc.) follow karke ek Request object create karta hai,
+lekin initiation manual hai.
+
+()System-initiated request (Automated request):-
+Ye tab hota hai jab system ya workflow engine automatically request generate karta hai.
+Example:-
+Scheduled access review ke liye auto-remediation.
+Account provisioning workflow triggers.
+Is case me:-
+System ya workflow engine RequestDefinition ke rules check karta hai.
+Request object create hota hai programmatically, user input ke bina.
+
+
+-------------------------------------------------------------------------------------------------------------------
+2️⃣ RequestDefinition:-
+RequestDefinition ek template / blueprint hai jo define karta hai ki future me banne wale Request objects ka structure aur rules kya honge.
+Ye basically request ka design-time configuration hai.
+Ye runtime request ke liye rules define karta hai, jaise:-
+Kaun approve karega
+Kaun target ho sakta hai
+Required attributes / validations
+WorkflowCase kaun sa use hoga
+Example:-
+Salesforce Account Request ka RequestDefinition define karta hai ki manager approval required hai, HR review optional, target = Account.
+Jab user request create karta hai, ye definition follow hoti hai aur ek actual Request object generate hota hai.
+
+🔹 Summary Table:-
+Aspect	      RequestDefinition	                                                     Request
+Type:---------Template / blueprint:----------------------------------------------Actual instance
+Represents:---Rules for request creation:----------------------------------------Specific user request
+Contains:-----Target type, approval rules, workflow case, validation:---------Requester, target, approval items, state, attributes, comments, result
+Created By:---Admin / Developer:-------------------------------------------------User / System (runtime)
+Stored:-------Configuration (XML/UI):--------------------------------------------Database (runtime)
+Purpose:------Guide & validate requests:-----------------------------------------Track & execute real request
+
+🔹 Kya hota hai RequestDefinition me?
+Field / Property	        Description                                                   Example
+Name / Type:-------------Request ka type ya naam:---------------------------------"Salesforce Account Request"
+Target Type:------------Kis type ka object request ka target ho sakta hai:---------Account, Role, Application
+Approval Rules:---------Kaun approve karega, aur kaise:--------------------------Manager, HR, Role Owner; sequential ya parallel approval
+Workflow Case;----------Kaunsa workflow execute hoga request ke liye:---------------"ProvisioningWorkflow"
+Required Attributes:----Request create karte time mandatory fields:------------------department, priority, location
+Validation Rules:-------Fields aur values ka validation:----------------------------priority must be "High", "Medium", "Low"
+
+RequestDefinition Type	                            Purpose
+AccountRequest:------------------------------User ke liye new account create / delete / modify karna
+RoleRequest:---------------------------------User ke liye role assign / revoke karna
+EntitlementRequest:--------------------------Specific entitlement assign / remove karna
+PasswordRequest:-----------------------------User ka password reset karna
+ApplicationRequest:--------------------------Koi application-level request (like provisioning app access)
+CertificationRequest:------------------------Certification / review process ke liye request
+CustomRequest:-------------------------------Custom defined request type (organization-specific)
+Ye types mostly IdentityIQ me predefined hote hai, aur admin custom types bhi create kar sakta hai.
+-------------------------------------------------------------------------------------------------------------------------
+2️⃣ Target Type:-
+Target Type ye define karta hai ki request kis cheez ke upar operate karega.
+
+Common Target Types:-
+Target Type	             Description
+Identity:-------------User / Employee account
+Account:--------------Account on a specific application (Salesforce, SAP, etc.)
+Role:-----------------Role in system (e.g., Admin role, Finance role)
+Application:----------Entire application access
+Entitlement:----------Specific permission / access right
+Custom Object:--------Organization-specific object
+
+Kya karta hai Target Type:-
+Ye RequestDefinition ko guide karta hai ki user request ka target kya ho sakta hai
+Jab Request generate hota hai → target type decide karta hai ki ApprovalItems aur workflow kahan apply hoga
+Example:-
+RequestDefinition type = AccountRequest, target type = Account → request create karega Salesforce account.
+-------------------------------------------------------------------------------------------------------------------------------
+3️⃣ Validation Rules:-
+Validation Rules define karte hai ki request create hone se pehle kaunse conditions check honge.
+
+Rule Type                      Description                                  Example
+Required Attributes:-----Fields mandatory hai:-----------------------department, priority
+Attribute Format:--------Field format check:-----------------------email must be valid, priority in High/Medium/Low
+Target Validation:-------Target object must exist:-----------------Account must be active / Role must be assignable
+Approval Preconditions:--Approval required based on condition:-----High priority request → Manager approval required
+Custom Logic:------------Organization-specific:--------------------Finance role requests only allowed by Finance manager
+
+Flow:-
+User initiate karta hai request
+System check karta hai Validation Rules
+Agar pass → Request create hota hai
+Agar fail → Request creation fail + error message
+---------------------------------------------------------------------------------------------------------------------------------
+4️⃣ Request generation aur Approval logic /flow:-
+Ye important hai bhai, dhyan se samajh:-
+()Request generate hota hai RequestDefinition se
+User / system RequestDefinition ko read karta hai
+Ek Request object create hota hai
+Request me ApprovalItems generate hote hai automatically
+
+()ApprovalItem kya hai:-
+Ek unit of approval
+Specify karta hai kaun approve karega aur state kya hai,
+Multiple ApprovalItems → multiple approvers
+Example: Manager + HR approvals
+Request approve hota hai → jab saare required ApprovalItems approve ho jate hai
+
+Flow Example:-
+--Admin define karta hai Salesforce Account RequestDefinition
+--Approval Rule: Manager → HR
+--Required Attributes: department, priority
+--User request create karta hai → ek Request object ban jata hai
+--ApprovalItems generate hote hai:-
+ApprovalItem 1 → Manager (Pending)
+ApprovalItem 2 → HR (Pending)
+-Manager approve karta hai → ApprovalItem 1 = Approved
+-HR approve karta hai → ApprovalItem 2 = Approved
+-Request state automatically = Approved
+
+1️⃣ Approval Rules in RequestDefinition:-
+RequestDefinition me ApprovalItem ka rule define hota hai,
+kyunki ye decide karta hai ki request create hone ke baad kaun kaun approve karega aur kaunse conditions me.
+
+🔹 Kya define hota hai Approval Rules me:
+Rule Type	                    Description	                                             Example
+Approver Role:------------------Kaun approve karega:----------------------------Manager, HR, Role Owner
+Approval Sequence:--------------Sequential ya parallel approval:------------Manager → HR sequentially, ya dono parallel
+Approval Condition:-------------Approval required hone ki condition:--------Agar request priority = High → manager approval required
+Threshold / Policy:-------------Kitne approvals required:-------------------2 approvers me se 1 approve → request approved (majority)
+
+Flow:-
+RequestDefinition define karta hai ApprovalItems template
+Jab Request generate hota hai → ApprovalItems automatically create hote hai
+Each ApprovalItem track karta hai approver aur state (Pending / Approved / Rejected)
+Request state update hota hai jab saare required ApprovalItems approve ho jate hai
+✅ Matlab: RequestDefinition me ApprovalItem rules define hote hai, Request me ApprovalItems actual runtime objects hote hai.
+------------------------------------------------------------------------------------------------------------------------------------------
+()🧠 Request Definition Types:-
+➡️ Har request type ek specific background activity ko represent karta hai.
+-------------------------------------------------------------------------------
+3️⃣ Email Request:-
+📌 Meaning: System ke andar email notifications send karne ka request.
+📌 Use Case: Approval emails, notification alerts, workflow update messages bhejne ke liye.
+📌 Example: “Manager approval required” email send karna.
+
+6️⃣ Aggregate Request:-
+📌 Meaning: Data aggregation ka process run karta hai.
+📌 Use Case: Accounts aur entitlements scan karke IdentityIQ data model update karna.
+📌 Example: Application se latest user account details fetch karna.
+
+7️⃣ Aggregate Partition / Group Aggregate Partition:-
+📌 Use Case: Performance improvement ke liye data partitions me aggregation chalana.
+📌 Example: Alag‑alag application ya group wise accounts ko parallel aggregate karna.
+Ye aggregate job ko multiple partitions me divide karke parallel run karta hai.
+Large scale environments me performance optimize karne ke liye ye useful hota hai.
+Example: Bahut saare users/accounts ke data ko saath‑saath gather karna/update karna.
+
+🔟 WorkItem Maintenance Request:-
+📌 Meaning: Work items ko maintain/update karna.
+📌 Use Case: System tasks jo pending/failed work items ko resolve kare.
+📌 Example: Timeout work items ko clean ya retry state me set karna.
+
+1️⃣6️⃣ Task Execute / Task Command / Terminate Task:-
+📌 Meaning:-
+Task Execute: Specific background task ko run karta hai.
+Task Command: Running task me command send karta hai.
+Terminate Task: Task ko kill/stop karta hai.
+📌 Use Case: Background jobs management ke liye.
+📌 Example: Data export, aggregate scheduling, paused jobs ko stop.
+
+1️⃣7️⃣ Rule Request:-
+📌 Meaning: Policy/rule evaluation job ko execute karta hai.
+📌 Use Case: IdentityIQ internal rules ko run kar policy logic check.
+📌 Example: Password policy violation rule execution.
+
+🧠 1. Integration Request:-
+Ye request external systems ke saath communication tasks ko trigger karta hai.
+Example: HR system se user details fetch karna, Active Directory se information sync karna.
+
+🔁 4. Identity Trigger Request
+Ye tab use hota hai jab identity events base par automation jobs start karne ho.
+Agar kisi identity ke kuch attributes change huye ho (jaise manager change etc), to ye trigger request process hota hai.
+Iska matlab IdentityIQ ko batana ki “identity event hua hai, ab update attributes actions execute karo” in identityiq.
+
+🚦 5. Workflow Request:-
+Ye predefined workflow process ko chalata hai.
+Workflows sequential multistep jobs hote hain — jaise approval chain, provisioning plan etc.
+Ye request run ho kar workflow ke har step ko control karta hai.
+
+🔄 8. Identity Refresh Partition:-
+Ye identity refresh tasks ko segmented (partition) mode me chalata hai.
+Identity refresh ka matlab hota hai profiles ko update aur verify karna so that IdentityIQ me latest accurate data rahe.
+
+🧹 9. Identity Request Prune Scan Request:-
+Ye expired ya old access requests ko cleanup karta hai.
+Kuch requests system me bohot purane ho jate hain — unko remove/cleanup karne ke liye ye scan chalata hai.
+
+🛠️ 10. WorkItem Maintenance Request:-
+Ye request system ke pending/failed work items ko maintain aur fix karta hai.
+Example: Stuck work items ko retry ya cancel karna.
+
+📋 11. Certification Maintenance Request:-
+Certification processes me jo reviews chal rahe hote hain unko manage karta hai.
+Periodically access review jobs ko handle ya update karne ke liye ye use hota hai.
+
+🔁 13. Role Propagation Partition:-
+Ye request role propagation tasks ko partition/parallel run karta hai.
+Jab roles me changes aate hain, to identities me updates propagate karne padte hain. Ye job usko efficiently karta hai.
+
+🚨 14. Partitioned Alert Processing:-
+System alerts ko efficiently partitioned mode me process karta hai.
+Alerts ke basis par automatic actions / notifications generate hote hain.
+
+⚙️ 15. Task Execute / Task Command / Terminate Task:-
+Task Execute: Specific background system task run karna.
+Task Command: Running task ko command send karna (pause/resume/stop).
+Terminate Task: Task ko forcefully stop karna.
+Ye tasks system ke internal maintenance aur automation operations ke liye use hote hain.
+
+🔄 20. Native Identity Change Propagation Request:-
+Jab kisi identity ka core attribute change hota hai (name, department etc).
+Ye change external systems me propagate karne ke liye request chalata hai.
+
+⏱️ 21. Expire Sequential Task:-
+System me running sequential jobs ko expire/time out karne ke liye.
+Agar koi task bohot der tak stuck rahe to is se usse automatically expire kara jayega.
+
+2️⃣ Service Request:-
+📌 Meaning: Ye ek generic request type hai jo internal system/service processes ko trigger karta hai.
+📌 Purpose: Jab IdentityIQ me koi background job ya admin-level automation chalana ho.
+📌 Use Case: Config updates, internal cleanup tasks, automated workflows jo system maintenance ke liye run karte hain.
+📌 Example: Agar system me batch job schedule hai jo user data validate kare, to wo Service Request ke through trigger hoga.
+
+👥 12️⃣ Manager Certification Generation Partition:-
+📌 Meaning: Ye request manager-level certification tasks ko partitioned way me generate karta hai.
+📌 Purpose: Large organizations me performance improve karne ke liye multiple partitions me certifications generate hoti hain.
+📌 Use Case: Agar company ke 1000+ managers ke liye quarterly access review chalana hai, to partitioning se tasks efficiently parallel run honge.
+📌 Example: HR system ke updates ke basis par manager certification review prepare karna.
+
+17️⃣ Certification Builder:-
+📌 Meaning: Ye request access certification review plans ko build/prepare karta hai.
+📌 Purpose: Certification tasks ko organize karna, reviewers assign karna, and workflow prepare karna.
+📌 Use Case: Quarterly access review ke liye full review plan generate karna.
+📌 Example: “Finance Team Access Certification” plan create karna aur relevant managers ko assign karna.
+
+18️⃣ Application Status Request:-
+📌 Meaning: Ye request external application connectors ki health aur status check karne ke liye hota hai.
+📌 Purpose: Ensure karna ki connected systems (HR, AD, Salesforce etc.) properly respond kar rahe hain.
+📌 Use Case: Agar connector down ho gaya hai ya sync fail hua, to Application Status Request se alert generate hota hai.
+📌 Example: AD connector ki status check karna ki accounts fetch ho rahe hain ya nahi.
+
+19️⃣ System Maintenance Pruner Partition:-
+📌 Use Case: Large system me requests/ logs ko chunk by chunk delete karna, taaki performance affect na ho.
+📌 Example: 6 mahine se purani access requests aur workitems prune(delete) karna.
+
+📦 22️⃣ Data Extract Partition:-
+📌 Meaning: Ye request data extraction/reporting jobs ko partitioned/parallel mode me chalata hai.
+📌 Purpose: Large scale exports aur reports efficiently generate karne ke liye.
+📌 Use Case: Thousands of identity/access records ko export karna in multiple chunks.
+📌 Example: Daily audit report ka CSV export partition-wise generate karna, taaki system slow na ho.
+
+💡 Tip:-
+Request Type = Kaunsa process run hoga
+TargetType = Kaunse object pe ye process apply hoga (User, Role, Account etc.)
+----------------------------------------------------------------------
+📌 TargetType (Typical Values):-  
+matlab request kis object/class pe operate ho raha hai.
+✔️ User – Identity account object.
+✔️ Group – Group object.
+✔️ Role – Access role object.
+✔️ Entitlement – Specific entitlement/permission.
+✔️ AccessProfile – Pre‑defined access profile.
+✔️ Application – External app connector config.
+✔️ Account – Account on a particular system.
+------------------------------------------------------------------------------------------------------------------------------------------
+RequestDefinition Methods hai:-
+-------------------------------------------------
+getName()
+setName(String name)
+getType()
+setType(String type)
+getTargetType()
+setTargetType(String type)
+
+getAttributes()
+setAttributes(Attributes attributes)
+getAttribute(String name)
+setAttribute(String name, Object value)
+getApprovalItems()
+setApprovalItems(List<ApprovalItem> items)
+addApprovalItem(ApprovalItem item)
+removeApprovalItem(ApprovalItem item)
+
+getValidationRules()
+setValidationRules(List<ValidationRule> rules)
+addValidationRule(ValidationRule rule)
+removeValidationRule(ValidationRule rule)
+
+getApprovalMode()
+setApprovalMode(String mode)
+getNotificationTemplate()
+setNotificationTemplate(String template)
+
+getCommentsRequired()
+setCommentsRequired(boolean required)
+getShowComments()
+setShowComments(boolean show)
+clone()
+toMap()
+fromMap(Map map)
+toXml()
+fromXml(String xml)
+------------------------------------------------------------------------------------------------------------------------------
+1️⃣ getName():-
+Ye method request definition ka name return karta hai.
+Name ek string hota hai jo request ko identify karta hai.
+
+Example:-
+RequestDefinition rd = new RequestDefinition();
+rd.setName("CreateUserRequest");
+String name = rd.getName();
+System.out.println(name);
+Output:-
+CreateUserRequest
+-------------------------
+3️⃣ getType():-
+Request ka type return karta hai.
+Type batata hai ki request kis category ka hai, jaise "AccountRequest", "RoleRequest", etc.
+
+Example:-
+RequestDefinition rd = new RequestDefinition();
+rd.setType("AccountRequest");
+System.out.println(rd.getType());
+Output:-
+AccountRequest
+--------------------------
+5️⃣ getTargetType():-
+Ye batata hai ki request ka target object ka type kya hai.
+Example: "User", "Group", "Entitlement".
+
+Example:-
+RequestDefinition rd = new RequestDefinition();
+rd.setTargetType("User");
+System.out.println(rd.getTargetType());
+Output:-
+User
+---------------------------------
+6️⃣ setTargetType(String type):-
+Target type ko set karne ke liye.
+Example:-
+
+RequestDefinition rd = new RequestDefinition();
+rd.setTargetType("Group");
+System.out.println(rd.getTargetType());
+Output:-
+Group
+---------------------------------
+1️⃣ getAttributes()/setAttributes(attrs):-
+Ye poore Attributes object ko return karta hai jo request ke saath linked hota hai.
+Attributes basically key-value pairs ka collection hota hai.
+Example:-
+RequestDefinition rd = new RequestDefinition();
+Attributes attrs = new Attributes();
+attrs.put("reason", "New user onboarding");
+attrs.put("priority", "High");
+
+rd.setAttributes(attrs);
+
+Attributes result = rd.getAttributes();
+System.out.println(result);
+
+Output:-
+{reason=New user onboarding, priority=High}
+----------------------------------------------
+3️⃣ getAttribute(String name):-
+Purpose:-
+Ye specific attribute value return karta hai, attribute ka naam deke.
+
+Example:-
+RequestDefinition rd = new RequestDefinition();
+Attributes attrs = new Attributes();
+attrs.put("reason", "Access request");
+rd.setAttributes(attrs);
+
+String value = rd.getAttribute("reason");
+System.out.println(value);
+
+Output:-
+Access request
+
+Explanation:-
+Specific key ka value fetch karna hota hai.
+------------------------------------------------------------
+4️⃣ setAttribute(String name, Object value):-
+
+Purpose:-
+Ye single attribute key-value ko set/update karta hai.
+
+Example:-
+RequestDefinition rd = new RequestDefinition();
+rd.setAttribute("priority", "High");
+System.out.println(rd.getAttribute("priority"));
+
+Output:-
+High
+
+Explanation:-
+Single attribute ko add ya update karne ke liye use hota hai.
+-----------------------------------------------------------------
+5️⃣ getApprovalItems():-
+Purpose:-
+Ye request ke saare approval items return karta hai as a list.
+
+Example:-
+RequestDefinition rd = new RequestDefinition();
+List<ApprovalItem> approvals = rd.getApprovalItems();
+System.out.println(approvals);
+Output: (agar koi approval add nahi hua to empty list)
+[]
+
+Explanation:-
+Ye method return karta hai ki request ke liye kaun‑kaun approvals defined hain.
+--------------------------------------------------------------------------------------
+6️⃣ setApprovalItems(List<ApprovalItem> items):-
+Purpose:-
+Ye poori approval list set karta hai request ke liye.
+
+Example:-
+ApprovalItem a1 = new ApprovalItem("Manager1");
+ApprovalItem a2 = new ApprovalItem("Manager2");
+List<ApprovalItem> approvals = new ArrayList<>();
+approvals.add(a1);
+approvals.add(a2);
+RequestDefinition rd = new RequestDefinition();
+rd.setApprovalItems(approvals);
+System.out.println(rd.getApprovalItems());
+
+Output:-
+[ApprovalItem{name=Manager1}, ApprovalItem{name=Manager2}]
+
+Explanation:-
+Poore approval list ko ek saath set kar sakte ho.
+-----------------------------------------------------------------
+7️⃣ addApprovalItem(ApprovalItem item):-
+Purpose:-
+Ye single approval item add karta hai list me.
+Example:-
+RequestDefinition rd = new RequestDefinition();
+rd.addApprovalItem(new ApprovalItem("Manager3"));
+System.out.println(rd.getApprovalItems());
+Output:-
+[ApprovalItem{name=Manager3}]
+Explanation:-
+Existing approvals ke saath ek naya approval item add karta hai.
+----------------------------------------------------------------------
+8️⃣ removeApprovalItem(ApprovalItem item):-
+Purpose:-
+Ye specific approval item remove karta hai list se.
+Example:-
+ApprovalItem a1 = new ApprovalItem("Manager1");
+RequestDefinition rd = new RequestDefinition();
+rd.addApprovalItem(a1);
+rd.removeApprovalItem(a1);
+System.out.println(rd.getApprovalItems());
+Output:-
+[]
+Explanation:-
+Specified approval item list se remove ho jaata hai.
+----------------------------------------------------------------------
+1️⃣ getValidationRules():-
+Purpose:-
+Ye method return karta hai saare validation rules jo request ke liye set hain.
+Output me ek list of ValidationRule objects hoti hai.
+
+Example:-
+RequestDefinition rd = new RequestDefinition();
+
+// Agar abhi koi rules set nahi hai
+List<ValidationRule> rules = rd.getValidationRules();
+System.out.println(rules);
+-------------------------------------------------------------------------------------------------------
+2️⃣ setValidationRules(List<ValidationRule> rules):-
+Purpose:-
+Ye method poori validation rules list set karta hai request ke liye.
+Example:-
+ValidationRule rule1 = new ValidationRule("Must have manager approval");
+ValidationRule rule2 = new ValidationRule("Reason cannot be empty");
+
+List<ValidationRule> rules = new ArrayList<>();
+rules.add(rule1);
+rules.add(rule2);
+
+RequestDefinition rd = new RequestDefinition();
+rd.setValidationRules(rules);
+System.out.println(rd.getValidationRules());
+Output:-
+[ValidationRule{name='Must have manager approval'}, ValidationRule{name='Reason cannot be empty'}]
+---------------------------------------------------------------------------------------------------------
+3️⃣ addValidationRule(ValidationRule rule):-
+Purpose:-
+Ye method ek single validation rule add karta hai existing list me.
+Example:-
+RequestDefinition rd = new RequestDefinition();
+rd.addValidationRule(new ValidationRule("Priority must be High"));
+System.out.println(rd.getValidationRules());
+----------------------------------------------------------------------------------------------
+4️⃣ removeValidationRule(ValidationRule rule):-
+Purpose:-
+Ye method specific validation rule remove karta hai list se.
+Example:-
+ValidationRule rule1 = new ValidationRule("Reason cannot be empty");
+
+RequestDefinition rd = new RequestDefinition();
+rd.addValidationRule(rule1);
+
+// Remove rule
+rd.removeValidationRule(rule1);
+
+System.out.println(rd.getValidationRules());
+-----------------------------------------------------------------------------------------------

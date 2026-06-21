@@ -1,0 +1,21 @@
+🔷 WorkflowEvent kya hai?
+👉 WorkflowEvent = ek trigger / signal hota hai jo workflow ko launch ya continue karta hai
+Event aaya → Workflow start ya resume
+🧠 Simple samajh:-
+👉 Workflow normally 2 tarah se run hota hai:-
+
+1️⃣ Direct (user request se)
+2️⃣ Event-based (WorkflowEvent se)
+
+🔷 WorkflowEvent ke use cases
+✅ 1. Delayed execution
+Abhi nahi, baad me run karna
+
+✅ 2. Async processing
+UI ko wait nahi karwana
+
+✅ 3. Retry mechanism
+Fail hua → baad me dobara run
+
+✅ 4. Background jobs
+Heavy processing background me

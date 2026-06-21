@@ -1,0 +1,206 @@
+()EmailOptions = email bhejne ke time extra settings aur data dene ke liye object
+Isme hum decide karte hain:-
+email kis ko jayega
+CC / BCC
+variables
+attachments
+reply address
+
+1️⃣ Simple Example:-
+import sailpoint.object.EmailTemplate;
+import sailpoint.object.EmailOptions;
+
+EmailTemplate template = context.getObjectByName(
+        EmailTemplate.class, "Access Request Approved");
+
+EmailOptions options = new EmailOptions("rahul@gmail.com", null);
+
+context.sendEmailNotification(template, options);
+Output;-
+Email sent to rahul@gmail.com
+-------------------------------------methods of EmailOptions:-
+2️⃣ EmailOptions Constructors:-
+1️⃣ EmailOptions(String to, Map vars):-
+EmailOptions options = new EmailOptions("rahul@gmail.com", null);
+to → receiver email
+vars → template variables
+
+Kya karta hai?
+Email kis user ko bhejna hai ye set karta hai.
+Code:-
+EmailOptions options = new EmailOptions("rahul@gmail.com", null);
+options.setTo("rahul@gmail.com");
+
+System.out.println(options.getTo());
+Output
+rahul@gmail.com
+----------------------------------------
+1️⃣ setTo(String email):-
+Receiver email set karta hai.
+options.setTo("rahul@gmail.com");
+
+2️⃣ getTo():-
+Receiver email return karta hai.
+System.out.println(options.getTo());
+Output:-
+rahul@gmail.com
+
+3️⃣ setCc(String email):-
+CC email set karta hai.
+options.setCc("manager@gmail.com");
+
+4️⃣ getCc():-
+CC email return karta hai.
+System.out.println(options.getCc());
+Output:-
+manager@gmail.com
+
+5️⃣ setBcc(String email):-
+BCC email set karta hai.
+options.setBcc("admin@gmail.com");
+
+6️⃣ getBcc():-
+BCC email return karta hai.
+System.out.println(options.getBcc());
+Output:-
+admin@gmail.com
+
+6️⃣ getBcc():-
+BCC email return karta hai.
+System.out.println(options.getBcc());
+Output:-
+admin@gmail.com
+
+8️⃣ getReplyTo():-
+Reply email return karta hai.
+System.out.println(options.getReplyTo());
+Output:-
+support@company.com
+
+9️⃣ setVariables(Map vars):-
+Template variables set karta hai.
+
+Map vars = new HashMap();
+vars.put("identityName","Rahul");
+
+options.setVariables(vars);
+
+🔟 getVariables():-
+Variables return karta hai.
+System.out.println(options.getVariables());
+Output:-
+{identityName=Rahul}
+
+🔟 setVariables(Map vars)
+Kya karta hai
+
+EmailTemplate ke dynamic variables set karta hai.
+
+Example template:
+
+Hello ${identityName}
+Application: ${applicationName}
+Code
+import java.util.HashMap;
+import java.util.Map;
+import sailpoint.object.EmailOptions;
+
+Map vars = new HashMap();
+
+vars.put("identityName","Rahul");
+vars.put("applicationName","SAP");
+
+EmailOptions options = new EmailOptions("rahul@gmail.com", null);
+
+options.setVariables(vars);
+System.out.println(options.getVariables());
+
+Output:-
+{identityName=Rahul, applicationName=SAP}
+
+Purpose:-
+Template ke placeholders ko value dena
+------------
+()EmailTemplate XML (Variables ke saath):-
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE EmailTemplate PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+
+<EmailTemplate name="AccessRequestTemplate"
+               subject="Access Request Notification for ${identityName}"
+               type="Access">
+
+    <Description>
+        Email template for access request notification
+    </Description>
+
+    <Body>
+
+        <![CDATA[
+
+Hello ${identityName},
+
+Your access request has been processed.
+
+User Details
+--------------------------------
+User Name      : ${identityName}
+Application    : ${applicationName}
+Role Assigned  : ${roleName}
+Manager        : ${managerName}
+
+If you have any questions please contact IAM Support.
+
+Thanks & Regards
+IAM Team
+
+        ]]>
+
+    </Body>
+
+</EmailTemplate>
+----------------------------------------------
+1️⃣1️⃣ getVariables():-
+Kya karta hai?
+EmailOptions me jo variables set kiye gaye hain unko return karta hai.
+
+Code:-
+Map vars = new HashMap();
+vars.put("identityName","Rahul");
+EmailOptions options = new EmailOptions("rahul@gmail.com", vars);
+
+System.out.println(options.getVariables());
+Output
+{identityName=Rahul}
+-------------------------
+1️⃣2️⃣ setAttachments(List attachments)
+Kya karta hai
+
+Email ke saath files attach karta hai.
+
+Example:
+
+PDF
+Excel
+Logs
+Reports
+Code
+import java.util.ArrayList;
+import java.util.List;
+
+List files = new ArrayList();
+
+files.add("report.pdf");
+files.add("access.xlsx");
+
+EmailOptions options = new EmailOptions("rahul@gmail.com", null);
+
+options.setAttachments(files);
+
+System.out.println(options.getAttachments());
+Output
+[report.pdf, access.xlsx]
+
+Purpose:-
+Email ke saath documents bhejna
+------------------------------------

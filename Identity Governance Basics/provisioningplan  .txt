@@ -1,0 +1,527 @@
+()1️⃣ ProvisioningPlan ka Simple Matlab:-
+Ye ek blueprint / plan hai ki SailPoint kaun sa account create/modify/remove kare aur kaun sa entitlement 
+assign/revoke kare.Kaun sa user(Identity) affected hai ye check karta hai.
+Ye ek blueprint ya plan hai jo decide karta hai ki SailPoint ka kaunsa action perform karna hai kisi identity (user) ke liye.
+ProvisioningPlan ke andar AccountRequest, AttributeRequest, aur Entitlement requests store hote hain.
+Kaam:-
+Kaunsa account create, modify, ya delete karna hai
+Kaunsa entitlement (role/permission) assign ya revoke karna hai
+Automation ke liye workflow trigger karna
+
+()1️⃣ ProvisioningPlan ka Simple Matlab:-
+Ye ek blueprint / plan hai ki SailPoint kaun sa account create/modify/remove kare aur kaun sa entitlement 
+assign/revoke kare.Iske through provisioning workflow automate hota hai.
+Example:-
+Naya employee join hota hai → ProvisioningPlan decide karega:
+Email account create karo
+Salesforce role assign karo
+VPN access enable karo
+-------------------------------
+1️⃣ Accounts Affected kya hai?
+Accounts Affected = Kaun-kaun se application accounts par provisioning change hone wala hai.
+Jab SailPoint koi ProvisioningPlan execute karta hai, tab system batata hai ki kis identity ke kis application account par impact padega.
+
+2️⃣ Simple Example:-
+User: Rahul
+Uske accounts hain:-
+Active Directory
+SAP
+Jira
+
+Agar Rahul ko Finance role diya gaya to system bolega:-
+Accounts Affected
+
+Rahul → ActiveDirectory
+Rahul → SAP
+Rahul → Jira
+
+Matlab 3 accounts par change hoga.
+------------------------------------
+
+2️⃣ Example Workflow:-
+Naya employee join hota hai:-
+ProvisioningPlan banega:-
+Employee ka name, department, role sab decide hoga
+
+Actions define honge:-
+Email account create karo
+Salesforce role assign karo
+VPN access enable karo
+
+--SailPoint execute karega plan
+Ye automatically accounts aur permissions create/assign karega,
+
+Common Methods:-
+Method	                     
+1️⃣ setIdentity(Identity identity):-
+Ye method define karta hai ki provisioning action kis user ke liye execute hoga.
+Agar identity set nahi ki gayi toh SailPoint ko pata nahi chalega provisioning kis user par apply karni hai.
+--code example:-
+ProvisioningPlan plan = new ProvisioningPlan();
+Identity user = context.getObjectByName(Identity.class, "rahul");
+plan.setIdentity(user);
+
+Real Example:-
+Employee Rahul join karta hai →
+ProvisioningPlan Rahul ke liye create hota hai →
+Accounts automatically create hote hain.
+
+2️⃣ setOperation(Operation op):-
+Description:-
+Ye define karta hai overall provisioning action type.
+
+Possible Operations:-
+Operation	     Meaning
+Create------Account create karna
+Modify------Account update karna
+Delete------Account remove karna
+Disable-----Account disable karna
+Enable------Account activate karna
+
+Code:-
+plan.setOperation(ProvisioningPlan.Operation.Create);
+
+3️⃣ add(AccountRequest request):-
+Description:-
+ProvisioningPlan me AccountRequest add karta hai.
+AccountRequest define karta hai:-
+kaun sa application
+kaun sa account
+kaun sa operation
+Agar multiple applications hain toh multiple AccountRequests add honge.
+
+Code:-
+plan.add(accountRequest);
+
+4️⃣ getAccountRequests():-
+Description;-
+ProvisioningPlan ke andar jitne bhi AccountRequests hain unko retrieve karta hai.
+Isse developer check kar sakta hai:-
+kaun kaun se applications modify honge
+kitne accounts affected hain
+
+Code:-
+List<ProvisioningPlan.AccountRequest> requests = plan.getAccountRequests();
+
+for(ProvisioningPlan.AccountRequest r : requests){
+    System.out.println(r.getApplicationName());
+}
+
+5️⃣ remove(AccountRequest request):-
+Description:-
+Agar kisi AccountRequest ko provisioning plan se hataana ho toh use kiya jata hai.
+
+Example:-
+Agar galti se wrong application add ho gaya ho.
+
+Code:-
+plan.remove(accountRequest);
+
+8️⃣ getOperation():-
+Description:-
+ProvisioningPlan ka current operation type return karta hai.
+
+Code;-
+ProvisioningPlan.Operation op = plan.getOperation();
+System.out.println(op);
+---------------------------------------------------------------------
+2. ProvisioningResult.STATUS_COMMITTEDYe SailPoint ka ek internal constant hai. 
+Iska matlab hai ki connector ne target system par operation successfully "Commit" (finish) kar diya hai.
+ConstantMatlab:-
+STATUS_COMMITTEDSuccess:-Kaam ho gaya (Account created/updated).
+STATUS_FAILEDError:-Target system ne mana kar diya (e.g., User already exists).
+STATUS_RETRYWait:-Network down tha, SailPoint thodi der baad fir koshish karega.
+STATUS_QUEUEDPending:-Request line mein hai (ServiceNow tickets mein aksar hota hai).
+
+
+---------------------------------------------------------------------
+
+()1️⃣ setArguments(Map args) (ProvisioningPlan):-
+🔹 Description:-
+setArguments() method extra parameters / configuration values ko ProvisioningPlan ke andar pass karne ke liye use hota hai.
+Kabhi-kabhi provisioning ke time additional instructions deni padti hain jaise:
+provisioning priority
+approval required
+provisioning mode
+custom workflow parameters
+connector configuration
+Ye sab arguments map me store hote hain.
+
+()Map structure:-
+Key   → parameter name
+Value → parameter value
+
+🔹 Code Example:-
+Map<String,Object> args = new HashMap<String,Object>();
+
+args.put("priority","HIGH");
+args.put("approvalRequired",true);
+
+ProvisioningPlan plan = new ProvisioningPlan();
+
+plan.setArguments(args);
+----------
+🔹 Arguments kaise read karte hain:-
+Map arguments = plan.getArguments();
+
+System.out.println(arguments.get("priority"));
+---------------------
+()2️⃣ getIdentity():-
+🔹 Description:-
+getIdentity() method ProvisioningPlan ka target user return karta hai.
+ProvisioningPlan me ek Identity object set hota hai jo batata hai:-
+Provisioning kis user par execute hoga
+Ye identity usually HR system se sync hui employee identity hoti hai.
+
+🔹 Code Example:-
+Identity user = plan.getIdentity();
+System.out.println("User Name: " + user.getName());
+System.out.println("Display Name: " + user.getDisplayName());
+
+
+-----------------------------------------
+2️⃣ AccountRequest:-
+AccountRequest = Application account par kya operation karna hai.
+Ye batata hai:-
+Account create karna
+Account delete karna
+Account update karna
+Example:-
+AccountRequest accReq = new AccountRequest();
+accReq.setApplication("ActiveDirectory");
+accReq.setOperation(AccountRequest.Operation.Create);
+Matlab:-
+Active Directory me new account create karo.
+
+2️⃣ AccountRequest (ProvisioningPlan ka important inner class)
+AccountRequest define karta hai target system me kya action lena hai.
+
+()setApplicationName(String name):-
+Target application define karta hai.
+accountReq.setApplicationName("ActiveDirectory");
+
+()setNativeIdentity(String id):-
+Target system ka username / account id.
+accountReq.setNativeIdentity("rahul.ad");
+
+()setOperation(Operation op):-
+Account level operation.
+accountReq.setOperation(ProvisioningPlan.Operation.Create);
+
+()addEntitlement(String entitlement):-
+User ko permission assign karta hai.
+accountReq.addEntitlement("READ_ACCESS");
+
+()removeEntitlement(String entitlement):-
+Permission revoke karta hai.
+accountReq.removeEntitlement("ADMIN_ACCESS");
+
+----------------------------------------------------------------------------------------------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.ProvisioningResult;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class FullProvisioningPlanDemo {
+
+    public static void main(String[] args) throws Exception {
+
+        SailPointContext context = null; // Runtime context
+
+        //=================================================
+        // 1. ProvisioningPlan Create
+        //=================================================
+
+        ProvisioningPlan plan =
+                new ProvisioningPlan();
+
+        //=================================================
+        // 2. Identity
+        //=================================================
+
+        Identity user =
+            context.getObjectByName(
+                Identity.class,
+                "rahul"
+            );
+
+        plan.setIdentity(user);
+
+        System.out.println(
+            "Identity = " +
+            plan.getIdentity().getName()
+        );
+
+        //=================================================
+        // 3. Plan Operations
+        //=================================================
+
+        plan.setOperation(
+            ProvisioningPlan.Operation.Create
+        );
+
+        System.out.println(
+            "Plan Operation = " +
+            plan.getOperation()
+        );
+
+        // Other Operations Examples
+
+        plan.setOperation(
+            ProvisioningPlan.Operation.Modify
+        );
+
+        plan.setOperation(
+            ProvisioningPlan.Operation.Delete
+        );
+
+        plan.setOperation(
+            ProvisioningPlan.Operation.Enable
+        );
+
+        plan.setOperation(
+            ProvisioningPlan.Operation.Disable
+        );
+
+        //=================================================
+        // 4. Arguments
+        //=================================================
+
+        Map<String,Object> args =
+                new HashMap<String,Object>();
+
+        args.put(
+            "priority",
+            "HIGH"
+        );
+
+        args.put(
+            "approvalRequired",
+            true
+        );
+
+        args.put(
+            "mode",
+            "AUTO"
+        );
+
+        plan.setArguments(args);
+
+        System.out.println(
+            plan.getArguments()
+                .get("priority")
+        );
+
+        //=================================================
+        // 5. AccountRequest
+        //=================================================
+
+        AccountRequest accReq =
+                new AccountRequest();
+
+        accReq.setApplicationName(
+            "ActiveDirectory"
+        );
+
+        accReq.setNativeIdentity(
+            "rahul.ad"
+        );
+
+        accReq.setOperation(
+            ProvisioningPlan.Operation.Create
+        );
+
+        System.out.println(
+            accReq.getApplicationName()
+        );
+
+        System.out.println(
+            accReq.getNativeIdentity()
+        );
+
+        // Account Operations
+
+        accReq.setOperation(
+            ProvisioningPlan.Operation.Modify
+        );
+
+        accReq.setOperation(
+            ProvisioningPlan.Operation.Delete
+        );
+
+        accReq.setOperation(
+            ProvisioningPlan.Operation.Enable
+        );
+
+        accReq.setOperation(
+            ProvisioningPlan.Operation.Disable
+        );
+
+        accReq.setOperation(
+            ProvisioningPlan.Operation.Unlock
+        );
+
+        //=================================================
+        // 6. Entitlements
+        //=================================================
+
+        accReq.addEntitlement(
+            "READ_ACCESS"
+        );
+
+        accReq.addEntitlement(
+            "VPN_ACCESS"
+        );
+
+        accReq.removeEntitlement(
+            "ADMIN_ACCESS"
+        );
+
+        //=================================================
+        // 7. AttributeRequest
+        //=================================================
+
+        AttributeRequest attr1 =
+            new AttributeRequest(
+                "memberOf",
+                ProvisioningPlan.Operation.Add,
+                "Finance_Group"
+            );
+
+        AttributeRequest attr2 =
+            new AttributeRequest(
+                "title",
+                ProvisioningPlan.Operation.Set,
+                "Developer"
+            );
+
+        AttributeRequest attr3 =
+            new AttributeRequest(
+                "group",
+                ProvisioningPlan.Operation.Remove,
+                "Old_Group"
+            );
+
+        // Attribute Operations
+
+        AttributeRequest attr4 =
+            new AttributeRequest(
+                "access",
+                ProvisioningPlan.Operation.Revoke,
+                "ADMIN"
+            );
+
+        // Add AttributeRequests
+
+        accReq.add(attr1);
+
+        accReq.add(attr2);
+
+        accReq.add(attr3);
+
+        accReq.add(attr4);
+
+        //=================================================
+        // 8. getAttributeRequests()
+        //=================================================
+
+        List<AttributeRequest> attrs =
+                accReq.getAttributeRequests();
+
+        for(AttributeRequest a : attrs)
+        {
+            System.out.println(
+                a.getName()
+            );
+
+            System.out.println(
+                a.getValue()
+            );
+
+            System.out.println(
+                a.getOperation()
+            );
+        }
+
+        //=================================================
+        // 9. Add AccountRequest
+        //=================================================
+
+        plan.add(accReq);
+
+        //=================================================
+        // 10. getAccountRequests()
+        //=================================================
+
+        List<AccountRequest> reqs =
+                plan.getAccountRequests();
+
+        for(AccountRequest r : reqs)
+        {
+            System.out.println(
+                r.getApplicationName()
+            );
+        }
+
+        //=================================================
+        // 11. remove()
+        //=================================================
+
+        plan.remove(accReq);
+
+        //=================================================
+        // 12. isEmpty()
+        //=================================================
+
+        System.out.println(
+            plan.isEmpty()
+        );
+
+        //=================================================
+        // 13. toXml()
+        //=================================================
+
+        System.out.println(
+            plan.toXml()
+        );
+
+        //=================================================
+        // 14. clone()
+        //=================================================
+
+        ProvisioningPlan copy =
+            (ProvisioningPlan)
+            plan.clone();
+
+        //=================================================
+        // 15. ProvisioningResult Status
+        //=================================================
+
+        System.out.println(
+            ProvisioningResult
+                .STATUS_COMMITTED
+        );
+
+        System.out.println(
+            ProvisioningResult
+                .STATUS_FAILED
+        );
+
+        System.out.println(
+            ProvisioningResult
+                .STATUS_RETRY
+        );
+
+        System.out.println(
+            ProvisioningResult
+                .STATUS_QUEUED
+        );
+
+    }
+}

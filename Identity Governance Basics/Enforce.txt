@@ -1,0 +1,12 @@
+2️⃣ Enforce (लागू करना / लागू करना):-
+Enforce ka matlab hota hai rules ya policies ko actively apply karna, taki koi bhi violation ya unauthorized access na ho.
+Example:-
+Policy: Finance team ke alawa koi write access nahi le sakta.
+Enforce karne par SailPoint automatically access ko block ya remove kar dega jo policy violate kar raha hai.
+
+()SailPoint me enforce methods:-
+--Policy Enforcement – Automatically check aur remediate violations.
+PolicyViolation object track karta hai violations.
+ProvisioningPlan ya ProvisioningProject ke through action trigger hota hai.
+
+--Manual enforcement – Admin manually entitlement revoke ya approve kar sakta hai.

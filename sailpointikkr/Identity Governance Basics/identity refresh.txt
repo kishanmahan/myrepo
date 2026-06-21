@@ -1,0 +1,98 @@
+🔥 1. Identity Refresh kya hai?
+👉 Identity Refresh ek process/task hai jo:-
+Identity ke data ko update + recalculate + sync karta hai
+Simple line:-
+System me jo identity (user) hai uska pura data dobara calculate hota hai
+------------------------------------------------------------------------------------
+🔥 2. Identity Refresh kya karta hai? 💥
+Jab Identity Refresh run hota hai, ye kaam karta hai:-
+
+✅ 1. Identity Attributes Update
+HR ya source se aaye data ko update karta hai
+jaise: department, manager, title
+✅ 2. Correlation Check
+Account aur Identity ko link karta hai
+(agar naya account mila aggregation se)
+✅ 3. Role Assignment / Removal
+Business roles / IT roles assign ya remove karta hai
+✅ 4. Entitlement Calculation
+User ko kaunse access milne chahiye → decide karta hai
+✅ 5. Policy Evaluation
+Policy violation check karta hai
+✅ 6. Provisioning Trigger
+Agar kuch change hua → provisioning plan generate karta hai
+✅ 7. Identity Cube Update
+Identity ka pura profile (cube) update hota hai
+🔥 3. Identity Refresh kab hota hai? ⏰
+---------------------------------------
+👉 3 main cases:-
+🟢 1. Scheduled (Task Scheduler)
+Daily / hourly run hota hai
+most common in projects
+🟢 2. Manual Trigger
+Admin manually run karta hai
+🟢 3. Event Based
+Jaise:
+aggregation ke baad
+lifecycle event ke time
+------------------------------------------
+🔥 4. Identity Refresh ke andar kya-kya hota hai? ⚙️
+Identity Refresh task ke andar options hote hain:-
+Refresh Identity Attributes
+Refresh Roles
+Refresh Entitlements
+Refresh Manager Status
+Promote Attributes
+Process Events
+Check Policies
+Provision Assignments
+Refresh Identity Cubes
+👉 In options ko ON/OFF karke control karte hain.
+------------------------------------------------------
+🔥 5. Internal Flow (Real Engine Flow 🔥):-
+👉 Step-by-step:-
+Identity uthata hai (DB se)
+Attributes update karta hai
+Correlation check karta hai
+Roles calculate karta hai
+Entitlements calculate karta hai
+Policy check karta hai
+Provisioning plan banata hai (agar needed)
+DB me update kar deta hai
+-----------------------------------------------------------
+🔥 6. DB me kya store hota hai? 🗄️ (Important 💯)
+👉 Direct “Identity Refresh” naam ka table nahi hota
+👉 BUT ye tables update karta hai:-
+📌 Main Tables:-
+Identity → user basic info
+IdentityCube → full calculated data
+Link → accounts (application ke)
+Bundle → roles
+ManagedAttribute → entitlements
+PolicyViolation → violations
+ProvisioningPlan / TaskResult → execution result
+
+🔥 7. Real Example (Simple Flow):-
+👉 HR ne department change kiya:-
+Aggregation hua
+Identity Refresh run hua
+System dekha:
+Dept change → role change
+Old role remove
+New role assign
+Provisioning trigger
+-------------------------------
+🔥 Identity Refresh koun banata hai?
+👉 Identity Refresh ek PRE-BUILT (inbuilt) feature hai SailPoint ka
+✅ Matlab:-
+Ye SailPoint ka system-provided task hai, developer ne nahi banaya hota.
+
+🔥 Developer ka role kya hota hai?
+👉 Developer:-
+Identity Refresh create nahi karta
+Par:-
+usko configure karta hai
+usme rules attach karta hai
+customization karta hai
+kab run hoga ye set karta hai.
+------------------------------------

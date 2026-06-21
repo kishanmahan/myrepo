@@ -1,0 +1,52 @@
+💡 Scope kya hota hai? (Simple)
+
+👉 Scope = Rule kaha aur kis context me run hoga
+
+Matlab:
+
+Kis object pe kaam karega?
+
+Kis process me trigger hoga?
+
+Kis data ko access karega?
+
+🔥 Rule Types ke according Scope
+🔹 1️⃣ Identity Rule ka Scope
+👉 Identity object ke andar
+
+📌 Access kya milega?
+identity (user object)
+attributes (name, email, department)
+🧠 Matlab:-
+👉 Sirf user data pe kaam karega
+
+🔹 2️⃣ Provisioning Rule ka Scope
+👉 Provisioning process ke andar
+
+📌 Access kya milega?
+provisioningPlan
+account request
+application
+🧠 Matlab:-
+👉 Sirf account create/update/delete ke time run hoga
+
+🔹 3️⃣ Approval Rule ka Scope
+👉 Approval workflow ke andar
+
+📌 Access kya milega?
+request
+approver
+workflow context
+🧠 Matlab:-
+👉 Sirf approval decide karne ke time run hoga
+
+🔹 4️⃣ Violation Rule ka Scope
+👉 Policy evaluation ke andar
+
+📌 Access kya milega?
+identity
+roles
+entitlements
+risk data
+🧠 Matlab:-
+👉 Sirf risk / violation check karne ke time run hoga

@@ -1,0 +1,290 @@
+📂 1️⃣7️⃣ Data Governance:-
+Data Governance ka matlab hai sensitive aur critical data ke access, classification, aur protection ka control.
+Purpose:-
+Ensure ki sensitive data sirf authorized users ke paas ho.
+Compliance (GDPR, HIPAA, SOX) meet karna.
+Data misuse aur leaks prevent karna.
+
+Example:-
+Data Type	                     Example
+Customer Data:---------CRM me stored customer personal info
+Financial Data:--------Payroll, Accounting systems data
+Confidential Docs:-----HR contracts, Strategic documents
+----------------------------------------------------------------------------------------------------------
+()Classification = kisi cheez ko type ya category me divide karna,
+taaki manage karna easy ho aur rules apply kar sake.
+Classified = aisi information jo restricted ho aur sirf authorized log hi access kar saken.
+
+3️⃣ Example in IT / Compliance (SOX, GDPR, HIPAA):-
+Regulation	        Classified Example	                                       Purpose
+SOX--------Financial statements of company → internal use only------------Unauthorized tampering se bachana
+GDPR-------Personal info → email, address, health data--------------------Sirf authorized staff hi access kare
+HIPAA------PHI (Patient Health Info) → doctors, nurses ke liye------------Patient privacy protect karna
+
+----------------------------------------------------------------------------------------------------------
+Common Methods of Data Governance:-
+classifyData(dataObject, sensitivityLevel)
+assignDataAccess(user, dataObject)
+auditDataAccess(user, dataObject)
+removeDataAccess(user, dataObject)
+
+()1️⃣ classifyData(dataObject, sensitivityLevel):-
+👉 Ye method data ko classify karta hai uski sensitivity ke according.
+Example sensitivity levels:-
+Public
+Internal
+Confidential
+Highly Confidential
+
+()Data Tagging / Data Classification kya hai?  
+Data classification system me data ko sensitivity level (Internal, Confidential, Highly Confidential)
+ke basis par classify kiya jata hai aur IAM system assign, audit aur remove access control karta hai.
+
+()2️⃣ assignDataAccess(user, dataObject)👉 Ye method user ko data access assign karta hai.
+Rahul ab customer data access kar sakta hai.
+
+()3️⃣ auditDataAccess(user, dataObject):-
+👉 Ye method check karta hai kis user ne kaunsa data access kiya.
+System audit log store karta hai.
+Security aur compliance ke liye important hai.
+
+()4️⃣ removeDataAccess(user, dataObject):-
+👉 Ye method user ka data access remove karta hai.
+Rahul ab customer data access nahi kar sakta.
+--------------------------------------------------------------------------------------
+1️⃣ Java Class:-
+import java.util.*;
+
+public class DataGovernanceManager {  //methods ke class
+
+    Map<String, String> dataClassification = new HashMap<>();
+    Map<String, List<String>> userAccess = new HashMap<>();
+
+    // 1️⃣ classify data
+    public void classifyData(String dataObject, String sensitivityLevel) {
+
+        dataClassification.put(dataObject, sensitivityLevel);
+
+        System.out.println(dataObject + " classified as " + sensitivityLevel);
+    }
+
+    // 2️⃣ assign access
+    public void assignDataAccess(String user, String dataObject) {
+
+        if (!userAccess.containsKey(user)) {
+            userAccess.put(user, new ArrayList<String>());
+        }
+
+        userAccess.get(user).add(dataObject);
+
+        System.out.println("Access granted to " + user + " for " + dataObject);
+    }
+
+    // 3️⃣ audit access
+    public void auditDataAccess(String user, String dataObject) {
+
+        System.out.println("Audit Log: " + user + " accessed " + dataObject);
+
+        String level = dataClassification.get(dataObject);
+
+        System.out.println("Data Sensitivity: " + level);
+    }
+
+    // 4️⃣ remove access
+    public void removeDataAccess(String user, String dataObject) {
+
+        if (userAccess.containsKey(user)) {
+            userAccess.get(user).remove(dataObject);
+        }
+
+        System.out.println("Access removed for " + user + " from " + dataObject);
+    }
+
+    public static void main(String[] args) {
+
+        DataGovernanceManager manager = new DataGovernanceManager();
+
+        // classify data
+        manager.classifyData("EmployeeRecords", "Internal");
+        manager.classifyData("CustomerDatabase", "Confidential");
+        manager.classifyData("CreditCardData", "Highly Confidential");
+
+        // assign access
+        manager.assignDataAccess("Rahul", "EmployeeRecords");
+        manager.assignDataAccess("Amit", "CustomerDatabase");
+
+        // audit access
+        manager.auditDataAccess("Rahul", "EmployeeRecords");
+
+        // remove access
+        manager.removeDataAccess("Rahul", "EmployeeRecords");
+    }
+}
+2️⃣ Output
+EmployeeRecords classified as Internal
+CustomerDatabase classified as Confidential
+CreditCardData classified as Highly Confidential
+
+Access granted to Rahul for EmployeeRecords
+Access granted to Amit for CustomerDatabase
+
+Audit Log: Rahul accessed EmployeeRecords
+Data Sensitivity: Internal
+
+Access removed for Rahul from EmployeeRecords
+------------------------------------------------------------------------------------
+()1️⃣ Internal Data:-
+Internal data wo data hota hai jo company ke andar use hota hai, lekin bahut sensitive nahi hota.
+Example:-
+Employee list
+Company policies
+Internal documents
+
+Agar ye bahar leak ho jaye to zyada damage nahi hota, lekin fir bhi public nahi hona chahiye.
+Tag example:-
+Tag → INTERNAL
+
+()2️⃣ Confidential Data:-
+Confidential data business ke liye important aur sensitive hota hai.
+Example:-
+Customer database
+Sales reports
+Business strategies
+
+Agar ye leak ho jaye to company ko financial loss ho sakta hai.
+Tag example:-
+Tag → CONFIDENTIAL
+
+()3️⃣ Highly Confidential Data:-
+Ye bahut zyada sensitive data hota hai.
+Iska access bahut limited users ko diya jata hai.
+Example:-
+Credit card data
+Passwords
+Private encryption keys
+Financial records
+Agar ye leak ho jaye to serious security problem ho sakti hai.
+
+Tag example:-
+Tag → HIGHLY_CONFIDENTIAL
+--------------------------------------------------------------------------------------------------------------
+()Sensitive data tagging kya hai?  
+Sensitive data wo data hota hai jo personal ya private information contain karta hai.
+Example:-
+Aadhaar number
+PAN number
+Medical records
+Personal address
+Phone number
+Is type ke data ko strong protection chahiye,
+aur kai regulations bhi isko protect karte hain (jaise GDPR (General Data Protection Regulation)).
+
+Tag example:-
+Tag → SENSITIVE
+
+1️⃣ Sensitive Data Tagging Method
+Method: tagSensitiveData()
+
+Ye method data object ko sensitive tag assign karta hai.
+
+Java Code
+import java.util.HashMap;
+import java.util.Map;
+
+public class DataTaggingManager {
+
+    Map<String, String> dataTags = new HashMap<>();
+
+    // Sensitive data tagging method
+    public void tagSensitiveData(String dataObject) {
+
+        dataTags.put(dataObject, "SENSITIVE");
+
+        System.out.println(dataObject + " tagged as SENSITIVE DATA");
+    }
+
+    public static void main(String[] args) {
+
+        DataTaggingManager manager = new DataTaggingManager();
+
+        manager.tagSensitiveData("AadhaarNumber");
+        manager.tagSensitiveData("CreditCardInfo");
+
+    }
+}
+2️⃣ Output
+AadhaarNumber tagged as SENSITIVE DATA
+CreditCardInfo tagged as SENSITIVE DATA
+-------------------------------------------------------------------------------------------
+()Ownership mapping kya hai?
+--👉 Ownership Mapping ka matlab hai kisi resource, application, ya data ka responsible owner assign karna.
+Yani system me har resource ka ek owner hota hai jo uski responsibility leta hai.
+
+1️⃣ Ownership Mapping kya karta hai?
+Ownership Mapping se system ye decide karta hai:-
+kaun application ka owner hai
+kaun entitlement ka owner hai
+kaun data ka owner hai
+approval ke time kis se permission leni hai
+Example:-
+Application → FinanceApp
+Owner → Finance Manager
+Agar koi user FinanceApp access request karega, to approval Finance Manager karega.
+
+3️⃣ Types of Ownership:-
+1️⃣ Application Owner:-
+Application ka responsible person.
+Example:-
+Application → Salesforce
+Owner → CRM Manager
+
+2️⃣ Data Owner:-
+Data ka responsible person.
+Example:-
+Data → Customer Database
+Owner → Data Protection Officer
+
+3️⃣ Entitlement Owner:-
+Access rights ka owner.
+Example:-
+Entitlement → Finance Role
+Owner → Finance Head
+
+1️⃣ mapOwner(resource, owner):-
+Resource ko owner assign karta hai.
+
+public void mapOwner(String resource, String owner) {
+    resourceOwners.put(resource, owner);
+    System.out.println("Owner assigned: " + owner + " for " + resource);
+}
+Output:-
+Owner assigned: Finance Manager for FinanceApp
+
+2️⃣ getOwner(resource):-
+Resource ka owner return karta hai.
+
+public String getOwner(String resource) {
+    return resourceOwners.get(resource);
+}
+Output:-
+Finance Manager
+
+3️⃣ updateOwner(resource, newOwner):-
+Resource ka owner change karta hai.
+
+public void updateOwner(String resource, String newOwner) {
+    resourceOwners.put(resource, newOwner);
+    System.out.println("Owner updated for " + resource + " to " + newOwner);
+}
+Output:-
+Owner updated for FinanceApp to Security Manager
+
+4️⃣ removeOwner(resource):-
+Resource ka ownership remove karta hai.
+
+public void removeOwner(String resource) {
+    resourceOwners.remove(resource);
+    System.out.println("Ownership removed for " + resource);
+}
+Output:-
+Ownership removed for FinanceApp

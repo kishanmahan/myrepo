@@ -1,0 +1,136 @@
+()RBAC (Role Based Access Control) kya hai?
+--1️⃣ RBAC kya hai?
+Meaning: User ka access directly permissions se nahi, balki roles ke through assign hota hai.
+Purpose: Access management ko easy, scalable, aur secure banane ke liye.
+Core Idea:
+Roles define karte hain permissions ka group
+Users ko roles assign kiye jaate hain
+System automatically user ke liye permissions apply karta hai.
+
+2️⃣ Example Table:-
+Role	              Permissions	                       Assigned Users
+Finance Manager----SAP Full Access, Read Finance Reports----Rahul, Priya
+IT Admin-----------Server Access, Admin Dashboard-----------Anil, Ravi
+Employee-----------Email Access, Leave Portal---------------All Employees
+
+Flow:-
+Rahul ko “Finance Manager” role assign → Automatically SAP + Finance Reports access mil gaya
+Agar Rahul role change hota hai → Access automatically update ho jata hai.
+
+()3️⃣ RBAC Advantages:-
+Easy Management: Directly har user ko permission assign nahi karna
+Consistency: Same role wale sab users ka access same hota hai
+Audit & Compliance: Easy to track who has access to what
+Dynamic: Role change = Access change automatically.
+
+4️⃣ Simple Code Example (SailPoint Style)
+// Define Role
+Role financeManager = new Role("Finance Manager");
+financeManager.addPermission("SAP Full Access");
+financeManager.addPermission("Finance Reports Read");
+
+// Assign User to Role
+Identity rahul = getIdentity("EMP12345");
+rahul.assignRole(financeManager);
+
+// Check Access
+if(rahul.hasPermission("SAP Full Access")){
+    System.out.println("Access Granted!");
+}else{
+    System.out.println("Access Denied!");
+}
+--------------
+3️⃣ Enterprise RBAC Provisioning:-
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+
+Identity user = context.getObjectByName(Identity.class, "rahul");
+
+ProvisioningPlan plan = new ProvisioningPlan();
+plan.setIdentity(user);
+
+AccountRequest accReq = new AccountRequest();
+accReq.setApplication("FinanceApp");
+accReq.setOperation(AccountRequest.Operation.Create);
+
+plan.add(accReq);
+
+context.saveObject(plan);
+
+Result:
+
+Rahul → FinanceApp account create
+---------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.Role;
+import sailpoint.object.Application;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+
+Identity identity = context.getObjectByName(Identity.class, "rahul");
+
+Role role = context.getObjectByName(Role.class, "FinanceRole");
+
+Application app = context.getObjectByName(Application.class, "FinanceApp");
+
+if(identity != null && role != null){
+
+    // Assign role to user
+    identity.add(role);
+
+    // Create provisioning plan
+    ProvisioningPlan plan = new ProvisioningPlan();
+    plan.setIdentity(identity);
+
+    // Account request
+    AccountRequest accReq = new AccountRequest();
+    accReq.setApplication(app.getName());
+    accReq.setOperation(AccountRequest.Operation.Create);
+
+    // Entitlement request
+    AttributeRequest entitlement = new AttributeRequest();
+    entitlement.setName("group");
+    entitlement.setOperation(ProvisioningPlan.Operation.Add);
+    entitlement.setValue("FinanceGroup");
+
+    accReq.add(entitlement);
+
+    plan.add(accReq);
+
+    context.saveObject(identity);
+    context.commitTransaction();
+
+}
+/////////////*
+()Yaha group attribute ka naam hai jo Target system ka field / column.
+Matlab:-
+Target system ka field / attribute
+Example target systems:-
+System	               Attribute
+Active Directory------group / memberOf
+ServiceNow---------------group
+SAP----------------------role
+Jira--------------------group
+To yaha group = attribute name.
+
+()2️⃣ FinanceGroup kya hai:-
+entitlement.setValue("FinanceGroup");
+Ye actual group ka naam hai jisme user ko add karna hai.
+
+Example:-
+Active Directory Groups
+FinanceGroup
+HRGroup
+AdminGroup
+ITSupportGroup
+
+()3️⃣ setOperation(Add) kya karega:-
+entitlement.setOperation(ProvisioningPlan.Operation.Add);
+Meaning:-
+User ko group me add karo
+
+()in teeno ka matlab Rahul ko FinanceGroup me add karo.
+*/////////////

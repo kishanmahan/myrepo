@@ -1,0 +1,33 @@
+1️⃣ Session kya hai/
+Session = Temporary memory / context
+Session me current user ka data aur runtime information store hota hai jab application chal raha hota hai.
+Example:-
+Kaunsa user login hai
+Workflow ka current state
+Temporary variables
+📌 Session temporary hota hai → server restart ya logout ke baad khatam ho sakta hai.
+
+1️⃣ setProperty(String key, Object value):-
+Session me value store karta hai.
+session.setProperty("role", "Admin");
+
+2️⃣ getProperty(String key):-
+Session se value nikalta hai.
+String role = (String) session.getProperty("role");
+
+3️⃣ removeProperty(String key):-
+Session se value delete karta hai.
+session.removeProperty("role");
+
+4️⃣ getProperties():-
+Session ki saari properties ka map deta hai.
+Map props = session.getProperties();
+
+5️⃣ clear():-
+Session ke sab data ko clear kar deta hai.
+session.clear();
+
+6️⃣ containsProperty(String key):-
+Check karta hai property exist karti hai ya nahi.
+session.containsProperty("username");
+

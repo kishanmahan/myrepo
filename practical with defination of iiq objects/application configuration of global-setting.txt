@@ -1,0 +1,28 @@
+()global-setting:-application configuration:-
+
+()SailPoint IdentityIQ mein Application Configuration ke extra attributes (extended attributes) setup karne ke liye hai. 
+Jab aapko kisi Application ki settings mein standard fields ke alawa kuch apni custom jankari save karni ho, tab iska use hota hai.
+
+--Attribute Name: Yeh database ke liye technical naam hota hai. Ismein spaces nahi hone chahiye.
+
+--Display Name: Yeh woh naam hai jo aapko Application ke configuration page par dikhega.
+
+--Type: Data ka format (e.g., String, Secret, Boolean, Integer). Agar aap password jaisi cheez save kar rahe hain, toh "Secret" chunein.
+
+--Description: Is attribute ka maqsad batane ke liye thodi jankari.
+
+--Searchable: Agar ise check kiya, toh aap is attribute ki value ke aadhar par applications ko search kar payenge.
+
+--Editable: Kya admin is attribute ki value ko Application page par badal sakta hai? Agar nahi, toh yeh read-only ho jayega.
+
+--Required: Agar ise check karte hain, toh is attribute ko khali nahi chhoda ja sakta.
+
+--Category Name: Agar aapne bahut saare custom attributes banaye hain, toh unhein groups mein baantne ke liye category ka naam yahan likhte hain ya dropdown se chunte hain.
+
+--Allowed Values: Agar aap chahte hain ki user apni marzi se kuch bhi na likhe balki ek list mein se choose kare, toh wo options yahan ek-ek karke likhein.
+
+--Default Value: Agar koi value nahi bhari jati, toh system automatically kaunsi value uthayega, wo yahan set hoti hai.
+
+Example Scenario:-
+Maan lijiye aapko har application ke liye ek "Support Team Email" save karni hai jo standard SailPoint mein nahi milti. Aap Attribute Name mein supportEmail rakhenge, Type mein String aur Required ko check kar denge. Iske baad, har application ke config page par aapko ek naya box dikhega jahan aap email id daal sakenge.
+

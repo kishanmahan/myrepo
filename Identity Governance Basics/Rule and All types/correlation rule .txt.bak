@@ -1,0 +1,68 @@
+<!-- <?xml version='1.0' encoding='UTF-8'?> -->
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Custom Multi-Attribute Correlation Rule" type="Correlation">
+  <Description>
+    Ye rule account ko Identity se correlate karta hai using EmployeeID ya Email.
+  </Description>
+  <Source>
+  import sailpoint.object.*;
+  import sailpoint.api.IdentityService;
+  import sailpoint.tools.Util;
+  import java.util.HashMap;
+  import java.util.Map;
+  import org.apache.commons.logging.Log;
+  import org.apache.commons.logging.LogFactory;
+
+  // 1. Logging Setup
+  Log logger = LogFactory.getLog("custom.rule.correlation");
+  Map returnMap = new HashMap();
+
+  try {
+      // Account attributes jo source system se aa rahe hain
+      String accountEmpId = account.getStringAttribute("EMPLOYEE_NUMBER");
+      String accountEmail = account.getStringAttribute("MAIL");
+
+      logger.debug("Correlating account: " + account.getNativeIdentity());
+
+      // 2. Logic A: Employee ID se Match karna (Primary Match)
+      if (Util.isNotNullOrEmpty(accountEmpId)) {
+          QueryOptions qo = new QueryOptions();
+          qo.addFilter(Filter.eq("name", accountEmpId)); // Identity ka 'name' aksar EmpID hota hai
+          
+          int count = context.countObjects(Identity.class, qo);
+          if (count == 1) {
+              Identity match = context.getUniqueObject(Identity.class, qo);
+              if (match != null) {
+                  returnMap.put("identity", match);
+                  logger.info("Match mil gaya via EmployeeID: " + accountEmpId);
+                  return returnMap;
+              }
+          }
+      }
+
+      // 3. Logic B: Email se Match karna (Secondary Match - Fallback)
+      if (Util.isNotNullOrEmpty(accountEmail)) {
+          QueryOptions qoEmail = new QueryOptions();
+          qoEmail.addFilter(Filter.eq("email", accountEmail));
+          
+          int emailCount = context.countObjects(Identity.class, qoEmail);
+          if (emailCount == 1) {
+              Identity match = context.getUniqueObject(Identity.class, qoEmail);
+              if (match != null) {
+                  returnMap.put("identity", match);
+                  logger.info("Match mil gaya via Email: " + accountEmail);
+                  return returnMap;
+              }
+          } else if (emailCount > 1) {
+              logger.warn("Duplicate Email mila: " + accountEmail + ". Manual correlation zaroori hai.");
+          }
+      }
+
+  } catch (Exception e) {
+      logger.error("Correlation Rule Error: " + e.getMessage());
+  }
+
+  // Agar koi match nahi mila, toh empty map return karega (Account Uncorrelated rahega)
+  return returnMap;
+  </Source>
+</Rule>

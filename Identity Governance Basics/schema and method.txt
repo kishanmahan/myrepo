@@ -1,0 +1,461 @@
+🔥1️⃣ Schema kya hota hai?
+👉 Schema define karta hai:-
+Account structure
+Attributes (username, email, role)
+Object type (account / group)
+👉 Simple:-
+👉 “Schema = target system ka data structure”
+
+()package:-sailpoint.object.Schema hai.
+----------------------------------------------------------------------------------
+🔥 Short Answer:-
+👉 Schema koi ek banda nahi banata — ye depend karta hai system pe:-
+
+👉 3 main sources hote hain:-
+Application khud (Auto-discovery)
+IAM tool (SailPoint admin / developer)
+Custom configuration (manual design)
+🔥 Detail me samajh 👇:-
+---------------------------------------------------
+🧠 1️⃣ Application khud Schema deta hai (AUTO):-
+👉 Jab tu kisi system ko connect karta hai (AD, DB, SAP)
+👉 To IAM tool automatically schema fetch karta hai
+
+🎯 Example:-
+Active Directory se aaya:-
+- sAMAccountName
+- mail
+- department
+👉 Ye sab fields automatically detect ho jate hain ✅
+--------------------------------------------
+🧠 2️⃣ IAM Admin / Developer banata hai (MANUAL):-
+👉 Agar kuch missing ho ya customize karna ho
+👉 To admin ya developer schema define karta hai
+
+💻 Example (Manual):-
+<Schema name="Account">
+    <AttributeDefinition name="employeeId" type="string"/>
+    <AttributeDefinition name="region" type="string"/>
+</Schema>
+👉 Ye manually add kiya gaya 🔥
+-----------------------------------------
+🧠 3️⃣ Custom Schema (Company specific):-
+👉 Company apne use-case ke hisaab se fields add karti hai
+🎯 Example:-
+- riskLevel
+- businessUnit
+- projectCode
+---------------------------------------------------------------------------------------------
+🔥 🔹 1️⃣ schema me kaunsa object aata hai?
+schema = Target System ka Schema (NOT Identity) ❗
+🔹 Matlab:-
+👉 Ye external system (Application) ka structure hota hai
+Examples:-
+Active Directory schema
+Database schema
+LDAP schema
+
+🔹 Isme kya hota hai?
+👉 Ye batata hai:-
+Object type:-
+Account / Group
+Identity attribute:-
+uid / cn / USER_ID
+Attributes:-
+NAME
+EMAIL_ADDR
+STATUS_FLAG
+🔥 Clear line:-
+schema hamesha target system ka hota hai, SailPoint Identity ka nahi.
+-------------------------------------------------------------------------------------------
+🔥 4️⃣ 🔥 Schema ke chute hue Methods:-
+getObjectType()
+setObjectType(String type)
+addAttributeDefinition(AttributeDefinition attr)
+getAttributeDefinition(String name)
+removeAttributeDefinition(String name)
+hasAttributeDefinition(String name)
+getIdentityAttribute()
+setIdentityAttribute(String attr)
+getDisplayAttribute()
+setDisplayAttribute(String attr)
+isAccountSchema()
+isGroupSchema()
+toXml()
+fromXml(String xml)
+toMap()
+fromMap(Map map)
+getAttributeNames()
+getRequiredAttributes()
+getOptionalAttributes()
+getType()
+setType(String type)
+isRequired()
+setRequired(boolean val)
+setMultiValued(boolean val)
+getDisplayName()
+setDisplayName(String name)
+--------------------------------------------------------------------------------
+👉 1️⃣ setObjectType(String type):-
+👉 Ye method Schema ka type set karta hai
+Matlab:-
+Ye batata hai ki schema kis type ke object ke liye hai
+
+📌 Common values:-
+"account" → user account ke liye
+"group" → group/role ke liye
+
+✅ Example:-
+schema.setObjectType("account");
+👉 Iska matlab:-
+➡️ Ye schema user accounts ke structure ko represent karega
+
+👉 2️⃣ getObjectType():-
+👉 Ye method current object type return karta hai
+✅ Example:-
+String type = schema.getObjectType();
+System.out.println(type);
+📌 Output:
+account
+-----------------------------------------------------------------------------
+🔥 1️⃣ addAttributeDefinition(AttributeDefinition attr):-
+👉 Ye method Schema me naya attribute add karta hai
+📌 Matlab:-
+Schema ke andar ek field add karna (jaise username, email)
+✅ Example:-
+AttributeDefinition attr = new AttributeDefinition();
+attr.setName("email");
+attr.setType("string");
+schema.addAttributeDefinition(attr);
+👉 Ab schema me "email" attribute add ho gaya ✅
+
+🔥 2️⃣ getAttributeDefinition(String name):-
+👉 Ye method specific attribute ko fetch karta hai
+📌 Matlab:-
+Schema me jo attribute already hai usko nikalna
+✅ Example:-
+AttributeDefinition attr = schema.getAttributeDefinition("email");
+System.out.println(attr.getName());
+📌 Output:-
+email
+
+🔥 3️⃣ removeAttributeDefinition(String name):-
+👉 Ye method attribute ko delete karta hai
+📌 Matlab:-
+Schema se kisi field ko hata dena
+✅ Example:-
+schema.removeAttributeDefinition("email");
+👉 Ab "email" attribute remove ho gaya ❌
+
+🔥 4️⃣ hasAttributeDefinition(String name):-
+👉 Ye method check karta hai ki attribute exist karta hai ya nahi
+📌 Return:-
+true → exist karta hai
+false → exist nahi karta
+
+✅ Example:-
+boolean exists = schema.hasAttributeDefinition("email");
+System.out.println(exists);
+📌 Output:-
+true
+---------------------------------------------------------------------------------------------------
+🔥 1️⃣ setIdentityAttribute(String attr):-
+👉 Ye define karta hai:-
+➡️ kaunsa attribute unique identifier hai (primary key)
+
+📌 Example:-
+schema.setIdentityAttribute("username");
+
+👉 Matlab:-
+"username" hi unique hoga
+har user ka username alag hoga
+
+🔥 2️⃣ getIdentityAttribute():-
+👉 Ye batata hai:-
+➡️ kaunsa attribute identity (unique field) hai
+
+✅ Example:-
+String idAttr = schema.getIdentityAttribute();
+System.out.println(idAttr);
+📌 Output:-
+username
+
+🔥 3️⃣ setDisplayAttribute(String attr):-
+👉 Ye define karta hai:-
+➡️ UI me user ko kaunsa field dikhana hai
+
+📌 Example:-
+schema.setDisplayAttribute("email");
+
+👉 Matlab:-
+UI me username nahi, email dikhega
+
+🔥 4️⃣ getDisplayAttribute():-
+👉 Ye return karta hai:-
+➡️ UI me kaunsa attribute show ho raha hai
+
+✅ Example:-
+String display = schema.getDisplayAttribute();
+System.out.println(display);
+📌 Output:-
+email
+-----------------------------------------------------------------------------------------------------
+🔥 1️⃣ isAccountSchema():-
+👉 Check karta hai:-
+➡️ kya ye schema "account" type ka hai?
+
+✅ Example:-
+if(schema.isAccountSchema()){
+    System.out.println("Ye Account Schema hai");
+}
+📌 Output:-
+Ye Account Schema hai
+
+👉 Internally ye check karta hai:-
+objectType == "account"
+
+🔥 2️⃣ isGroupSchema();-
+👉 Check karta hai:-
+➡️ kya ye schema "group" type ka hai?
+
+✅ Example:-
+if(schema.isGroupSchema()){
+    System.out.println("Ye Group Schema hai");
+}
+👉 Internally:-
+objectType == "group"
+
+🔥 3️⃣ toXml():-
+👉 Schema object ko XML format me convert karta hai
+
+📌 Use:-
+Export
+Debug
+Connector config
+
+✅ Example:-
+String xml = schema.toXml();
+System.out.println(xml);
+📌 Output (example):
+<Schema objectType="account">
+    <Attribute name="username" type="string"/>
+    <Attribute name="email" type="string"/>
+</Schema>
+
+🔥 4️⃣ fromXml(String xml);-
+👉 XML ko Schema object me convert karta hai
+
+✅ Example:-
+✅ Input:-
+String xml = "<Schema objectType='account'>" +
+             "<Attribute name='username' type='string'/>" +
+             "<Attribute name='email' type='string'/>" +
+             "</Schema>";
+              schema.fromXml(xml);
+👉 Output kaise dekhen?
+System.out.println(schema.getObjectType());
+System.out.println(schema.getAttributeDefinition("username").getName());
+📌 Output:-
+account
+username
+
+🔥 5️⃣ toMap():-
+👉 Schema ko Map (key-value) me convert karta hai
+📌 Use:-
+Debugging
+API data handling
+
+✅ Example:-
+Map map = schema.toMap();
+System.out.println(map);
+📌 Output:-
+{objectType=account, attributes=[username, email]}
+
+🔥 6️⃣ fromMap(Map map):-
+👉 Map data ko Schema object me convert karta hai
+📌 Use:-
+API response se schema banana
+Dynamic config
+
+✅ Example:-
+Map map = new HashMap();
+map.put("objectType", "group");
+schema.fromMap(map);
+
+👉 Output kaise check kare?
+System.out.println(schema.getObjectType());
+📌 Output:-group
+-----------------------------------------------------------------------------------------------
+🔥 1️⃣ getAttributeNames():-
+👉 Ye method Schema ke saare attribute names return karta hai
+✅ Example:-
+List names = schema.getAttributeNames();
+System.out.println(names);
+📌 Output:
+[username, email, role]
+
+👉 Matlab:-
+➡️ Schema me jitne attributes hain unke naam mil gaye.
+
+🔥 2️⃣ getRequiredAttributes():-
+👉 Ye return karta hai:-
+➡️ sirf wo attributes jo required (mandatory) hain
+
+✅ Example:-
+List reqAttrs = schema.getRequiredAttributes();
+System.out.println(reqAttrs);
+📌 Output:-
+[username, email]
+
+👉 Matlab:-
+➡️ Ye fields hona zaroori hai (null nahi ho sakte)
+
+🔥 3️⃣ getOptionalAttributes():-
+👉 Ye return karta hai:-
+➡️ jo required nahi hain (optional fields)
+
+✅ Example:-
+List optAttrs = schema.getOptionalAttributes();
+System.out.println(optAttrs);
+📌 Output:-
+[phone, address]
+
+4️⃣ getType() (AttributeDefinition):-
+👉 Ye batata hai:-
+➡️ attribute ka data type kya hai
+
+✅ Example:-
+AttributeDefinition attr = schema.getAttributeDefinition("email");
+System.out.println(attr.getType());
+📌 Output:-
+string
+
+🔥 5️⃣ setType(String type):-
+👉 Ye set karta hai:-
+➡️ attribute ka data type
+
+✅ Example:-
+attr.setType("string");
+
+🔥 6️⃣ isRequired():-
+👉 Check karta hai:-
+➡️ attribute mandatory hai ya nahi.
+
+🔥 7️⃣ setRequired(boolean val):-
+👉 Ye set karta hai:-
+➡️ attribute required hai ya optional
+
+✅ Example:-
+attr.setRequired(true);
+----------------------------------------------------------------------------------------------------
+🔥 1️⃣ setMultiValued(boolean val):-
+👉 Ye define karta hai ki ye attribute multiple values le sakta hai ya nahi
+
+📌 Example:-
+AttributeDefinition attr = new AttributeDefinition();
+attr.setName("roles");
+attr.setType("string");
+attr.setMultiValued(true);  // ek user ke multiple roles ho sakte hain
+
+🔹 Meaning:-
+MultiValued = true → list/array of values allowed
+MultiValued = false → sirf single value allowed
+
+🔥 2️⃣ getMultiValued():-
+👉 Ye check karta hai ki attribute multi-valued hai ya nahi
+System.out.println(attr.isMultiValued());
+📌 Output:-
+true
+🔥 3️⃣ setDisplayName(String name):-
+👉 Ye define karta hai ki UI me attribute ka readable naam kya hoga
+
+📌 Example:-
+attr.setDisplayName("User Roles");
+👉 UI / logs me "roles" ke jagah "User Roles" dikhega
+
+🔥 4️⃣ getDisplayName():-
+👉 Ye return karta hai UI/Display name
+
+System.out.println(attr.getDisplayName());
+📌 Output:-
+User Roles
+
+🔥 Full Example: MultiValued Attribute + ResourceObject
+import sailpoint.object.Schema;
+import sailpoint.object.AttributeDefinition;
+import sailpoint.object.ResourceObject;
+
+import java.util.Arrays;
+
+public class SchemaResourceObjectExample {
+    public static void main(String[] args) {
+
+        // 1️⃣ Schema aur AttributeDefinition create kar
+        Schema schema = new Schema();
+        schema.setName("Account");
+        schema.setObjectType("account");
+
+        AttributeDefinition attr = new AttributeDefinition();
+        attr.setName("roles");
+        attr.setType("string");
+        attr.setMultiValued(true);   // multiple roles allowed
+        attr.setRequired(true);
+        attr.setDisplayName("User Roles");
+
+        schema.addAttributeDefinition(attr);
+
+        // 2️⃣ Print AttributeDefinition info
+        System.out.println("Attribute Name: " + attr.getName());        // roles
+        System.out.println("Is MultiValued: " + attr.isMultiValued());  // true
+        System.out.println("Display Name: " + attr.getDisplayName());   // User Roles
+
+        // 3️⃣ ResourceObject create karo (actual values yahan rakhenge)
+        ResourceObject ro = new ResourceObject("Account");
+        
+        // 4️⃣ Multi-valued attribute set karo
+        ro.setAttribute("roles", Arrays.asList("Admin", "Manager", "User"));
+
+        // 5️⃣ Access and print values
+        System.out.println("Roles: " + ro.getAttribute("roles"));
+    }
+}
+✅ Output
+Attribute Name: roles
+Is MultiValued: true
+Display Name: User Roles
+Roles: [Admin, Manager, User]
+----------------------------------------------------------------------------------------------------
+()🔥 1️⃣ AttributeDefinition me value nahi store hoti:-
+👉 Ye sirf attribute ka “definition”” hota hai, value nahi.
+Example:-
+Tumhara attribute email hai
+Type string, Required true
+Lekin actual email ka value yahan nahi rakha jaata
+✅ Ye Schema ka design hai:-
+
+()ResourceObject / Identity :-Yahan actual values store hoti hain (username, email, etc.)
+🔥 3️⃣ Actual value ka flow:-
+
+Step 1: Schema define:-
+AttributeDefinition attr = new AttributeDefinition();
+attr.setName("email");
+attr.setType("string");
+attr.setRequired(true);
+
+schema.addAttributeDefinition(attr);
+Ye sirf metadata define kar raha hai
+
+Step 2: Actual value assign:-
+Ye ResourceObject / Identity me hota hai
+import sailpoint.object.ResourceObject;
+
+// ResourceObject create
+ResourceObject ro = new ResourceObject("Account");
+ro.setAttribute("email", "john@gmail.com");
+
+// Access value
+String emailVal = (String) ro.getAttribute("email");
+System.out.println(emailVal);
+📌 Output:
+john@gmail.com
+--------------------------------------------------------------------------------------

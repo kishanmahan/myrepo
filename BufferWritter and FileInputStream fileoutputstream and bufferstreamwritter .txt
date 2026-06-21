@@ -1,0 +1,189 @@
+()import java.io.BufferedWriter; kya hai:-BufferedWriter → Character data ko fast write karta hai in file.
+
+()BufferedOutputStream:-
+temporary memory area (RAM).ye pehle data ko RAM-memory me collect karta hai fir ROM-memory me likhta hai,isse data fast print hota hai.
+Byte data ko fast write karta hai.Buffer use karta hai.Mostly binary files, images, pdf, etc.
+
+()BufferedInputStream:-
+Byte data ko fast read karta hai.
+Buffer use karta hai.
+
+()InputStream:-
+Ye parent/base class hai.
+Byte read karne ke liye.
+Child classes:-
+FileInputStream
+BufferedInputStream
+ByteArrayInputStream
+
+()OutputStream:-
+Parent class.
+Byte write karne ke liye.
+Child classes:-
+FileOutputStream
+BufferedOutputStream
+
+()FileOutputStream:-File me byte write karta hai.
+
+()FileIntputStream:-File se byte read karta hai.
+-----------------------------------------------------------------------------------------------
+()import java.io.BufferedWriter;
+import java.io.FileWriter;
+
+public class Demo {
+    public static void main(String[] args) throws Exception {
+
+        BufferedWriter bw =
+            new BufferedWriter(
+                new FileWriter("abc.txt")
+            );
+
+        bw.write("Hello");
+        bw.newLine();
+        bw.write("Java");
+
+        bw.close();
+    }
+}
+output abc.txt:-
+hello
+java
+---------------------------------------------------------------------------------------------------------------
+import java.io.*;
+
+public class Demo {
+    public static void main(String[] args) throws Exception {
+
+        FileOutputStream fos =
+            new FileOutputStream("test.txt");
+
+        BufferedOutputStream bos =
+            new BufferedOutputStream(fos);
+
+        bos.write("Hello Java".getBytes());
+
+        bos.close();
+    }
+}
+Output:-
+test.txt
+Hello Java
+///////////*
+
+
+*////////////
+--------------------------------------------------------------------------------------
+import java.io.*;
+
+public class Demo {
+
+    public static void main(String[] args)
+    throws Exception {
+
+        FileInputStream fis =
+            new FileInputStream("test.txt");
+
+        BufferedInputStream bis =
+            new BufferedInputStream(fis);
+
+        int data;
+
+        while((data=bis.read())!=-1)
+        {
+            System.out.print((char)data);
+        }
+
+        bis.close();
+    }
+}
+//output:-Hello Java
+---------------------------------------------------------------------------------------------------
+import java.io.*;
+
+public class Demo {
+
+    public static void main(String[] args)
+    throws Exception {
+
+        InputStream in =
+            new FileInputStream("test.txt");
+
+        System.out.println((char)in.read());
+
+        in.close();
+    }
+}//ouput:-H
+////////////*
+-->(char)in.read():-
+yaha bytes ko hum hi char me badal dete hai.
+*////////////
+---------------------------------------------------------------------------------------------------------
+import java.io.*;
+
+public class Demo {
+
+    public static void main(String[] args)
+    throws Exception {
+
+        OutputStream out =
+            new FileOutputStream("a.txt");
+
+        out.write(65);
+
+        out.close();
+    }
+}
+Output:-
+a.txt
+A
+65 = ASCII value of A
+////////*
+()OutputStream/FileOutputStream char write karta hai sirf?
+-->Conclusion: Java ne file me sirf raw numbers (bytes) hi likhe computational form me. 
+Un numbers ko insano ke padhne layak String me badalne ki puri mehnat Text Editor ki hai.(Text Editor notepad me hota hai.)
+*////////
+-------------------------------------------------------------------------------------
+import java.io.*;
+
+public class Demo {
+
+    public static void main(String[] args)
+    throws Exception {
+
+        FileOutputStream fos =
+            new FileOutputStream("abc.txt");
+
+        fos.write("Java".getBytes());
+
+        fos.close();
+    }
+}//output:-Java
+//////////*
+()FileOutputStream/FileInputStream  File se byte read karta hai,toh data ko char me kaise likhta hai?
+-->"Java".getBytes():-String ko bytes me convert karta hai.
+Conclusion: Java ne file me sirf raw numbers (bytes) hi likhe computational form me. 
+Un numbers ko insano ke padhne layak String me badalne ki puri mehnat Text Editor ki hai.(Text Editor notepad me hota hai.)
+*/////////
+---------------------------------------------------------------------------------------
+import java.io.*;
+
+public class Demo {
+
+    public static void main(String[] args)
+    throws Exception {
+
+        FileInputStream fis =
+            new FileInputStream("abc.txt");
+
+        int ch;
+
+        while((ch=fis.read())!=-1)
+        {
+            System.out.print((char)ch);
+        }
+
+        fis.close();
+    }
+}
+//output:-Java
+---------------------------------------------------------------------------------------------------------------------

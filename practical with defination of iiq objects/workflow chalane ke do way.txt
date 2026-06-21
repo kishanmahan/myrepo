@@ -1,0 +1,5 @@
+()SailPoint IIQ mein do tarah ke workflows hote hain:-
+-->Event-Driven Workflows (Auto-Pilot): Jaise Joiner, Mover, Leaver. Inme jab user ka data badalta hai, tab unhe chalane ke liye Lifecycle Event aur Trigger Rule lagta hai (jaise humne pichle cellphone wale example mein kiya tha).
+-->Manual/Self-Service Workflows (QuickLink Tools): Yeh jo aapka "Account Invite" wala workflow hai, yeh tab chalta hai jab koi user khud dashboard par jaakar button par click karta hai.
+Chunki yeh button click par chalta hai, isiliye isko chalane ka kaam direct QuickLink XML karta hai, na ki koi Lifecycle Event.
+

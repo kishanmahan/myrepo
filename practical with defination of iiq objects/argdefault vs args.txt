@@ -1,0 +1,84 @@
+7. <Variable name="argDefaults"/> ka matlab hota hai Argument Defaults (yaani default values).
+Aasan bhasha mein kahein toh yeh ek backup plan ya default setting ki tarah kaam karta hai. 
+Agar aap kisi variable ko koi value dena bhool jaate hain, toh system is jagah se automatic value utha leta hai.
+Jab hum email templates banate hain, toh hum unme kayi tarah ke placeholders (variables) use karte hain—jaise user ka naam (userName), phone number (phone), ya company ka naam (companyName).
+Lekin kya ho agar database mein kisi user ka naam save hi na ho? Us haalat mein email khali ya kharab na dikhe,
+isliye <Variable name="argDefaults"/> ka use kiya jata hai. 
+Yeh un saare variables ki default values ko ek jagah store karke rakhta hai.
+
+7a. <Variable name="argDefaults"/> me value kaun deta hai?
+Yeh value Developer ya System Admin deta hai jab woh template ko design kar raha hota hai.
+
+Ek Real-Life Example se Samjhein:-
+Maan lijiye aapne ek email template banaya jisme likha hai:-
+"Hello <Variable name="userName"/>, aapka phone register ho gaya hai."
+Ab system ko do alag-alag users ko email bhejna hai:-
+
+Case 1 (User Rahul): Rahul ka naam database mein hai. System userName ki jagah Rahul daal dega.
+Output: "Hello Rahul, aapka phone register ho gaya hai."
+
+Case 2 (User Amit - jiska naam save nahi hai): Is user ka naam missing hai. Ab system tension mein nahi aayega, 
+woh argDefaults check karega jahan developer ne pehle se set kiya hua hai: userName = "Customer".
+Output: "Hello Customer, aapka phone register ho gaya hai."
+*//////////////
+()Nahi, saare objects ka nahi rakhega.
+argDefaults (ya default arguments/parameters) sirf un specific jagahon par kaam karta hai jahaan Templates, Forms, Workflows, 
+ya Custom Rules/Scripts chal rahe hote hain.
+
+-->SailPoint IdentityIQ (IIQ) mein argDefaults ek specific Map structure (key-value pair) hota hai.
+Yeh har ek object ke liye nahi hota, balki yeh sirf un system objects mein paya jata hai jahan dynamic inputs, 
+execution configurations, ya background engines chalte hain.
+Niche un main SailPoint objects ki list di gayi hai jahan argDefaults use hota hai, 
+unme kaun-kaun se variables hote hain, aur unhe value kaun deta hai:-
+
+1. TaskDefinition Object:-
+SailPoint mein jab aap koi background task chalate hain (jaise Identity Refresh, Account Aggregation, ya Run Rule), 
+toh us task ki default settings argDefaults ke andar store hoti hain.
+Variable Name(Argument Key)                         Iska Kaam                               Value Kaun Dega?
+taskSchedule-------Task kab aur kitne baje chalega uski default timing.------SailPoint Engine / Admin (Scheduler se automatic set hoti hai).
+maxThreads---------Task chalne ke liye maximum kitne CPU threads use honge.--Developer / Admin (Task definition ke XML configuration mein define kiya jata hai).
+checkTriggers------Refresh task ke waqt lifecycle triggers check karne hain ya nahi (True/False).---Developer (Task template banate waqt default value true ya false set karta hai).
+promoteAttributes--Kya identity ke badle hue attributes ko turant promote karna hai.----Developer (Standard XML template mein default set kiya jata hai).
+etc.
+
+2. EmailTemplate Object:-
+Jaise humne pehle discuss kiya, email bhejte waqt agar kisi user ka live data missing ho, 
+toh email ko kharab hone se bachane ke liye argDefaults backup values rakhta hai.
+Variable Name(Argument Key)                  Iska Kaam                                                                                                               Value Kaun Dega?
+fallbackName / recipientName------Agar user ka asli naam (firstname) database mein nahi hai, toh backup naam (e.g., "Team Member" ya "User").-----Developer (Email template ke XML mein manually type karta hai).
+supportEmail----------------------Email ke footer mein dikhne wali helpdesk ki email ID.-----------------------------Admin / Developer (System configuration se ya template ke default args se set hoti hai).
+loginUrl--------------------------User ko login karwane ke liye SailPoint portal ka default URL link.----------------Admin (Global Settings ya Email default arguments mein config kiya jata hai).
+etc.
+
+3. Policy Object (Advanced Risk & SoD Configuration):-
+SailPoint mein jab aap Segregation of Duties (SoD) ya Activity Policies banate hain, 
+toh policy check karne ke rules aur unke weightage ki default settings yahan hoti hain.
+Variable Name (Argument Key)	                                  Iska Kaam	                                                        Value Kaun Dega?
+allowException-----------------Kya is policy violation ke liye exception (choot) allow ki ja sakti hai.-----------Developer / Business Analyst (Policy design karte waqt default attribute set karte hain).
+defaultSeverity----------------Agar violation hota hai, toh uski default severity kya hogi (High, Medium, Low).---Developer / Security Team (Policy create karte waqt define kiya jata hai).
+remediationWorkflow------------Violation hone par kaun sa default workflow chalega use theek karne ke liye.-------Developer (Custom ya out-of-the-box workflow ka naam assign karta hai).
+etc.
+
+4. Workflow (Process / Workflow Definition):-
+SailPoint ke Lifecycle Manager (LCM) ya custom workflows mein, jab workflow shuru hota hai, 
+toh kuch steps ko shuruati values chahiye hoti hain. Agar bahar se koi value nahi aati, 
+toh argDefaults se uthayi jaati hain.
+
+Variable Name(Argument Key)                       Iska Kaam                                                Value Kaun Dega?
+identityName------------Kis user par yeh workflow chal raha hai (agar trigger automatic ho).-----SailPoint Engine (Runtime par automatic identity ka naam pass karta hai).
+launcher----------------Workflow ko kisne start kiya (System ne ya kisi Admin ne).---------------SailPoint Engine (Session user ki ID automatic pakadta hai).
+trace-------------------Workflow ke har ek step ka log output detail mein print karna hai ya nahi (True/False).----Developer (Debugging ke liye default value true set karta hai).
+approvalScheme----------Approval lene ka default tarika kya hoga (Manager, Owner, ya None).----------Developer / Consultant (Business logic ke hisaab se workflow variables mein default set karta hai).
+
+3. Args aur argDefaults mein kya farq hai?
+In dono ke beech ka farq samajhna bahut zaroori hai:
+-->Args (Arguments): Yeh woh live data hai jo runtime par (kaam chalte waqt) system ke paas aata hai.
+SailPoint IdentityIQ (IIQ) mein jab bhi koi Rule (BeanShell Script), Task, ya Workflow chalta hai, 
+toh SailPoint ka engine use chalane ke liye ek data ka packet bhejta hai. Us packet ko hum args ya arguments kehte hain.
+Yeh args ek Map (Key-Value pair) ki tarah hote hain, jahan har data ka ek naam hota hai aur uski ek value hoti hai.
+Example: Jab Rahul log-in karega, toh args mein username = "Rahul" aayega.
+
+-->argDefaults (Argument Defaults): Yeh woh backup data hai jo pehle se tay hota hai, tab ke liye jab live args na milein.
+Example: Agar kisi wajah se username missing hai, toh argDefaults se username = "Guest" utha liya jayega.
+*/////////////
+////////////////*

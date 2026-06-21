@@ -1,0 +1,53 @@
+()attributes ka matlab hai “properties” ya “characteristics” jo kisi object, identity,
+ya entity ke saath judi hoti hain.
+
+1️⃣ Identity Attributes:-
+Identity (user) ke personal aur system info ko define karte hain.
+Example:-
+Attribute	  Description
+firstName---User ka first name
+lastName----User ka last name
+email-------User ka email address
+manager-----User ka reporting manager
+role--------User ke assigned roles
+
+Identity identity = context.getObjectByName(Identity.class, "john.doe");
+String email = identity.getAttribute("email"); // ye attribute fetch karta hai.
+
+2️⃣ Account Attributes:-
+Har system/application account ke details ya properties.
+Example:-
+username, status, lastLogin, department.
+
+3️⃣ Application Attributes:-
+Definition:-
+Ye wo attributes hain jo ek particular application ke account ya system ke properties ko describe karte hain.
+Purpose:-
+Ye batate hain ki application ke andar user ke account me kya data ya properties store hain.
+Ye generally identity mapping aur provisioning me use hote hain.
+Example:-
+Application	                     Attribute	                    Description
+Active Directory--------------sAMAccountName---------------------Username
+Active Directory---------------department--------------------User ka department
+Salesforce----------------------title------------------------User ka job title
+SAP----------------------------employeeId--------------------Employee unique ID
+Java / SailPoint Example:-
+Application app = context.getObjectByName(Application.class, "ActiveDirectory");
+String usernameAttr = app.getAttribute("sAMAccountName"); // fetch AD username attribute
+
+4️⃣ Entitlement Attributes:-
+Definition:-
+Ye wo attributes hain jo access, role, permission, ya entitlement ke details ko describe karte hain.
+Purpose:-
+Ye batate hain ki user ke paas kya access allowed hai aur uska scope kya hai.
+Ye policy evaluation aur compliance me use hote hain.
+Example:-
+Entitlement	     Attribute	        Description
+Finance Role-----roleName-------Role ka naam (FinanceManager)
+Finance Role-----assignedTo-----Identity jiske paas role assign hai
+Payroll Access----level---------Read / Write / Admin
+SAP Module-------moduleName-----Module jisme access diya gaya hai
+Java / SailPoint Example:-
+Entitlement entitlement = context.getObjectByName(Entitlement.class, "FinanceManager");
+String roleName = entitlement.getAttribute("roleName");  // fetch role name
+

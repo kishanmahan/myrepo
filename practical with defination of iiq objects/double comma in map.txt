@@ -1,0 +1,15 @@
+()Haan, " " ke andar variable ka naam String ke form me likh sakte ho.
+
+Tumhare example me:-
+returnMap.put("identityAttributeName", "employeeId");
+
+()Yaha:-
+"identityAttributeName" → key hai
+"employeeId" → String value hai
+Ye actual variable nahi hai, sirf text hai.
+
+()Agar real variable use karna ho toh " " nahi lagate.
+Example:-
+String employeeId = "E101";
+returnMap.put("identityAttributeName", employeeId);
+Yaha employeeId variable hai.

@@ -1,0 +1,274 @@
+🔹 LinkService kya hai?
+LinkService ek service class hai jo Identity aur Application ke beech ka connection (Link object) manage karta hai.
+
+👉 Matlab:-
+Identity (user)
+Application account (jaise AD, DB, SAP)
+In dono ke beech jo mapping hoti hai → usko Link bolte hain
+Aur usko handle karta hai → LinkService.
+
+🔹 LinkService kya kya karta hai?
+Identity ke saare accounts nikalta hai
+Specific application ka account nikalta hai
+Entitlements (groups/roles) fetch karta hai
+Link create/update/delete karta hai
+Aggregation ke baad account sync karta hai.
+----------------------------------------------------------------
+--------------------------------------------------------------------------------------------
+()🔹 2. “Aggregation ke baad account sync karta hai” ka matlab?
+--🔹 2. “recouncilation vs sync kya karta hai?
+
+👉 Isko step by step samajh:-
+🔥 STEP 1: Aggregation kya karta hai?
+👉 Application se data uthata hai
+Example:-
+AD se 1000 users laaye
+DB se 500 accounts laaye
+
+🔥 STEP 2: Reconciliation (Mapping):-
+👉 Har account ko kisi Identity se match karta hai
+Match mila → Link ban gaya
+Match nahi mila → Uncorrelated account
+
+🔥 STEP 3: Sync (yaha LinkService ka role aata hai)?
+👉 Sync ka matlab:-
+Database me Link ko update / maintain karna
+🧠 Example:-
+()Pehle:-
+Rahul → group: User
+
+()Aggregation ke baad:-
+Rahul → group: Admin + User
+
+👉 Ab kya karega system?
+➡️ LinkService:-
+purana link check karega
+naya entitlement add karega
+DB me update karega
+
+🔹 Simple Line me dono ka difference 👇
+Term	             Matlab
+Reconciliation:-----Account ko identity se match karna
+Sync:---------------Link ko update/maintain karna
+--------------------------------------------------------------------------------------------------------------------------------------[
+🔹 Kya ye DB me store hota hai? 🤔
+👉 YES bhai ✅
+Link object database me store hota hai
+Table: mostly spt_link
+Isme kya hota hai:-
+identity_id
+application_id
+nativeIdentity (username)
+attributes (JSON/XML format)
+entitlements
+👉 Jab bhi aggregation hota hai:-
+Application se data aata hai
+Link table me save/update hota hai.
+
+🔹 Simple Flow:-
+Aggregation run hua
+Account mila (AD, DB, etc.)
+Link create/update hua
+LinkService usko manage karta hai.
+-----------------------------------------------------------------------------------------------------------------
+getLinks(Identity identity)
+getLinks(Identity identity, Application application)
+getLink(Identity identity, Application application)
+getLinkById(String id)
+getLinkByNativeIdentity(Application application, String nativeIdentity)
+getLinksByApplication(Application application)
+getLinksByIdentity(Identity identity)
+getAccounts(Identity identity)
+countLinks(Identity identity)
+createLink(Identity identity, Application application)
+saveLink(Link link)
+deleteLink(Link link)
+refreshLink(Link link)
+getEntitlements(Link link)
+setEntitlements(Link link, List entitlements)
+addEntitlement(Link link, Entitlement entitlement)
+removeEntitlement(Link link, Entitlement entitlement)
+updateLink(Link link)
+lockLink(Link link)
+unlockLink(Link link)
+cloneLink(Link link)
+getDisabledLinks(Identity identity)
+getActiveLinks(Identity identity)
+
+mergeLinks(Link source, Link target)
+searchLinks(QueryOptions options)
+iterateLinks(QueryOptions options)
+-------------------------------------------------------------------------------------------------------------------
+🔹 1. getLinks(Identity identity):-
+👉 Ek user ke saare accounts (links) nikalta hai
+List<Link> links = linkService.getLinks(identity);
+✅ Output:-
+[
+  Link{id=1, app=AD, nativeIdentity=ksingh},
+  Link{id=2, app=SAP, nativeIdentity=K123}
+]
+
+🔹 2. getLinks(Identity identity, Application application):-
+👉 Specific app ka account
+List<Link> links = linkService.getLinks(identity, app);
+✅ Output:-
+[
+  Link{id=1, app=AD, nativeIdentity=ksingh}
+]
+
+🔹 3. getLink(Identity identity, Application application):-
+👉 Ek hi link (single account)
+Link link = linkService.getLink(identity, app);
+✅ Output:-
+Link{id=1, app=AD, nativeIdentity=ksingh}
+
+🔹 4. getLinkById(String id):-
+👉 DB id se link nikalta hai
+Link link = linkService.getLinkById("123");
+✅ Output:-
+Link{id=123, app=AD, nativeIdentity=ksingh}
+
+🔹 5. getLinkByNativeIdentity(Application app, String nativeIdentity):-
+👉 Username se account find karta hai
+Link link = linkService.getLinkByNativeIdentity(app, "ksingh");
+✅ Output:-
+Link{id=1, app=AD, nativeIdentity=ksingh}
+
+🔹 6. getLinksByApplication(Application application):-
+👉 Ek app ke sab users ke accounts
+List<Link> links = linkService.getLinksByApplication(app);
+✅ Output:-
+[
+  Link{user=A},
+  Link{user=B},
+  Link{user=C}
+]
+
+🔹 7. getLinksByIdentity(Identity identity):-
+👉 Same as getLinks(identity)
+
+🔹 8. getAccounts(Identity identity):-
+👉 Accounts ka simplified version (mostly same as links)
+List<Link> accounts = linkService.getAccounts(identity);
+
+🔹 9. countLinks(Identity identity):-
+👉 Kitne accounts hai user ke
+int count = linkService.countLinks(identity);
+✅ Output:-
+2
+
+🔹 10. createLink(Identity identity, Application application):-
+👉 Naya account object banata hai (DB me abhi save nahi)
+Link link = linkService.createLink(identity, app);
+✅ Output:-
+Link{unsaved object}
+
+🔹 11. saveLink(Link link):-
+👉 DB me save karta hai
+linkService.saveLink(link);
+✅ Output:-
+Link saved in DB
+
+🔹 12. deleteLink(Link link):-
+👉 Account delete
+linkService.deleteLink(link);
+
+🔹 13. refreshLink(Link link):-
+👉 Latest data sync karta hai (aggregation ke baad)
+linkService.refreshLink(link);
+
+🔹 14. getEntitlements(Link link):-
+👉 Account ke access/groups
+List ent = linkService.getEntitlements(link);
+✅ Output:-
+["Admins", "Users"]
+
+🔹 15. setEntitlements(Link link, List entitlements);-
+👉 Pura replace kar deta hai
+linkService.setEntitlements(link, list);
+
+🔹 16. addEntitlement(Link link, Entitlement ent):-
+👉 Ek access add
+linkService.addEntitlement(link, adminGroup);
+
+🔹 17. removeEntitlement(Link link, Entitlement ent):-
+👉 Access hata deta hai.
+
+🔹 18. updateLink(Link link):-
+👉 Link update karta hai
+linkService.updateLink(link);
+
+🔹 22. getDisabledLinks(Identity identity):-
+👉 Disabled accounts
+List<Link> list = linkService.getDisabledLinks(identity);
+✅ Output:-
+[Link{disabled=true}]
+
+🔹 23. getActiveLinks(Identity identity):-
+👉 Active accounts
+List<Link> list = linkService.getActiveLinks(identity);
+✅ Output:-
+[Link{disabled=false}]
+
+🔒 19. lockLink(Link link):-
+👉 Iska kaam hai link ko temporarily lock karna, taki koi aur process usko modify na kare
+🔧 Use case:-
+2 process ek hi account update na kare
+Data conflict na ho (race condition avoid)
+💻 Code:-
+linkService.lockLink(link);
+🧠 Samajh:-
+👉 Jaise tu ek file edit kar raha hai → lock lag gaya
+👉 dusra banda edit nahi kar paayega
+✅ Output (conceptual):-
+Link{id=1} is LOCKED
+
+🔓 20. unlockLink(Link link):-
+👉 Lock hatata hai → ab koi bhi update kar sakta hai
+💻 Code:-
+linkService.unlockLink(link);
+✅ Output:-
+Link{id=1} is UNLOCKED
+
+🔁 21. cloneLink(Link link):-
+👉 Same link ka exact copy banata hai (new object, new id)
+💻 Code:-
+Link newLink = linkService.cloneLink(link);
+-----------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+🔍 2. searchLinks(QueryOptions options):-
+👉 DB me filter laga ke links search karta hai.
+
+🧠 Use Case:-
+Specific condition pe data chahiye
+Jaise: sirf AD accounts, ya disabled accounts
+💻 Code:-
+QueryOptions qo = new QueryOptions();
+qo.addFilter(Filter.eq("application.name", "Active Directory"));
+List<Link> links = linkService.searchLinks(qo);
+--------------------------------------------------------------------------------
+🔗 1. mergeLinks(Link source, Link target):-
+👉 Do links ko combine (merge) karta hai → ek hi account bana deta hai.
+🧠 Use Case:-
+Same user ke duplicate accounts aa gaye aggregation me
+Data alag-alag links me split hai → ek me lana hai.
+
+🧠 Samajh:-
+👉 Before:-
+Source Link:-
+Link{id=1, app=AD, entitlements=[User]}
+
+Target Link:-
+Link{id=2, app=AD, entitlements=[Admin]}
+
+👉 After merge:-
+Target Link:-
+Link{id=2, app=AD, entitlements=[User, Admin]}
+--------------------------------------------------------------------------------
+🔄 3. iterateLinks(QueryOptions options):-
+👉 Ye bhi search jaisa hi hai — but large data ke liye optimized (streaming style)
+🧠 Use Case:-
+Lakho records ho DB me
+Memory crash na ho → ek ek karke process karna
+------------------------------------------------------------------------------------

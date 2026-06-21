@@ -1,0 +1,22 @@
+()Is code ko step-by-step dekh:-
+if (admin == null) {
+    throw new RuntimeException("Admin not found");
+}
+
+🔍 Kya hota hai yaha?
+👉 Case 1: admin == null (Condition TRUE)
+throw new RuntimeException(...) execute hoga
+Exception turant throw ho jayega
+Us line ke baad ka code execute nahi hoga
+Control current method se bahar chala jayega
+
+👉 Matlab:-
+Current method yahi ruk jayega
+Aage ka code skip ho jayega.
+
+--------------------------------------------
+()Is code ko step-by-step dekh:-
+if (admin == null) {
+    return;
+}
+yaha bhi return ke baad code execute nahi hoga.

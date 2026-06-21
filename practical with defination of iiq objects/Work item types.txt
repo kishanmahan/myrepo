@@ -1,0 +1,49 @@
+Work item types to archive:-
+Access Review
+Remediation-galat access remove karna.
+Delegation-work item dusre ko assign karna for remove/approve access.
+Approval-kisi role/entitlement ke liye access request karna.
+Request Violation
+Form
+Policy Violation
+Challenge-jiska access remove ho raha hai wo comment kare ki abhi mujhe access chahiye,fir manager ush challenge ko approve/reject karega.
+Impact Analysis
+Signoff-challenge ke baad kaam khatam karna approval ka.
+Manual Action
+
+WorkItem kya hota hai?
+SailPoint me:
+approval task
+certification task
+manual action
+approval request
+ko work item bolte hain.
+----------------------------------------------------------------------
+///////////*
+()SailPoint IdentityIQ mein Assignee woh vyakti (user) ya group hota hai jise koi kaam (Task/Work Item) karne ki zimmedari di gayi hai.
+Jab bhi system koi notification Assignee ko bhejta hai, toh uska matlab neeche diye gaye points se hota hai:-
+
+--Assignee Kaun Ho Sakta Hai?
+Individual User: Jaise aapka Manager jo kisi access request ko approve karega.
+Workgroup: Ek puri team (jaise IT Helpdesk) jise koi technical task pura karna ho.
+
+--Assignee Ko Notifications Kyun Jaate Hain?
+()Naya Kaam Milne Par (Assignment): Jab system mein koi naya task banta hai, toh Assignee ko email jata hai taaki use pata chale ki uske dashboard mein naya kaam aaya hai.
+
+()Yaad Dilane Ke Liye (Reminder): Agar Assignee ne apna kaam samay par pura nahi kiya, toh system unhe "Reminder" email bhejta hai.
+
+()Kaam Wapas Lene Par (Removal): Agar woh task unse wapas le liya jaye ya kisi aur ko de diya jaye, toh bhi Assignee ko inform kiya jata hai.
+*/////////////
+/////////////*
+Delegatee Kaun Hota Hai?
+Jab koi user (jaise aapka Manager) chhutti par ja raha ho ya bahut busy ho, toh woh apna kaam (approvals, certifications) kisi aur ko transfer kar deta hai. Jis naye insaan ko yeh kaam milta hai, use Delegatee kehte hain.
+
+Delegatee Ko Notifications Kab Jaate Hain?
+Delegation Assignment: Jab delegation shuru hoti hai, toh Delegatee ko "Delegation" template wala email jata hai taaki unhe pata chale ki ab unhe kisi aur ke badle kaam karna hai.
+
+Work Items: Ab se jo bhi naye tasks (approvals) original user ke paas aane waale the, woh seedhe Delegatee ko milenge.
+
+Delegation Finished: Jab delegation ka time khatam ho jata hai, toh Delegatee ko bataya jata hai ki unki yeh extra zimmedari ab khatam ho gayi hai.
+
+Revocation: Agar beech mein hi delegation cancel kar di jaye, toh bhi Delegatee ko notification jata hai.
+*/////////////

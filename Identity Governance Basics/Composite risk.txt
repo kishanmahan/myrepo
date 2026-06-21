@@ -1,0 +1,265 @@
+--------------------------------------------------------------------------------------------------------
+()Composite risk kya hai?
+--Composite Risk = Multiple individual risks ko combine karke ek single risk score nikalna.
+Matlab ek project ya system me kai alag-alag risk ho sakte hain,
+In sabko alag-alag dekhne ki bajaye, unka overall risk impact dekha jata hai.
+Formula example:-
+Composite Risk Score=Risk1 Score+Risk2 Score+⋯+RiskN Score
+
+3️⃣ Example Table:-
+Risk Name	       Probability	     Impact (₹)	         Risk Score
+Server Crash----------0.2------------1,00,000--------------20,000
+Data Leak-------------0.5------------2,00,000--------------1,00,000
+Project Delay---------0.3------------50,000----------------15,000
+Composite Risk Score = 20,000 + 1,00,000 + 15,000 = 1,35,000.
+→ Matlab overall project ka risk ab 1,35,000 hai, jo High priority ka risk dikhata hai.
+
+Simple Samjha:-
+Probability – Risk hone ka chance (Low, Medium, High)
+Impact – Agar risk ho gaya to nuksan kitna hai (Low, Medium, High)
+Risk score/Weighting = Probability × Impact
+
+Example Table:-
+Risk Type	       Probability (1–5)	 Impact (1–5)	 Risk Weight = P×I
+Data Breach-------------4----------------------5----------------20
+Server Downtime---------3----------------------4----------------12
+Human Error-------------2----------------------3-----------------6
+High Risk → Weight 15–25
+Medium Risk → Weight 6–14
+Low Risk → Weight 1–5
+
+()Java Project: Risk Management + Composite Risk/:-
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Scanner;
+
+// Risk class
+class Risk {
+    private String name;
+    private double probability; // 0.0 to 1.0
+    private double impact;      // in currency
+    private double score;
+    private String priority;
+
+    // Constructor
+    public Risk(String name, double probability, double impact) {
+        this.name = name;
+        this.probability = probability;
+        this.impact = impact;
+        calculateScore();
+        assignPriority();
+    }
+
+    // Score calculation
+    private void calculateScore() {
+        this.score = this.probability * this.impact;
+    }
+
+    // Priority assignment based on score
+    private void assignPriority() {
+        if (score >= 75000) {
+            this.priority = "High";
+        } else if (score >= 25000) {
+            this.priority = "Medium";
+        } else {
+            this.priority = "Low";
+        }
+    }
+
+    // Getters
+    public double getScore() {
+        return score;
+    }
+
+    public String getPriority() {
+        return priority;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    // Display Risk
+    public void displayRisk() {
+        System.out.println("Risk Name   : " + name);
+        System.out.println("Probability : " + probability);
+        System.out.println("Impact      : " + impact);
+        System.out.println("Risk Score  : " + score);
+        System.out.println("Priority    : " + priority);
+        System.out.println("--------------------------");
+    }
+}
+
+// Main class
+public class CompositeRiskManagement {
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        List<Risk> riskList = new ArrayList<>();
+
+        System.out.println("=== Composite Risk Management Project ===");
+
+        while (true) {
+            System.out.println("\n1. Add Risk");
+            System.out.println("2. Show All Risks (Sorted by Score)");
+            System.out.println("3. Show Composite Risk Score");
+            System.out.println("4. Exit");
+            System.out.print("Choose option: ");
+            int choice = sc.nextInt();
+            sc.nextLine(); // Consume newline
+
+            if (choice == 1) {
+                System.out.print("Enter Risk Name: ");
+                String name = sc.nextLine();
+
+                System.out.print("Enter Probability (0.0 - 1.0): ");
+                double prob = sc.nextDouble();
+
+                System.out.print("Enter Impact (₹): ");
+                double impact = sc.nextDouble();
+
+                Risk r = new Risk(name, prob, impact);
+                riskList.add(r);
+                System.out.println("✅ Risk added successfully!");
+
+            } else if (choice == 2) {
+                if (riskList.isEmpty()) {
+                    System.out.println("No risks added yet.");
+                } else {
+                    System.out.println("\n--- All Risks (High Score First) ---");
+                    // Sort by score descending
+                    riskList.sort(Comparator.comparingDouble(Risk::getScore).reversed());
+                    for (Risk r : riskList) {
+                        r.displayRisk();
+                    }
+                }
+
+            } else if (choice == 3) {
+                if (riskList.isEmpty()) {
+                    System.out.println("No risks added yet.");
+                } else {
+                    double compositeScore = 0;
+                    for (Risk r : riskList) {
+                        compositeScore += r.getScore();
+                    }
+                    System.out.println("=== Composite Risk Score ===");
+                    System.out.println("Total Composite Risk Score: ₹" + compositeScore);
+
+                    // Determine overall priority
+                    String overallPriority;
+                    if (compositeScore >= 200000) {
+                        overallPriority = "High";
+                    } else if (compositeScore >= 75000) {
+                        overallPriority = "Medium";
+                    } else {
+                        overallPriority = "Low";
+                    }
+                    System.out.println("Overall Risk Priority     : " + overallPriority);
+                    System.out.println("--------------------------");
+                }
+
+            } else if (choice == 4) {
+                System.out.println("Exiting... Bye!");
+                break;
+            } else {
+                System.out.println("Invalid choice! Try again.");
+            }
+        }
+
+        sc.close();
+    }
+}
+Example Output:-
+=== Composite Risk Management Project ===
+
+1. Add Risk
+2. Show All Risks (Sorted by Score)
+3. Show Composite Risk Score
+4. Exit
+Choose option: 1
+Enter Risk Name: Server Crash
+Enter Probability (0.0 - 1.0): 0.2
+Enter Impact (₹): 100000
+✅ Risk added successfully!
+
+1. Add Risk
+2. Show All Risks (Sorted by Score)
+3. Show Composite Risk Score
+4. Exit
+Choose option: 1
+Enter Risk Name: Data Leak
+Enter Probability (0.0 - 1.0): 0.5
+Enter Impact (₹): 200000
+✅ Risk added successfully!
+
+1. Add Risk
+2. Show All Risks (Sorted by Score)
+3. Show Composite Risk Score
+4. Exit
+Choose option: 2
+
+--- All Risks (High Score First) ---
+Risk Name   : Data Leak
+Probability : 0.5
+Impact      : 200000.0
+Risk Score  : 100000.0
+Priority    : High
+--------------------------
+Risk Name   : Server Crash
+Probability : 0.2
+Impact      : 100000.0
+Risk Score  : 20000.0
+Priority    : Low
+--------------------------
+
+1. Add Risk
+2. Show All Risks (Sorted by Score)
+3. Show Composite Risk Score
+4. Exit
+Choose option: 3
+=== Composite Risk Score ===
+Total Composite Risk Score: ₹120000.0
+Overall Risk Priority     : Medium
+--------------------------
+//////////////*
+2️⃣ .sort(...):-
+sort() ek List method hai jo list ke elements ko arrange karta hai,
+Isme hum Comparator pass karte hain, jo define karta hai kaunse basis pe sort karna hai.
+
+3️⃣ Comparator.comparingDouble(...):-
+Comparator → ek object jo do elements ko compare karne ke rules define karta hai
+comparingDouble() → ye method kehta hai:-
+“Mujhe do objects compare karne hain double value ke basis pe”
+Example: Risk ke score ko use karke sort karna.
+
+5️⃣ .reversed():-
+Default sorting ascending order me hoti hai (chhota → bada)
+.reversed() → sorting ko descending order me kar deta hai (bada → chhota)
+Isliye humare risks highest score wale pehle show ho rahe hain.
+
+()Risk::getScore ka matlab:-
+“Jo bhi Risk object hoga, uska getScore() method call karo aur jo value return ho,
+use compare kar ke list sort karo.”
+
+🔹 Tumhare code me yeh line:-
+riskList.sort(Comparator.comparingDouble(Risk::getScore).reversed());
+
+🔹 Compare kisse ho raha hai?
+👉 Compare Risk objects ke score ke basis par ho raha hai,
+Matlab:-
+Har Risk object ke andar score field hai
+getScore() usi score ko return karta hai
+Comparator un scores ko compare karta hai
+
+🔹 Internally kya hota hai:-
+Socho list hai:-
+Risk A → score = 50000
+Risk B → score = 80000
+Risk C → score = 30000
+
+Comparator aise behave karta hai:-
+compare(A, B) → 50000 vs 80000
+compare(B, C) → 80000 vs 30000
+👉 Result: sorting score ke basis par hoti hai.
+*/////////////

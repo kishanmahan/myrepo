@@ -1,0 +1,576 @@
+🔥 🔹 Access Review kya hai?
+👉 Access Review (Certification) ka matlab:-
+User ke paas jo access (roles, entitlements) hai wo sahi hai ya nahi — ye check karna
+Jab tu AccessReview object create ya update karta hai, wo DB me persist hota hai.
+
+🧠 Simple Example:-
+User: Rahul
+Access:
+- Admin Role ❌ (shayad zarurat nahi)
+- Read Access ✅
+
+👉 Manager bole:-
+Admin remove karo ❌
+Read rehne do ✅
+👉 Ye hi Access Review hai
+
+🔥 🔹 Ye kya karta hai?
+👉 System automatically:-
+Users ka access list nikalta hai
+Reviewer (Manager / Admin) ko bhejta hai
+Wo decide karta hai:-
+Approve ✅
+Revoke ❌
+Phir system action leta hai.
+---------------------------------------------------------------------------------------------------------------
+🔥 🔹 Access Review ke andar kya hota hai?
+1. 🔹 Identity (User):-
+👉 Jiska access review ho raha hai
+
+2. 🔹 Reviewer:-
+👉 Kaun check karega (Manager / App Owner)
+
+3. 🔹 Items:-
+👉 Kya review ho raha hai:-
+Roles
+Entitlements
+Accounts
+
+4. 🔹 Decision:-
+👉 Reviewer kya karega:-
+Approve
+Revoke
+Delegate
+
+5. 🔹 Comments:-
+👉 Kyun approve/reject kiya
+
+6. 🔹 Due Date:-
+👉 Kab tak review complete karna hai
+
+7. 🔹 Status:-
+👉 Current state:-
+Open
+Completed
+Expired
+---------------------------------------------------------------------
+🔥 🔹 Real Flow (Step by Step):-
+1. Campaign create hota hai
+2. Users select hote hain
+3. Reviewer assign hota hai
+4. Access list show hoti hai
+5. Reviewer decision deta hai
+6. System revoke / keep karta hai.
+-----------------------------------------------------
+🔥 🔹 Types of Access Review:-
+1. 🔹 Manager Review:-
+👉 Manager apne team ka access check karta hai.
+
+2. 🔹 Application Owner Review:-
+👉 App owner apne system ka access check karta hai.
+
+3. 🔹 Role Review:-
+👉 Roles verify hote hain.
+
+4. 🔹 Entitlement Review:-
+👉 Permissions check hoti hain.
+-----------------------------------------------------------
+()Status in AccessReview:-
+🔹 1. OPEN / ACTIVE:-
+Matlab: review ya policy abhi pending hai
+Reviewer ne abhi action nahi liya
+System wait kar raha hai response ka
+Example:-
+Campaign: Quarterly Access Review
+Status: OPEN
+👉 Action: Reviewer ko notify karega
+
+🔹 2. COMPLETED / CLOSED:-
+Matlab: review complete ho gaya
+Sab approvals/rejections submit ho gaye
+System koi further action nahi lega
+Example:-
+Status: COMPLETED
+Decision: 5 approved, 2 revoked
+
+🔹 3. EXPIRED:-
+Matlab: review ka due date pass ho gaya
+Reviewer ne decision nahi liya
+System automatic escalation ya default action le sakta hai
+Example:-
+Status: EXPIRED
+Action: Notify Manager / Auto Revoke
+
+🔹 4. IN_PROGRESS:-
+Matlab: review process chal raha hai
+Reviewer kuch decisions le chuka hai, baki pending hai
+
+🔹 5. SUSPENDED / LOCKED:-
+Matlab: review temporarily stop hai
+Ho sakta hai policy ya system reason se hold pe hai
+
+🔹 6. CANCELLED:-
+Matlab: review ya policy ko cancel kar diya gaya
+Koi action nahi hoga.
+--------------------------------------------------------------------------------------------------------
+getOwner()
+setOwner(Identity owner)
+
+getItems()
+setItems(java.util.List items)
+getActions()
+setActions(java.util.List actions)
+
+getViolationOwner()
+setViolationOwner(Identity owner)
+
+getId()
+setId(String id)
+getName()
+setName(String name)
+getDescription()
+setDescription(String description)
+getStatus()
+setStatus(String status)
+getReviewer()
+setReviewer(Identity reviewer)
+getCreated()
+setCreated(java.util.Date date)
+getModified()
+setModified(java.util.Date date)
+getDueDate()
+setDueDate(java.util.Date date)
+getMitigations()
+setMitigations(java.util.List mitigations)
+getApplications()
+setApplications(java.util.List applications)
+getRoles()
+setRoles(java.util.List roles)
+getEntitlements()
+setEntitlements(java.util.List entitlements)
+getViolations()
+setViolations(java.util.List violations)
+getViolationLimit()
+setViolationLimit(int limit)
+getConstraints()
+setConstraints(java.util.List constraints)
+-----------------------------------------------------------------------------------------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointFactory;
+import sailpoint.object.CertificationCampaign;
+import sailpoint.object.Identity;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+public class AccessReviewSaveDemo {
+
+    public static void main(String[] args) throws Exception {
+
+        // 🔹 1. Get current SailPoint context
+        SailPointContext context = SailPointFactory.getCurrentContext();
+
+        // 🔹 2. Create new Access Review (Certification Campaign)
+        CertificationCampaign review = new CertificationCampaign();
+        review.setName("Quarterly Access Review");
+        review.setDescription("Finance roles access review");
+        review.setStatus("OPEN");
+        review.setCreated(new Date());
+        review.setModified(new Date());
+
+        // 🔹 3. Set Reviewer
+        Identity reviewer = context.getObjectByName(Identity.class, "manager1");
+        review.setReviewer(reviewer);
+
+        // 🔹 4. Set Applications
+        List<String> applications = new ArrayList<>();
+        applications.add("SAP");
+        applications.add("Active Directory");
+        review.setApplications(applications);
+
+        // 🔹 5. Set Roles
+        List<String> roles = new ArrayList<>();
+        roles.add("Admin");
+        roles.add("Finance");
+        review.setRoles(roles);
+
+        // 🔹 6. Set Entitlements
+        List<String> entitlements = new ArrayList<>();
+        entitlements.add("Read");
+        entitlements.add("Write");
+        review.setEntitlements(entitlements);
+
+        // 🔹 7. Set Mitigations
+        List<String> mitigations = new ArrayList<>();
+        mitigations.add("Manager Approval");
+        review.setMitigations(mitigations);
+
+        // 🔹 8. Save to DB
+        context.saveObject(review);
+        context.commitTransaction();
+
+        System.out.println("AccessReview saved in DB!");
+    }
+}
+✅ Output:-
+AccessReview saved in DB!
+---------------------------------------------------------------------------------------------------------------------------
+🔹 Owner ka matlab:-
+👉 Owner = wo Identity (user) jo policy, access review ya certification campaign ka responsible hai
+Ye banda policy create karega, edit karega, ya review monitor karega
+Basically “accountable person”
+
+🔹 Example:-
+Campaign: Quarterly Finance Access Review
+Owner: "IAM_Admin"
+Reviewer: "Manager1"
+Owner: IAM_Admin → ye campaign banaya aur manage karega
+Reviewer: Manager1 → ye decision lega ki kaunse accesses revoke/approve honge
+
+🔹 Code Example:-
+import sailpoint.object.Identity;
+import sailpoint.object.CertificationCampaign;
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointFactory;
+SailPointContext context = SailPointFactory.getCurrentContext();
+CertificationCampaign review = context.getObjectByName(CertificationCampaign.class, "Quarterly Review");
+
+// Owner set
+Identity owner = context.getObjectByName(Identity.class, "IAM_Admin");
+review.setOwner(owner);
+
+// Get owner
+System.out.println("Campaign Owner: " + review.getOwner().getName());
+✅ Output:-
+Campaign Owner: IAM_Admin
+--------------------------------------------------------------------------------------------------------------------
+()🔹 ViolationOwner ka matlab?
+ViolationOwner = wo banda jo specific violation ka responsible hai
+Ye banda violation ka resolution handle karta hai
+
+()🔹 Responsibilities of ViolationOwner:-
+Policy ya violation create / edit / update kar sakta hai
+Agar violation nayi identify hui hai, to wo create karega
+Agar existing violation me changes chahiye, wo update karega
+Review action le sakta hai
+Apne aap review complete kar sakta hai ✅
+Ya kisi aur reviewer ko notify kar sakta hai (delegate / assign)
+Temporary Mitigation apply kar sakta hai
+Agar immediate action nahi liya ja sakta, to mitigation set kar sakta hai
+Example: "Manager Approval" ya "Temporary Access Justification"
+
+Flow example:-
+User Rahul ke paas Admin role hai, par policy violation hai
+ViolationOwner: Manager1
+
+Step 1: Manager1 check karta hai → violation validate
+Step 2: Manager1 action leta hai:
+    - Direct revoke (permanent)
+    - Approve temporary access (mitigation)
+    - Notify aur assign dusre reviewer
+Step 3: System updates violation status
+------------------------------------------------------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointFactory;
+import sailpoint.object.CertificationCampaign;
+import sailpoint.object.Identity;
+
+SailPointContext context = SailPointFactory.getCurrentContext();
+
+CertificationCampaign review = context.getObjectByName(CertificationCampaign.class, "Quarterly Review");
+
+// Violation Owner set
+Identity violationOwner = context.getObjectByName(Identity.class, "manager1");
+review.setViolationOwner(violationOwner);
+
+// Get Violation Owner
+System.out.println("Violation Owner: " + review.getViolationOwner().getName());
+✅ Output:-
+Violation Owner: manager1
+-------------------------------------------------------------------------------------------
+()getItems() = us review ke andar jo saare items hain (identities + entitlements),
+unko List me return karta hai Item type: usually AccessReviewItem.
+
+🔹 AccessReview ke common items jo rerturn hota hai:-
+()Identity Items:-
+Kaun user ka review ho raha hai
+Example:-
+Rahul Kumar
+Priya Sharma
+
+()Entitlement Items:-
+Identity ke paas jo access hai, wo review hota hai
+Example:-
+Salesforce Admin Access
+HR System Role
+
+()Account Items:-
+Identity ke application accounts jo linked hain
+Example:-
+Salesforce: rahul.kumar@company.com
+Jira: priya.sharma
+
+()Role Items:-
+Agar identity role ke through access hold kar rahi hai
+Example:-
+HR Manager Role → includes Payroll App + Employee DB Access
+
+()Policy Violation Items:-
+Agar identity kisi SoD ya policy violation me hai
+Example:-
+User has both “Purchase Approver” + “Finance Admin” → conflict
+
+()Status / Review Info:-
+Item ke status ke info bhi hota hai
+Example:-
+APPROVED
+REVOKE
+PENDING
+
+import java.util.ArrayList;
+import java.util.List;
+import sailpoint.object.CertificationItem;
+import sailpoint.object.CertificationCampaign;
+
+CertificationCampaign campaign = new CertificationCampaign();
+
+// Items create
+List<CertificationItem> items = new ArrayList<>();
+CertificationItem item1 = new CertificationItem();
+item1.setName("Rahul - Admin");
+items.add(item1);
+
+campaign.setItems(items);              // set items
+List<CertificationItem> retrieved = campaign.getItems(); // get items
+System.out.println("Items Count: " + retrieved.size());
+-----------------------------------------------------------------------------------------------
+()getActions() / setActions(java.util.List actions):-
+Ye review me possible decisions / operations ko manage karta hai
+Example: Approve, Revoke, Delegate, Temporary Mitigation
+Each action = String / pre-defined action object.
+
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointFactory;
+import sailpoint.object.AccessReview;
+import sailpoint.object.Identity;
+import sailpoint.object.CertificationItem;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+public class AccessReviewDemo {
+
+    public static void main(String[] args) throws Exception {
+
+        // 🔹 1. Get SailPoint context
+        SailPointContext context = SailPointFactory.getCurrentContext();
+
+        // 🔹 2. Create AccessReview object
+        AccessReview review = new AccessReview();
+        review.setName("Quarterly Finance User Review");
+        review.setStatus("OPEN");
+        review.setCreated(new Date());
+        review.setModified(new Date());
+
+        // 🔹 3. Set Owner
+        Identity owner = context.getObjectByName(Identity.class, "IAM_Admin");
+        review.setOwner(owner);
+
+        // 🔹 4. Set Violation Owner
+        Identity violationOwner = context.getObjectByName(Identity.class, "manager1");
+        review.setViolationOwner(violationOwner);
+
+        // 🔹 5. Set Reviewer
+        Identity reviewer = context.getObjectByName(Identity.class, "manager2");
+        review.setReviewer(reviewer);
+
+        // 🔹 6. Add Items
+        List<CertificationItem> items = new ArrayList<>();
+        CertificationItem item1 = new CertificationItem();
+        item1.setName("Rahul - Admin Role");
+        CertificationItem item2 = new CertificationItem();
+        item2.setName("Priya - SAP Read Access");
+        items.add(item1);
+        items.add(item2);
+        review.setItems(items);
+
+        // 🔹 7. Add Actions
+        List<String> actions = new ArrayList<>();
+        actions.add("Approve");
+        actions.add("Revoke");
+        actions.add("Delegate");
+        review.setActions(actions);
+
+        // 🔹 8. Add Mitigations
+        List<String> mitigations = new ArrayList<>();
+        mitigations.add("Manager Approval");
+        review.setMitigations(mitigations);
+
+        // 🔹 9. Save AccessReview in DB
+        context.saveObject(review);
+        context.commitTransaction();
+
+        System.out.println("✅ AccessReview saved in DB successfully!");
+    }
+}
+-------------------------------------------------------------------------------------------------------------------------
+()review.setId("AR-1001");:-
+System.out.println(review.getId());
+Purpose: Ye review ka unique identifier set karta hai. Har AccessReview ka alag ID hota hai, jo DB me record ko uniquely identify karta hai.
+Output:
+AR-1001
+
+()review.setName("Quarterly Finance Review");:-
+System.out.println(review.getName());
+Purpose: Review ka human-readable name set karta hai, jo admin aur reviewer dashboard me dikhega.
+Output:
+Quarterly Finance Review
+
+()review.setDescription("This AccessReview checks all finance users' roles, entitlements, and access across SAP and Active Directory applications to ensure compliance with internal policies and regulations.");
+System.out.println(review.getDescription());
+Purpose: Ye detailed description deta hai review ka — jaise ki review ka scope, purpose, aur business context. Ye dashboard me aur audit logs me kaam aata hai.
+Output:
+This AccessReview checks all finance users' roles, entitlements, and access across SAP and Active Directory applications to ensure compliance with internal policies and regulations.
+
+()review.setStatus("OPEN");
+System.out.println(review.getStatus());
+Purpose: Review ka current state set karta hai. Possible values:
+OPEN → Review abhi start hone wala hai
+IN_PROGRESS → Review chal raha hai
+CLOSED → Review complete ho chuka hai
+Output:
+OPEN
+
+()review.setCreated(new Date());
+System.out.println(review.getCreated());
+Purpose: Ye creation timestamp set karta hai. Audit ke liye zaruri hai, kab review generate hua tha.
+Output (example):
+Thu Mar 26 10:15:00 IST 2026
+review.setModified(new Date());
+System.out.println(review.getModified());
+Purpose: Last modified timestamp set karta hai. Jab bhi review update hota hai (items, actions, or status), ye update hota hai.
+Output:
+Thu Mar 26 10:20:00 IST 2026
+
+()review.setDueDate(new Date(System.currentTimeMillis() + 5*24*60*60*1000L));
+System.out.println(review.getDueDate());
+Purpose: Review completion deadline set karta hai. Ye reviewer ko notify karne aur escalation triggers me kaam aata hai.
+Output (example):
+Tue Mar 31 10:15:00 IST 2026
+
+()Identity reviewer = new Identity();
+review.setReviewer(reviewer);
+System.out.println(review.getReviewer());
+Purpose: Ye reviewer identity set karta hai — jo user ya manager review ko approve, revoke, ya delegate karega.
+Output: Object reference, jaise:
+sailpoint.object.Identity@6f2b958e
+
+()List<String> mitigations = new ArrayList<>();
+mitigations.add("Manager Approval");
+review.setMitigations(mitigations);
+System.out.println(review.getMitigations());
+Purpose: Mitigations temporary actions hain jo policy violation ke impact ko reduce karte hain, jaise emergency approval ya temporary exception.
+Output:
+[Manager Approval]
+
+()List<String> apps = new ArrayList<>();
+apps.add("SAP");
+apps.add("Active Directory");
+review.setApplications(apps);
+System.out.println(review.getApplications());
+Purpose: Ye applications under review set karta hai. Reviewer ko pata chale ki kaunse systems ya platforms ka access check karna hai.
+Output:
+[SAP, Active Directory]
+
+()List<String> roles = new ArrayList<>();
+roles.add("Admin");
+roles.add("Finance");
+review.setRoles(roles);
+System.out.println(review.getRoles());
+Purpose: Ye roles under review set karta hai. Reviewer sirf ye roles ke liye decision lega.
+Output:
+[Admin, Finance]
+
+()List<String> entitlements = new ArrayList<>();
+entitlements.add("Read");
+entitlements.add("Write");
+review.setEntitlements(entitlements);
+System.out.println(review.getEntitlements());
+Purpose: Ye entitlements (permissions) under review set karta hai. Reviewer ye check karega ki koi user unnecessary access na le raha ho.
+Output:
+[Read, Write]
+--------------------------------------------------------------------------------------------
+1️⃣ Violations:-
+List<String> violations = new ArrayList<>();
+violations.add("User Rahul not eligible for Admin role");
+violations.add("Priya has excessive SAP write access");
+review.setViolations(violations);
+System.out.println(review.getViolations());
+Purpose:-
+
+()setViolations() ye policy violations list set karta hai jo review me identify hui hain.
+Reviewer aur audit logs ko ye violations show karte hain.
+Ye violations temporary ya permanent corrective actions ke liye use hote hain.
+Output:
+[User Rahul not eligible for Admin role, Priya has excessive SAP write access]
+System.out.println("Violations count: " + review.getViolations().size());
+Purpose:
+
+()getViolations() se violations list ko access karte hain.
+Count ya reporting ke liye use hota hai.
+Output:
+Violations count: 2
+---------------------------------------------------------------------------------------------------
+2️⃣ Violation Limit:-
+review.setViolationLimit(10);
+System.out.println(review.getViolationLimit());
+Purpose:-
+Ye method maximum allowed violations set karta hai ek review me.
+Agar violations limit exceed ho jati hai, to reviewer ya system ko alert/notification milta hai.
+Output:-
+10
+-------------------------------------------------------
+3️⃣ Constraints:-
+List<String> constraints = new ArrayList<>();
+constraints.add("No admin without manager approval");
+constraints.add("SAP write access not allowed without training completion");
+review.setConstraints(constraints);
+System.out.println(review.getConstraints());
+Purpose:-
+Constraints review ke rules / conditions define karte hain.
+Reviewer ye ensure karta hai ki access policy rules break na ho.
+Ye compliance enforcement aur audit trail ke liye zaruri hai.
+Output:-
+[No admin without manager approval, SAP write access not allowed without training completion]
+---------------------------------------------------------------------------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.object.AccessReview;
+import sailpoint.object.Identity;
+import sailpoint.object.Policy;
+import sailpoint.object.PolicyConstraint;
+import sailpoint.object.PolicyViolation;
+import java.util.List;
+
+SailPointContext context = SailPointFactory.getCurrentContext();
+
+// AccessReview fetch ya create
+AccessReview review = new AccessReview();
+review.setId("AR-2001");
+review.setName("Quarterly Finance Review");
+
+// Reviewer set
+Identity reviewer = context.getObjectByName(Identity.class, "Manager1");
+review.setReviewer(reviewer);
+
+// Predefined PolicyConstraints fetch karna (real rules)
+Policy financePolicy = context.getObject(Policy.class, "Finance Policy");
+List<PolicyConstraint> constraints = financePolicy.getConstraints(); // existing constraints
+review.setConstraints(constraints);
+
+// Print real constraints
+for (PolicyConstraint c : review.getConstraints()) {
+    System.out.println(c.getName() + ": " + c.getDescription());
+}
+----------------------------------------------------------------------------------------------------------------------

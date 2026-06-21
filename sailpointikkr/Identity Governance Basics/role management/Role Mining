@@ -1,0 +1,160 @@
+--------------------------------------------------------------------
+()Role Mining kya hai?
+--Role Mining ka matlab hai existing users ke access aur permissions ko analyze karke
+roles automatically discover karna. Matlab, manually har ek user ke liye role define karne ki jagah,
+system ye dekhta hai ki kaun kaun se permissions ek user ke paas hain aur 
+similar permissions wale users ko group karke ek role banata hai.
+
+2️⃣ Types of Role Mining:-
+()Manual Role Mining:-Admin manually dekh ke roles define karta hai
+Time-consuming aur error-prone
+
+()Automated Role Mining:-
+Tools aur algorithms automatically analyze karte hain
+Example: SailPoint IIQ me automated role discovery hoti hai
+
+()Hybrid Role Mining:-
+Automated suggestions milte hain, admin final approve karta hai.
+
+2️⃣ Example Scenario:-
+Users & Permissions Table:-
+User	Permissions
+Rahul---Read Finance, Write Finance
+Priya---Read Finance, Write Finance
+Anil----View HR, Edit HR
+Riya----View HR, Edit HR
+
+example code:-
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+
+class Identity {
+    String name;
+    List<String> permissions = new ArrayList<String>();
+
+    Identity(String name) {
+        this.name = name;
+    }
+
+    void addPermission(String perm) {
+        permissions.add(perm);
+    }
+}
+
+class Role {
+    String roleName;
+    List<String> permissions = new ArrayList<String>();
+
+    Role(String roleName) {
+        this.roleName = roleName;
+    }
+}
+
+public class RoleMiningExample {
+
+    public static void main(String[] args) {
+
+        // Create Users
+        Identity rahul = new Identity("Rahul");
+        rahul.addPermission("Read Finance");
+        rahul.addPermission("Write Finance");
+
+        Identity priya = new Identity("Priya");
+        priya.addPermission("Read Finance");
+        priya.addPermission("Write Finance");
+
+        Identity anil = new Identity("Anil");
+        anil.addPermission("View HR");
+        anil.addPermission("Edit HR");
+
+        Identity riya = new Identity("Riya");
+        riya.addPermission("View HR");
+        riya.addPermission("Edit HR");
+
+        List<Identity> users = new ArrayList<Identity>();
+        users.add(rahul);
+        users.add(priya);
+        users.add(anil);
+        users.add(riya);
+
+        // Role Mining
+        Map<String, Role> discoveredRoles = new HashMap<String, Role>();
+
+        for (Identity user : users) {
+
+            boolean roleFound = false;
+
+            for (Role role : discoveredRoles.values()) {
+                if (role.permissions.equals(user.permissions)) {
+                    System.out.println(user.name + " assigned to existing role: " + role.roleName);
+                    roleFound = true;
+                    break;
+                }
+            }
+
+            if (!roleFound) {
+                String roleName = "Role_" + (discoveredRoles.size() + 1);
+
+                Role newRole = new Role(roleName);
+                newRole.permissions.addAll(user.permissions);
+
+                discoveredRoles.put(roleName, newRole);
+
+                System.out.println(user.name + " assigned to new role: " + roleName);
+            }
+        }
+
+        System.out.println("\nDiscovered Roles:");
+
+        for (String rName : discoveredRoles.keySet()) {
+            System.out.println(rName + " -> Permissions: " + discoveredRoles.get(rName).permissions);
+        }
+    }
+}
+
+4️⃣ Output Example:-
+Rahul assigned to new role: Role_1
+Priya assigned to existing role: Role_1
+Anil assigned to new role: Role_2
+Riya assigned to existing role: Role_2
+
+Discovered Roles:
+Role_1 -> Permissions: [Read Finance, Write Finance]
+Role_2 -> Permissions: [View HR, Edit HR]
+
+////////*
+()discoveredRoles.values() kya deta hai?
+discoveredRoles ek Map hai.
+Example:-
+Map<String, Role> discoveredRoles = new HashMap<>();
+Yahan:-
+Key = Role name (String)
+Value = Role object
+
+values() kya return karta hai?
+values() Map ke saare values ka collection deta hai.
+Matlab sirf Role objects milte hain, keys nahi.
+
+Example:-
+discoveredRoles.put("Role_1", new Role("Finance Role"));
+discoveredRoles.put("Role_2", new Role("HR Role"));
+
+Ab agar likhen:-
+discoveredRoles.values();
+
+To result milega:-
+[Finance Role Object, HR Role Object]
+*///////
+/////////*
+2️⃣ get(rName):-
+get() method Map se value nikalta hai using key.
+Example:-
+Role role = discoveredRoles.get("Role_1");
+Yahan:-
+"Role_1" → Role object mil gaya.
+
+().permissions:-➡ us Role ki permissions list deta hai.
+*////////////

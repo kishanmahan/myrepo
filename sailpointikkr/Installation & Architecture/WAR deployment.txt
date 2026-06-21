@@ -1,0 +1,91 @@
+📦 WAR File Kya Hota Hai?
+WAR = Web Application Archive
+Ye ek packaged file hoti hai jisme hota hai:
+JSP / HTML files
+Classes (.class)
+Libraries (.jar)
+Configuration files
+WEB-INF folder
+Example:-
+identityiq.war
+
+🏗️ WAR Deployment in Apache Tomcat
+IIQ ko generally deploy kiya jata hai:-
+👉 Apache Tomcat
+
+🔧 Method 1️⃣: Simple Auto Deployment (Most Common)
+Step 1: Tomcat Install karo
+Folder structure:-
+tomcat/
+   ├── bin
+   ├── conf
+   ├── webapps
+
+Step 2: WAR Copy karo
+identityiq.war
+Copy to:-
+tomcat/webapps/
+
+Step 3: Tomcat Start karo
+Windows:-
+startup.bat
+Linux:-
+./startup.sh
+
+Step 4: Auto Extraction
+Tomcat automatically:-
+WAR ko extract karega
+identityiq/ folder banega
+Application deploy karega
+
+Step 5: Browser me check karo
+http://localhost:8080/identityiq
+Agar login page open ho gaya → Deployment successful 🎉
+-----------------------------------------------------------------
+🔧 Method 2️⃣: Tomcat Manager se Deploy
+Agar Tomcat Manager enable hai:-
+Open:-
+http://localhost:8080/manager/html
+Login karo
+WAR file upload karo
+Deploy click karo
+
+⚙️ Important Configuration After Deployment
+WAR deploy karne ke baad:-
+
+1️⃣ DB Configuration
+File:-
+identityiq/WEB-INF/classes/iiq.properties
+Edit:-
+dataSource.url=
+dataSource.username=
+dataSource.password=
+
+2️⃣ JDBC Driver Add Karna
+Database driver JAR copy karo:-
+tomcat/lib/
+Example:-
+mysql-connector.jar
+ojdbc8.jar
+
+3️⃣ Memory Configuration (Production):-
+File:-
+tomcat/bin/setenv.sh
+
+Example:-
+-Xms2048m
+-Xmx4096m
+
+🛑 Common Errors:-
+❌ 1. HTTP 404
+→ WAR properly extract nahi hua
+→ Context path galat hai
+
+❌ 2. DB Connection Failed:-
+→ iiq.properties wrong
+→ JDBC driver missing
+
+❌ 3. Port Already in Use:-
+→ 8080 busy hai
+→ server.xml me port change karo
+

@@ -1,0 +1,2 @@
+context (RuleContext):----------Rule execution ke liye current state, arguments, logs, provisioning plan handle karta hai.
+spContext (SailPointContext):---Database operations, Identity / Application / Entitlement fetch/update, transaction handle.

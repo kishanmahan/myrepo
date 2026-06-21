@@ -1,0 +1,49 @@
+1️⃣1️⃣ Identity Lifecycle Management:-
+Lifecycle stages:-
+Joiner
+Mover
+Leaver
+
+6️⃣ Identity Lifecycle kya hai?
+Ye user ka complete lifecycle manage karta hai.
+
+Stages:-
+1️⃣ Joiner:-
+New employee join karta hai
+
+2️⃣ Mover:-
+Employee department change karta hai
+
+3️⃣ Leaver:-
+Employee company leave karta hai
+
+Example:-
+Joiner:-
+➡ Account create
+
+Mover:-
+➡ Old access remove + new access add
+
+Leaver:-
+➡ All access remove
+----------------------------------------
+1️⃣ Identity Lifecycle Overview
+ILM automate करता है:-
+✔ Account creation
+✔ Role assignment
+✔ Access modification
+✔ Account disable / delete
+Flow:-
+HR System
+   ↓
+Identity Created
+   ↓
+Access Assigned
+   ↓
+Role Change
+   ↓
+Access Updated
+   ↓
+User Exit
+   ↓
+Access Removed

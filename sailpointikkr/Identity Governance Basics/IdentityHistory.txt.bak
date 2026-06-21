@@ -1,0 +1,112 @@
+1️⃣ IdentityHistory kya hai?
+👉 IdentityHistory = user ke past actions ka record (audit log)
+Matlab:-
+user ne kya kiya
+kab kiya
+kisne kiya
+➡ Sab history me store hota hai
+
+✅ Example:-
+User: Rahul
+Actions:-
+Role assign hua
+Access revoke hua
+Password reset hua
+➡ Ye sab IdentityHistory me record hota hai
+
+🔹 2️⃣ Ye kya karta hai?
+👉 Ye track karta hai:-
+changes in identity
+access changes
+provisioning events
+approvals / rejections
+
+🔹 3️⃣ Kya ye DB me store hota hai?
+✅ Haan bhai, DB me store hota hai
+📦 Structure:-
+Identity (Rahul)
+   ↓
+IdentityHistory
+   ↓
+Event: Role Assigned
+Time: 10:00 AM
+
+🔹 4️⃣ Iske andar kya hota hai?
+Field	       Meaning
+eventType:-----kya action hua
+timestamp:-----kab hua
+performedBy:---kisne kiya
+target:--------kis pe action hua
+details:-------extra info
+
+🔹 5️⃣ Important Methods:-
+🔸 Event Info:-
+getEventType() → event type deta hai (Role Assigned, Access Removed)
+setEventType(String type) → event type set karta hai
+🔸 Time:-
+getTimestamp() → kab event hua
+setTimestamp(Date time) → time set karta hai
+🔸 Actor:-
+getPerformedBy() → kisne action kiya
+setPerformedBy(String user) → performer set karta hai
+🔸 Target:-
+getTarget() → kis identity pe action hua
+setTarget(String target) → target set karta hai
+🔸 Details:-
+getDetails() → extra info deta hai
+setDetails(String details) → details set karta hai
+🔸 Utility:-
+toString() → readable string
+equals(Object obj) → compare karta hai
+hashCode() → hash generate karta hai.
+
+🚀 🔥 Full Code (SailPointContext ke saath):-
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointFactory;
+import sailpoint.object.IdentityHistory;
+import java.util.Date;
+
+public class HistoryExample {
+
+    public static void main(String[] args) throws Exception {
+
+        SailPointContext context = SailPointFactory.getCurrentContext();
+
+        IdentityHistory history = new IdentityHistory();
+
+        // Event
+        history.setEventType("Role Assigned");
+
+        // Time
+        history.setTimestamp(new Date());
+
+        // Actor
+        history.setPerformedBy("Admin");
+
+        // Target
+        history.setTarget("Rahul");
+
+        // Details
+        history.setDetails("Admin Role assigned to Rahul");
+
+        // Print
+        System.out.println(history.getEventType());
+        System.out.println(history.getTimestamp());
+        System.out.println(history.getPerformedBy());
+        System.out.println(history.getTarget());
+        System.out.println(history.getDetails());
+
+        // Save
+        context.saveObject(history);
+        context.commitTransaction();
+
+        System.out.println("✅ History Saved");
+    }
+}
+📤 Output:-
+Role Assigned
+Thu Mar 27 12:30:00 IST 2026
+Admin
+Rahul
+Admin Role assigned to Rahul
+✅ History Saved

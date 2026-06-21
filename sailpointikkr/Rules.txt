@@ -1,0 +1,221 @@
+1️⃣1️⃣ Rules (Important for Developers 🔥):-
+🟢 CHAPTER 1: Rules Overview
+Rule kya hota hai?
+👉 Java/BeanShell based script jo custom logic implement karta hai.
+Use hota hai:-
+Correlation
+Provisioning
+Workflow
+Policy
+Transformation
+Approval routing
+
+🟢 CHAPTER 2: Rule Types (Most Important 🔥)
+Major rule types in SailPoint IdentityIQ:
+1️⃣ Correlation Rule
+2️⃣ Before Provisioning Rule
+3️⃣ After Provisioning Rule
+4️⃣ Identity Trigger Rule
+5️⃣ Workflow Rule
+6️⃣ Field Value Rule
+7️⃣ Validation Rule
+8️⃣ Policy Rule
+9️⃣ Aggregation Rule
+🔟 Custom Rule (General Purpose)
+
+🟢 CHAPTER 3: Rule Structure (XML Format)
+Rule XML format:-
+Name
+Type
+Signature
+Source (BeanShell code)
+
+Stored in:-
+Debug page
+XML import/export
+
+🟢 CHAPTER 4: BeanShell Basics
+Rules written in:-
+Java syntax
+BeanShell interpreter
+
+Common objects:-
+identity
+context
+log
+application
+account
+Example:-
+log.debug("Identity Name: " + identity.getName());
+
+🟢 CHAPTER 5: Correlation Rule
+
+Purpose:-
+Account ko correct identity se match karna.
+
+Use case:-
+If username format different hai.
+
+Example logic:-
+Email match
+Employee ID match
+Custom attribute match
+
+🟢 CHAPTER 6: Before Provisioning Rule
+Execute hota hai:-
+Provisioning plan execute hone se pehle.
+Use:-
+Modify plan
+Add attribute
+Remove attribute
+Conditional logic
+
+🟢 CHAPTER 7: After Provisioning Rule
+Execute hota hai:-
+Provisioning complete hone ke baad.
+Use:-
+Logging
+Notification trigger
+Custom audit action
+
+🟢 CHAPTER 8: Identity Trigger Rule
+Run hota hai:-
+Identity attribute change pe.
+Example:-
+Department change → auto role assign
+
+🟢 CHAPTER 9: Field Value Rule
+Dynamic value generate karta hai.
+Example:-
+Username auto generate:-
+firstName + lastName
+
+🟢 CHAPTER 10: Validation Rule
+Check karta hai:-
+Input valid hai?
+Required attribute missing?
+Used in:-
+Access request forms.
+
+🟢 CHAPTER 11: Workflow Rule
+Workflow ke andar custom logic.
+Use:-
+Dynamic approver select
+Conditional routing
+Custom approval logic
+
+🟢 CHAPTER 12: Policy Rule
+Advanced SoD logic.
+Example:-
+If user department = Finance
+AND role = Admin
+→ Violation
+
+🟢 CHAPTER 13: Aggregation Rule
+Run hota hai:-
+Before aggregation
+After aggregation
+Use:-
+Data cleanup
+Attribute transformation
+
+🟢 CHAPTER 14: Rule Context Objects
+Common objects available:-
+Identity
+Application
+AccountRequest
+ProvisioningPlan
+TaskResult
+SailPointContext
+Developer ko ye samajhna must hai 🔥
+
+🟢 CHAPTER 15: Logging in Rules
+Use:-
+log.info()
+log.debug()
+log.error()
+Logs check:-
+catalina.out
+Production me excessive logging avoid karo ⚠️
+
+🟢 CHAPTER 16: Rule Testing
+
+Test kar sakte ho:-
+Debug page
+Identity refresh
+Provisioning trigger
+Aggregation run
+
+Best practice:-
+Lower environment me test karo.
+
+🟢 CHAPTER 17: Rule Deployment
+Methods:-
+XML import
+Debug page
+Package deployment
+Promotion via migration tool
+
+🟢 CHAPTER 18: Performance Considerations
+Avoid:-
+Heavy loops
+DB calls inside loop
+Unnecessary context.search()
+
+Optimize:-
+Efficient queries
+Null checks
+Minimal logging
+
+🟢 CHAPTER 19: Error Handling in Rules
+Use:-
+try {
+   // logic
+} catch (Exception e) {
+   log.error("Error: " + e);
+}
+Always handle null pointer cases.
+
+🟢 CHAPTER 20: Security Best Practices
+❌ Hard-coded password
+❌ Direct DB call
+❌ Infinite loop
+✔ Use encrypted attributes
+✔ Validate input
+✔ Proper exception handling
+
+🟢 CHAPTER 21: Common Real Project Use Cases
+✔ Custom correlation logic
+✔ Username transformation
+✔ Dynamic approval routing
+✔ Prevent provisioning based on condition
+✔ Auto assign manager role
+
+🟢 CHAPTER 22: Troubleshooting Rules
+
+Scenario 1:
+Rule not firing
+→ Check rule type mapping
+
+Scenario 2:
+Null pointer exception
+→ Check object existence
+
+Scenario 3:
+Provisioning blocked unexpectedly
+→ Check before provisioning rule
+
+🟢 CHAPTER 23: Advanced Developer Topics
+Rule chaining
+Rule library reuse
+Custom API call from rule
+Integration with external system
+Complex policy evaluation logic
+
+🟢 CHAPTER 24: Migration & Version Control
+Best practice:-
+Store rules in Git
+Maintain version history
+Document changes
+Promote via structured release
+

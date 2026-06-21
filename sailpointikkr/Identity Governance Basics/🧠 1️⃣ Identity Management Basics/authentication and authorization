@@ -1,0 +1,26 @@
+()Authentication kya hai?
+--1️⃣ Authentication (()Authentication)
+Meaning: Ye check karta hai “Who you are?”
+Purpose: System ye verify karta hai ki user jo login kar raha hai, wo asli me wahi hai jo wo claim kar raha hai.
+Methods:-
+Password
+OTP (One-Time Password)
+MFA (Multi-Factor Authentication)
+Biometric (Fingerprint, Face ID)
+--------------------------------------
+()Authorization kya hai?
+--Meaning: Ye check karta hai “What you can do?”
+Purpose: System decide karta hai ki authenticated user ko kaun kaunse resources/permissions allowed hain.
+
+Methods:-
+Roles (Finance Manager, IT Admin)
+Policies (Access policies, Approval workflows)
+Groups & Permissions
+
+Example:-
+Rahul successfully login ho gaya (Authentication pass)
+
+Ab system check karta hai:-
+Rahul ko SAP me “Finance Manager” access hai?
+Salesforce me read-only ya full access hai?
+✅ Agar allowed → Action permit

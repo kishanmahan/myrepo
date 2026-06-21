@@ -1,0 +1,93 @@
+()ComplianceReport kya hai?
+--🔷 🧠 ComplianceReport kya hai?
+👉 ComplianceReport = ek report jo batata hai ki system rules/policies follow ho rahe hain ya nahi
+📌 Simple line:-
+👉 “Kis user ne kya violation kiya, kaun compliant hai, kaun nahi”
+
+🔷 🔥 Ye kya karta hai?
+✅ 1. Policy violations dikhata hai,
+👉 Example:-
+User ke paas 2 conflicting roles (SoD violation)
+Unauthorized access
+
+✅ 2. Audit ke liye use hota hai,
+👉 Companies ko proof chahiye hota hai:-
+kis user ke paas kya access hai
+kisne approve kiya
+
+✅ 3. Risk identify karta hai,
+👉 High risk users detect karta hai.
+
+✅ 4. Certification support karta hai,
+👉 Certification campaign me use hota hai.
+
+🔷 🔥 Real Life Example:-
+💻 Maan le:-
+Rule: “User ek hi time pe Finance + Admin role nahi rakh sakta”
+👉 Agar kisi ke paas dono hai ❌
+➡️ ComplianceReport me dikhega
+---------------------------------------------------------------------------------
+🔷 🔥 ComplianceReport ke andar kya hota hai?
+👉 Ye ek structured report hota hai jisme:-
+🔹 1. Identity Info:-
+user name
+email
+department
+
+🔹 2. Violations:-
+kaunsa rule break hua
+kis role/access ki wajah se
+
+🔹 3. Policy Name:-
+kaunsi policy violate hui
+
+🔹 4. Risk Score:-
+low / medium / high
+
+🔹 5. Access Details:-
+kaunse applications ka access hai
+
+🔹 6. Approval Info:-
+kisne approve kiya
+kab approve hua
+
+🔹 7. Timestamp:-
+kab violation detect hua.
+-------------------------------------------------------------------------------------
+🔷 🔥 Types of Compliance Reports:-
+✅ 1. Policy Violation Report:-
+👉 SoD violations
+
+✅ 2. Access Review Report:-
+👉 kis user ke paas kya access hai
+
+✅ 3. Audit Report:-
+👉 historical logs
+
+✅ 4. Risk Report:-
+👉 high risk identities
+--------------------------------------------------------------------------------------
+🔷 🔥 Flow me kaise use hota hai?
+👉 Flow:-
+Policies define hoti hain
+System evaluate karta hai
+Violations detect hote hain
+ComplianceReport generate hota hai
+Auditor / Admin check karta hai.
+---------------------------------------------------
+🔷 🔥 DB me store hota hai kya?
+👉 ✅ Haan bhai, indirectly store hota hai
+
+📍 Important Tables:-
+🔸 spt_identity
+👉 user data
+
+🔸 spt_policy_violation
+👉 violations store hote hain 🔥
+
+🔸 spt_certification
+👉 certification data
+
+🔸 spt_audit_event
+👉 audit logs
+-----------------------------------------------------------

@@ -1,0 +1,109 @@
+1️⃣ Segregation of Duties (SoD):-
+दो conflicting permissions एक user को नहीं मिलनी चाहिए।
+Example:-
+Access 1            Access 2
+Create Payment---Approve Payment
+अगर एक ही user को दोनों मिल गए → SoD violation.
+
+2️⃣ Enterprise Level Java Code (SoD Detection)
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.Link;
+import sailpoint.tools.GeneralException;
+
+import java.util.List;
+
+public class SODPolicyCheck {
+
+    private SailPointContext context;
+
+    public SODPolicyCheck(SailPointContext context) {
+        this.context = context;
+    }
+
+    public void checkSODViolation(String identityName) throws GeneralException {
+
+        Identity user = context.getObjectByName(Identity.class, identityName);
+
+        if(user == null) {
+            System.out.println("User not found");
+            return;
+        }
+
+        boolean hasCreatePayment = false;
+        boolean hasApprovePayment = false;
+
+        List<Link> accounts = user.getLinks();
+
+        for(Link link : accounts) {
+
+            List entitlements = link.getEntitlements();
+
+            for(Object ent : entitlements) {
+
+                String entitlement = ent.toString();
+
+                if(entitlement.equalsIgnoreCase("Create_Payment")) {
+                    hasCreatePayment = true;
+                }
+
+                if(entitlement.equalsIgnoreCase("Approve_Payment")) {
+                    hasApprovePayment = true;
+                }
+
+            }
+
+        }
+
+        if(hasCreatePayment && hasApprovePayment) {
+
+            System.out.println("SOD POLICY VIOLATION DETECTED");
+            System.out.println("User: " + user.getName());
+            System.out.println("Conflicting Access:");
+            System.out.println("Create_Payment");
+            System.out.println("Approve_Payment");
+
+        } else {
+
+            System.out.println("No SOD violation for user: " + user.getName());
+
+        }
+
+    }
+
+}
+3️⃣ Main Class (Run Example)
+import sailpoint.api.SailPointContext;
+import sailpoint.tools.GeneralException;
+
+public class SODMain {
+
+    public static void main(String[] args) throws GeneralException {
+
+        SailPointContext context = SailPointFactory.getCurrentContext();
+
+        SODPolicyCheck checker = new SODPolicyCheck(context);
+
+        checker.checkSODViolation("rahul");
+
+    }
+
+}
+4️⃣ Enterprise Level Output:-
+Case 1 (Violation)
+User access:-
+Create_Payment
+Approve_Payment
+Output:-
+SOD POLICY VIOLATION DETECTED
+User: rahul
+Conflicting Access:
+Create_Payment
+Approve_Payment
+
+Case 2 (No Violation)
+User access:-
+Create_Payment
+View_Payment
+Output:-
+No SOD violation for user: rahul

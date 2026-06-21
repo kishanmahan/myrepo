@@ -1,0 +1,113 @@
+()👉 Policies = Security rules
+जो ensure करते हैं कि company के resources safe रहें और compliance follow हो।
+1️⃣ Policy Management क्या है
+Policy Management का मतलब है:-
+Security policies बनाना
+Policies को users / roles पर apply करना
+Policy violation detect करना
+Violation fix करना
+Example:-
+Finance employee को HR database access नहीं मिलना चाहिए
+Normal employee को Admin privileges नहीं मिलना चाहिए
+अगर ऐसा access मिल गया तो policy violation होगा।
+
+3️⃣ Policy के Types (SailPoint):-
+SailPoint में mainly 3 types की policies होती हैं:
+
+1️⃣ Segregation of Duties (SoD):-
+दो conflicting permissions एक user को नहीं मिलनी चाहिए।
+Example:-
+Access 1            Access 2
+Create Payment---Approve Payment
+अगर एक ही user को दोनों मिल गए → SoD violation.
+
+2️⃣ Activity Based Policy (Detail):-
+Activity Based Policy user की activity / behavior / action के आधार पर check होती है।
+👉 मतलब policy user के क्या कर रहा है उस पर depend करती है।
+Example activities:-
+Login activity
+File download
+Database access
+Sensitive data access
+Privilege change
+अगर activity suspicious है → policy violation।
+
+Example 1 (Simple):-
+Policy:-
+User cannot download more than 100 files in 10 minutes
+अगर user:-
+User = Rahul
+Downloaded files = 250
+Time = 10 minutes
+➡ Violation detected
+
+Example 2 (Security):-
+Policy:-
+Admin login allowed only from office network
+User activity:-
+User = Admin
+Location = Unknown IP
+
+➡ Policy violation:-
+Example 3 (Real Banking Example)
+Policy:-
+User cannot approve transaction immediately after creating it
+Activity:-
+User created payment
+User approved same payment
+➡ Fraud risk → Violation
+-----------------------------------------
+1️⃣ Risk Policy क्या होती है
+Risk Policy ऐसी security policy होती है जो user के risk score के आधार पर access allow या block करती है।
+मतलब:-
+👉 हर user या access का risk score calculate होता है।
+अगर:-
+Risk Score > Threshold
+➡ Policy Violation
+-----------------------------------------
+1️⃣ Password Policy क्या होती है
+Password Policy ऐसी security policy होती है जो password की strength, length और complexity को enforce करती है।
+मतलब password में यह rules होने चाहिए:-
+Minimum length
+Uppercase letter
+Lowercase letter
+Number
+Special character
+अगर rule follow नहीं हुआ → Password Policy Violation.
+-----------------------------------------
+3️⃣ Identity Attribute Policy (Detail):-
+Identity Attribute Policy user के attributes (properties) के basis पर check होती है।
+👉 मतलब policy user कौन है उस पर depend करती है।
+Attributes example:-
+Department
+Role
+Location
+Manager
+Employment type
+Country
+Job title
+
+Example 1 (Department):-
+Policy:-
+Finance department users cannot have HR admin role
+User attributes:-
+Name = Rahul
+Department = Finance
+Role = HR_Admin
+➡ Violation
+
+Example 2 (Location):-
+Policy:-
+Only US employees can access US payroll system
+User attributes:-
+Country = India
+Access = US Payroll
+➡ Violation
+
+Example 3 (Employee Type):-
+Policy:-
+Contract employees cannot have admin access
+User:-
+Employment Type = Contract
+Access = Admin
+➡ Violation

@@ -1,0 +1,172 @@
+1️⃣ KPI kya hota hai?
+KPI = Key Performance Indicator
+Matlab important metric jo system ki performance ya security status batata hai.
+Example:-
+Total Users
+High Risk Users
+Policy Violations
+Pending Access Reviews
+Ye sab KPI hain.
+Ye ek metric (measurement) hota hai jisse pata chalta hai ki koi person,
+team ya system kitna achha perform kar raha hai.
+
+2️⃣ IAM System ke common KPIs
+()User KPIs:-
+Total Users
+Active Users
+Inactive Users
+
+()Security KPIs:-
+High Risk Identities
+Policy Violations
+Sensitive Access Users
+
+()Access KPIs:-
+Admin Access Count
+Total Roles
+Total Entitlements
+
+()Compliance KPIs:-
+Pending Certifications
+Completed Reviews
+Expired Access
+
+3️⃣ KPI Monitoring ka matlab:-
+System continuously KPIs calculate karta hai aur monitor karta hai.
+Example:-
+High Risk Users > 10  → Alert
+Policy Violations > 5 → Security Alert
+---------------------------------------------------------------
+🔥 “Number of policy violations reduced” matlab kya?
+👉 Simple language me:-
+💬 System me jitne rule break (violations) ho rahe the, unko kam karna
+
+🔹 Step by step samajh:-
+📌 Pehle situation:-
+100 users me se
+👉 20 users policy violate kar rahe the
+
+Example:-
+Wrong access
+Extra permissions
+SoD conflict
+
+📌 Improvement ke baad:-
+Ab sirf 5 users violation me hai
+
+👉 To kya hua?
+Violations: 20 → 5
+👉 ✅ Violations reduce ho gaye
+
+🔥 Isko KPI kyu bolte hai?
+👉 Kyuki ye measure karta hai:-
+✔ System kitna secure ho raha hai
+✔ Policies kitni effective hai
+✔ Access control improve ho raha hai ya nahi.
+------------------------------------------------------------
+🔥 IAM / SailPoint Example
+❌ Pehle:
+50 policy violations detected
+Users ke paas extra access
+
+✅ Baad me:-
+Remediation kiya (access remove)
+Policies strict ki
+
+👉 Result:-
+50 → 10 violations
+👉 ✅ KPI improve ho gaya
+---------------------------------------------------------
+🔥 Aur simple example 😄
+👉 School me:-
+Pehle 10 students cheating kar rahe the ❌
+Ab sirf 2 kar rahe hai ✅
+
+👉 Matlab:-
+✔ Discipline improve
+✔ KPI achieved
+------------------------------------------------------------
+
+4️⃣ Context Based KPI Monitoring Project:-
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.QueryOptions;
+import sailpoint.tools.GeneralException;
+
+import java.util.Iterator;
+
+public class KPIMonitoringService {
+
+    public void monitorKPI(SailPointContext context) throws GeneralException {
+
+        QueryOptions qo = new QueryOptions();
+
+        Iterator<Identity> identities = context.search(Identity.class, qo);
+
+        int totalUsers = 0;
+        int adminUsers = 0;
+        int highRiskUsers = 0;
+        int violations = 0;
+
+        while (identities.hasNext()) {
+
+            Identity id = identities.next();
+
+            totalUsers++;
+
+            String roles = String.valueOf(id.getAssignedRoles());
+
+            int riskScore = 0;
+
+            if (roles.contains("Admin")) {
+                adminUsers++;
+                riskScore += 30;
+            }
+
+            if (roles.contains("DatabaseAdmin")) {
+                riskScore += 40;
+            }
+
+            if (roles.contains("Finance") && roles.contains("Audit")) {
+                violations++;
+                riskScore += 50;
+            }
+
+            if (riskScore >= 60) {
+                highRiskUsers++;
+            }
+
+        }
+
+        System.out.println("===== KPI MONITORING =====");
+
+        System.out.println("Total Users : " + totalUsers);
+        System.out.println("Admin Users : " + adminUsers);
+        System.out.println("High Risk Users : " + highRiskUsers);
+        System.out.println("Policy Violations : " + violations);
+
+        if (highRiskUsers > 5) {
+            System.out.println("ALERT : Too many high risk identities");
+        }
+
+    }
+}
+
+5️⃣ Rule / Task jo run karega:-
+import sailpoint.api.SailPointContext;
+
+public Object execute(SailPointContext context) throws Exception {
+
+    KPIMonitoringService service = new KPIMonitoringService();
+
+    service.monitorKPI(context);
+
+    return "KPI Monitoring Completed";
+}
+6️⃣ Example Output:-
+===== KPI MONITORING =====
+
+Total Users : 25
+Admin Users : 4
+High Risk Users : 3
+Policy Violations : 2

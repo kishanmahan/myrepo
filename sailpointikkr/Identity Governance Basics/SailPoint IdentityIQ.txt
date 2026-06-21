@@ -1,0 +1,88 @@
+()SailPoint IdentityIQ (IIQ) ke main components:-
+UI
+Application Server
+Database
+Ye 3 milke IIQ ka core architecture banate hain 💻
+
+🏗️ 1️⃣ UI (User Interface Layer)
+👉 Kya hota hai?
+Ye web-based interface hota hai jahan se users aur admins system use karte hain.
+
+🔹 Kaun use karta hai?
+Manager → Certification review
+Employee → Access request
+Admin → Configuration
+Auditor → Reports
+
+🔹 UI me kya hota hai?
+Dashboard
+Access Request page
+Certification page
+Reports section
+Admin configuration
+
+🔹 Ye kahan run hota hai?
+Browser me open hota hai
+Backend me generally run hota hai:-
+Apache Tomcat server pe
+
+🎯 Simple samajh:-
+UI = Face of SailPoint 👤
+
+⚙️ 2️⃣ Application Server (Brain of IIQ 🧠)
+Ye sabse important part hai 🔥
+Yahin actual logic chalta hai.
+
+🔹 Isme kya-kya engines hote hain?
+✅ Identity Engine
+Identity lifecycle manage karta hai
+Correlation karta hai
+
+✅ Provisioning Engine
+Account create / modify / delete karta hai
+Target systems ko call karta hai
+
+✅ Certification Engine
+Campaign generate karta hai
+Review track karta hai
+
+✅ Policy Engine
+SoD violation detect karta hai
+Risk calculate karta hai
+
+✅ Workflow Engine
+Approval process control karta hai
+
+✅ Task Scheduler
+Aggregation
+Identity refresh
+Certifications
+
+🔹 Application Server kya karta hai?
+UI request receive karta hai
+Database se data fetch karta hai
+Connectors ko call karta hai
+Business logic execute karta hai
+
+🎯 Simple samajh:-
+Application Server = Brain 🧠
+
+🗄️ 3️⃣ Database (Storage Layer)
+Ye backend storage hota hai.
+
+🔹 Database me kya store hota hai?
+Identity data
+Roles
+Entitlements
+Policies
+Audit logs
+Certification records
+Risk scores
+
+🔹 Kaun kaun se DB use hote hain?
+Oracle
+MySQL
+SQL Server
+
+🎯 Simple samajh:-
+Database = Memory 💾

@@ -1,0 +1,78 @@
+1️⃣ Basic Identity Methods
+Method	                            Kaam
+getName()---------------Identity ka username deta hai
+setName(String name)----Identity ka naam set karta hai
+getDisplayName()--------User ka display name deta hai
+setDisplayName(String displayName)-----------Display name set karta hai
+getId()-----------------Identity ka unique ID return karta hai
+
+2️⃣ Attribute Methods:-
+Identity ke custom attributes ke liye.
+Method	                                           Kaam
+getAttribute(String name)------------------Specific attribute value
+setAttribute(String name, Object value)----Attribute set karta hai
+getAttributes()----------------------------Saare attributes return karta hai
+removeAttribute(String name)---------------Attribute delete karta hai
+
+3️⃣ Manager Methods:-
+Method	                          Kaam
+getManager()--------------------Manager identity return karta hai
+setManager(Identity manager)----Manager set karta hai
+
+4️⃣ Account / Link Methods:-
+Link matlab application account.
+Method	                            Kaam
+getLinks()---------------------User ke saare accounts
+getLink(Application app)-------Specific application account
+addLink(Link link)-------------Naya account add
+removeLink(Link link)----------Account remove
+
+5️⃣ Role Methods:-
+Method	                             Kaam
+getAssignedRoles()----------------Assigned roles
+addAssignedRole(Role role)--------Role assign
+removeAssignedRole(Role role)-----Role remove
+
+6️⃣ Entitlement Methods:-
+Method	                   Kaam
+getEntitlements()----User ke entitlements
+addEntitlement()-----Entitlement assign
+removeEntitlement()--Entitlement remove
+
+7️⃣ Identity Status Methods:-
+Method	              Kaam
+isActive()----------User active hai ya nahi
+setActive(boolean)--Active / inactive set
+isDisabled()--------Account disabled check
+
+8️⃣ Misc Methods:-
+Method	                 Kaam
+getCreated()------------Identity creation date
+getModified()-----------Last modified date
+getDescription()--------Description
+setDescription(String)--Description set
+
+9️⃣ Identity Save Method:-
+Changes ko SailPoint DB me save karne ke liye:-
+context.saveObject(user);
+context.commitTransaction();
+
+1️⃣ context.saveObject(user);:-
+Matlab:-
+Ye Identity object (user) ko SailPoint database me save karne ke liye prepare karta hai.
+Agar tumne user me koi change kiya hai jaise:
+attribute change
+role assign
+manager change
+description change
+to saveObject() us change ko save karne ke liye mark karta hai.
+
+2️⃣ context.commitTransaction();:-
+Matlab:-
+Ye database transaction ko commit karta hai yani jo changes saveObject() se prepare hue the
+unhe permanent bana deta hai.
+Example:-
+context.saveObject(user);
+context.commitTransaction();
+Ab:-
+department change SailPoint DB me permanently save ho gaya

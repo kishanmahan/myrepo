@@ -1,0 +1,80 @@
+()global-setting->form->
+
+()Button Settings Breakdown:-
+Action:-
+Kya hai?: Yeh sabse mahatvapurn (important) field hai. Yeh tay karta hai ki button dabane par workflow ka rasta kya hoga.
+Values: Ismein aam taur par next, back, cancel, ya submit jaise options hote hain.
+Kaam: Agar aap next select karte hain, toh form submit hoga aur workflow agle step par badh jayega.
+
+()Read Only:-
+Kya hai?: Ek checkbox jo button ki halat tay karta hai.
+Kaam: Agar ise check kiya, toh button screen par dikhega toh sahi, 
+lekin user use click nahi kar payega. Yeh aksar tab use hota hai jab koi condition (rule) poori na hui ho.
+
+()Skip Validation:-
+Kya hai?: Form ke data check karne wale logic ko bypass karne ke liye.
+Kaam: Maan lijiye aapne form mein "Email" field ko Required rakha hai. 
+Agar aap cancel button daba rahe hain, toh aap nahi chahenge ki system error de ki "Email bhariye". 
+Aise buttons ke liye Skip Validation on rakha jata hai.
+
+()Label:-
+Kya hai?: Button par likha hua text.
+Example: "Aage Badhein", "Submit Karein", ya "Radd Karein". Aap jo yahan likhenge, wahi user ko screen par dikhega.
+
+()Parameter:-
+Kya hai?: Workflow engine ko bheja jaane wala ek hidden variable.
+Kaam: Kabhi-kabhi workflow ko batana padta hai ki kaunsa button dabaya gaya tha taaki wo alag-alag logic chala sake. 
+Aap yahan parameter ka naam likhte hain (e.g., buttonClicked).
+
+()Value:-
+Kya hai?: Upar diye gaye parameter ki actual value.
+Example: Agar Parameter decision hai, toh Value approved ya rejected ho sakti hai. 
+Jab user button dabayega, toh SailPoint workflow ko ye value mil jayegi.
+
+1. Settings Section (Basic Details):-
+--Name: Yeh field ka technical name hai jo database aur coding (Beanshell) mein use hota hai. Ismein spaces nahi hone chahiye.
+
+--Display Name: Yeh woh naam hai jo user ko screen par dikhega (e.g., "First Name" ya "Mobile Number").
+
+--Help Text: Field ke niche chota sa instruction ya hint dikhane ke liye (e.g., "Please enter 10 digit number").
+
+--Type: Data ka format chunnne ke liye (e.g., String text ke liye, Secret password ke liye, Identity user select karne ke liye).
+
+2. Type Settings (Behavior):-
+--Multi-Valued: Agar user ek se zyada values select kar sake (e.g., Multiple Skills).
+
+--Required: Agar ise check kiya, toh user is field ko khali (blank) nahi chhod sakta. Iske bina form submit nahi hoga.
+
+--Refresh on Change: Yeh bahut important hai! Agar is field ki value badalne par aap form ki dusri fields ko update karna chahte hain (e.g., Country badalne par City ki list badal jaye), toh ise ON rakhein.
+
+--Display Only: Field screen par dikhegi, lekin uski value workflow mein save nahi hogi. Sirf information dikhane ke liye.
+
+--Authoritative: Agar ek hi field multiple sources se aa rahi hai, toh SailPoint is form ki value ko sabse sahi (main) manega.
+
+3. Visibility & Permissions:-
+--Read Only: Agar True hai, toh user value dekh sakta hai par badal nahi sakta. 
+Aap ismein script bhi likh sakte hain ki manager ke liye Read-Only ho par Admin ke liye Editable.
+
+--Hidden: Agar True hai, toh field screen par gayab ho jayegi.Yeh hidden calculations ya metadata save karne ke liye use hoti hai.
+
+--Owner: Is field ka malik kaun hai (aksar isse default chhod diya jata hai).
+
+4. Value Settings (Data Logic):-
+Dynamic: Agar ise check karte hain, toh field ki value kisi static text ke bajaye ek Rule ya Script se aayegi.
+
+--Value: Field mein pehle se kya likha hona chahiye (Default value). 
+Aap yahan Beanshell script likh kar user ki profile se data (e.g., identity.getDisplayName()) utha sakte hain.
+
+--Allowed Values: Dropdown ya Multi-select ke liye options. 
+Aap yahan manually list de sakte hain ya Beanshell script se Active Directory ke groups ya HR system ke departments utha sakte hain.
+
+--Validation: Yeh check karne ke liye ki user ne sahi data bhara hai ya nahi.
+Example: Agar user ne phone number mein alphabets daal diye, toh validation rule error message dega.
+
+Example:-
+Maan lijiye aap ek "Change Department" ka form bana rahe hain:-
+Display Name: "Naya Department Chunein"
+Type: String
+Required: Checked (Zaroori hai)
+Allowed Values: Yahan aap script likhenge jo database se saare Departments ki list laakar dropdown mein dikha dega.
+

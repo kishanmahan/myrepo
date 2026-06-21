@@ -1,0 +1,4 @@
+()associated attributes matlab system me saved object ke attributes hote hai.
+🔹 Associated Attributes ka matlab
+Jab LifecycleEvent generate hota hai, to us identity se related sari important properties / fields event ke saath store ki jati hain.
+Matlab, ye system me saved object ke attributes ka snapshot hota hai us waqt ke liye jab event hua

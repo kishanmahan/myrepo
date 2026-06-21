@@ -1,0 +1,121 @@
+🔷 WorkItemConfig kya hai?
+👉 WorkItemConfig = WorkItem ka UI + behavior control object
+Approval screen ka design + rules + options
+👉 Ye decide karta hai:-
+Approver ko kya dikhega
+Kaise approve/reject karega
+Kaunse buttons honge
+Comments mandatory hai ya nahi
+
+🔷 Default (Non-Custom) WorkItemConfig me kya hota hai:-
+👉 SailPoint already kuch default config deta hai (tum custom define nahi karte):-
+
+🔹 1. Approval Buttons:-
+Approve
+Reject
+👉 Ye config decide karta hai ki:-
+Kaunse actions allowed hain
+
+🔹 2. Comments Requirement:-
+Reject → comment required
+Approve → optional
+👉 Config control karta hai:-
+Comment mandatory hai ya nahi
+
+🔹 3. WorkItem Type:-
+Approval
+ManualAction
+👉 UI ka behavior change hota hai type ke hisaab se
+
+🔹 4. Form / Fields:-
+👉 Approval screen pe fields dikhti hain:-
+Identity Name
+Requested Role
+Application
+Comments box
+👉 Ye sab config define karta hai
+
+🔹 5. Auto Complete Behavior:-
+👉 Config decide karta hai:-
+Approve → next step pe jao
+Reject → workflow stop ya rollback
+
+🔹 6. Escalation Settings:-
+👉 Agar approver action nahi leta:-
+Reminder bhejo
+Escalate karo
+👉 Ye bhi config me hota hai
+---------------------------------------------------------------------------------------------------------------------------------------
+getName()
+setName(String name)
+
+getType()
+setType(String type)
+
+getOwner()
+setOwner(String owner)
+
+getRenderer()
+setRenderer(String renderer)
+
+getHandler()
+setHandler(String handler)
+
+getDescription()
+setDescription(String description)
+
+getPriority()
+setPriority(String priority)
+
+getExpiration()
+setExpiration(Date date)
+
+getReminder()
+setReminder(Date date)
+
+getEscalationRule()
+setEscalationRule(String rule)
+
+getNotificationTemplate()
+setNotificationTemplate(String template)
+
+getApprovalMode()
+setApprovalMode(String mode)
+
+getAllowDelegation()
+setAllowDelegation(boolean allow)
+
+isAllowDelegation()
+
+getMaxDelegationLevel()
+setMaxDelegationLevel(int level)
+
+getAttributes()
+setAttributes(Map attributes)
+
+getAttribute(String key)
+setAttribute(String key, Object value)
+
+getCreated()
+setCreated(Date date)
+
+getModified()
+setModified(Date date)
+
+getCreatedBy()
+setCreatedBy(String user)
+
+getModifiedBy()
+setModifiedBy(String user)
+
+toMap()
+fromMap(Map map)
+
+toXml()
+fromXml(String xml)
+
+clone()
+
+equals(Object obj)
+hashCode()
+toString()

@@ -1,0 +1,198 @@
+1️⃣ Birthright Access kya hai
+Birthright Access ka matlab hai:
+➡ User ko company join karte hi automatically kuch default access mil jana.
+Isme manual approval ki zarurat nahi hoti.
+Jaise hi employee system me create hota hai, usko automatically:
+Email access
+Intranet access
+Basic employee portal
+HR system access
+mil jata hai.
+
+4️⃣ SailPoint me Birthright kaise kaam karta hai:-
+Usually Role Based Access Control (RBAC) se hota hai.
+Flow 👇:-
+Employee Join
+      ↓
+Identity Created
+      ↓
+Role Assigned
+      ↓
+Birthright Access Trigger
+      ↓
+ProvisioningPlan Generate
+      ↓
+Access Automatically Provision
+
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.Bundle;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.ProvisioningProject;
+
+public class BirthrightProvisioning {
+
+    public void assignBirthrightAccess(SailPointContext context) throws Exception {
+
+        // 1️⃣ User fetch
+        Identity user = context.getObjectByName(Identity.class, "rahul");
+
+        // 2️⃣ Birthright Role fetch
+        Bundle role = context.getObjectByName(Bundle.class, "EmployeeBirthrightRole");
+
+        // 3️⃣ Role assign
+        user.add(role);
+
+        context.saveObject(user);
+
+        // 4️⃣ Provisioning Plan create
+        ProvisioningPlan plan = new ProvisioningPlan();
+        plan.setIdentity(user);
+
+        // 5️⃣ Account Request
+        AccountRequest accReq = new AccountRequest();
+        accReq.setApplication("ActiveDirectory");
+        accReq.setOperation(AccountRequest.Operation.Create);
+
+        // 6️⃣ Attribute Request
+        AttributeRequest attrReq = new AttributeRequest();
+        attrReq.setName("memberOf");
+        attrReq.setOperation(ProvisioningPlan.Operation.Add);
+        attrReq.setValue("EmployeeGroup");
+
+        accReq.add(attrReq);
+
+        // 7️⃣ Plan me add
+        plan.add(accReq);
+
+        // 8️⃣ Provisioning project
+        ProvisioningProject project = new ProvisioningProject(plan);
+
+        // 9️⃣ Execute provisioning
+        context.provision(project);
+
+        context.commitTransaction();
+    }
+}
+/////////*
+()1️⃣ Bundle kya hai?
+Bundle = Role
+SailPoint me Bundle class role ko represent karti hai.
+Role ka matlab:-
+➡ Multiple access / permissions ka group
+
+Example:-
+EmployeeRole bundle me ho sakta hai:-
+Email Access
+HR Portal
+VPN Access
+Employee Portal
+Toh agar kisi user ko EmployeeRole bundle diya:-
+➡ usko automatically ye sab access mil jayega.
+
+2️⃣ Bundle kya karta hai?
+Bundle ka kaam hai:-
+Work	                        Meaning
+Access group karna-----multiple permissions ek role me
+Role assign karna------user ko ek hi baar me access dena
+RBAC implement karna---Role Based Access Control
+
+Real Example:-
+FinanceRole Bundle
+Permissions:-
+-------------
+SAP Access
+Finance DB Access
+Invoice System
+Agar FinanceRole assign hua
+➡ user ko sab access mil jayega.
+
+3️⃣ Identity kya hai?
+Identity = User
+SailPoint me Identity class user ko represent karti hai.
+Example:-
+Employee
+Contractor
+Manager
+Admin
+Har user SailPoint me Identity object hota hai.
+
+4️⃣ Identity predefined hai kya?
+✅ Haan
+Identity SailPoint ka predefined class hai.
+Package:-
+sailpoint.object.Identity
+Ye user object represent karta hai.
+
+Example identity fields:-
+name
+email
+department
+manager
+roles
+accounts
+
+5️⃣ Ye line kya karti hai?
+Identity user = context.getObjectByName(Identity.class, "rahul");
+Meaning
+SailPoint database se rahul user object fetch karega.
+Example return object:-
+Identity
+---------
+name = rahul
+email = rahul@company.com
+department = IT
+roles = [EmployeeRole]
+
+6️⃣ Ye line kya karti hai?
+getObjectByName(Bundle.class, "EmployeeBirthrightRole");
+Step by step:-
+1️⃣ SailPoint database search karega
+2️⃣ Bundle table me role find karega
+3️⃣ Name = EmployeeBirthrightRole
+Agar mil gaya
+➡ Bundle object return karega
+Return object example
+Bundle
+-------
+name = EmployeeBirthrightRole
+type = Birthright
+permissions =
+    Email Access
+    HR Portal
+    VPN
+	
+7️⃣ Ye line kya return karegi
+Bundle role = context.getObjectByName(Bundle.class, "EmployeeBirthrightRole");
+Return karegi:-
+Bundle Object
+Example memory object:-
+Bundle role
+name = EmployeeBirthrightRole
+type = Birthright
+applications =
+    ActiveDirectory
+    HRSystem
+
+()EmployeeBirthrightRole koi predefined word nahi hai.
+Ye company khud create karti hai SailPoint IdentityIQ me.
+Matlab role ka naam organization decide karti hai. Tum koi bhi meaningful naam rakh sakte ho.
+
+Iska meaning usually hota hai:-
+All employees ko milne wala default access.
+
+2️⃣ Company roles kaise naam rakhti hai?
+Generally companies naming convention follow karti hain.
+Example roles 👇:-
+Department	       Role Name
+Employee----------EmployeeBirthrightRole
+HR--------------------HRRole
+HR Manager--------HRManagerRole
+Finance-----------FinanceRole
+Finance Manager---FinanceManagerRole
+IT--------------------ITRole
+IT Admin-------------ITAdminRole
+Application Owner----ApplicationOwnerRole
+*////////

@@ -1,0 +1,1131 @@
+🔹 1️⃣ Task
+Kya hai:-
+Task ek chhota unit of work hota hai jo workflow ya system me execute hota hai.
+Ye usually single purpose ke liye hota hai: jaise role assign karna, approval check karna, email bhejna, etc.
+WorkItem ya Workflow ke andar multiple tasks ho sakte hain.
+
+Example:-
+RoleAssignmentTask → ek identity ko role assign kare.
+ProvisioningTask → user ke liye account create kare.
+
+Key points:-
+Task specific action karta hai.
+Task ko workflow ya job ke andar schedule / launch kiya jata hai.
+Ye generally short-lived hota hai.
+
+
+🔹 2️⃣ Job:-
+Kya hai:-
+Job ek bada unit of work ya scheduled execution hota hai.
+Ye ek ya multiple tasks ka collection hota hai jo ek saath execute hote hain.
+Mostly background / periodic process ke liye hota hai.
+
+Example:-
+IdentityRefreshJob → saare identities ko daily refresh kare.
+AccessCertificationJob → access review workflow trigger kare for multiple users.
+
+Key points:-
+Job usually scheduled / automated hota hai (daily, weekly, etc.).
+Job me multiple tasks ho sakte hain.
+Long-running aur system-wide impact wale processes ke liye use hota hai.
+----------------------------------------------------------------------------------------------------------------------------------
+1️⃣ Task Types:-
+Task ka type define karta hai ki task kaise execute hota hai:-
+Type	                      Description
+Scheduled:---------------Ye task automatic schedule ke through run hota hai.
+Manual:------------------Ye task manually trigger hota hai user ya admin se.
+Event:-------------------Ye kisi event ke hone par trigger hota hai (jaise identity creation).
+Provisioning:------------Specific provisioning task ke liye.
+Aggregation:-------------Data aggregation ya import ke liye task.
+Notification:------------Notification send karne ke liye task.
+
+2️⃣ Task Status:-
+Task ka status indicate karta hai ki task abhi kaise perform ho raha hai:-
+Status	             Description
+Pending:--------Task scheduled hai, lekin abhi run nahi hua.
+Running:--------Task currently execute ho raha hai.
+Completed:------Task successfully execute ho chuka hai.
+Failed:---------Task execute nahi ho paya, koi error hua.
+Cancelled:------Task ko cancel kar diya gaya execution se pehle.
+Rejected:-------Task kisi reason se reject kar diya gaya (e.g., validation failure).
+Archived:-------Task complete hone ke baad archive ho gaya.
+
+Task Escalation Levels:-
+Escalation Level	               Meaning / Use Case
+0	               No Escalation – Task ko escalate nahi kiya jayega
+1	               First Level Escalation – First approver / owner ke liye
+2	               Second Level Escalation – Agar first level approve nahi karta
+3	               Third Level Escalation – Higher authority / manager
+4	               Fourth Level Escalation – Very high level, e.g., Head / Director
+5	               Fifth Level Escalation – Top management (rarely used)
+----------------------------------------------------------------------------------------------------------------------------------
+🔹 Task Methods List:-
+getId()
+getName()
+getType()
+getOwner()
+setOwner(Identity owner)
+
+getStatus()
+setStatus(String status)
+
+getCreated()
+getModified()
+
+getCreatedBy()
+getModifiedBy()
+
+getTarget()
+setTarget(Object target)
+
+getTargetName()
+getTargetType()
+
+getArguments()
+setArguments(Map<String,Object> args)
+
+getExecutionTime()
+setExecutionTime(long time)
+
+getExecutionResult()
+setExecutionResult(Object result)
+
+getExecutionStatus()
+setExecutionStatus(String status)
+
+launch()
+schedule()
+cancel()
+archive()
+complete()
+reject()
+
+validate()
+clone()
+equals(Object obj)
+hashCode()
+toString()
+
+getLogs()
+addLog(String log)
+getMessages()
+addMessage(String msg)
+
+getWorkItems()
+getPendingWorkItems()
+getCompletedWorkItems()
+getWorkItemById(String id)
+
+getApprovalSet()
+setApprovalSet(ApprovalSet approvalSet)
+getWorkItemConfig()
+setWorkItemConfig(WorkItemConfig config)
+
+getIdentityRequestId()
+setIdentityRequestId(String id)
+
+getCaseId()
+setCaseId(String id)
+
+getWorkflowCase()
+setWorkflowCase(WorkflowCase wc)
+
+getEscalationDate()
+setEscalationDate(Date date)
+
+getEscalationLevel()
+setEscalationLevel(int level)
+
+getEscalationOwner()
+setEscalationOwner(Identity owner)
+
+getReminders()
+setReminders(List<Date> reminders)
+addReminder(Date date)
+------------------------------------------------------------------------------------------------------------------------
+1️⃣ Identity / Owner / Basic Info
+
+getId() → Job ka unique ID
+
+getName() → Job ka name
+
+getType() → Job ka type (manual, automated, workflow)
+
+getOwner() → Job ka owner (Identity object)
+
+setOwner(Identity owner) → Job ka owner assign karna
+
+2️⃣ Status / Lifecycle
+
+getStatus() → Current job status
+
+setStatus(String status) → Status update karna
+
+launch() → Job ko start karna
+
+schedule() → Future ke liye schedule karna
+
+cancel() → Job cancel karna
+
+archive() → Job archive karna
+
+complete() → Job complete mark karna
+
+reject() → Job reject mark karna
+
+3️⃣ Audit / Metadata
+
+getCreated() → Job kab create hua
+
+getModified() → Last modification time
+
+getCreatedBy() → Kisne create kiya
+
+getModifiedBy() → Kisne last modify kiya
+
+4️⃣ Execution / Arguments
+
+getArguments() → Job ke input arguments
+
+setArguments(Map<String,Object> args) → Arguments set karna
+
+getExecutionTime() → Execution me lagne wala time
+
+setExecutionTime(long time) → Execution time manually set karna
+
+getExecutionResult() → Execution result
+
+setExecutionResult(Object result) → Result set karna
+
+getExecutionStatus() → Execution ka status
+
+setExecutionStatus(String status) → Execution status set karna
+
+5️⃣ Validation / Core Methods
+
+validate() → Job object sahi bana hai ya nahi check karna
+
+clone() → Job ka copy banana
+
+equals(Object obj) → Job objects equal hai ya nahi check
+
+hashCode() → Hash code
+
+toString() → Readable string output
+
+6️⃣ Tasks Management
+
+getTasks() → Job ke tasks list
+
+getTaskResults() → Task execution results
+
+getPendingTasks() → Pending tasks
+
+getCompletedTasks() → Completed tasks
+
+getTaskById(String id) → Specific task fetch karna
+
+7️⃣ WorkItems / Approval:-
+getWorkItems() → Job ke saare work items
+getPendingWorkItems() → Pending work items
+getCompletedWorkItems() → Completed work items
+getWorkItemById(String id) → Specific work item fetch karna
+getApprovalSet() → Approval set fetch karna
+setApprovalSet(ApprovalSet approvalSet) → Approval set assign karna
+
+8️⃣ Job Configuration:-
+getJobConfig() → Job config fetch karna
+setJobConfig(JobConfig config) → Job config set karna
+
+9️⃣ Escalation / Reminders:-
+getEscalationDate() → Next escalation date
+setEscalationDate(Date date) → Set escalation date
+getEscalationLevel() → Current escalation level
+setEscalationLevel(int level) → Set escalation level
+getEscalationOwner() → Escalation owner (Identity)
+setEscalationOwner(Identity owner) → Set escalation owner
+getReminders() → List of reminders
+setReminders(List<Date> reminders) → Set reminders
+addReminder(Date date) → Add single reminder
+
+🔟 Target / Integration:-
+getTarget() → Job ka target object
+setTarget(Object target) → Target assign karna
+getTargetName() → Target ka name
+getTargetType() → Target ka type
+-------------------------------------------------------------------------------------------------------------------------------
+1️⃣ getId():-
+Kya karta hai: Task ka unique identifier (ID) return karta hai.
+Type: String
+Example:-
+Task myTask = new Task();
+myTask.setName("Sample Task");
+System.out.println("Task ID: " + myTask.getId());
+
+Output:-
+Task ID: 12345-abcde (example ID generated by SailPoint)
+
+2️⃣ getName():-
+Kya karta hai: Task ka naam return karta hai.
+Example:-
+Task myTask = new Task();
+myTask.setName("Data Cleanup");
+System.out.println("Task Name: " + myTask.getName());
+
+Output:-
+Task Name: Data Cleanup
+
+3️⃣ getType():-
+Kya karta hai: Task ka type return karta hai. Ye Scheduled ya Manual ho sakta hai.
+Example:-
+Task myTask = new Task();
+myTask.setType("Scheduled");
+System.out.println("Task Type: " + myTask.getType());
+
+Output:-
+Task Type: Scheduled
+
+4️⃣ getOwner():-
+Kya karta hai: Task ka owner (Identity object) return karta hai.
+Example:-
+Identity john = new Identity();
+john.setName("John Doe");
+
+Task myTask = new Task();
+myTask.setOwner(john);
+System.out.println("Task Owner: " + myTask.getOwner().getName());
+
+Output:-
+Task Owner: John Doe
+
+5️⃣ setOwner(Identity owner):-
+Kya karta hai: Task ka owner set karta hai. Ye ek Identity object leta hai.
+Example:-
+(Ye example upar wale ke sath already dikhaya gaya hai)
+
+Identity jane = new Identity();
+jane.setName("Jane Smith");
+Task myTask = new Task();
+myTask.setOwner(jane);
+System.out.println("Task Owner: " + myTask.getOwner().getName());
+Output:-
+Task Owner: Jane Smith
+
+6️⃣ getStatus():-
+Kya karta hai: Task ka current status return karta hai (Pending, Running, Completed, etc.)
+Example:-
+Task myTask = new Task();
+myTask.setStatus("Running");
+System.out.println("Task Status: " + myTask.getStatus());
+
+Output:-
+Task Status: Running
+
+7️⃣ setStatus(String status):-
+Kya karta hai: Task ka status update karta hai.
+Example:-
+Task myTask = new Task();
+myTask.setStatus("Completed");
+System.out.println("Task Status: " + myTask.getStatus());
+
+Output:-
+Task Status: Completed
+
+1️⃣ getCreated():-
+Kya karta hai: Task kab create hua, uska timestamp return karta hai.
+Type: Date
+
+Task myTask = new Task();
+myTask.setCreated(new Date());
+System.out.println("Task Created: " + myTask.getCreated());
+
+Output:-
+Task Created: Thu Mar 19 09:15:00 IST 2026
+
+2️⃣ getModified():-
+Kya karta hai: Task last kab modify hua, uska timestamp return karta hai.
+
+myTask.setModified(new Date());
+System.out.println("Task Modified: " + myTask.getModified());
+Output:-
+Task Modified: Thu Mar 19 09:20:00 IST 2026
+
+3️⃣ getCreatedBy():-
+Kya karta hai: Task kis Identity (user) ne create kiya, return karta hai.
+
+Identity admin = new Identity();
+admin.setName("Admin User");
+myTask.setCreatedBy(admin);
+System.out.println("Task Created By: " + myTask.getCreatedBy().getName());
+
+Output:-
+Task Created By: Admin User
+
+
+4️⃣ getModifiedBy():-
+Kya karta hai: Task last modify kisne kiya, return karta hai.
+
+Identity john = new Identity();
+john.setName("John Doe");
+myTask.setModifiedBy(john);
+System.out.println("Task Modified By: " + myTask.getModifiedBy().getName());
+Output:-
+Task Modified By: John Doe
+
+5️⃣ getTarget() & setTarget(Object target):-
+Kya karta hai: Task ka target object get/set karta hai. Target kisi bhi type ka ho sakta hai (Identity, Application, etc.)
+
+Identity targetUser = new Identity();
+targetUser.setName("Target User");
+
+myTask.setTarget(targetUser);
+System.out.println("Task Target: " + ((Identity)myTask.getTarget()).getName());
+Output:-
+Task Target: Target User
+
+6️⃣ getTargetName() & getTargetType():-
+Kya karta hai: Target ka naam aur type return karta hai.
+
+System.out.println("Target Name: " + myTask.getTargetName());
+System.out.println("Target Type: " + myTask.getTargetType());
+
+Output (example):-
+Target Name: Target User
+Target Type: Identity
+
+7️⃣ getArguments() & setArguments(Map<String,Object> args):-
+Kya karta hai: Task me custom arguments store aur fetch karta hai.
+
+Map<String,Object> args = new HashMap<>();
+args.put("reason", "Data Cleanup");
+args.put("priority", "High");
+
+myTask.setArguments(args);
+System.out.println("Task Arguments: " + myTask.getArguments());
+
+Output:-
+Task Arguments: {reason=Data Cleanup, priority=High}
+
+8️⃣ getExecutionTime() & setExecutionTime(long time):-
+Kya karta hai: Task execution ka total time (ms) get/set karta hai.
+
+myTask.setExecutionTime(1200); // 1200 ms
+System.out.println("Execution Time: " + myTask.getExecutionTime() + " ms");
+
+Output:-
+Execution Time: 1200 ms
+
+9️⃣ getExecutionResult() & setExecutionResult(Object result):-
+Kya karta hai: Task ka result get/set karta hai.
+
+myTask.setExecutionResult("Success");
+System.out.println("Execution Result: " + myTask.getExecutionResult());
+
+Output:-
+Execution Result: Success
+
+10️⃣ getExecutionStatus() & setExecutionStatus(String status):-
+Kya karta hai: Task ka execution status get/set karta hai.
+
+myTask.setExecutionStatus("Completed");
+System.out.println("Execution Status: " + myTask.getExecutionStatus());
+
+Output:-
+Execution Status: Completed
+
+--------------------------------------------------------------------------------------------------
+1️⃣ Task Target (target object):-
+Task ka target jo object task operate karta hai usko represent karta hai. Ye generally ye types ho sakte hain:-
+Target Object	                        Description
+WorkflowCase--------------Task agar workflow ke context me run ho raha ho
+Custom Object-------------Koi bhi custom defined object jo task me use ho
+
+Identity – Kisi user/employee account ka object
+Example: Onboarding, Deprovisioning, Access Review
+
+Application – System/application jiske upar task run hota hai
+Example: Salesforce, Workday, Active Directory
+
+Entitlement / Role / Group – Specific permissions, roles, or groups
+Example: Admin Role, Finance Group
+
+Policy – Identity / Access / Separation of Duty (SoD) Policy
+Example: Violation check tasks
+
+WorkflowCase – Workflow execution context object
+Example: Approval workflow ke steps
+
+Task / Job object – Kisi dusre task/job ko target karna
+Example: Scheduled task to run another task
+
+Population – Group of identities based on criteria
+Example: All active employees in Finance
+
+Report / ReportDefinition – Reporting tasks
+Example: Access Review report generation
+
+Rule / RuleContext – Rule execution target
+Example: Identity validation or provisioning rules
+
+AuditEvent / Event / Violation – Audit/Violation handling
+Example: Compliance violation tasks
+
+Certification / Review / Campaign – Access certification tasks
+Example: Identity review campaigns
+
+Custom Object – Organization-specific objects
+Example: Custom table/object in SailPoint schema
+
+Example:-
+Target = Identity("John Doe")
+Target = Application("Salesforce")
+
+2️⃣ Task Target Type (getTargetType()):-
+Ye target object ka type string me representation hai:-
+Target Object	       TargetType Value
+Identity	             "Identity"
+Application	            "Application"
+Entitlement	             "Entitlement"
+Policy	                "Policy"
+WorkflowCase	       "WorkflowCase"
+Custom Object	       "CustomObject"
+Ye basically instanceof check ke through return hota hai.
+
+3️⃣ Task Execution Result (getExecutionResult()):-
+Ye task ke execution ka output/result hota hai. Common values:-
+Result Value	Description
+"Success"	Task successfully complete hua
+"Failure"	Task execution me error aaya
+"Partial Success"	Task ka kuch part successfully run hua, kuch fail
+"Skipped"	Task kisi condition ke wajah se skip hua
+"Cancelled"	Task execution ko cancel kar diya gaya
+"Unknown"	Result abhi set nahi hua.
+---------------------------------------------------------------------------------------------------------------------------------------
+()Properties of Custom Objects:-
+
+Dynamic Schema:-
+Tu XML ya UI me define karta hai ki kaunse fields honge.
+Example: badgeNumber, issueDate, departmentId
+
+Integration with Tasks:-
+Task ka target object custom object bhi ho sakta hai.
+Example: Task run karo aur ProjectAccess object me check karo ki kaunse employees ko access update karna hai.
+
+GetTargetType():-
+getTargetType() return karega "CustomObject" ya custom name jo tu define karega.
+
+Use in Rules & Workflows:-
+Custom objects ko rules, workflows, aur provisioning tasks me target ke roop me use kar sakte ho.
+
+Custom Object kya hai?
+Definition: SailPoint me “Custom Object” basically aapke organization ka custom data structure ya object hai,
+jo built-in SailPoint objects (jaise Identity, Application, Policy) me se nahi hai.
+Ye object specific business requirement ke liye create hota hai.
+Example use cases:-
+Custom Object	              Purpose
+EmployeeBadge	Organization ke employee badges ka info store karne ke liye
+ProjectAccess	Kisi project ke liye special access record
+DepartmentInfo	Custom department-specific data
+
+class CustomObject {
+    private String name;
+    private String description;
+
+    public CustomObject(String name, String desc) {
+        this.name = name;
+        this.description = desc;
+    }
+
+    public String getName() { return name; }
+    public String getDescription() { return description; }
+}
+
+class Task {
+    private Object target;
+
+    public void setTarget(Object target) { this.target = target; }
+    public Object getTarget() { return target; }
+
+    public String getTargetType() {
+        if(target instanceof CustomObject) return "CustomObject";
+        return "Unknown";
+    }
+
+    public String getTargetName() {
+        if(target instanceof CustomObject) return ((CustomObject)target).getName();
+        return "Unknown";
+    }
+}
+
+public class Demo {
+    public static void main(String[] args) {
+        CustomObject myCustom = new CustomObject("ProjectAccess", "Custom project access data");
+        Task t = new Task();
+        t.setTarget(myCustom);
+
+        System.out.println("Target Name: " + t.getTargetName());
+        System.out.println("Target Type: " + t.getTargetType());
+    }
+}
+Output:-
+Target Name: ProjectAccess
+Target Type: CustomObject
+////////////////////////////*
+()1️⃣ instanceof:-
+Kya hai: Java ka ek keyword jo check karta hai ki koi object specific class ka instance hai ya nahi.
+
+Syntax:-
+if (object instanceof ClassName) { 
+    // code
+}
+Example:-
+Object obj = "Hello World";
+
+if(obj instanceof String) {
+    System.out.println("obj is a String!");
+} else {
+    System.out.println("obj is NOT a String!");
+}
+Output:-
+obj is a String!
+✅ Matlab instanceof se hum object ke type ko runtime pe check kar sakte hain.
+
+2️⃣ (CustomObject) target → Type Casting:-
+Kya hai: Agar hum sure hain ki target object actually CustomObject ka instance hai, toh hum usko explicitly CustomObject me cast karte hain.
+Syntax:-
+CustomObject co = (CustomObject) target;
+Isse hum CustomObject ke methods aur fields use kar sakte hain.
+
+()instanceof check karta hai ki kya target customobject ka object type hai ya nahi.
+
+Ex:-
+class CustomObject {
+    private String name;
+
+    public CustomObject(String name) { this.name = name; }
+    public String getName() { return name; }
+}
+
+public class Demo {
+    public static void main(String[] args) {
+        Object target = new CustomObject("ProjectAccess");
+
+        // Check type first
+        if(target instanceof CustomObject) {
+            CustomObject co = (CustomObject) target; // cast
+            System.out.println("Target Name: " + co.getName());
+        } else {
+            System.out.println("Target is not a CustomObject");
+        }
+    }
+}
+Output:-
+Target Name: ProjectAccess
+///////*
+()instanceof check karta hai ki kya target customobject ka object type hai ya nahi.
+*//////
+----------------------------------------------------------------------------------------------------------------------------------------
+1️⃣ launch():-
+Kya karta hai: Task ko immediately execute karta hai.
+Use case: Jab tu chahta hai ki task abhi run ho jaaye, scheduled wait ke bina.
+
+Task myTask = new Task();
+myTask.launch(); // task start ho gaya
+
+2️⃣ schedule():-
+Kya karta hai: Task ko future ke liye schedule karta hai.
+Use case: Agar tu chahta hai task kisi specific time ya interval pe run ho.
+
+Task myTask = new Task();
+myTask.schedule(); // task future me run hoga
+Real system me schedule ke liye cron expression ya timing bhi pass karte hain.
+
+3️⃣ cancel():-
+Kya karta hai: Task execution ko rokti hai agar wo abhi running hai ya future ke liye scheduled hai.
+
+Use case: Agar task galat schedule hua ya cancel karna hai.
+myTask.cancel(); // task ab run nahi hoga
+
+4️⃣ archive():-
+Kya karta hai: Task complete hone ke baad archive kar deta hai.
+
+Use case: Task ke record ko future reference ke liye save karna.
+myTask.archive(); // task ka record store ho gaya
+
+5️⃣ complete():-
+Kya karta hai: Task ko manual completion mark karta hai.
+
+Use case: Agar task successfully finish ho gaya aur manually update karna hai.
+myTask.complete(); // task status = Completed
+
+6️⃣ reject():-
+Kya karta hai: Task ko reject mark karta hai.
+
+Use case: Agar task invalid hai ya validation fail hua.
+myTask.reject(); // task status = Rejected
+
+2️⃣ clone():-
+Kya karta hai: Task ka exact copy create karta hai.
+Use case: Agar same task ko multiple targets ke liye use karna ho.
+Task newTask = (Task) myTask.clone();
+System.out.println("Cloned Task Name: " + newTask.getName());
+
+3️⃣ equals(Object obj):-
+Kya karta hai: Check karta hai ki do Task objects equal hain ya nahi.
+Use case: Task comparison, duplicate check.
+
+Task anotherTask = new Task();
+anotherTask.setName("Cleanup Task");
+
+if(myTask.equals(anotherTask)) {
+    System.out.println("Tasks are equal");
+} else {
+    System.out.println("Tasks are different");
+}
+
+4️⃣ hashCode():-
+Kya karta hai: Task ka unique hash code return karta hai.
+Use case: Hash-based collections me store karne ke liye.
+System.out.println("Task HashCode: " + myTask.hashCode());
+
+5️⃣ toString():-
+Kya karta hai: Task ka string representation return karta hai.
+Use case: Debugging ya logs me use hota hai.
+System.out.println(myTask.toString());
+
+6️⃣ getLogs() & addLog(String log):-
+Kya karta hai: Task ke logs ko fetch / add karta hai.
+Use case: Execution history track karna.
+
+myTask.addLog("Task started at 9:00 AM");
+myTask.addLog("Task finished at 9:05 AM");
+System.out.println("Logs: " + myTask.getLogs());
+
+Output:-
+Logs: [Task started at 9:00 AM, Task finished at 9:05 AM]
+
+7️⃣ getMessages() & addMessage(String msg):-
+Kya karta hai: Task ke messages ko fetch / add karta hai.
+Use case: UI ya workflow me messages show karna.
+
+myTask.addMessage("Task requires approval");
+myTask.addMessage("Task approved by Admin");
+System.out.println("Messages: " + myTask.getMessages());
+
+Output:-
+Messages: [Task requires approval, Task approved by Admin]
+--------------------------------------------------------------------------------------------------------------------------------------
+()validate() Task class me ek bohot important method hai,aur iska kaam hai task ki poori configuration aur dependencies check karna.
+Main ab har cheez step by step bata raha hoon jo validate() check karta hai.
+
+1️⃣ Mandatory Fields Check:-
+Task ke liye kuch fields mandatory hote hain. validate() ensure karta hai ki ye set hain:
+name → Task ka naam hona chahiye
+type → Task type set hona chahiye (Scheduled, Manual, etc.)
+target → Agar task target-based hai, target object valid hona chahiye
+owner → Task ka owner set hona chahiye (Identity)
+
+Example:-
+if(task.getName() == null) throw new ValidationException("Task name missing");
+if(task.getType() == null) throw new ValidationException("Task type missing");
+if(task.getTarget() == null) throw new ValidationException("Target object missing");
+
+2️⃣ Target Object Validation:-
+validate() check karta hai ki target object valid hai ya nahi.
+Target ka type check hota hai: Identity, Application, CustomObject, etc.
+Agar target me required fields missing hain → validation fail ho jata hai.
+
+Example:-
+if(task.getTarget() instanceof Identity) {
+    Identity id = (Identity) task.getTarget();
+    if(id.getName() == null) throw new ValidationException("Identity target name missing");
+}
+
+3️⃣ Task Arguments Validation:-
+Task ke arguments / parameters check hote hain:-
+Mandatory arguments exist karte hain ya nahi
+Argument types correct hain ya nahi
+
+Example:-
+Map<String,Object> args = task.getArguments();
+if(args != null && !args.containsKey("priority"))
+    throw new ValidationException("priority argument missing");
+	
+4️⃣ Execution Configuration Check:-
+validate() ye bhi ensure karta hai ki task schedule/execution settings valid hain:-
+Start time / cron expression sahi hai
+Dependencies (agar task kisi aur task pe depend karta hai) properly set hain
+Recurrence / frequency correct hai
+
+5️⃣ Owner/Permissions Check:-
+Task ka owner valid hona chahiye aur task ko execute karne ka permission/role hona chahiye.
+
+6️⃣ Status & Result Fields Check:-
+Task ke status aur result fields proper initial value set kiye hain ya nahi.
+Example: Scheduled task me ExecutionStatus default Pending hona chahiye
+
+7️⃣ Optional Checks:-
+Task me custom validations bhi ho sakti hain:-
+Target object specific fields check
+Task specific rules (e.g., Identity target ka email set hai ya nahi).
+-------------------------------------------------------------------------------------------------------------------------------------
+1️⃣ getWorkItems():-
+Kya karta hai: Task ke saare work items return karta hai (pending + completed).
+Return type: List<WorkItem>
+List<WorkItem> allItems = myTask.getWorkItems();
+System.out.println("All Work Items: " + allItems.size());
+
+2️⃣ getPendingWorkItems():-
+Kya karta hai: Task ke sirf pending work items return karta hai (jo abhi complete nahi hue).
+List<WorkItem> pendingItems = myTask.getPendingWorkItems();
+System.out.println("Pending Work Items: " + pendingItems.size());
+
+3️⃣ getCompletedWorkItems():-
+Kya karta hai: Task ke completed work items return karta hai.
+List<WorkItem> completedItems = myTask.getCompletedWorkItems();
+System.out.println("Completed Work Items: " + completedItems.size());
+
+4️⃣ getWorkItemById(String id):-
+Kya karta hai: Specific WorkItem ko uske ID ke basis pe fetch karta hai.
+WorkItem wi = myTask.getWorkItemById("WI123");
+System.out.println("Work Item: " + wi.getId() + " Status: " + wi.getStatus());
+
+5️⃣ getApprovalSet() & setApprovalSet(ApprovalSet approvalSet):-
+Kya karta hai: Task ke ApprovalSet ko get/set karta hai.
+ApprovalSet: Ek object jo task me approval workflow ke details store karta hai (approvers, status, hierarchy).
+ApprovalSet approval = myTask.getApprovalSet();
+myTask.setApprovalSet(approval);
+-----------------------------------------------------------------------------------
+6️⃣ getWorkItemConfig() & setWorkItemConfig(WorkItemConfig config):-
+Kya karta hai: Task ke WorkItem configuration ko get/set karta hai.
+WorkItemConfig: Ye define karta hai ki work item kaise create, assign aur process hoga (e.g., due date, escalation).
+WorkItemConfig config = myTask.getWorkItemConfig();
+myTask.setWorkItemConfig(config);
+
+Java Example – WorkItemConfig with Task
+import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
+
+// Simulate WorkItemConfig class
+class WorkItemConfig {
+    private int dueDays;
+    private String escalation;
+
+    public WorkItemConfig() {}
+
+    public WorkItemConfig(int dueDays, String escalation) {
+        this.dueDays = dueDays;
+        this.escalation = escalation;
+    }
+
+    public int getDueDays() { return dueDays; }
+    public void setDueDays(int dueDays) { this.dueDays = dueDays; }
+
+    public String getEscalation() { return escalation; }
+    public void setEscalation(String escalation) { this.escalation = escalation; }
+
+    @Override
+    public String toString() {
+        return "WorkItemConfig [dueDays=" + dueDays + ", escalation=" + escalation + "]";
+    }
+}
+
+// Simulate Task class
+class Task {
+    private String name;
+    private WorkItemConfig workItemConfig;
+
+    public Task(String name) { this.name = name; }
+
+    // WorkItemConfig getters/setters
+    public WorkItemConfig getWorkItemConfig() { return workItemConfig; }
+    public void setWorkItemConfig(WorkItemConfig config) { this.workItemConfig = config; }
+
+    public String getName() { return name; }
+}
+
+public class TaskDemo {
+    public static void main(String[] args) {
+        // Create Task
+        Task myTask = new Task("Approval Task");
+
+        // Create WorkItemConfig
+        WorkItemConfig config = new WorkItemConfig();
+        config.setDueDays(5);
+        config.setEscalation("Manager");
+
+        // Set WorkItemConfig to Task
+        myTask.setWorkItemConfig(config);
+
+        // Get WorkItemConfig from Task
+        WorkItemConfig retrievedConfig = myTask.getWorkItemConfig();
+
+        // Print result
+        System.out.println("Task Name: " + myTask.getName());
+        System.out.println("WorkItemConfig: " + retrievedConfig);
+        System.out.println("Due Days: " + retrievedConfig.getDueDays());
+        System.out.println("Escalation: " + retrievedConfig.getEscalation());
+    }
+}
+Sample Output:-
+Task Name: Approval Task
+WorkItemConfig: WorkItemConfig [dueDays=5, escalation=Manager]
+Due Days: 5
+Escalation: Manager
+---------------------------------------------------------------------------------------------------------------------
+1️⃣ getIdentityRequestId() & setIdentityRequestId(String id);-
+Kya karta hai:-
+Ye method task se associated identity request ka ID get/set karta hai.
+IdentityRequest = ek object jo user ka access request / role request represent karta hai.
+
+myTask.setIdentityRequestId("IR12345");
+System.out.println("Identity Request ID: " + myTask.getIdentityRequestId());
+Output:-
+Identity Request ID: IR12345
+
+2️⃣ getCaseId() & setCaseId(String id):-
+Kya karta hai:-
+Ye workflow case ka ID get/set karta hai.
+
+myTask.setCaseId("WC67890");
+System.out.println("Workflow Case ID: " + myTask.getCaseId());
+Output:-
+Workflow Case ID: WC67890
+
+3️⃣ getWorkflowCase() & setWorkflowCase(WorkflowCase wc):-
+Kya karta hai:-
+Task ke associated WorkflowCase object ko get/set karta hai.
+WorkflowCase me work items, approvals, escalations store hote hain.
+
+WorkflowCase wc = new WorkflowCase("WC67890");
+myTask.setWorkflowCase(wc);
+System.out.println("Workflow Case Object ID: " + myTask.getWorkflowCase().getId());
+
+4️⃣ getEscalationDate() & setEscalationDate(Date date):-
+Kya karta hai:-
+Task ke escalation date/time ko get/set karta hai.
+Agar task pending rahe aur auto-escalate karna ho to ye date important hai.
+
+Date escalation = new Date(); // current date/time
+myTask.setEscalationDate(escalation);
+System.out.println("Escalation Date: " + myTask.getEscalationDate());
+
+1️⃣ getEscalationLevel() & setEscalationLevel(int level):-
+Kya karta hai:-
+Task ke escalation hierarchy level ko get/set karta hai.
+Level 1 = first level approver, Level 2 = second level, and so on.
+
+myTask.setEscalationLevel(2);
+System.out.println("Escalation Level: " + myTask.getEscalationLevel());
+
+Output:-
+Escalation Level: 2
+
+2️⃣ getEscalationOwner() & setEscalationOwner(Identity owner):-
+Kya karta hai:-
+Task ke current escalation owner ko get/set karta hai.
+Escalation owner = wo person jiske paas task auto-escalate hone par jayega.
+
+// Simulate Identity class
+class Identity {
+    private String name;
+    public Identity(String name) { this.name = name; }
+    public String getName() { return name; }
+}
+
+Identity owner = new Identity("Manager John");
+myTask.setEscalationOwner(owner);
+System.out.println("Escalation Owner: " + myTask.getEscalationOwner().getName());
+
+Output:-
+Escalation Owner: Manager John
+
+3️⃣ getReminders() & setReminders(List<Date> reminders) & addReminder(Date date):-
+Kya karta hai:-
+Task ke reminder dates ko manage karta hai.
+setReminders() → poori list set karna
+addReminder() → ek date add karna
+getReminders() → list of all reminder dates.
+---------------------------------------------------------------------------------------------------------------------------------
+import sailpoint.api.SailPointContext;
+import sailpoint.api.TaskManager;
+import sailpoint.object.Task;
+import sailpoint.object.Identity;
+import sailpoint.object.WorkflowCase;
+import sailpoint.object.ApprovalSet;
+import sailpoint.object.WorkItemConfig;
+import sailpoint.object.WorkItem;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+public class TaskExample {
+
+    public static void main(String[] args) {
+
+        SailPointContext context = null;
+        try {
+            // 🔹 Get SailPoint context from Factory
+            context = SailPointFactory.createContext();
+
+            // 🔹 Load existing Task by name or ID
+            String taskName = "Access Certification Task";
+            Task task = context.getObject(Task.class, taskName);
+
+            if (task == null) {
+                System.out.println("Task not found: " + taskName);
+                return;
+            }
+
+            // ============================================
+            // 1️⃣ Basic Info
+            // ============================================
+            System.out.println("Task ID: " + task.getId());
+            System.out.println("Task Name: " + task.getName());
+            System.out.println("Task Type: " + task.getType());
+
+            Identity owner = task.getOwner();
+            System.out.println("Task Owner: " + (owner != null ? owner.getName() : "None"));
+
+            // ============================================
+            // 2️⃣ Task Status / Lifecycle
+            // ============================================
+            System.out.println("Current Status: " + task.getStatus());
+
+            // Launch immediately
+            TaskManager.launch(task, context);
+            System.out.println("Task Launched");
+
+            // Update status manually
+            task.setStatus(Task.STATUS_RUNNING);
+            System.out.println("Status After Launch: " + task.getStatus());
+
+            // Cancel Task
+            TaskManager.cancel(task, context);
+            System.out.println("Task Cancelled");
+
+            // Complete Task
+            task.setStatus(Task.STATUS_COMPLETED);
+            System.out.println("Task Marked Completed");
+
+            // Reject Task
+            task.setStatus(Task.STATUS_REJECTED);
+            System.out.println("Task Rejected");
+
+            // Archive Task
+            TaskManager.archive(task, context);
+            System.out.println("Task Archived");
+
+            // Commit changes
+            context.commitTransaction();
+
+            // ============================================
+            // 3️⃣ Audit / Metadata
+            // ============================================
+            System.out.println("Created On: " + task.getCreated());
+            System.out.println("Modified On: " + task.getModified());
+
+            if (task.getCreatedBy() != null)
+                System.out.println("Created By: " + task.getCreatedBy().getName());
+
+            if (task.getModifiedBy() != null)
+                System.out.println("Modified By: " + task.getModifiedBy().getName());
+
+            // ============================================
+            // 4️⃣ Target Info
+            // ============================================
+            Object target = task.getTarget();
+            System.out.println("Target: " + (target != null ? target.toString() : "None"));
+            System.out.println("Target Name: " + task.getTargetName());
+            System.out.println("Target Type: " + task.getTargetType());
+
+            // ============================================
+            // 5️⃣ Arguments & Execution Info
+            // ============================================
+            Map<String,Object> argsMap = task.getArguments();
+            System.out.println("Arguments: " + argsMap);
+
+            System.out.println("Execution Time: " + task.getExecutionTime());
+            System.out.println("Execution Result: " + task.getExecutionResult());
+            System.out.println("Execution Status: " + task.getExecutionStatus());
+
+            // ============================================
+            // 6️⃣ Validation & Utilities
+            // ============================================
+            boolean valid = task.validate();
+            System.out.println("Is Task Valid? " + valid);
+
+            System.out.println("Task toString(): " + task.toString());
+
+            // ============================================
+            // 7️⃣ Logs & Messages
+            // ============================================
+            System.out.println("Logs: " + task.getLogs());
+            task.addLog("Checked task details at " + new Date());
+
+            System.out.println("Messages: " + task.getMessages());
+            task.addMessage("Task inspected programmatically");
+
+            // ============================================
+            // 8️⃣ Work Items (Workflow)
+            // ============================================
+            List<WorkItem> allItems = task.getWorkItems();
+            System.out.println("Total WorkItems: " + allItems.size());
+
+            List<WorkItem> pendingItems = task.getPendingWorkItems();
+            System.out.println("Pending WorkItems: " + pendingItems.size());
+
+            List<WorkItem> completedItems = task.getCompletedWorkItems();
+            System.out.println("Completed WorkItems: " + completedItems.size());
+
+            // Get specific WorkItem by ID
+            WorkItem wi = task.getWorkItemById("WI12345");
+            System.out.println("WorkItem WI12345: " + wi);
+
+            // ============================================
+            // 9️⃣ Approval & WorkItem Config
+            // ============================================
+            ApprovalSet approvalSet = task.getApprovalSet();
+            System.out.println("Approval Set: " + approvalSet);
+
+            WorkItemConfig workConfig = task.getWorkItemConfig();
+            System.out.println("WorkItem Config: " + workConfig);
+
+            // ============================================
+            // 10️⃣ Workflow Case / Identity Request
+            // ============================================
+            String identityReqId = task.getIdentityRequestId();
+            System.out.println("Identity Request ID: " + identityReqId);
+
+            String caseId = task.getCaseId();
+            System.out.println("Workflow Case ID: " + caseId);
+
+            WorkflowCase wc = task.getWorkflowCase();
+            System.out.println("Workflow Case Object: " + wc);
+
+            // ============================================
+            // 11️⃣ Escalation Info
+            // ============================================
+            System.out.println("Escalation Date: " + task.getEscalationDate());
+            System.out.println("Escalation Level: " + task.getEscalationLevel());
+
+            Identity escalationOwner = task.getEscalationOwner();
+            System.out.println("Escalation Owner: " + (escalationOwner != null ? escalationOwner.getName() : "None"));
+
+            System.out.println("Reminders: " + task.getReminders());
+
+            context.commitTransaction();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+        } finally {
+            if (context != null) {
+                context.decache(true);
+                context.close();
+            }
+        }
+    }
+}

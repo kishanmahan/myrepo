@@ -1,0 +1,87 @@
+🧠 Debug Mode Kya Hota Hai?
+Debug mode ka matlab:-
+👉 System detailed logs generate kare
+👉 Error ka root cause pata chale
+👉 Workflow / Rule / Provisioning issue trace ho sake
+Normal mode me sirf basic logs milte hain.
+Debug mode me full internal processing logs milte hain 🔥
+
+📂 Debug Logs Kahan Milte Hain?
+Tomcat logs me:-
+tomcat/logs/catalina.out
+Ya:-
+identityiq/log/
+
+⚙️ Debug Mode Enable Kaise Kare?
+IIQ me logging configuration file hoti hai:
+identityiq/WEB-INF/classes/log4j.properties
+
+🔹 Step 1: log4j.properties Open karo
+Find karo:-
+log4j.rootLogger=INFO, stdout
+
+🔹 Step 2: INFO ko DEBUG me change karo
+log4j.rootLogger=DEBUG, stdout
+
+🔹 Specific Package Debug Enable Karna (Recommended)
+Pure system ko DEBUG karna heavy hota hai ❗
+Better hai specific package enable karo:-
+Example:-
+log4j.logger.sailpoint.api=DEBUG
+log4j.logger.sailpoint.object=DEBUG
+log4j.logger.sailpoint.provisioning=DEBUG
+log4j.logger.sailpoint.workflow=DEBUG
+
+🔹 Step 3: Tomcat Restart karo
+startup.bat
+Ya Linux:-
+./startup.sh
+
+🔍 Debug Mode Me Kya Dikhega?
+Example scenarios:-
+✅ Provisioning Issue
+Request generate hua?
+Plan create hua?
+Connector call hua?
+Error kya aaya?
+
+✅ Workflow Issue
+Kaunsa step execute hua?
+Variable value kya thi?
+Approval stuck kaha hua?
+
+✅ Rule Debug
+Agar BeanShell rule hai:-
+log.debug("User name: " + identity.getName());
+Ye DEBUG mode me print hoga.
+
+🛑 Important Warning:-
+Production me:-
+
+❌ Full DEBUG mat chalao:-
+Kyuki:-
+Logs heavy ho jate hain
+Performance impact hota hai
+Disk space fill ho sakta hai
+Sirf specific package debug karo.
+
+🎯 Real Project Scenario:-
+
+Issue:-
+Access revoke nahi ho raha
+
+Steps:-
+1️⃣ Provisioning DEBUG enable
+2️⃣ Logs check karo
+3️⃣ Error milega:-
+Connector issue?
+Permission denied?
+Mapping problem?
+
+🚀 Advanced Debug Topics:-
+Agar tu next level pe jaana chahe:-
+Provisioning plan debug
+Workflow trace analysis
+Performance debugging
+Heap memory debugging
+Log rotation configuration

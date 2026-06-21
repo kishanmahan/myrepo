@@ -1,0 +1,221 @@
+()properties kya hai?
+Java mein Properties ek special class hai jo key–value pair store karti hai.
+Ye class Java ke java.util package mein hoti hai.
+
+Simple language mein:-
+👉 Properties = Configuration data store karne ka container
+Jaise:-
+username
+password
+host
+port
+email settings
+application configuration
+Ye sab key = value form mein store hota hai.
+Properties mainly configuration manage karta hai 
+— matlab store, read, load, save aur default values handle karta hai.
+
+Properties kya-kya karta hai?
+1️⃣ Store karta hai?
+Key-value form mein data store karta hai.
+Properties props = new Properties();
+props.setProperty("username", "admin");
+
+2️⃣ Value read karta hai?
+Stored value ko nikal sakte ho.
+System.out.println(props.getProperty("username"));
+Output
+admin
+
+3️⃣ File se configuration load karta hai?
+.properties file se data read kar sakta hai.
+props.load(new FileInputStream("config.properties"));
+Example file:-
+db.username=root
+db.password=1234
+
+5️⃣ Default values manage karta hai?
+Properties defaultProps = new Properties();
+defaultProps.setProperty("timeout", "30");
+Properties props = new Properties(defaultProps);
+System.out.println(props.getProperty("timeout"));
+Agar main object me value nahi milegi to default se le lega.
+
+6️⃣ Enumeration / listing bhi karta hai?
+props.list(System.out);
+Sab properties print ho jayengi.
+
+4️⃣ File me save bhi karta hai props.store(new FileOutputStream("config.properties"), "DB Config");:-
+Example Complete Code
+import java.util.Properties;
+import java.io.FileOutputStream;
+
+public class SavePropertiesExample {
+
+    public static void main(String[] args) throws Exception {
+
+        Properties props = new Properties();
+
+        props.setProperty("username", "admin");
+        props.setProperty("password", "12345");
+        props.setProperty("url", "localhost");
+
+        props.store(new FileOutputStream("config.properties"), "DB Config");
+    }
+}
+File me kya save hoga:-
+config.properties
+#DB Config
+#Sat Mar 14 11:50:00 IST 2026
+username=admin
+password=12345
+url=localhost
+----------------------------------------------------------------------------
+4️⃣ Properties ke important methods:-
+1️⃣ setProperty(String key, String value)
+
+Property store karta hai.
+
+Code
+import java.util.Properties;
+
+public class Test1 {
+    public static void main(String[] args) {
+
+        Properties props = new Properties();
+
+        props.setProperty("username", "Rahul");
+        props.setProperty("city", "Delhi");
+
+        System.out.println(props);
+    }
+}
+Output
+{city=Delhi, username=Rahul}
+-------------------------------
+2️⃣ getProperty(String key)
+
+Key ki value return karta hai.
+
+Code
+import java.util.Properties;
+
+public class Test2 {
+    public static void main(String[] args) {
+
+        Properties props = new Properties();
+
+        props.setProperty("username", "Rahul");
+
+        String name = props.getProperty("username");
+
+        System.out.println(name);
+    }
+}
+Output
+Rahul
+----------------------------------------------------
+3️⃣ getProperty(String key, String defaultValue)
+
+Agar key na mile to default value return karta hai.
+
+Code
+import java.util.Properties;
+
+public class Test3 {
+    public static void main(String[] args) {
+
+        Properties props = new Properties();
+
+        String country = props.getProperty("country", "India");
+
+        System.out.println(country);
+    }
+}
+Output
+India
+-------------------
+4️⃣ remove(Object key)
+
+Property delete karta hai.
+
+Code
+import java.util.Properties;
+
+public class Test4 {
+    public static void main(String[] args) {
+
+        Properties props = new Properties();
+
+        props.setProperty("username", "Rahul");
+        props.remove("username");
+
+        System.out.println(props);
+    }
+}
+Output
+{}
+---------------
+5️⃣ containsKey(Object key)
+
+Check karta hai key exist karti hai ya nahi.
+
+Code
+import java.util.Properties;
+
+public class Test5 {
+    public static void main(String[] args) {
+
+        Properties props = new Properties();
+
+        props.setProperty("username", "Rahul");
+
+        System.out.println(props.containsKey("username"));
+    }
+}
+Output
+true
+-------------------------
+6️⃣ size()
+
+Kitni properties store hai batata hai.
+
+Code
+import java.util.Properties;
+
+public class Test6 {
+    public static void main(String[] args) {
+
+        Properties props = new Properties();
+
+        props.setProperty("username", "Rahul");
+        props.setProperty("city", "Delhi");
+
+        System.out.println(props.size());
+    }
+}
+Output
+2
+---------------
+7️⃣ clear()
+
+Sab properties delete kar deta hai.
+
+Code
+import java.util.Properties;
+
+public class Test7 {
+    public static void main(String[] args) {
+
+        Properties props = new Properties();
+
+        props.setProperty("username", "Rahul");
+        props.setProperty("city", "Delhi");
+
+        props.clear();
+
+        System.out.println(props);
+    }
+}
+Output
+{}

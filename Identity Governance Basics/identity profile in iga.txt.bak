@@ -1,0 +1,39 @@
+4️⃣ Identity Profile
+Kya hai
+Identity Profile = Rule / configuration jo decide karta hai ki 
+source se aane wale data se Identity kaise create hogi.
+Ye decide karta hai:-
+kaunsa Source use hoga
+kaun-kaun se attributes map honge
+identity ka display name kya hoga
+lifecycle state kya hogi
+
+Example:-
+HR system se data aata hai:
+
+first_name = Rahul
+last_name  = Kumar
+email      = rahul@company.com
+department = IT
+
+Identity Profile mapping:
+
+HR.first_name → Identity.firstName
+HR.last_name  → Identity.lastName
+HR.email      → Identity.email
+
+Output Identity:-
+Name: Rahul Kumar
+Email: rahul@company.com
+Department: IT
+
+()Identity Profile Important Attributes:-
+Attribute	             Kya karta hai
+name------------------Identity profile ka naam
+source----------------Kaunsa source use hoga
+identityAttribute-----Unique identity attribute
+displayName-----------User ka display name
+accountCorrelation----Accounts ko identity se match karta hai
+lifecycleStates-------User lifecycle define karta hai
+
+----------------------------------------------------------------------------------

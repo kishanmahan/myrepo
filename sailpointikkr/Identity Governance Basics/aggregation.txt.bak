@@ -1,0 +1,28 @@
+🔹 Aggregation kya hota hai?
+👉 Aggregation = External system se data uthana (import karna)
+Matlab:-
+Users (accounts)
+Groups
+Entitlements
+👉 Ye sab external system (AD, SAP, DB) se laake system me store hota hai.
+
+🔥 Aggregation Types:-
+
+🔸 1️⃣ Full Aggregation:-
+👉 Saara data ek baar me fetch hota hai.
+
+🔹 Kya karta hai?
+Sab users laata hai
+Sab groups laata hai
+Purana data overwrite/update karta hai
+🔹 Example:-
+AD me 10,000 users hain → sab ek baar me aa jayenge
+
+🔹 Use kab?
+First time setup
+Data mismatch fix karna ho
+
+🔹 Problem:-
+Slow hota hai ⏳
+Heavy load 🚨
+

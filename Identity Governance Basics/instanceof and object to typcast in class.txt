@@ -1,0 +1,124 @@
+()1️⃣ instanceof:-
+Kya hai: instanceof ka kaam ye check karna hai ki "Kya koi particular Object kisi specific Class ya 
+Interface ka hissa (yaani uski sandaan/child) hai ya nahi?"
+
+ex:-
+class Animal {}
+class Dog extends Animal {}
+
+public class Test {
+    public static void main(String[] args) {
+        Dog d1 = new Dog();
+
+        // 1. Kya d1 Dog class ka object hai?
+        System.out.println(d1 instanceof Dog);     // Output: true (Kyunki wo Dog hi hai)
+
+        // 2. Kya d1 Animal class ka bhi object hai?
+        System.out.println(d1 instanceof Animal);  // Output: true (Kyunki Dog ek Animal hota hai)
+    }
+}
+
+Syntax:-
+if (object instanceof ClassName) { 
+    // code
+}
+Example:-
+Object obj = "Hello World";
+
+if(obj instanceof String) {
+    System.out.println("obj is a String!");
+} else {
+    System.out.println("obj is NOT a String!");
+}
+Output:-
+obj is a String!
+
+2️⃣ (CustomObject) target → Type Casting:-
+Kya hai: Agar hum sure hain ki target object actually CustomObject ka instance hai, toh hum usko explicitly CustomObject me cast karte hain.
+Syntax:-
+CustomObject co = (CustomObject) target;
+Isse hum CustomObject ke methods aur fields use kar sakte hain.
+
+()instanceof check karta hai ki kya target customobject ka object hai ya nahi.
+
+Ex:-
+class CustomObject {
+    private String name;
+
+    public CustomObject(String name) { this.name = name; }
+    public String getName() { return name; }
+}
+
+public class Demo {
+    public static void main(String[] args) {
+        Object target = new CustomObject("ProjectAccess");
+
+        // Check type first
+        if(target instanceof CustomObject) {
+            CustomObject co = (CustomObject) target; // cast
+            System.out.println("Target Name: " + co.getName());
+        } else {
+            System.out.println("Target is not a CustomObject");
+        }
+    }
+}
+Output:-
+Target Name: ProjectAccess
+////////////*
+()System.out.println("Target Name: " + target);
+//output:-Target Name: CustomObject@2f92e0f4
+Yaha par do cheezein ek sath ho rahi hain:-
+"Target Name: " ek String hai.
+target ek Object reference hai (jo CustomObject ko point kar raha hai).
+*////////////
+///////*
+()instanceof check karta hai ki kya target customobject ka object type hai ya nahi.
+instanceof operator object reference ko check karta hai,
+Ye dekhta hai ki koi object kis class ka instance hai ya nahi.
+Ye reference type (objects) ke liye use hota hai.
+Primitive types (int, float, char, etc.) ke saath use nahi hota.
+
+note:-reference means:-new objectofclass(); aur String g="hello"; String gf=g; and g variable's address is also a reference.
+
+*//////
+ex->Example (Java):-
+
+()correct use:-
+String str = "Hello";
+if (str instanceof String) {
+    System.out.println("Yes, it's a String object");
+}
+
+()wrong use:-
+int x = 10;
+if (x instanceof Integer) // ❌ Error
+👉 Kyunki x primitive hai, object nahi.
+
+()“Reference” ka matlab hota hai memory address ya pointer jahan object stored hai.
+Java mein jab tum object banate ho, to actual object heap memory mein banta hai,
+aur jo variable tum use karte ho wo us object ka reference (address) hold karta hai.
+
+Simple Example:-
+String str = "Hello";
+
+Yahan:-
+"Hello" → heap memory mein object hai
+str → us object ka reference (address) hold kar raha hai
+👉 Matlab str object khud nahi hai, balki uska pointer hai.
+
+important Points:-
+Reference variable object ko point karta hai
+Ek hi object ko multiple references point kar sakte hain
+Agar reference null ho → matlab wo kisi object ko point nahi kar raha
+String a = "Hi";
+String b = a; // dono same object ko refer kar rahe hain
+
+()instanceof se connection:-
+instanceof isi reference variable ko check karta hai ki:-
+👉 “ye reference kis type ke object ko point kar raha hai?”
+
+()Object obj = new Object();:-
+Yahan:-
+new Object() → heap mein ek naya object banata hai
+aur us object ka reference (address) return karta hai
+obj → us reference ko store karta hai.

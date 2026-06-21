@@ -1,0 +1,470 @@
+()CertificationItem kya hai?
+--🔹 CertificationItem kya hai?
+CertificationItem SailPoint IdentityIQ me ek object hota hai jo certification(access review) ke andar ek single item/record represent karta hai.
+👉 Matlab:-
+Ek user ke paas 10 access hai
+Toh certification me 10 CertificationItem banenge
+Har item ek access ko represent karega (role / entitlement / account)
+
+🔹 CertificationItem kya karta hai?
+👉 Ye decide karta hai:-
+Access approve hoga ya revoke
+Reviewer ne kya decision liya
+Kis user ka kaunsa access review ho raha hai
+👉 Simple:-
+"Ek access ka review record = CertificationItem"
+----------------------------------------------------------------
+🔹 CertificationItem ke andar kya hota hai (Fields):-
+Main important fields 👇:-
+🔸 1. Basic Info
+id → unique ID (DB me primary key)
+type → item ka type (ROLE / ENTITLEMENT / ACCOUNT)
+name → access ka naam
+description → details
+
+🔸 2. Identity Info
+identityId → user ka ID
+identityName → user ka naam
+👉 Kaunse user ka access review ho raha hai
+
+🔸 3. Application Info:-
+application → kis system se access hai (SAP, AD, etc.)
+accountId → user ka account id
+
+🔸 4. Access Info:-
+value → actual entitlement value
+displayValue → UI me dikhne wala naam
+
+🔸 5. Decision / Action Fields:-
+decision → reviewer ka decision
+APPROVE
+REVOKE
+DELEGATE
+recommendation → system kya suggest kar raha hai
+comments → reviewer ka comment
+
+🔸 6. Dates:-
+created → kab bana
+modified → kab update hua
+
+🔸 7. Reviewer Info:-
+reviewer → kisne review kiya
+owner → access ka owner
+
+🔸 8. Flags:-
+exception → rule break hua kya
+remediated → revoke ho gaya kya.
+--------------------------------------------------------------------------------------------
+🔹 CertificationItem ke Types:-
+👉 type field me aate hain:-
+ROLE
+ENTITLEMENT
+ACCOUNT
+POLICY_VIOLATION
+------------------------------------------------
+🔹 CertificationItem ke States (bahut important 🔥):-
+👉 Ye batata hai item ka current status kya hai.
+Main states:-
+Open:-
+Abhi review pending hai
+
+Approved:-
+Access allow ho gaya
+
+Revoked:-
+Access hata diya gaya
+
+Mitigated:-
+Risk accept kar liya (remove nahi kiya)
+
+Delegated:-
+Kisi aur ko bhej diya review ke liye
+
+Expired:-
+Time over ho gaya
+
+Completed:-
+Final ho gaya (approve/revoke)
+-----------------------------------------------------------------------
+🔹 DB me kya store hota hai?
+👉 Haan bhai, CertificationItem database me store hota hai.
+
+Table:-
+spt_certification_item
+
+🔸 DB Columns (approx):-
+id
+certification_id
+identity_id
+application
+account_id
+type
+value
+decision
+state
+reviewer
+created
+modified
+comments
+
+🔹 Flow samajh le:-
+Certification create hua
+System ne items banaye(CertificationItem)
+Reviewer open karta hai
+Har item pe decision deta hai:-
+Approve
+Revoke
+Final state update hoti hai
+DB me save ho jata hai.
+--------------------------------------------------------------------------------------------------------------------
+✅ Correct Flow (Real Working):-
+🔹 Step 1: Backend me kya hota hai
+System pehle se hi CertificationItem bana deta hai
+Ye DB me store hota hai ✅
+👉 Table:-
+spt_certification_item
+
+🔹 Step 2: UI me kya dikhata hai:-
+Backend → CertificationItem ko convert karta hai → AccessReviewItem
+UI ko bhejta hai
+👉 Matlab:-
+AccessReviewItem sirf view / display object hai
+
+🔹 Step 3: User UI pe action karta hai:-
+User select karta hai:-
+Approve
+Revoke
+Comment
+👉 Ye data UI se API ko jata hai (JSON me)
+
+🔹 Step 4: Backend kya karta hai:-
+👉 Backend:-
+AccessReviewItem ko directly save nahi karta ❌
+Balki CertificationItem ko update karta hai ✅
+certItem.setDecision("APPROVE");
+certItem.setComments("ok");
+
+🔥 Final Truth (Golden Line):-
+👉 AccessReviewItem sirf data dikhata hai aur input carry karta hai
+👉 Actual save/update sirf CertificationItem me hota hai.
+
+🔹 Important Points:-
+✅ CertificationItem:-
+DB me stored
+Real object
+Final decision yahi save hota hai
+
+❌ AccessReviewItem:-
+DB me store nahi hota
+Temporary object
+Sirf UI/API ke liye
+--------------------------------------------------------------------------------------------------------------------------
+🔹 CertificationItem Methods List:-
+🔸 Basic Methods:-
+getId()
+setId(String id)
+getName()
+setName(String name)
+getType()
+setType(String type)
+getDescription()
+setDescription(String description)
+
+🔸 Identity Methods:-
+getIdentity()
+setIdentity(String identity)
+getIdentityId()
+setIdentityId(String identityId)
+
+🔸 Application / Account Methods:-
+getApplication()
+setApplication(String application)
+getAccountId()
+setAccountId(String accountId)
+
+🔸 Access / Value Methods:-
+getValue()
+setValue(String value)
+getDisplayValue()
+setDisplayValue(String displayValue)
+
+🔸 Decision Methods:-
+getDecision()
+setDecision(String decision)
+getRecommendation()
+setRecommendation(String recommendation)
+getComments()
+setComments(String comments)
+
+🔸 State Methods:-
+getState()
+setState(String state)
+
+🔸 Reviewer / Owner Methods:-
+getReviewer()
+setReviewer(String reviewer)
+getOwner()
+setOwner(String owner)
+
+🔸 Date Methods:-
+getCreated()
+setCreated(Date created)
+getModified()
+setModified(Date modified)
+
+🔸 Flags Methods:-
+isException()
+setException(boolean exception)
+isRemediated()
+setRemediated(boolean remediated)
+
+🔸 Certification Link Methods:-
+getCertificationId()
+setCertificationId(String certificationId)
+
+🔸 Utility Methods:-
+toString()
+equals(Object obj)
+hashCode()
+------------------------------------------------------------------------------------------------------------------------------------
+()🔹 1️⃣ recommendation kya hai?
+👉 Meaning:-
+Recommendation = System ka suggestion
+👉 System (rules / policy / analytics) ye batata hai:
+“Is access ko rakhna chahiye ya hata dena chahiye”
+
+🔸 Example:-
+item.setRecommendation("REVOKE");
+
+👉 Matlab:-
+System bol raha hai → ❌ hata do access
+
+🔸 Possible values:-
+APPROVE → rakh lo access
+REVOKE → hata do
+NONE → koi suggestion nahi
+
+🔸 Real Use:-
+👉 Jab reviewer dekhta hai UI me:-
+User: Ravi
+Access: SAP Admin
+Recommendation: REVOKE ⚠️
+
+👉 Reviewer sochta hai:-
+System bol raha hai risky hai
+Main approve karu ya revoke?
+
+🔹 2️⃣ owner kya hai?
+👉 Meaning:-
+Owner = Access / Entitlement ka malik
+👉 Wo banda jo decide kare:-
+“Ye access kis-kis ko milna chahiye”
+
+🔸 Example:-
+item.setOwner("Manager1");
+
+👉 Matlab:-
+Manager1 is access ka owner hai.
+
+()getId():-
+👉 item ka unique ID return karta hai,
+System.out.println(item.getId());
+✅ Output:-
+12345
+
+()setId(String id);-
+👉 ID set karta hai
+item.setId("12345");
+
+()getName():-
+👉 access ka naam deta hai
+System.out.println(item.getName());
+✅ Output:-
+SAP Admin Access
+
+()setName(String name):-
+👉 name set karta hai
+item.setName("SAP Admin Access");
+
+()getType():-
+👉 type batata hai (ROLE / ENTITLEMENT)
+System.out.println(item.getType());
+✅ Output:-
+ENTITLEMENT
+
+()setType(String type):-
+👉 type set karta hai
+item.setType("ROLE");
+
+()getDescription():-
+👉 description return karta hai
+System.out.println(item.getDescription());
+✅ Output:-
+Finance access for SAP
+
+()setDescription(String description):-
+👉 description set karta hai.
+
+()getIdentity():-
+👉 user ka naam deta hai,
+System.out.println(item.getIdentity());
+✅ Output:-
+Ravi
+
+()setIdentity(String identity):-
+👉 user ka naam set karta hai.
+
+()getIdentityId():-
+👉 user ka unique ID deta hai
+System.out.println(item.getIdentityId());
+✅ Output:-
+EMP101
+
+()setIdentityId(String identityId):-
+👉 user ID set karta hai.
+
+()getApplication():-
+👉 system ka naam deta hai,
+System.out.println(item.getApplication());
+✅ Output:-
+SAP
+
+()setApplication(String application):-
+👉 application set karta hai,
+
+()getAccountId():-
+👉 account ID deta hai
+System.out.println(item.getAccountId());
+✅ Output:
+sap_user_01
+
+()setAccountId(String accountId):-
+👉 account ID set karta hai.
+
+()getValue():-
+👉 actual entitlement value deta hai
+System.out.println(item.getValue());
+✅ Output:-
+ROLE_FINANCE
+
+()setValue(String value):-
+👉 value set karta hai
+
+()getDisplayValue():-
+👉 UI me dikhne wala naam
+System.out.println(item.getDisplayValue());
+✅ Output:-
+Finance Role
+
+()setDisplayValue(String displayValue):-
+👉 display value set karta hai.
+
+()getDecision():-
+👉 reviewer ka decision deta hai
+System.out.println(item.getDecision());
+✅ Output:-
+APPROVE
+setDecision(String decision)
+👉 decision set karta hai.
+
+()getRecommendation():-
+👉 system ka suggestion deta hai
+System.out.println(item.getRecommendation());
+✅ Output:-
+REVOKE
+setRecommendation(String recommendation)
+👉 recommendation set karta hai
+
+()getComments():-
+👉 reviewer ka comment deta hai
+System.out.println(item.getComments());
+✅ Output:-
+Looks fine
+setComments(String comments)
+👉 comment set karta hai
+
+()getState():-
+👉 current state batata hai
+System.out.println(item.getState());
+✅ Output:
+Open
+setState(String state)
+👉 state set karta hai
+
+()getReviewer():-
+👉 reviewer ka naam deta hai
+System.out.println(item.getReviewer());
+✅ Output:-
+Manager1
+setReviewer(String reviewer)
+👉 reviewer set karta hai
+
+()getOwner():-
+👉 access owner deta hai
+System.out.println(item.getOwner());
+✅ Output:-
+FinanceHead
+setOwner(String owner)
+👉 owner set karta hai
+
+
+()getCreated():-
+👉 creation date deta hai
+System.out.println(item.getCreated());
+✅ Output:-
+2026-03-26
+
+()setCreated(Date created)
+👉 date set karta hai
+
+()getModified():-
+👉 last update date
+System.out.println(item.getModified());
+✅ Output:-
+2026-03-27
+
+()setModified(Date modified):-
+👉 modified date set karta hai
+
+()isException():-
+👉 rule break hua kya
+System.out.println(item.isException());
+✅ Output:-
+true
+setException(boolean exception)
+👉 exception set karta hai
+
+()isRemediated():-
+👉 revoke ho chuka kya
+System.out.println(item.isRemediated());
+✅ Output:-
+false
+setRemediated(boolean remediated)
+👉 remediation status set karta hai
+
+()getCertificationId():-
+👉 certification ka ID deta hai
+System.out.println(item.getCertificationId());
+✅ Output:-
+CERT1001
+
+()setCertificationId(String certificationId)
+👉 certification ID set karta hai
+
+()toString():-
+👉 object ko string me convert karta hai
+System.out.println(item.toString());
+✅ Output:-
+CertificationItem[id=12345, name=SAP Access]
+
+()equals(Object obj):-
+👉 compare karta hai 2 objects same hain ya nahi
+item1.equals(item2);
+✅ Output:-
+true / false
+
+()hashCode():-
+👉 object ka unique hash number deta hai
+System.out.println(item.hashCode());
+✅ Output:-
+45879632

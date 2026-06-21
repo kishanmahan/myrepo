@@ -1,0 +1,13 @@
+1️⃣ Evaluate ka matlab:-
+Policy.evaluate(identity) → Ye check karta hai ki di hui identity (user) ke paas allowed access hai ya koi violation ho rahi hai.
+Agar violation hoti hai → SailPoint me Policy Violation create hoti hai.
+
+2️⃣ Kaise kaam karta hai:-
+Identity ke current entitlements/roles/access lete hain.
+Policy ke rules check karte hain:-
+Example: Policy me likha hai “Finance role wale sirf Finance app access kar sakte hain.”
+Identity ke access me agar koi non-Finance app access hai → Violation.
+
+()Return karta hai result:-
+Boolean (true/false) ya
+Detailed violation object (kaunsa rule break hua, kaunsa access galat hai).

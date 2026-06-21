@@ -1,0 +1,101 @@
+()TaskRule kya hai kya karta hai?
+👉 TaskRule = SailPoint ka ek rule type hai jo kisi Task ke time custom logic run karta hai
+📌 Simple line:-
+Task chal raha ho aur usme extra kaam karwana ho → TaskRule use karte hain.
+
+🔧 Task kya hota hai?
+SailPoint me Task = Background job
+✔️ Examples:-
+Aggregation (data lana source se)
+Identity refresh
+Certification
+Cleanup
+
+🔥 TaskRule kya karta hai?
+👉 Jab Task run hota hai:-
+Beech me ya start/end pe custom logic execute karta hai
+✔️ Use cases:-
+Data modify karna
+Extra validation
+Logging karna
+Custom processing
+
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Custom Identity Processor Rule" type="Task">
+  <Description>
+    Ye rule active identities ko process karta hai aur Task Result mein stats update karta hai.
+  </Description>
+  <Source>
+  import sailpoint.object.*;
+  import sailpoint.api.SailPointContext;
+  import org.apache.commons.logging.Log;
+  import org.apache.commons.logging.LogFactory;
+  import sailpoint.tools.Util;
+
+  // 1. Setup Logger
+  Log logger = LogFactory.getLog("custom.rule.IdentityTask");
+
+  public String processIdentities(SailPointContext context) {
+      int count = 0;
+      int errorCount = 0;
+      
+      // TaskResult object fetch karna taaki progress UI par dikhe
+      TaskResult result = (TaskResult) column; 
+
+      try {
+          // 2. Query Options - Performance ke liye filter zaroori hai
+          QueryOptions qo = new QueryOptions();
+          qo.addFilter(Filter.eq("inactive", false));
+
+          // 3. Incremental Iterator - Memory leak se bachne ke liye
+          IncrementalObjectIterator identities = new IncrementalObjectIterator(context, Identity.class, qo);
+
+          while (identities.hasNext()) {
+              Identity identity = (Identity) identities.next();
+              
+              try {
+                  // --- START: Aapka Custom Logic Yaha Ayega ---
+                  String email = identity.getEmail();
+                  if (Util.isNullOrEmpty(email)) {
+                      logger.warn("Task: Identity " + identity.getName() + " ka email nahi mila.");
+                      errorCount++;
+                  }
+                  // --- END: Custom Logic ---
+
+                  count++;
+
+                  // Har 100 records baad Task Result update karein (UI visibility)
+                  if (count % 100 == 0 &amp;&amp; result != null) {
+                      result.setAttribute("processedCount", count);
+                      context.saveObject(result);
+                      context.commitTransaction();
+                  }
+
+              } catch (Exception e) {
+                  errorCount++;
+                  logger.error("Error processing identity: " + identity.getName(), e);
+              } finally {
+                  // 4. Decache: Heap memory clean rakhne ke liye
+                  context.decache(identity);
+              }
+          }
+
+          // Final Task Summary
+          String summary = "Processed: " + count + ", Errors: " + errorCount;
+          if (result != null) {
+              result.setAttribute("finalStatus", summary);
+          }
+          
+          return summary;
+
+      } catch (Exception e) {
+          logger.error("Critical Task Failure: " + e.getMessage());
+          return "Failed: " + e.getMessage();
+      }
+  }
+
+  // Rule execution start
+  return processIdentities(context);
+  </Source>
+</Rule>

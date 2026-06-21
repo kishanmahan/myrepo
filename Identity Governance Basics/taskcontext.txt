@@ -1,0 +1,599 @@
+🔥 TaskContext kya hota hai?
+👉 Ye SailPoint Task Engine banata hai
+👉 Developer nahi banata ❌
+
+👉 Isme already hota hai:-
+Task
+TaskResult
+SailPointContext (hidden inside)
+
+✅ 🔥 TaskContext Methods List:-
+getTask()
+setTask(Task task)
+getTaskResult()
+setTaskResult(TaskResult result)
+getContext()
+setContext(SailPointContext context)
+getArguments()
+setArguments(Map<String,Object> args)
+getArgument(String name)
+setArgument(String name, Object value)
+getString(String name)
+getInt(String name)
+getLong(String name)
+getBoolean(String name)
+
+getProgress()
+setProgress(int progress)
+getStatus()
+setStatus(String status)
+getMessages()
+addMessage(String message)
+getStartTime()
+getEndTime()
+getOwner()
+setOwner(Identity owner)
+
+getName()
+setName(String name)
+getId()
+setId(String id)
+getAttribute(String name)
+setAttribute(String name, Object value)
+getAttributes()
+setAttributes(Map<String,Object> attributes)
+removeAttribute(String name)
+getLocale()
+setLocale(Locale locale)
+getTimeout()
+setTimeout(int timeout)
+
+isTerminated()
+setTerminated(boolean terminated)
+checkTerminated()
+getPercentComplete()
+setPercentComplete(int percent)
+
+getState()
+setState(String state)
+getErrorCount()
+setErrorCount(int count)
+getWarningCount()
+setWarningCount(int count)
+incrementErrorCount()
+incrementWarningCount()
+
+getPartition()
+setPartition(String partition)
+getHost()
+setHost(String host)
+getThreadName()
+setThreadName(String threadName)
+getRetryCount()
+setRetryCount(int count)
+incrementRetryCount()
+
+toMap()
+fromMap(Map map)
+toXml()
+fromXml(String xml)
+clone()
+equals(Object obj)
+hashCode()
+toString()
+------------------------------------------------------------------------------------------------------------------------
+✅ 1️⃣ getTask() / setTask():-
+💡 Kya karta hai?
+👉 Current running Task object set/get karta hai
+
+🔹 Code:-
+Task t = taskContext.getTask();
+System.out.println(t.getName());
+🔹 Output:-
+DemoTask
+
+✅ 2️⃣ getTaskResult() / setTaskResult():-
+💡 Kya karta hai?
+👉 Task ka result/log object handle karta hai
+
+🔹 Code:-
+TaskResult r = taskContext.getTaskResult();
+r.addMessage("Task started");
+System.out.println(r.getMessages());
+🔹 Output:
+[Task started]
+
+✅ 3️⃣ getContext() / setContext():-
+💡 Kya karta hai?
+👉 DB access (SailPointContext) provide karta hai
+
+🔹 Code:-
+SailPointContext ctx = taskContext.getContext();
+System.out.println(ctx != null);
+🔹 Output:-
+true
+
+✅ 4️⃣ getArguments() / setArguments()
+💡 Kya karta hai?
+
+👉 Task ke saare input parameters (Map me) deta hai
+
+🔹 Code:
+Map<String, Object> map = taskContext.getArguments();
+System.out.println(map);
+🔹 Output:
+{applicationName=Active Directory, retryCount=3, timeout=5000, enabled=true}
+✅ 5️⃣ getArgument(String name) / setArgument()
+💡 Kya karta hai?
+
+👉 Specific argument value deta hai (Object type me)
+
+🔹 Code:
+Object app = taskContext.getArgument("applicationName");
+System.out.println(app);
+🔹 Output:
+Active Directory
+
+✅ 6️⃣ getString(String name)
+💡 Kya karta hai?
+👉 Argument ko String me convert karke deta hai
+
+🔹 Code:-
+String app = taskContext.getString("applicationName");
+System.out.println(app);
+🔹 Output:-
+Active Directory
+
+✅ 7️⃣ getInt(String name):-
+💡 Kya karta hai?
+👉 Argument ko int me convert karta hai
+🔹 Code:-
+int retry = taskContext.getInt("retryCount");
+System.out.println(retry);
+🔹 Output:-
+3
+
+✅ 8️⃣ getLong(String name):-
+💡 Kya karta hai?
+👉 Argument ko long me convert karta hai
+
+🔹 Code:-
+long timeout = taskContext.getLong("timeout");
+System.out.println(timeout);
+🔹 Output:-
+5000
+
+✅ 9️⃣ getBoolean(String name):-
+💡 Kya karta hai?
+👉 Argument ko boolean me convert karta hai
+
+🔹 Code:-
+boolean flag = taskContext.getBoolean("enabled");
+System.out.println(flag);
+🔹 Output:-
+true
+
+✅ 1️⃣ getProgress() / setProgress(int progress):-
+💡 Kya karta hai?
+👉 Task ka progress percentage (0–100) track karta hai
+
+🔹 Code:-
+taskContext.setProgress(40);
+int progress = taskContext.getProgress();
+System.out.println(progress);
+🔹 Output:-
+40
+👉 UI me progress bar dikhane ke kaam aata hai
+
+✅ 2️⃣ getStatus() / setStatus(String status):-
+💡 Kya karta hai?
+👉 Task ka current status set/get karta hai
+
+🔹 Code:-
+taskContext.setStatus("RUNNING");
+
+String status = taskContext.getStatus();
+System.out.println(status);
+🔹 Output:-
+RUNNING
+👉 Common values:-
+READY, RUNNING, COMPLETED, FAILED
+
+
+✅ 3️⃣ getMessages() / addMessage(String message):-
+💡 Kya karta hai?
+👉 Task ke logs / messages store karta hai
+
+🔹 Code:-
+taskContext.addMessage("Task started");
+taskContext.addMessage("Processing data");
+
+System.out.println(taskContext.getMessages());
+🔹 Output:-
+[Task started, Processing data]
+👉 Debugging + UI logs ke liye use hota hai
+
+✅ 4️⃣ getStartTime() / getEndTime():-
+💡 Kya karta hai?
+👉 Task ka start aur end time deta hai
+
+🔹 Code:-
+System.out.println(taskContext.getStartTime());
+System.out.println(taskContext.getEndTime());
+🔹 Output (example):
+2026-03-20 10:30:00
+2026-03-20 10:35:10
+👉 Performance track karne ke liye use hota hai.
+
+✅ 5️⃣ getOwner() / setOwner(Identity owner):-
+💡 Kya karta hai?
+👉 Task ka owner (user) set/get karta hai
+
+🔹 Code:-
+Identity owner = new Identity();
+owner.setName("admin");
+taskContext.setOwner(owner);
+
+System.out.println(taskContext.getOwner().getName());
+🔹 Output:-
+admin
+👉 Ye batata hai:-
+"Task kis user ne run kiya"
+
+✅ 1️⃣ getName() / setName(String name):-
+💡 Kya karta hai?
+👉 TaskContext ka naam set/get karta hai
+
+🔹 Code:-
+taskContext.setName("MyTaskContext");
+System.out.println(taskContext.getName());
+🔹 Output:-
+MyTaskContext
+
+✅ 2️⃣ getId() / setId(String id):-
+💡 Kya karta hai?
+👉 Unique ID set/get karta hai
+
+🔹 Code:-
+taskContext.setId("CTX123");
+System.out.println(taskContext.getId());
+🔹 Output:-
+CTX123
+
+✅ 3️⃣ getAttribute(String name) / setAttribute(String name, Object value):-
+💡 Kya karta hai?
+👉 Ek custom key-value attribute store/get karta hai
+
+🔹 Code:-
+taskContext.setAttribute("env", "DEV");
+Object env = taskContext.getAttribute("env");
+System.out.println(env);
+🔹 Output:-
+DEV
+
+✅ 4️⃣ getAttributes() / setAttributes(Map attributes):-
+💡 Kya karta hai?
+👉 Saare attributes ek saath set/get karta hai
+
+🔹 Code:-
+Map<String, Object> map = new HashMap<String, Object>();
+map.put("env", "DEV");
+map.put("region", "IN");
+taskContext.setAttributes(map);
+System.out.println(taskContext.getAttributes());
+🔹 Output:
+{env=DEV, region=IN}
+
+
+✅ 5️⃣ removeAttribute(String name):-
+💡 Kya karta hai?
+👉 Kisi attribute ko delete karta hai
+
+🔹 Code:-
+taskContext.removeAttribute("env");
+System.out.println(taskContext.getAttributes());
+🔹 Output:
+{region=IN}
+
+✅ 6️⃣ getLocale() / setLocale(Locale locale):-
+💡 Kya karta hai?
+👉 Language/region setting handle karta hai
+
+🔹 Code:-
+taskContext.setLocale(Locale.US);
+System.out.println(taskContext.getLocale());
+🔹 Output:-
+en_US
+👉 Use:-
+Multi-language support
+Formatting
+
+✅ 7️⃣ getTimeout() / setTimeout(int timeout):-
+💡 Kya karta hai?
+👉 Task ka max execution time (ms/sec) set/get karta hai
+
+🔹 Code:-
+taskContext.setTimeout(300);
+System.out.println(taskContext.getTimeout());
+🔹 Output:-
+300
+👉 Matlab:-
+Task 300 sec/ms ke baad stop ho sakta hai.
+-----------------------------------------------------------------------------
+✅ 1️⃣ isTerminated() / setTerminated(boolean terminated):-
+💡 Kya karta hai?
+👉 Task ko manually stop (terminate) karne ke liye flag set/get karta hai
+
+🔹 Code:-
+taskContext.setTerminated(true);
+System.out.println(taskContext.isTerminated());
+🔹 Output:-
+true
+🧠 Real use:-
+if (taskContext.isTerminated()) {
+    System.out.println("Task stopped by user");
+    return;
+}
+👉 Matlab:-
+User ne "Stop Task" click kiya → task ruk jayega.
+-------------------------------------------------------------
+✅ 2️⃣ checkTerminated():-
+💡 Kya karta hai?
+👉 Automatically check karta hai aur terminate hone par exception throw karta hai
+
+🔹 Code:-
+taskContext.setTerminated(true);
+taskContext.checkTerminated(); // yaha exception aayega
+🔹 Output:-
+Exception: Task Terminated
+🧠 Real use (loop me 🔥)
+for (int i = 0; i < 5; i++) {
+    taskContext.checkTerminated(); // safe stop
+
+    System.out.println("Processing " + i);
+}
+👉 Benefit:-
+Task safe way me stop hota hai (force close nahi).
+------------------------------------------------------------------------
+✅ 3️⃣ getPercentComplete() / setPercentComplete(int percent):-
+💡 Kya karta hai?
+👉 Task ka exact percentage progress (0–100) track karta hai
+
+🔹 Code:-
+taskContext.setPercentComplete(75);
+System.out.println(taskContext.getPercentComplete());
+🔹 Output:-
+75
+
+🧠 Real use:-
+for (int i = 1; i <= 10; i++) {
+
+    int percent = i * 10;
+    taskContext.setPercentComplete(percent);
+
+    System.out.println("Progress: " + percent + "%");
+}
+🔹 Output:-
+Progress: 10%
+Progress: 20%
+...
+Progress: 100%
+--------------------------------------------------------------
+✅ 1️⃣ getState() / setState(String state):-
+💡 Kya karta hai?
+👉 Task ka internal state / stage batata hai (custom flow state)
+
+🔹 Code:-
+taskContext.setState("INITIALIZING");
+System.out.println(taskContext.getState());
+🔹 Output:-
+INITIALIZING
+
+✅ 2️⃣ getErrorCount() / setErrorCount(int count):-
+💡 Kya karta hai?
+👉 Total errors ka count track karta hai
+
+🔹 Code:-
+taskContext.setErrorCount(2);
+System.out.println(taskContext.getErrorCount());
+🔹 Output:-
+2
+
+✅ 3️⃣ getWarningCount() / setWarningCount(int count):-
+💡 Kya karta hai?
+👉 Total warnings ka count track karta hai
+
+🔹 Code:-
+taskContext.setWarningCount(1);
+System.out.println(taskContext.getWarningCount());
+🔹 Output:-
+1
+
+✅ 4️⃣ incrementErrorCount():-
+💡 Kya karta hai?
+👉 Error count ko +1 increase karta hai
+
+🔹 Code:-
+taskContext.setErrorCount(0);
+taskContext.incrementErrorCount();
+taskContext.incrementErrorCount();
+System.out.println(taskContext.getErrorCount());
+🔹 Output:-
+2
+
+✅ 5️⃣ incrementWarningCount():-
+💡 Kya karta hai?
+👉 Warning count ko +1 increase karta hai
+
+🔹 Code:-
+taskContext.setWarningCount(0);
+taskContext.incrementWarningCount();
+System.out.println(taskContext.getWarningCount());
+🔹 Output:-
+1
+
+✅ 1️⃣ getPartition() / setPartition(String partition):-
+💡 Kya karta hai?
+👉 Task ka partition name (parallel execution ka part)
+
+🔹 Code:-
+taskContext.setPartition("P1");
+System.out.println(taskContext.getPartition());
+🔹 Output:-
+P1
+
+🧠 Real use:-
+Large task → multiple parts me divide:
+P1, P2, P3...
+
+👉 Example:-
+1000 accounts
+P1 → 1–300
+P2 → 301–600
+
+✅ 2️⃣ getHost() / setHost(String host):-
+💡 Kya karta hai?
+👉 Task kis server/machine pe run ho raha hai
+
+🔹 Code:-
+taskContext.setHost("Server-1");
+System.out.println(taskContext.getHost());
+🔹 Output:-
+Server-1
+
+✅ 3️⃣ getThreadName() / setThreadName(String threadName):-
+💡 Kya karta hai?
+👉 Task kis thread me run ho raha hai
+
+🔹 Code:-
+taskContext.setThreadName("Thread-1");
+
+System.out.println(taskContext.getThreadName());
+🔹 Output:-
+Thread-1
+
+🧠 Real use:-
+Multi-thread execution:-
+Thread-1 → P1
+Thread-2 → P2
+👉 Debugging me help karta hai.
+
+✅ 4️⃣ getRetryCount() / setRetryCount(int count):-
+💡 Kya karta hai?
+👉 Task kitni baar retry hua hai
+
+🔹 Code:-
+taskContext.setRetryCount(2);
+System.out.println(taskContext.getRetryCount());
+🔹 Output:-
+2
+
+🧠 Real use:-
+1st attempt fail → retry = 1
+2nd attempt fail → retry = 2
+
+✅ 5️⃣ incrementRetryCount()
+💡 Kya karta hai?
+👉 Retry count ko +1 increase karta hai.
+-----------------------------------------------
+✅ 1️⃣ toMap()
+💡 Kya karta hai?
+👉 Object ko Map (key-value) me convert karta hai
+
+🔹 Code:-
+Map map = taskContext.toMap();
+System.out.println(map);
+🔹 Output:-
+{name=DemoTask, id=CTX123, attributes={env=DEV}}
+---------------------------------------------------
+✅ 2️⃣ fromMap(Map map)
+💡 Kya karta hai?
+
+👉 Map se object re-create / populate karta hai
+
+🔹 Code:
+Map<String, Object> map = new HashMap<String, Object>();
+map.put("name", "NewTask");
+map.put("id", "CTX999");
+
+TaskContext newCtx = new TaskContext();
+newCtx.fromMap(map);
+
+System.out.println(newCtx.getName());
+System.out.println(newCtx.getId());
+🔹 Output:
+NewTask
+CTX999
+------------------------------------------------------------
+✅ 3️⃣ toXml()
+💡 Kya karta hai?
+
+👉 Object ko XML format me convert karta hai
+
+🔹 Code:
+String xml = taskContext.toXml();
+System.out.println(xml);
+🔹 Output:
+<TaskContext>
+   <name>DemoTask</name>
+   <id>CTX123</id>
+   <attributes>
+      <entry key="env" value="DEV"/>
+   </attributes>
+</TaskContext>
+----------------------------------------------------------
+✅ 4️⃣ fromXml(String xml):-
+💡 Kya karta hai?
+👉 XML se object re-create karta hai
+
+🔹 Code:-
+String xml = "<TaskContext><name>XMLTask</name><id>CTX777</id></TaskContext>";
+TaskContext ctx = new TaskContext();
+ctx.fromXml(xml);
+System.out.println(ctx.getName());
+System.out.println(ctx.getId());
+🔹 Output:-
+XMLTask
+CTX777
+-----------------------------------------------------
+✅ 5️⃣ clone():-
+💡 Kya karta hai?
+👉 Object ka copy (duplicate) banata hai
+
+🔹 Code:-
+TaskContext copy = (TaskContext) taskContext.clone();
+System.out.println(copy.getName());
+🔹 Output:-
+DemoTask
+----------------------------------------------------
+✅ 6️⃣ equals(Object obj):-
+💡 Kya karta hai?
+👉 Do objects same hai ya nahi check karta hai
+
+🔹 Code:-
+TaskContext ctx1 = new TaskContext();
+ctx1.setId("123");
+TaskContext ctx2 = new TaskContext();
+ctx2.setId("123");
+System.out.println(ctx1.equals(ctx2));
+🔹 Output:-
+true
+-------------------------------------------------------
+✅ 7️⃣ hashCode():-
+💡 Kya karta hai?
+👉 Object ka unique hash number deta hai
+
+🔹 Code:-
+System.out.println(taskContext.hashCode());
+🔹 Output (example):-
+45892134
+------------------------------------------------------------
+✅ 8️⃣ toString():-
+💡 Kya karta hai?
+👉 Object ko readable string format me convert karta hai
+
+🔹 Code:-
+System.out.println(taskContext.toString());
+🔹 Output:-
+TaskContext{name=DemoTask, id=CTX123, attributes={env=DEV}}
+------------------------------------------------------------------

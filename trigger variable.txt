@@ -1,0 +1,43 @@
+()Trigger Kaise Kaam Karta Hai?
+SailPoint mein jab bhi Identity Refresh task chalta hai ya HR system se data aggregate hota hai, 
+toh system check karta hai: "Kya is user par koi Lifecycle Trigger match ho raha hai?"
+Agar match ho jata hai, toh SailPoint us trigger se connected IdentityLifecycle workflow ko start kar deta hai 
+aur usme trigger variable ke andar uski saari details bhej deta hai.
+
+()Workflow ke andar is trigger variable ka kya use hai?
+Aap soch rahe honge ki jab workflow chal hi gaya, toh andar trigger variable ka kya kaam?
+Maan lijiye aapne ek hi common workflow banaya hai jo Mover (Transfer) aur Mover (Promotion) dono ke liye chalta hai. 
+Tab aap workflow ke andar code mein check kar sakte hain:-
+Java
+// Workflow ke andar ka BeanShell code
+String triggerName = trigger.getName();
+
+if ("Promotion Trigger".equals(triggerName)) {
+    // Sirf promotion wali access do
+} else if ("Transfer Trigger".equals(triggerName)) {
+    // Purani access remove karo aur nayi do
+}
+Short mein kahein toh:-Trigger woh "Switch" hai jo batata hai ki workflow kyun chala, 
+aur IdentityLifecycle workflow us switch ke dabte hi apna kaam shuru kar deta hai.
+
+()SailPoint UI mein aapko 4 main tarike ke triggers milte hain:-
+
+1. Attribute Change Trigger (Sabse Common):-
+Jab kisi user ka koi specific attribute (field) badal jata hai.
+Example: HR ne user ka status badal kar "Active" se "Terminated" kar diya.
+Action: Yeh trigger fire hoga aur Leaver Workflow ko start kar dega.
+
+2. Rule-Based Trigger:-
+Jab aapki requirement thodi complex ho aur simple attribute change se kaam na chale, tab aap ek BeanShell Rule likhte hain.
+Example: Agar user ka department "Finance" ho aur uski location "Mumbai" ho, tabhi event trigger ho.
+Action: Rule check karega, agar condition true hui toh workflow chal padega.
+
+3. Population / Filter Trigger:-
+Jab koi user kisi specific group (Population) ke andar aata hai ya bahar jata hai.
+Example: Ek user pehle normal employee tha, ab woh "Managers" ki population mein shamil ho gaya.
+Action: Manager Change/Promotion Workflow trigger ho jayega.
+
+4. Periodic Trigger (Time-Based):-
+Yeh time ya date ke hisab se fire hota hai.
+Example: User ki endDate ke 30 din pehle ek alert bhejna.
+Action: Yeh specific date par automatically workflow run kar deta hai.

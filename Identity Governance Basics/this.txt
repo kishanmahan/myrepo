@@ -1,0 +1,177 @@
+
+class CustomObject {
+    private String name;
+
+    public CustomObject(String name) { 
+        this.name = name; 
+    }
+
+    @Override
+    public String toString() {
+        // Yaha 'this' badalta rahega, depend karta hai call kisne kiya
+        return this.name; 
+    }
+}
+
+public class Demo {
+    public static void main(String[] args) {
+        // 1. Do alag-alag objects banaye gye
+        CustomObject obj1 = new CustomObject("ProjectAccess");
+        CustomObject obj2 = new CustomObject("Database");
+
+        // 2. Ab dono ko print karte hain
+        System.out.println(obj1); // Line A
+        System.out.println(obj2); // Line B
+    }
+}
+/////////*
+()Jis object ne us method ko "call" (pukara) kiya hai, wahi object us samay ke liye this ban jata hai.
+Step 1: Jab Line A (System.out.println(obj1)) chalti hai:
+Call karne waala kaun hai? obj1
+toString() method ke andar jaate hi, Java this ki jagah par obj1 ko bitha deta hai.
+return this.name; ka matlab ban jata hai: return obj1.name;
+Output aata hai: ProjectAccess
+
+Step 2: Jab Line B (System.out.println(obj2)) chalti hai:
+Call karne waala kaun hai? obj2
+Ab toString() method ke andar dobara entry hoti hai, lekin is baar Java this ki jagah par obj2 ko bitha deta hai.
+return this.name; ka matlab ban jata hai: return obj2.name;
+Output aata hai: Database
+*////////
+-------------------------------------------------------------------------------------------------------------------------------
+import java.util.Objects;
+
+// 1. Employee Class Jismein Equals aur HashCode Overridden Hain
+class Employee {
+    private int id;
+    private String name;
+
+    // Constructor
+    public Employee(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    // Overriding equals() method
+    @Override
+    public boolean equals(Object obj) {
+        // Step 1: Agar reference (memory address) same hai
+        if (this == obj) {
+            return true;
+        }
+
+        // Step 2: Agar saamne wala object null hai ya class alag hai
+        if (obj == null || this.getClass() != obj.getClass()) {
+            return false;
+        }
+
+        // Step 3: Object ko Employee mein typecast kiya
+        Employee other = (Employee) obj;
+
+        // Step 4: Actual data (id aur name) ko compare kiya
+        return this.id == other.id && Objects.equals(this.name, other.name);
+    }
+
+    // Overriding hashCode() method
+    @Override
+    public int hashCode() {
+        // Id aur name ke basis par unique hash code generate karega
+        return Objects.hash(id, name);
+    }
+
+    // Bonus: toString() bhi override kar diya taaki output saaf dikhe
+    @Override
+    public String toString() {
+        return "Employee [ID=" + id + ", Name=" + name + "]";
+    }
+}
+
+// 2. Main Class Jahan Se Program Run Hoga
+public class TestEmployee {
+    public static void main(String[] args) {
+        
+        // Humne do alag-alag objects banaye par dono ka data bilkul SAME hai
+        Employee emp1 = new Employee(101, "Rohan");
+        Employee emp2 = new Employee(101, "Rohan");
+        Employee emp3 = new Employee(102, "Shyam");
+
+        System.out.println("--- Objects Details ---");
+        System.out.println("Emp1: " + emp1);
+        System.out.println("Emp2: " + emp2);
+        System.out.println("Emp3: " + emp3);
+        System.out.println("-----------------------\n");
+
+        // Test 1: Using '==' operator (Yeh hamesha memory address/reference check karta hai)
+        System.out.println("1. emp1 == emp2 Check (Memory Address Comparison):");
+        System.out.println("   Result: " + (emp1 == emp2)); // Output: false (kyunki dono alag heap memory mein hain)
+        System.out.println();
+
+        // Test 2: Using '.equals()' (Jo humne content compare karne ke liye override kiya hai)
+        System.out.println("2. emp1.equals(emp2) Check (Content/Data Comparison):");
+        System.out.println("   Result: " + emp1.equals(emp2)); // Output: true (kyunki dono ki ID aur Name same hain)
+        System.out.println();
+
+        // Test 3: Alag data wale object ke saath check
+        System.out.println("3. emp1.equals(emp3) Check:");
+        System.out.println("   Result: " + emp1.equals(emp3)); // Output: false (kyunki data alag hai)
+        System.out.println();
+
+        // Test 4: HashCode verification
+        System.out.println("4. HashCode Comparison:");
+        System.out.println("   Emp1 HashCode: " + emp1.hashCode());
+        System.out.println("   Emp2 HashCode: " + emp2.hashCode());
+        System.out.println("   Emp3 HashCode: " + emp3.hashCode());
+        System.out.println("   (Notice karein ki Emp1 aur Emp2 ka hashcode bilkul same aayega!)");
+    }
+}
+output:-
+--- Objects Details ---
+Emp1: Employee [ID=101, Name=Rohan]
+Emp2: Employee [ID=101, Name=Rohan]
+Emp3: Employee [ID=102, Name=Shyam]
+-----------------------
+
+1. emp1 == emp2 Check (Memory Address Comparison):
+   Result: false
+
+2. emp1.equals(emp2) Check (Content/Data Comparison):
+   Result: true
+
+3. emp1.equals(emp3) Check:
+   Result: false
+
+4. HashCode Comparison:
+   Emp1 HashCode: 79043291
+   Emp2 HashCode: 79043291
+   Emp3 HashCode: 81092843
+   (Notice karein ki Emp1 aur Emp2 ka hashcode bilkul same aayega!)
+   
+/*upar equals ko override me teen condition kyu diya gaya hai?
+---->>>>>>
+()Kisi bhi naye developer ko yeh zaroor lagta hai ki jab hamein sirf id aur name (Step 4) ko compare karna hai, 
+toh upar faltu mein 3 conditions (checks) kyun lagayi gayi hain?
+Agar hum yeh checks nahi lagayenge, toh hamara program crash (NullPointerException ya ClassCastException) ho jayega.
+Aaiye in teeno conditions ka asli maqsad bilkul asaan bhasha mein samajhte hain:-
+
+Condition 1: if (this == obj) (Efficiency badhane ke liye):-
+Kyun lagaya? Maan lijiye aapne code likha emp1.equals(emp1); yaani aap ek object ko khud se hi compare kar rahe hain.
+Faida: == operator memory address check karta hai. Agar dono side bilkul same memory location hain, 
+toh Java andar ka data (id, name) check karne mein apna time waste nahi karega. 
+Woh pehli line se hi true return kar dega. Isse program fast chalta hai.
+
+Condition 2: if (obj == null) (Crash se bachne ke liye):-
+Kyun lagaya? Agar aapne kisi aise object ko pass kar diya jo abhi khali hai, jaise Employee emp2 = null; 
+aur aapne call kiya emp1.equals(emp2);.
+Faida: Agar hum yeh check nahi lagayenge, aur aage jaakar obj.getClass() call karne ki koshish karenge, 
+toh Java seedhe NullPointerException dega aur aapka chalta hua program wahi thapp ho jayega (crash). 
+Isliye null dikhte hi hum safe side par false dekar picha chuda lete hain.
+
+Condition 3: if (this.getClass() != obj.getClass()) (Galti se bachne ke liye):-
+Kyun lagaya? Maan lijiye aapke paas ek Student class hai aur ek Employee class hai. Dono mein hi id naam ka variable hai. 
+Galti se kisi ne likh diya employee.equals(student);.
+Faida: Dono ki class alag hai! Ek employee kabhi student ke barabar nahi ho sakta. 
+Agar yeh check nahi hoga, toh Step 3 par jab aap Student object ko zabardasti Employee mein badlenge ((Employee) obj), 
+toh Java gussa ho jayega aur ClassCastException dekar program crash kar dega. 
+Yeh line alag class ke objects ko pehle hi filter kar deti hai.
+
+*/

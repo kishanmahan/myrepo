@@ -1,0 +1,595 @@
+()1️⃣ ProvisioningPlan ka Simple Matlab:-
+Ye ek blueprint / plan hai ki SailPoint kaun sa account create/modify/remove kare aur kaun sa entitlement 
+assign/revoke kare.Kaun sa user(Identity) affected hai ye check karta hai.
+Ye ek blueprint ya plan hai jo decide karta hai ki SailPoint ka kaunsa action perform karna hai kisi identity (user) ke liye.
+ProvisioningPlan ke andar AccountRequest, AttributeRequest, aur Entitlement requests store hote hain.
+Kaam:-
+Kaunsa account create, modify, ya delete karna hai
+Kaunsa entitlement (role/permission) assign ya revoke karna hai
+Automation ke liye workflow trigger karna
+
+()1️⃣ ProvisioningPlan ka Simple Matlab:-
+Ye ek blueprint / plan hai ki SailPoint kaun sa account create/modify/remove kare aur kaun sa entitlement 
+assign/revoke kare.Iske through provisioning workflow automate hota hai.
+Example:-
+Naya employee join hota hai → ProvisioningPlan decide karega:
+Email account create karo
+Salesforce role assign karo
+VPN access enable karo
+-------------------------------------------------------------------
+
+
+-------------------------------
+1️⃣ Accounts Affected kya hai?
+Accounts Affected = Kaun-kaun se application accounts par provisioning change hone wala hai.
+Jab SailPoint koi ProvisioningPlan execute karta hai, tab system batata hai ki kis identity ke kis application account par impact padega.
+
+2️⃣ Simple Example:-
+User: Rahul
+Uske accounts hain:-
+Active Directory
+SAP
+Jira
+
+Agar Rahul ko Finance role diya gaya to system bolega:-
+Accounts Affected
+
+Rahul → ActiveDirectory
+Rahul → SAP
+Rahul → Jira
+
+Matlab 3 accounts par change hoga.
+------------------------------------
+
+2️⃣ Example Workflow:-
+Naya employee join hota hai:-
+ProvisioningPlan banega:-
+Employee ka name, department, role sab decide hoga
+
+Actions define honge:-
+Email account create karo
+Salesforce role assign karo
+VPN access enable karo
+
+--SailPoint execute karega plan
+Ye automatically accounts aur permissions create/assign karega,
+
+Common Methods:-
+Method	                     
+1️⃣ setIdentity(Identity identity):-
+Ye method define karta hai ki provisioning action kis user ke liye execute hoga.
+Agar identity set nahi ki gayi toh SailPoint ko pata nahi chalega provisioning kis user par apply karni hai.
+--code example:-
+ProvisioningPlan plan = new ProvisioningPlan();
+Identity user = context.getObjectByName(Identity.class, "rahul");
+plan.setIdentity(user);
+
+Real Example:-
+Employee Rahul join karta hai →
+ProvisioningPlan Rahul ke liye create hota hai →
+Accounts automatically create hote hain.
+
+2️⃣ setOperation(Operation op):-
+Description:-
+Ye define karta hai overall provisioning action type.
+
+Possible Operations:-
+Operation	     Meaning
+Create------Account create karna
+Modify------Account update karna
+Delete------Account remove karna
+Disable-----Account disable karna
+Enable------Account activate karna
+
+Code:-
+plan.setOperation(ProvisioningPlan.Operation.Create);
+
+3️⃣ add(AccountRequest request):-
+Description:-
+ProvisioningPlan me AccountRequest add karta hai.
+AccountRequest define karta hai:-
+kaun sa application
+kaun sa account
+kaun sa operation
+Agar multiple applications hain toh multiple AccountRequests add honge.
+
+Code:-
+plan.add(accountRequest);
+
+4️⃣ getAccountRequests():-
+Description;-
+ProvisioningPlan ke andar jitne bhi AccountRequests hain unko retrieve karta hai.
+Isse developer check kar sakta hai:-
+kaun kaun se applications modify honge
+kitne accounts affected hain
+
+Code:-
+List<ProvisioningPlan.AccountRequest> requests = plan.getAccountRequests();
+
+for(ProvisioningPlan.AccountRequest r : requests){
+    System.out.println(r.getApplicationName());
+}
+
+5️⃣ remove(AccountRequest request):-
+Description:-
+Agar kisi AccountRequest ko provisioning plan se hataana ho toh use kiya jata hai.
+
+Example:-
+Agar galti se wrong application add ho gaya ho.
+
+Code:-
+plan.remove(accountRequest);
+
+8️⃣ getOperation():-
+Description:-
+ProvisioningPlan ka current operation type return karta hai.
+
+Code;-
+ProvisioningPlan.Operation op = plan.getOperation();
+System.out.println(op);
+---------------------------------------------------------------------
+2. ProvisioningResult.STATUS_COMMITTEDYe SailPoint ka ek internal constant hai. 
+Iska matlab hai ki connector ne target system par operation successfully "Commit" (finish) kar diya hai.
+ConstantMatlab:-
+STATUS_COMMITTEDSuccess:-Kaam ho gaya (Account created/updated).
+STATUS_FAILEDError:-Target system ne mana kar diya (e.g., User already exists).
+STATUS_RETRYWait:-Network down tha, SailPoint thodi der baad fir koshish karega.
+STATUS_QUEUEDPending:-Request line mein hai (ServiceNow tickets mein aksar hota hai).
+
+
+---------------------------------------------------------------------
+
+()1️⃣ setArguments(Map args) (ProvisioningPlan):-
+🔹 Description:-
+setArguments() method extra parameters / configuration values ko ProvisioningPlan ke andar pass karne ke liye use hota hai.
+Kabhi-kabhi provisioning ke time additional instructions deni padti hain jaise:
+provisioning priority
+approval required
+provisioning mode
+custom workflow parameters
+connector configuration
+Ye sab arguments map me store hote hain.
+
+()Map structure:-
+Key   → parameter name
+Value → parameter value
+
+🔹 Code Example:-
+Map<String,Object> args = new HashMap<String,Object>();
+
+args.put("priority","HIGH");
+args.put("approvalRequired",true);
+
+ProvisioningPlan plan = new ProvisioningPlan();
+
+plan.setArguments(args);
+----------
+🔹 Arguments kaise read karte hain:-
+Map arguments = plan.getArguments();
+
+System.out.println(arguments.get("priority"));
+---------------------
+()2️⃣ getIdentity():-
+🔹 Description:-
+getIdentity() method ProvisioningPlan ka target user return karta hai.
+ProvisioningPlan me ek Identity object set hota hai jo batata hai:-
+Provisioning kis user par execute hoga
+Ye identity usually HR system se sync hui employee identity hoti hai.
+
+🔹 Code Example:-
+Identity user = plan.getIdentity();
+System.out.println("User Name: " + user.getName());
+System.out.println("Display Name: " + user.getDisplayName());
+
+
+-----------------------------------------
+2️⃣ AccountRequest:-
+AccountRequest = Application account par kya operation karna hai.
+Ye batata hai:-
+Account create karna
+Account delete karna
+Account update karna
+Example:-
+AccountRequest accReq = new AccountRequest();
+accReq.setApplication("ActiveDirectory");
+accReq.setOperation(AccountRequest.Operation.Create);
+Matlab:-
+Active Directory me new account create karo.
+
+2️⃣ AccountRequest (ProvisioningPlan ka important inner class)
+AccountRequest define karta hai target system me kya action lena hai.
+
+()setApplicationName(String name):-
+Target application define karta hai.
+accountReq.setApplicationName("ActiveDirectory");
+
+()setNativeIdentity(String id):-
+Target system ka username / account id.
+accountReq.setNativeIdentity("rahul.ad");
+
+()setOperation(Operation op):-
+Account level operation.
+accountReq.setOperation(ProvisioningPlan.Operation.Create);
+
+()addEntitlement(String entitlement):-
+User ko permission assign karta hai.
+accountReq.addEntitlement("READ_ACCESS");
+
+()removeEntitlement(String entitlement):-
+Permission revoke karta hai.
+accountReq.removeEntitlement("ADMIN_ACCESS");
+---------------------------------------------------------------------------------------------------------------------
+1.approvalSplitPoint variable ka Asli Kaam Kya Hai?
+Maano ki aapne ek saath 3 applications ke liye access request daali: Active Directory (AD), SAP, aur Salesforce.
+Ab in teeno applications ke approvals alag-alag logon ke paas jaane hain (jaise AD ka approval IT Team degi, SAP ka Finance Manager dega, aur Salesforce ka Sales Head dega).
+approvalSplitPoint isi jagah par kaam aata hai:-
+-->Plan ko Split Karna (Todna): Yeh chal rahe main Provisioning Plan ko dekhta hai aur use applications ya approvers ke hisab se alag-alag tukdon (sub-plans) mein tod deta hai.
+-->Parallel Approvals Bhejna: Yeh teeno approvals ko ek saath (parallelly) unke respective managers ke paas bhej deta hai taaki kisi ek ke chakkar mein poora kaam na ruke.
+-->Result ko Merge Karna: Jab teeno managers apna-apna approval de dete hain, toh approvalSplitPoint un saare approved tukdon ko wapas ek sath merge (jod) kar deta hai aur unhe aage final provisioning ke liye bhejta hai.
+
+Plan Kaun Banata Hai? Workflow ka starting step (jaise Compile Project ya provisioning subprocess).
+approvalSplitPoint Kya Karta Hai? Bane-banaye plan ko pakadta hai, use approval ke liye alag-alag hisson mein split (divide) karta hai, 
+aur approvals milne ke baad wapas combine (merge) kar deta hai.
+
+2.value koun deta hai approvalSplitPoint ko?
+-->SailPoint ki Global Configuration (LCM Configuration) se
+SailPoint ke UI mein ek jagah hoti hai jise LCM Configuration (Lifecycle Manager Configuration) kehte hain.
+Wahan system administrator select karta hai ki approvals ka level kya hona chahiye:-
+Approve by Application: Har application ke liye alag approval jaye.
+Approve by Role: Har role ke liye alag approval jaye.
+Jo bhi option UI mein select kiya jata hai, 
+SailPoint background mein approvalSplitPoint variable ko wahi value (jaise "Application" ya "Role") de deta hai.
+Bhai, aapne bilkul sahi pakda hai! approvalSplitPoint ke andar jo value hoti hai, 
+woh asal mein ek list (ya scheme) hi hoti hai jo SailPoint ko batati hai ki pure plan ko kis basis par alag-alag tukdon mein todna hai.
+
+()plan ka hissa hai approvalset?
+Aapne jo kaha: "approvalSet toh plan ka tukda hai" — iska concept ekdum sahi hai, 
+kyunki jo cheez approve honi hai, woh aakhirkaar plan se hi aayi hai.
+Aaiye ab isko technical tarike se samajhte hain ki approvalSplitPoint dono ko kaise todta hai:-
+-->Asliyat mein kya hota hai?
+approvalSplitPoint sirf plan ko nahi todta, balki Plan aur ApprovalSet dono ko aamne-saamne rakh kar, 
+ek saath(parallelly) unke jode (pairs) banakar todta hai.
+
+()ProvisioningPlan (The "What" - Kya kaam hona hai): Identity: Amit ──> AccountRequest (Application: AD) ──> 
+->AttributeRequest (Operation: Add, Name: memberOf, Value: Finance-Group).
+(Yeh ekdum raw technical instruction hai engine ke liye).
+
+()ApprovalSet (The "Who" - Kiski permission chahiye): ApprovalItem (Application: AD, Instance: Finance-Group, 
+Approver: Rahul Manager, Status: Pending).
+(Yeh sirf approvals ko track karne ke liye hai).
+
+()1. Splitting se pehle (Bada Project):-
+Bada ProvisioningPlan: [AD Request + SAP Request]
+Bada ApprovalSet: [AD ApprovalItem (Manager) + SAP ApprovalItem (App Owner)]
+
+2. approvalSplitPoint ka Action (The Breakdown):-
+Yeh engine donon ko aapas mein match karta hai aur unke tukde kar deta hai:-
+Tukda 1 (For AD): Isme se AD ka ProvisioningPlan aur AD ka ApprovalItem alag ho jata hai. 
+Yeh dono milkar ek chota subprocess banate hain aur AD ke manager ke paas chale jaate hain.
+
+Tukda 2 (For SAP): Isme se SAP ka ProvisioningPlan aur SAP ka ApprovalItem alag ho jata hai. 
+Yeh dono milkar doosre subprocess mein SAP ke owner ke paas chale jaate hain.
+
+flow:-
+[User Request / Lifecycle Event] 
+       │
+       ▼
+ 1. Provisioning Plan (Pehle banta hai)
+       │  (Sirf kacha data: "Amit ko Active Directory me Finance Group de do")
+       ▼
+ 2. Compile Project (Workflow Step)
+       │  (Is raw plan ko system compile karta hai)
+       ▼
+ 3. Provisioning Project (Baad me banta hai)
+       │  (Isme Plan + ApprovalSet dono taiyar hokar aate hain)
+       ▼
+ 4. approvalSplitPoint:-plan ko todta hai approvalset ke samne,subset ban gaya(har subset ka workitem)
+fir approver ke pass request jata hai aur approve/reject hone ke baad ye approvalSplitPoint unhe merge kar deta hai aur project me de deta hai.
+
+-------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------
+()manager ke approval ke baad workitem ke finished hote hi kya hota hai,koun pata lagata hai ki approve hua ya reject aur fir provissiningplan me add koun karta hai workitem ko?
+-->step:1:-
+Q1. WorkItem ke Finished hote hi kya hota hai?
+Jaise hi manager UI par submit dabata hai, background me ye sequential operations trigger hote hain:-
+
+spt_work_item Update: Jo temporary row database ki spt_work_item table me pending padi thi, 
+uska status badal kar Finished ya Closed ho jata hai. Usme approver ka decision aur comments permanent save ho jate hain.
+
+Workflow Awaken (Neend se jagna): Jo main Workflow execution thread abhi tak Suspended (Hold) state me database me lock tha 
+(spt_workflow_case table me), use background process wapas active memory (Heap) me khinch kar laati hai aur unfreeze karti hai.
+
+Step Context Evaluation: Engine workflow ke agle step par badhta hai, 
+jo standard workflows me hamesha processApprovalDecisions hota hai.
+
+--step:2:-
+Q2. Koun pata lagata hai ki Approve hua ya Reject?
+Yeh pata lagane ka kaam sailpoint.workflow.IdentityRequestLibrary class ke backend methods karte hain, 
+aur ise workflow me action="processApprovalDecisions" step ke throw chalaya jata hai.
+
+Manager ka actual decision ApprovalSet ke andar ke har ek ApprovalItem ke state field
+(jaise State="Approved" ya State="Rejected") me band hota hai.
+
+processApprovalDecisions action is ApprovalSet par loop chalata hai aur check karta hai ki manager ne kis item ke samne green 
+tick (Approve) mara hai aur kiske samne red cross (Reject).
+
+--step:3:-
+Q3. ProvisioningPlan me add koun karta hai workitem ko?
+Yahan par ek chhota sa technical correction hai bhai: WorkItem ko ProvisioningPlan me add nahi kiya jata, 
+balki ProvisioningPlan pehle se hi bana hota hai,aur manager ke decision ke mutabik us plan me se chizen KAATI(Filter ki) jaati hain.
+
+Aur ye kaam bhi processApprovalDecisions hi karta hai!
+
+Iska complete backend modification mechanism samajho:-
+Jab tumne cart submit kiya tha, tabhi ek Master ProvisioningPlan ban gaya tha (Maan lo: AD account + SAP account).
+
+Agar manager ne SAP ko Approve kiya aur AD ko Reject kiya.
+
+Toh processApprovalDecisions original ProvisioningPlan object ko memory me kholega.Woh dekhega ki AD request ke samne State="Rejected" laga hai.
+
+toh Yeh step turant us ProvisioningPlan ke andar se AD waale AccountRequest block ko permanently delete (remove) kar dega.
+
+Ab plan me sirf approved waala SAP account bacha.Is filtered plan ko lekar yeh aage badhega aur agle step compileProject aur provisioner ko de dega.
+
+--------------------------------------------------------------------------------------------------------------------------
+/////////*
+()splitApprovalsMap:-Jab ek bada ApprovalSet hota hai aur usko different approvers / groups / owners ke hisab se split kiya jata hai,
+tab jo result banta hai usko aksar splitApprovalsMap me store karte hain.
+splitApprovalsMap ek Map hota hai.Isliye ye multiple key-value pairs store kar sakta hai.
+
+()Iske andar kya store hota hai?
+-->Generally 2 cheeze:-key aur value:-
+
+(1)Key:-Approver / owner / approval target
+Example:-
+Manager
+ApplicationOwner
+SecurityTeam
+John
+ABC_Group
+
+(2)Value:-
+Usually ApprovalSet
+Jisme us approver ke items hote hain.
+Example:-
+Key = Manager
+
+Value =
+ApprovalSet
+   ├── RoleAdd
+   └── EntitlementAdd
+
+Structure:-
+splitApprovalsMap
+   |
+   ├── Manager → ApprovalSet
+   │       ├── Item1
+   │       └── Item2
+   │
+   ├── AppOwner → ApprovalSet
+   │       └── Item3
+   │
+   └── SecurityTeam → ApprovalSet
+           └── Item4
+*/////////
+//////////*
+()replicator kya karta hai?
+Ye loop/iterate karta hai.
+Map ko read karta hai.
+Aur har map entry ke liye alag approval generate karta hai,aur approval step internally un sab approvals ko workitem me badal deta hai..
+ex;-
+replicator="splitApprovalsMap":-
+splitApprovalsMap me ye 3 entry data hai:-
+Manager      → ApprovalSet(Item1, Item2)
+AppOwner     → ApprovalSet(Item3)
+Security     → ApprovalSet(Item4, Item5)
+
+teeno ka alag alag teen approval banadega.
+*///////////
+////////*
+Example full flow:-
+Request aayi approvalSet me:-
+Add SAP Role
+Add AD Group
+Add DB Access
+
+Split:-
+SAPOwner → ApprovalSet(1 item)
+ADOwner → ApprovalSet(1 item)
+DBATeam → ApprovalSet(1 item)
+
+()<Approval replicator="splitApprovalsMap"/>
+Output:-
+3 workitems create honge.
+1 → SAP Owner inbox
+1 → AD Owner inbox
+1 → DBA Team inbox
+
+()replicator me item aur itemkey:-
+-->KEY   = Approver
+VALUE = ApprovalSet
+
+itemkey          item
+SAPOwner → ApprovalSet(1 item)
+ADOwner → ApprovalSet(1 item)
+DBATeam → ApprovalSet(1 item)
+*///////////
+////////////*
+()replicator="splitApprovalsMap" directly WorkItem create nahi karta.
+Ye Approval step ko replicate (multiple approval instances) karta hai.
+Phir Approval step internally WorkItem create karta hai.
+
+example flow:-
+Example:-
+splitApprovalsMap me:-
+Manager    → ApprovalSet(A,B)
+AppOwner   → ApprovalSet(C)
+Security   → ApprovalSet(D,E)
+fir ishko approval se workitem me badal deta hai.
+*////////////
+///////*
+()ownerSubSet kya hai?
+Original ApprovalSet ka chhota tukda (subset) jo ek specific owner ko diya gaya hai.
+Example:-
+Original ApprovalSet:-
+ApprovalSet
+ ├── RoleA
+ ├── RoleB
+ ├── ADGroup
+ └── SAPRole
+
+Split hua:-
+Manager
+   → RoleA, RoleB
+
+AppOwner
+   → ADGroup
+
+Security
+   → SAPRole
+
+Ab:-
+Manager ke liye
+ownerSubSet
+   ├── RoleA
+   └── RoleB
+AppOwner ke liye
+ownerSubSet
+   └── ADGroup
+Security ke liye
+ownerSubSet
+   └── SAPRole
+
+So:-
+ownerSubSet = ek approver ka approval subset.
+*/////////
+//////////*
+()lineItem practically kya karta hai?
+Approval UI / WorkItem me jo individual approval rows/items dikhte hain, unke source ko indicate karta hai.
+Example:-
+Manager inbox me:-
+Approve Access
+[Approve] RoleA
+[Approve] RoleB
+Ye data ownerSubSet se aa raha ho sakta hai.
+
+Short answer:-
+ownerSubSet = specific owner/approver ka ApprovalSet subset.
+lineItem="ownerSubSet" =
+Approval step me line-item approvals ke liye ownerSubSet variable use karo.
+*///////////
+///////////*
+()yaha ownersubsets ka alag alag approve aur reject decisions kaha store hoga?
+-->Maan lo:-
+Original ApprovalSet me 4 request teen object ka:-
+RoleA
+RoleB
+ADGroup
+SAPRole
+
+Split hua:-
+Manager   → ownerSubSet1
+AppOwner  → ownerSubSet2
+Security  → ownerSubSet3
+----------------------
+Step 1 — Split ke baad kaha store hai?
+splitApprovalsMap:-
+
+Manager
+   → ownerSubSet1
+
+AppOwner
+   → ownerSubSet2
+
+Security
+   → ownerSubSet3
+
+Aur:-fir badla approvals aur approvals se workitems:-
+ownerSubSet1 = ApprovalSet(RoleA, RoleB)
+ownerSubSet2 = ApprovalSet(ADGroup)
+ownerSubSet3 = ApprovalSet(SAPRole)
+--------------------------------------------------------------------------------
+Step 2 — Approver decision kaha store hoga?
+Har ownerSubSet ke apne ApprovalItems me.
+
+()Manager WorkItem:-
+Manager approve/reject karta hai.
+
+Before manager ko bhejne ke pehle:-
+ownerSubSet1
+RoleA
+RoleB
+
+Manager action lene ke baad:-
+RoleA → Approve
+RoleB → Reject
+
+manager decision lene ke baad decision Stored in ownerSubSet:-
+ownerSubSet1
+RoleA (Approved)
+RoleB (Rejected)
+AppOwner WorkItem
+---------------------
+Before manager ko bhejne ke pehle:-
+ownerSubSet2
+ADGroup
+
+manager ke Action lene ke baad:-
+ADGroup → Approve
+
+manager decision lene ke baad decision Stored in ownerSubSet:-
+ownerSubSet2
+ADGroup (Approved)
+--------------------
+Security WorkItem
+Before manager ko bhejne ke pehle:-
+ownerSubSet3
+SAPRole
+
+Action:
+SAPRole → Reject
+
+manager decision lene ke baad decision Stored in ownerSubSet in ApprovalItem:-
+ownerSubSet3
+SAPRole (Rejected)
+------------------------------
+Inside each ownerSubSet's ApprovalItems.
+Structure:-
+ownerSubSet (ApprovalSet)
+     |
+     └── ApprovalItem
+             |
+             └── state / decision
+---------------------------------------
+Example:-
+ownerSubSet1
+
+ApprovalItem(RoleA)
+      decision=Approved
+
+ApprovalItem(RoleB)
+      decision=Rejected
+*//////////
+/////////////*
+()variable workflow kya ha kya karta hai in Workflow?
+-->Yaha workflow = Workflow object hai.
+Ye current running workflow ka object/container hota hai.
+Iske andar workflow ki variables, state, context, data hota hai.
+ex:-
+SailPoint me:-
+workflow.get("approvalSet");
+Matlab:-
+
+-->Suppose workflow me variable hai:-
+<Variable name="approvalSet"/> declare hai in current workflow:-
+Value stored:-
+ApprovalSet object
+-->Workflow object se "approvalSet" variable ki value nikalo.
+Code:-
+ApprovalSet set =
+    (ApprovalSet) workflow.get("approvalSet");
+
+()workflow kya store karta hai?
+Workflow object me usually:-
+workflow variables,state,arguments,metadata store karta hai.
+*////////////

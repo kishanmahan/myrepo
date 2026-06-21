@@ -1,0 +1,22 @@
+1️⃣ ManagedAttribute kya hai?
+ManagedAttribute basically real-world application ya target system me attribute ka representation hai.
+Jab IdentityIQ kisi external system (jaise Active Directory, HR system, database) ke attribute ko manage karta hai,
+tab ManagedAttribute use hota hai.
+Matlab:-
+AttributeDefinition → metadata/rules define karta hai
+ManagedAttribute → actual mapping + value handling external system ke liye.
+
+2️⃣ ManagedAttribute ke andar kya hota hai:-
+ManagedAttribute ke key fields aur methods ye hote hain:-
+Property / Method	                            Kaam
+getName() / setName(String name):-----------------------------------Attribute ka naam
+getValue() / setValue(Object value):---------------------------Attribute ka actual value
+getType() / setType(Class type):------------------------------Data type define karta hai
+getApplication() / setApplication(Application app):----------Ye attribute kis application/system se belong karta hai
+isReadOnly() / setReadOnly(boolean):--------------------------Read-only hai ya editable
+isRequired() / setRequired(boolean):--------------------------Mandatory hai ya optional
+getFormat() / setFormat(String format):---------------------Format rules (jaise date format)
+getDefaultValue() / setDefaultValue(Object value):-----------Default value agar system me value nahi hai
+clone():------------------------------------------------------Attribute ka exact copy banata hai
+equals() / hashCode():---------------------------------------Object comparison aur hashing ke liye.
+

@@ -1,0 +1,105 @@
+()2️⃣ Search Objects:-
+List<Identity> users = context.search(Identity.class, new Filter());
+Matlab:-
+Ye SailPoint database se objects search karta hai.
+Tum:-
+identities
+roles
+applications
+links
+sab search kar sakte ho.
+
+1️⃣ Filter Types (Important):-
+Filter	          Matlab
+Filter.eq()-------equal
+Filter.ne()-------not equal
+Filter.like()-----similar value
+Filter.and()------multiple conditions
+Filter.or()-------alternative condition
+
+Example 2 (Filter ke saath search):-
+Filter filter = Filter.eq("department","Finance");
+Iterator users = context.search(Identity.class, filter);
+while(users.hasNext()){
+Identity user = (Identity) users.next();
+System.out.println(user.getName());
+}
+Matlab:-
+Finance department ke saare users search karo
+
+
+1️⃣ Filter.ne() → Not Equal:-
+Matlab: jo value equal nahi hai.
+Example: Department Finance nahi ho.
+
+import sailpoint.object.Identity;
+import sailpoint.object.Filter;
+import sailpoint.api.SailPointContext;
+import java.util.Iterator;
+Filter filter = Filter.ne("department", "Finance");
+Iterator users = context.search(Identity.class, filter);
+while(users.hasNext()) {
+    Identity user = (Identity) users.next();
+    System.out.println(user.getName());
+}
+📌 Result
+Finance department ke alawa sab users milenge.
+
+2️⃣ Filter.like() → Similar Value
+
+Matlab: similar ya pattern match.
+Example: email me gmail ho.
+
+import sailpoint.object.Identity;
+import sailpoint.object.Filter;
+import java.util.Iterator;
+Filter filter = Filter.like("email", "gmail");
+Iterator users = context.search(Identity.class, filter);
+while(users.hasNext()) {
+    Identity user = (Identity) users.next();
+    System.out.println(user.getAttribute("email"));
+}
+📌 Result:-
+Jo users ke email me gmail hai wo milenge.
+
+3️⃣ Filter.and() → Multiple Conditions:-
+Matlab: dono conditions true honi chahiye.
+Example:-
+department = Finance
+location = India
+
+import sailpoint.object.Filter;
+import sailpoint.object.Identity;
+import java.util.Iterator;
+Filter filter = Filter.and(
+        Filter.eq("department", "Finance"),
+        Filter.eq("location", "India")
+);
+Iterator users = context.search(Identity.class, filter);
+while(users.hasNext()) {
+    Identity user = (Identity) users.next();
+    System.out.println(user.getName());
+}
+📌 Result:-
+Sirf Finance department + India location ke users.
+
+4️⃣ Filter.or() → Alternative Condition:-
+Matlab: koi bhi condition true ho.
+Example:-
+department = Finance
+department = HR
+
+import sailpoint.object.Filter;
+import sailpoint.object.Identity;
+import java.util.Iterator;
+Filter filter = Filter.or(
+        Filter.eq("department", "Finance"),
+        Filter.eq("department", "HR")
+);
+Iterator users = context.search(Identity.class, filter);
+while(users.hasNext()) {
+    Identity user = (Identity) users.next();
+    System.out.println(user.getName());
+}
+📌 Result:-
+Finance ya HR department ke users.

@@ -1,0 +1,465 @@
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------
+Session 10 -> Merging or correlation of Non-Authoritative :-
+
+Note: Global setting -> Identity Mapping -> inactiveIdentity Attribute Name है और source Mapping में inactiveIdentity Same spelling होना चाहिए।
+
+(Star) Onboarding Non-Authoritative Application: (Delimited file use):-
+
+-> मैं csv file # 1 (finance-users.csv):-
+employee_id, db_id, app_privileged, acct_last_login, app_inactive, groups, username
+-> 1a2c3a, 112, false, 09/17/2012 21:26:43, false, false, Acctspayable, Richard Jackson
+-> 1a2c3a, 112, true, 09/17/2012 21:26:43, true, true, Acctspayable, Richard Jackson
+-> 1a2c3a, 112, true, 09/17/2012 21:26:43, false, false, Payroll Analyst, Richard Jackson
+-> 1a2c3a, 112, false, 09/17/2012 21:26:43, false, false, Payroll Analyst, Nan Review
+-> 1a2c3a, 112, true, 09/17/2012 21:26:43, false, false, AcctsReceivable, Richard Jackson - Admin
+-> 1a2c3a, 212, true, 09/17/2012 21:26:43, true, true, AcctsReceivable, Richard Jackson Admin
+-> 1a2c3a, 212, true, 09/17/2012 21:26:43, true, true, AcctsReceivable, Richard Jackson Admin
+-> 1a2c3a, 212, true, 09/17/2012 21:26:43, false, false, Payroll Analyst, Richard Jackson Admin
+-> 1a2c3a, 212, true, 09/17/2012 21:26:43, false, false, plan Review, Richard Jackson Admin
+-> 1a2c3b, 113, false, 09/17/2012 21:26:43, false, false, AcctsReceivable, Mark White
+-> 1a2c3c, 114, true, 09/17/2012 21:26:43, false, false, DPA, Charles Harris
+-> 1a2c3c, 114, false, 09/17/2012 21:26:43, false, false, Financial Analyst, Charles Harris
+-> 1a2c3c, 114, false, 09/17/2012 21:26:43, false, false, Strategy & planning, Charles Harris
+-> 1a2c3c, 114, false, 09/17/2012 21:26:43, false, false, Financial planning, Charles Harris
+-> 1a2c3c, 114, 09/17/2012 21:26:43, false, false, Plan Review, Charles Harris
+-> 1a2c3d, 115, true, 09/17/2012, 21:26:43, false, true, DPA, Susan Martin
+-> 1a2c3d, 115, true, 09/17/2012 21:26:43, false, true, Financial Analysis, Susan Martin
+-> 1a2c3d, 115, true, 09/17/2012 21:26:43, false, true, Financial planning, Susan Martin
+-> 1a2c3a9a, 115, false, 09/17/2012 21:26:43, false, true, Strategy & planning, Susan Martin
+-> 1a2c3a9d, 158, false, 09/17/2012 21:26:43, false, false, AcctsPayable, Larry Morgan
+-> 1a2c3a9d, 159, true, 09/17/2012 21:26:43, false, false, AcctsPayable, Melissa Bailey
+-> 1a2c3a9e, 159, true, 09/17/2012 21:26:43, false, false, AcctsPayable, Frank Rivera
+-> 1a2c3b4a, 161, true, 09/17/2012 21:26:43, false, true, AcctsReceivable, Brenda Cooper
+-> 1a2c3b4b, 162, false, 09/17/2012 21:26:43, false, false, AcctsReceivable, Scott Richardson
+-> 1a2c3b4c, 163, false, 09/17/2012 21:26:43, false, false, AcctsReceivable, Amy Cox
+-> 1a2c3b4d, 164, false, 09/17/2012 21:26:43, false, false, AcctsReceivable, Eric Howard
+-> 1a2c3bae, 165, false, 09/17/2012 21:26:43, false, false, AcctsReceivable, Ann Howard
+-> 1a2c3caa, 166, false, 02/27/2008 21:42:51, false, false, Financial Analysis, Stephen Torres
+-> 1a2c3caa, 166, false, 02/27/2008 21:42:51, false, false, Financial planning, Stephen Torres
+-> 1a2c3cab, 167, false, 09/17/2012 21:26:43, false, false, Financial Analysis, Rebecca Peterson
+
+और AuthEmployee.csv -> ये है
+
+-> employeeId, firstName, lastName, managerId, fullName, email, department, region, location, inactiveIdentity, jobtitle, costcenter
+
+-> 1a, James, Smith, NULL, James.Smith, James.Smith@demoexample.com, Executive management, Americas, Austin, Inactive, "L103, L07, L08, L09"
+
+-> 1a1a, Mary, Jhonson, 1a, Mary.Jhonson, Mary.Jhonson@demoexample.com, Regional operations, Americas, Austin, Inactive, Global Infrastructure manager, "L103, L07"
+
+-> 1a2b, Jhon, Williams, 1a, John.Williams, John.Williams@demoexample.com, Regional operations, Americas, Brazil, True, "L103, L09"
+
+->If non-authoritative application aggregate and new identity created, that identity called orphan identity.
+-> If non-authoritative application aggregate, no new identity should create, all existing accounts should map with existing identity.
+(Star) Finance-users.csv है जो जिसमे Susan Martin का जो कि एक ही employee है, 
+उसके चार Groupmbr (Groupmembers) है तो CSV में 4 line एक ही employee के identityiq में हमेशा एक होना चाहिए, OR Employee तो one ही Employee होना चाहिए identityiq में ।
+तो Solution (kata hua) हमें merge करना होगा Susan Martin के चारो line को एक में।
+
+Q. तो How can we merge it?
+
+-> 1a2c3d, 115, false, 09/17/2012 21:26:43, false, true, "DPA, Financial Analysis, Financial planning, Strategy & planning", Susan Martin.
+
+-> हो गया चार line से एक line in CSV. बाकि को भी ऐसे ही करलो । 
+
+csv file # 1 (finance-users.csv):-
+->employee_id, db_id, app_privileged, acct_last_login, app_inactive, groups, username
+-> 1a2c3a, 112, false, 09/17/2012 21:26:43, false, false, Acctspayable, Richard Jackson
+-> 1a2c3a, 112, true, 09/17/2012 21:26:43, true, true, Acctspayable, Richard Jackson
+-> 1a2c3a, 112, true, 09/17/2012 21:26:43, false, false, Payroll Analyst, Richard Jackson
+-> 1a2c3a, 112, false, 09/17/2012 21:26:43, false, false, Payroll Analyst, Nan Review
+-> 1a2c3a, 112, true, 09/17/2012 21:26:43, false, false, AcctsReceivable, Richard Jackson - Admin
+-> 1a2c3a, 212, true, 09/17/2012 21:26:43, true, true, AcctsReceivable, Richard Jackson Admin
+-> 1a2c3a, 212, true, 09/17/2012 21:26:43, true, true, AcctsReceivable, Richard Jackson Admin
+-> 1a2c3a, 212, true, 09/17/2012 21:26:43, false, false, Payroll Analyst, Richard Jackson Admin
+-> 1a2c3a, 212, true, 09/17/2012 21:26:43, false, false, plan Review, Richard Jackson Admin
+-> 1a2c3b, 113, false, 09/17/2012 21:26:43, false, false, AcctsReceivable, Mark White
+-> 1a2c3c, 114, true, 09/17/2012 21:26:43, false, false, DPA, Charles Harris
+-> 1a2c3c, 114, false, 09/17/2012 21:26:43, false, false, Financial Analyst, Charles Harris
+-> 1a2c3c, 114, false, 09/17/2012 21:26:43, false, false, Strategy & planning, Charles Harris
+-> 1a2c3c, 114, false, 09/17/2012 21:26:43, false, false, Financial planning, Charles Harris
+-> 1a2c3c, 114, 09/17/2012 21:26:43, false, false, Plan Review, Charles Harris
+-> 1a2c3d, 115, false, 09/17/2012 21:26:43, false, true, "DPA, Financial Analysis, Financial planning, Strategy & planning", Susan Martin.
+-> 1a2c3a9a, 115, false, 09/17/2012 21:26:43, false, true, Strategy & planning, Susan Martin
+-> 1a2c3a9d, 158, false, 09/17/2012 21:26:43, false, false, AcctsPayable, Larry Morgan
+-> 1a2c3a9d, 159, true, 09/17/2012 21:26:43, false, false, AcctsPayable, Melissa Bailey
+-> 1a2c3a9e, 159, true, 09/17/2012 21:26:43, false, false, AcctsPayable, Frank Rivera
+-> 1a2c3b4a, 161, true, 09/17/2012 21:26:43, false, true, AcctsReceivable, Brenda Cooper
+-> 1a2c3b4b, 162, false, 09/17/2012 21:26:43, false, false, AcctsReceivable, Scott Richardson
+-> 1a2c3b4c, 163, false, 09/17/2012 21:26:43, false, false, AcctsReceivable, Amy Cox
+-> 1a2c3b4d, 164, false, 09/17/2012 21:26:43, false, false, AcctsReceivable, Eric Howard
+-> 1a2c3bae, 165, false, 09/17/2012 21:26:43, false, false, AcctsReceivable, Ann Howard
+-> 1a2c3caa, 166, false, 02/27/2008 21:42:51, false, false, Financial Analysis, Stephen Torres
+-> 1a2c3caa, 166, false, 02/27/2008 21:42:51, false, false, Financial planning, Stephen Torres
+-> 1a2c3cab, 167, false, 09/17/2012 21:26:43, false, false, Financial Analysis, Rebecca Peterson
+
+
+-> Application Definition -> Add New Application
+
+-> Name -> Financial Application ->
+
+-> The Administrator -> Delimited File
+
+-> Configuration -> File Path ->
+
+-> C:\Training\Training Data\Finance-users.csv
+
+-> File encoding -> खाली रखे ->
+
+-> [Dot] Delimited -> Delimiter -> ,
+
+-> [Dot] Local -> [Tick Mark] file has column header on first line ->
+
+-> merging ->
+
+-> Data needs to be merged -> [Tick Mark]
+
+-> index column -> dbId ->
+
+-> Data sorted by the index column(s)? -> [Tick Mark] -> ignore case while merging ->
+
+-> और Which columns should be merged? में वही column CSV का दो जो merged करना है, अलग अलग:
+
+-> उस बड़े box -> Which columns should be merged? -> groupmbr -> और 
+
+->schema ->
+
+-> Display Attribute ->
+
+-> userName ->
+
+-> identity Attribute -> हमेशा unique ->
+
+-> dbId CSV का -> Native object type ->
+
+-> account -> Discover schema Attributes
+
+-> और हम To make attribute as a group
+
+-> groupmbr को edit ->
+
+-> Managed [Tick Mark] Entitlement [Tick Mark]
+
+-> Multivalued [Tick Mark]
+
+-> Save -> preview -> merged दिख रहा होगा।
+
+-> save ->
+
+Note: Creation rule हमेशा Authoritative application के लिए बनेगा ।
+
+Note: Non-authoritative के लिए नहीं बनेगा।
+
+तो correlation होगा । correlation mapping account with identity.
+
+A. Correlation can be configured using two ways:-
+
+From UI -> Simplest
+
+Using rule -> correlation Rule
+
+From UI -> Application Definition -> Financial Application -> Correlation -> Account Correlation में click-> New
+
+-> Next -> enter a name for this new configuration ->
+
+-> Financial Application correlation: Hemanth
+
+-> Next -> Next -> Application Attribute -> employeeId ->
+
+->EmpID है क्योंकि EmpID से ही Map करेंगे identityiq to Account -> अगर AuthEmployee में खोलो (kata hua) EmpID है Susan Martin का ->
+->Ctrl+F / Ctrl+V -> जो find what -> 1a2c3d -> तो Susan Martin मिल जाएगी लेकिन अगर (kata hua) Find what में Susan Martin
+->जो Finance-users.csv के में username है -> Finance-users.csv के में तो space है लेकिन Susan Martin के बीच space तो नहीं मिलेगा -> 
+->Same spelling कर ले नहीं मिलेगा -> Finance-users.csv में और space को dot में convert कर दे rule se तो match हो जाएगा 
+->AuthEmployee में लेकिन यहाँ match नहीं तो EmpId best है क्योंकि Employee Id AuthEmployee और Finance-users.csv से Match करता है।
+
+->Application Attribute में employeeId और identity Attribute में -> EmpId -> Add ->save -> save.
+
+-> Setup -> Tasks -> New tasks
+
+-> Account Aggregation ->
+
+-> Name -> AccAgg - Finance Application -> Account Aggregation options के Right में -> Financial Application -> scroll -> save and Execute.
+
+-> ok -> Task Results ->
+
+-> AccAgg-Finance Application ->
+
+-> यहाँ identity created -> 4 यानी ये orphan identity है चारो।
+
+(Star) How orphan identity created?
+
+-> if identity doesn't exist in identityiq or correlation failed to identified the accounts.
+
+-> identity warehouse ->
+
+-> koi bhi identity में जाओ ->
+
+-> Susan Martin -> Application Accounts -> Financial Application ->
+
+-> Entitlements -> कोई भी Entitlement पे click करों तो देखोगे -> source -> Aggregation है ।
+
+-> identity warehouse ->
+
+-> Richard -> click ->
+
+-> Application Accounts -> दो है 
+
+////////////*
+()Manager correlation क्या है?
+-> Manager correlation ek process hota hai jo kisi user ke manager ko automatically identity me assign करता है।
+-> Ye system me:- user ke data (Jaise HR System से आया hua data) ko check करता है। Aur uske basis par manager kaun hai -> decide karta hai.
+-> Phir us manager ko user ke profile me link kar deta hai.
+Ex -> Maan le HR System me data hai.
+-> Employee ----- Manager ID
+Rahul -------- M123
+Aman --------- M456
+
+-> Ab identityiq kya karega:-
+Rahul ke record me dekhega -> manager ID = M123
+System me M123 kis user ka ID hai -> usko find karega.
+Rahul ke profile me us manager ko attach karega.
+-> Isi process ko hi Manager correlation bolte hain.
+
+()Attribute Based Correlation:-
+Assigns/Application Attribute == identity Attribute?
+
+use kya hota hai identityiq ?
+-> Attribute-based correlation ka kaam hota hai Application ke accounts ko identity (users) se match karna.
+-> "Application attributes == identity attributes" ka matlab system check karta hai ki Application ka attribute (jaise username, email, employeeId) aur identity ka bhi same field.
+-> agar match ho gaya -> account us identity se link ho jayega.
+-> Example:- identity:-
+Name:- Rahul
+Employee Id:- 101
+Email:- rahul@gmail.com
+
+-> Application Account (Jaise AD ya PB)
+Username :- Rahul
+employeeId :- 101
+email :- rahul@gmail.com
+*////////////////////////
+----------------------------------------------------------------------------------------------------------------------------------------
+()Correlation Rule :-
+-> Application.employeeId = Identity.employeeId
+-> Match mila lagbhag (exp == 101) toh identityiq bolega :- "ye account automatically Rahul se link ho jayega"
+-> Agar match na mile Toh Account uncorreleated/orphan account" ban Jata hai.
+-> Fir manually ya rule se link karna padta hai.
+
+-> Agar orphan account delete karna ho / aur delete karne se
+-> Setup -> tasks -> search->prune identity cubes ->//ye sare orphan accounts ko delete karta hai.
+-> saare identifier ki delete account nahi hai (kata hua) -> prune identity cubes
+-> click it -> save and execute -> OK
+-> aur Task Results -> see -> success or not.
+
+()Disable optimization of unchanged accounts in aggregation task?
+-> Agar account me koi change nahi hua (unchanged account) to system usko SKIP kar deta hai processing me. (Taki performance fast rahe).
+-> Jab disable optimization of unchanged Accounts [Tick mark] Enable karte ho Tab system optimization OFF kar deta hai.
+-> Matlab pehle unchanged accounts SKIP ho Jate the ab unchanged accounts bhi process hoge. Har account ko dobara check karega.
+Ex -> optimization ON (default):-
+-> sirf 100 changed accounts process honge. 900 unchanged -> SKIP -> fast.
+-> Disable optimization Enable :-
+-> 1000 ke 1000 accounts process honge -> slow -> but full re-check.
+
+()Use kab karte hain Disable optimization of unchanged accounts?
+-> ye tab use hota hai Jab:-
+A. correlation rule change kiya ho.
+B. policy/role/entitlement logic update hua ho.
+C. Re-evaluation chahiye sab accounts ka.
+D. Debugging/testing kar rahe ho.
+
+Q. Re-evaluation kya hai sab accounts ka?
+-> matlab sabhi accounts ko dobara se check karna. (current rules, polices, roles ke according).
+-------------------------------------------------------------------------------------------------------
+->aggregation account task me jao->
+-> disable optimization of unchanged accounts -> [Tick Mark] -> Disable हो गया ।
+-> save and execute -> ok . ->
+-> अब Task results में जाए -> फिर ush Task में click करो NON-Authoritative application task(jo banaya tha) ->
+->see कि सारे accounts process हो गये, fetch हो गए । (ये aggregate Task है ।)
+
+
+-> setup -> Tasks -> अब NON Authoritative Application Task
+write click -> Execute in Background -> Task result
+-> NON Authoritative Application Task
+-> click -> see -> 
+-> अब कोई भी identity में जाओ in identity warehouse में ->
+->देखो -> Application Account में कि Account आया है या नहीं ।
+
+()Correlation ke liye pehle application Jaise (Database/CSV) jo aggregate karte ho toh wo identity kahan se aati hai?
+-> identity Authoritative source se Aati Hai.
+Ex -> Jaise:- HR System (SAP, workday)
+-> CSV file
+-> Database
+-> Ye Authoritative Applications Yaha se data aata hai Aur identityiq mein identity object ban Jata hai.
+
+()Tumhare case me Application ek NON Authoritative (Finance-users.csv) hai aur identityiq((AuthEmployee.csv)(Authoritative Application)) dono ka data same rakhna.
+
+-> Application Definition -> 
+task Result -> AccAgg-Finance Application -> click -> see -> 4 orphan identities create hua hai -> identity created = 4
+-> Matlab NON Authoritative Application me identities nahi create hona chahiye.
+
+-> तो हम manually identity correlation करेगें।->
+->identities->identity corellation->select application->koi bhi identity name/id copy and notepad++ me khojo->
+->csv ke dono authoritative/non-authoritative me(ctrl+f-what finds se) aur thik karo ki kya chuta.
+--------------------------------------------------------------------------------------------------------------------------------------
+()Note:- जब भी Application बनाओगे तो Application field में Attribute value यहाँ से match होना चाहिए । spelling csv
+
+->Active directory hi ldap hota hai.
+->start the ldap:-
+->vmWare Workstati->jo desktop pe yellow color me hai->windows server 2019->double tap->ctrl+alt+delete->cancel->dekho password mangega->
+->R@van143->minimize->
+->win+r->mstsc->connect->yes->minimize->F:\sailpoint applications->ApacheDirectoryStudio->ApacheDirectoryStudio ka blue icon->
+->tumhara ldap khul gaya abb->
+->niche aek kkriiqconnection pe right click fir open connection->Waha aapko DIT (Directory Information Tree) dikhega.
+->Aapko apne domain ka naam dikhna chahiye (jaise DC=example,DC=com)->Ek baar DC=kkriiq,DC=com ko expand karke dekho,->
+
+->1. Users Check Karein:-
+-CN=Users par click karke dekho.
+-Yaha aapko Administrator aur baaki users milenge. SailPoint isi folder (ya container) ko crawl karke users fetch karta hai agar aapne Search DN yahi set kiya hai.
+
+2. Group Check Karein:-
+-CN=Builtin ya CN=Users ke andar aapko AD Groups milenge (jaise Domain Admins, Schema Admins).
+-Inhe dekhna zaroori hai agar aap SailPoint mein Entitlements (access rights) manage karna chahte ho.
+
+->CN=Users ko expand karo:-
+->koi bhi user pe right click->yahan teen attribute bahut important hai->
+
+()sAMAccountName: Ye login ID hoti hai.
+
+()distinguishedName (DN): Ye user ka pura path hota hai (e.g., CN=Administrator,CN=Users,DC=kkriiq,DC=com).
+
+()objectGUID
+
+()1. sAMAccountName (Login ID):-
+Kya hai: Ye user ka purana (legacy) login name hota hai jo Windows login ke liye use hota hai.
+SailPoint mein use: Isse aksar SailPoint mein Identity Name ya Account Name ki tarah use kiya jata hai.
+Example: Agar aapka naam "Amit" hai, toh sAMAccountName shayad amits ya amit.kumar hoga.
+
+()2. distinguishedName (DN - Pura Path):-
+Kya hai: Ye user ka AD hierarchy mein "Full Address" hota hai. Ye batata hai ki user kis container (CN) aur kis domain (DC) ke andar baitha hai.
+SailPoint mein use: Provisioning (user create/update) karte waqt SailPoint isi address ka use karke user tak pahunchta hai.
+Example: CN=Guest,CN=Users,DC=kkriiq,DC=com
+CN=Guest: User ka naam.
+CN=Users: Kis folder mein hai.
+DC=kkriiq,DC=com: Kis domain mein hai.
+
+()3. objectGUID (Unique Identity):-
+Kya hai: Ye har ek user ke liye ek unique "Aadhar Card number" jaisa hota hai jo system khud generate karta hai. 
+Ye kabhi change nahi hota, chahe aap user ka naam ya folder badal dein.
+SailPoint mein use: Isse Native Identity ki tarah use kiya jata hai.
+Fayda: Agar aap AD mein user ka naam (sAMAccountName) change kar dete hain,
+toh SailPoint objectGUID dekh kar samajh jata hai ki ye wahi purana banda hai, naya user nahi.
+
+Summary Table for SailPoint:-
+Attribute:----------------------SailPoint Mapping:------------------------Kyun?
+sAMAccountName:--------------------Account Name:--------------------Login karne ke liye.
+distinguishedName:---------------------DN:----------------------User ki location track karne ke liye.
+objectGUID:-----------------------Native Identity:-----------User ko uniquely identify karne ke liye (Correlation).
+
+->Naya user (sAMAccountName) banane ke liye aapko Apache Directory Studio mein hi ek naya entry create karni hogi. 
+------------------------------------------------------------------------------------------------------------------------------
+
+(). IQService Host (Server ka IP):-
+Ye wahi IP address hai jise aapne Remote Desktop (RDP) connect karne ke liye use kiya tha.
+->192.168.106.128
+
+()IQService Port: Default 5050 hota hai.
+()IQService User / Password: Ise abhi khali chhod sakte hain agar aapne IQService par "Client Authentication" setup nahi kiya hai.
+()Use TLS: Ise abhi Uncheck (band) kar dein agar aapne SSL certificate setup nahi kiya hai.
+
+(). Forest Name (Domain Name):-
+Ye aapka Active Directory domain ka naam hai jo aapne setup ke waqt rakha tha.
+Kaha dekhein: * Apache Directory Studio mein: Left side mein tree dekho, waha DC=kkriiq,DC=com likha hai. Toh aapka domain name kkriiq.com hai.
+DC ko jodte hai toh domain name banta hai.
+
+()IQService Port: 5050 (Default)
+
+()cn=user ko expand->administrator pe right click karo aur right me corner up pe copy karlo->
+->User: CN=Administrator,CN=Users,DC=kkriiq,DC=com->
+
+()Password: Aapka Windows login password.->
+()Global Catalog Server mein bhi aapko apne Windows Server ka IP Address hi dena hai: 192.168.106.128.
+
+(). IQService User & Password (Optional):-
+Ye AD ka user nahi hai.
+Ye wo user/password hota hai jo aap tab banate hain jab aap IQService ko command dete hain ki wo sirf authorized requests hi accept kare.
+Recommendation: Testing phase mein ise khali chhod dein.
+
+1. Domain Configuration (Upar wali table)
+Pehle "Add" button par click karein, fir ye details bhariye:
+
+Forest Name: kkriiq.com
+
+Domain DN: DC=kkriiq,DC=com
+
+NetBIOS Name: KKRIIQ (Ye aksar domain ka pehla part hota hai capital mein).
+
+User: CN=Administrator,CN=Users,DC=kkriiq,DC=com
+
+Password: Aapka Windows login password.
+
+Servers: Apne server ka IP address daalein: 192.168.106.128
+
+Authentication and Security: Simple rehne dein.
+
+Use TLS: Isse Uncheck (khali) rakhein.
+
+2. Exchange Configuration (Niche wali table):-
+Ise abhi ke liye khali (blank) chhod dein.
+Exchange tab zaroori hota hai jab aap SailPoint ke zariye Outlook/Exchange mailbox bhi manage karna chahte hain. 
+Abhi hamara focus sirf Active Directory users par hai.
+
+1. User Search Scope (Account Tab ke andar):-
+Search DN: Isme aapko wahi path dena hai jahan aapke users hain. Hamare case mein:
+CN=Users,DC=kkriiq,DC=com(uers pe click kare upar menu bar me dikh jayega)
+
+Iterate Search Filter: Isse SailPoint ko filter milta hai. Type karein:
+(objectClass=user)
+
+Group Membership Search DN: Ise abhi ke liye khali chhod sakte hain ya fir wahi path daal dein:
+CN=Users,DC=kkriiq,DC=com
+
+2. Group Search Scope (Group Tab ke andar)
+Upar "Account" ke bagal mein jo Group tab dikh raha hai, uspar click karein aur wahan bhi "Add" karke ye bhariye:
+
+Search DN: CN=Users,DC=kkriiq,DC=com
+
+Iterate Search Filter: (objectClass=group)
+
+3.Group Member Filter String	(member={0})
+
+
+/////////////*
+()1. Iterate Search Filter:-
+Ye ek "Chhalni" (Filter) ki tarah kaam karta hai. AD mein bahut saari cheezein hoti hain (users, groups, computers, printers).
+SailPoint ko batana padta hai ki hume sirf "Users" chahiye.
+Kya bharna hai: (objectClass=user)
+Iska matlab: Jab SailPoint AD ko scan karega, toh wo sirf unhi objects ko uthayega jinki class 'user' hai. 
+Isse faltu ka data (jaise computer accounts) SailPoint mein nahi aayega.
+
+()2. Group Membership Search DN:-
+Ye field SailPoint ko batata hai ki users ke Groups kahan dhoondne hain. 
+SailPoint jab ek user (jaise kishan) ko uthayega, toh wo check karega ki kishan kis-kis group ka part hai.
+Kya bharna hai: CN=Users,DC=kkriiq,DC=com
+Iska matlab: SailPoint is folder ke andar jayenge aur dekhega ki kya waha koi aisa group hai jisme kishan member hai. 
+Kyunki aapke default AD groups (Domain Users, Guests etc.) isi folder mein hote hain, isliye hum yahi path dete hain.
+
+()3. Group Membership Search DN:-
+Ye SailPoint ko "Rasta" (Path) batata hai jahan use Groups dhoondne hain.
+Kaise kaam karta hai: Jab SailPoint kisi user (jaise kishan) ka data AD se uthata hai, 
+toh use ye bhi check karna hota hai ki kishan kis group mein hai. SailPoint is folder (CN=Users,DC=kkriiq,DC=com) 
+ke andar jaakar un saare groups ki list nikalta hai jinme kishan member ho sakta hai.
+Kyun zaroori hai: Agar aap ye path nahi denge, toh SailPoint ko pata hi nahi chalega ki AD ke kis kone mein groups rakhe hue hain,
+aur users bina kisi group membership ke load honge.
+
+()4. Group Member Filter String: (member={0}):-
+Ye SailPoint ki "Dhoondne ki Query" hai jo wo AD se puchta hai.
+Kaise kaam karta hai: AD mein har group ke paas ek attribute hota hai jise member kehte hain. 
+Is attribute mein un saare users ke DN (Distinguished Names) likhe hote hain jo us group ka part hain.
+{0} ka matlab: Ye ek placeholder hai. SailPoint {0} ki jagah par user ka pura DN (jaise CN=kishan,CN=Users...) rakh deta hai.
+Logic: SailPoint AD se puchta hai: "Kya tumhare paas koi aisa group hai jiske member attribute mein ye user ({0}) maujood hai?" 
+Agar AD 'Haan' kehta hai, toh SailPoint us group ko user ke account se jod deta hai.
+
+
+*//////////////
+
+

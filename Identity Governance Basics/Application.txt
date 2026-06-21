@@ -1,0 +1,427 @@
+1️⃣ Application kya hai?
+Application app
+Kya hai: Ye ek target system ko represent karta hai jaha identity ka account create hota hai (Active Directory, SAP, Jira, etc.).
+Kya karta hai:-
+Identity ke accounts ke liye provisioning define karta hai.
+
+👉 Application = external system jisme user ka account hota hai.
+Matlab:-
+SailPoint ek central system hai
+Aur Application = target system (jaha access dena hai)
+✅ Example:-
+Application	           Meaning
+Active Directory:---Windows login system
+SAP	ERP:------------system
+Salesforce:----------CRM system
+Database:-----------DB access system
+➡ Ye sab Application objects hain.
+
+🔹 2️⃣ Ye kya karta hai?
+👉 Ye define karta hai:-
+system ka connection
+user accounts ka structure
+provisioning ka flow
+
+🔥 Use:-
+account create / delete
+password reset
+access assign
+
+🔹 3️⃣ Kya ye DB me store hota hai?
+✅ Haan bhai, DB me store hota hai.
+📦 Structure:-
+Application (SAP)
+   ↓
+Accounts
+   ↓
+Entitlements
+
+🔹 4️⃣ Iske andar kya hota hai?
+Field	     Meaning
+name:--------application ka naam
+type:--------system type (LDAP, DB, etc.)
+connector:---kaise connect karega
+attributes:--config values
+schemas:-----account structure
+owner:-------responsible person
+
+🔹 5️⃣ Important Methods:-
+🔸 Basic:-
+getName() → application ka naam deta hai
+setName(String name) → naam set karta hai
+🔸 Type:-
+getType() → application type deta hai
+setType(String type) → type set karta hai
+🔸 Connector:-
+getConnector() → connector deta hai
+setConnector(String connector) → connector set karta hai
+🔸 Attributes:-
+getAttribute(String name) → config value deta hai
+setAttribute(String name, Object value) → config set karta hai
+🔸 Schema:-
+getSchemas() → account structure deta hai
+setSchemas(Object schemas) → schema set karta hai
+🔸 Owner:-
+getOwner() → owner deta hai
+setOwner(String owner) → owner set karta hai
+🔸 Utility:-
+toString() → readable string
+equals(Object obj) → compare karta hai
+hashCode() → hash generate karta hai
+
+🚀 🔥 Full Code (SailPointContext ke saath):-
+import sailpoint.api.SailPointContext;
+import sailpoint.api.SailPointFactory;
+import sailpoint.object.Application;
+
+public class ApplicationExample {
+
+    public static void main(String[] args) throws Exception {
+
+        SailPointContext context = SailPointFactory.getCurrentContext();
+
+        Application app = new Application();
+
+        // Basic
+        app.setName("SAP");
+
+        // Type
+        app.setType("ERP");
+
+        // Connector
+        app.setConnector("SAP Connector");
+
+        // Attributes
+        app.setAttribute("url", "https://sap.company.com");
+
+        // Owner
+        app.setOwner("IT Admin");
+
+        // Print
+        System.out.println(app.getName());
+        System.out.println(app.getType());
+        System.out.println(app.getConnector());
+        System.out.println(app.getAttribute("url"));
+        System.out.println(app.getOwner());
+
+        // Save
+        context.saveObject(app);
+        context.commitTransaction();
+
+        System.out.println("✅ Application Saved");
+    }
+}
+📤 Output:-
+SAP
+ERP
+SAP Connector
+https://sap.company.com
+IT Admin
+✅ Application Saved
+-----------------------------------------------------------------------------------------------------------------------------------
+🔥 1️⃣ Application ke Types (SailPoint me):-
+🔥 1️⃣ LDAP / Directory Application:-
+✅ Kya karta hai?
+👉 Ye user ka login system hota hai
+username/password store karta hai
+authentication (login verify) karta hai
+groups ke through access control deta hai
+ex:-
+Active Directory
+LDAP Server
+
+🔥 Real kaam kaise hota hai?
+👨 Rahul login karta hai:-
+username/password enter
+system LDAP (AD) check karta hai
+agar match → login success
+
+👉 Groups:-
+“IT_Group” me hai → system access mil gaya
+
+🎯 Kyu use hota hai?
+centralized login system chahiye
+har system me alag login na banana pade
+security control easy ho
+--------------------------------------------
+🔥 2️⃣ Database (JDBC) Application:-
+👉 Example: MySQL, Oracle
+✅ Kya karta hai:-
+DB user create/delete
+schema/table access control
+🔥 Real Work:-
+developer ko DB access dena
+read/write permission manage
+------------------------------------------
+🔥 2️⃣ File Based Application
+✅ Kya karta hai?
+👉 Ye bulk data ko read karke identities create/update karta hai
+example:-
+CSV
+Excel
+Flat file
+👉 Use: import/export identities.
+
+🔥 Real kaam kaise hota hai?
+HR ek Excel deta hai:-
+Name,Email,Dept
+Rahul,rahul@gmail.com,IT
+Amit,amit@gmail.com,HR
+
+👉 SailPoint:-
+file read karta hai
+users create karta hai
+update karta hai
+
+🎯 Kyu use hota hai?
+jab direct system integration nahi ho
+bulk onboarding karna ho
+migration karna ho
+-------------------------------------------
+🔥 4️⃣ Web Service / API Application:-
+👉 Example: REST API
+SOAP
+✅ Kya karta hai:-
+API call ke through provisioning
+real-time access control
+🔥 Real Work:-
+POST API → user create
+DELETE API → user remove
+👉 Use: modern apps integration
+---------------------------------------------
+🔥 5️⃣ SaaS / Cloud Application:-
+👉 Example:-
+Salesforce
+Workday
+ServiceNow
+✅ Kya karta hai:-
+cloud apps me account manage
+roles & permissions assign
+🔥 Real Work:-
+CRM user create
+sales team access
+📌 Use:-
+cloud software
+remote teams
+👉 Use: cloud applications
+-----------------------------------------
+🔥 2️⃣ ERP Application (DETAILED 🔥):-
+👉 Example: SAP,Oracle ERP
+
+✅ ERP Application kya karta hai?
+👉 Ye business operations ka access control karta hai
+Matlab:-
+kaun finance data dekh sakta hai
+kaun salary access karega
+kaun invoice approve karega
+
+🔥 Internal kaam (deep samajh 🔥):-
+🔹 1. Role Based Access deta hai
+👉 Direct permission nahi deta
+👉 Roles ke through deta hai
+Example:-
+FI_USER → invoice dekh sakta hai
+HR_USER → employee data dekh sakta hai
+
+🔹 2. Business Process Control karta hai:-
+👉 ERP me sirf access nahi hota, process control hota hai
+Example:-
+purchase order create
+payment approve
+salary process
+
+🔹 3. Risk & Compliance check karta hai 🔥
+👉 Sabse important part
+Example:-
+Admin + Auditor ek saath ❌
+Create + Approve same banda ❌
+👉 Agar violation → alert 🚨
+
+🔹 4. Certification (Review) hota hai:-
+👉 manager check karta hai:-
+Rahul ko ye access chahiye ya nahi
+
+🎯 Real Scenario:-
+👨 Rahul finance team me hai:-
+SAP role mila → FI_USER
+wo invoice dekh sakta hai
+agar extra role mila → violation
+certification me review hoga
+-------------------------------------------------
+🔥 3️⃣ Custom Application (DETAILED 🔥):-
+👉 Example: Company ka internal portal
+✅ Custom Application kya karta hai?
+👉 Ye company ke internal systems ko SailPoint se connect karta hai
+
+🔥 Internal kaam (deep samajh 🔥):-
+🔹 1. Custom Provisioning karta hai
+👉 Built-in connector nahi hota
+👉 Developer API banata hai
+Example:-
+POST /createUser
+{
+  "name": "Rahul",
+  "role": "USER"
+}
+👉 SailPoint call karta hai → user create
+
+🔹 2. Custom Logic handle karta hai:-
+✅ Custom Logic kya hota hai?
+👉 Company ke apne rules / conditions / behavior
+
+🔥 Example 1 (Role based):-
+👉 Rule:-
+agar user IT department me hai → extra access do
+if(department.equals("IT")) {
+    giveAccess("Admin Tool");
+}
+
+🔥 Example 2 (Approval logic):-
+👉 Rule:-
+normal user → manager approval chahiye.
+manager → direct approval milega.
+
+🔥 Example 3 (API logic):-
+👉 Custom API:-
+POST /createUser
+{
+  "name": "Rahul",
+  "role": "USER"
+}
+👉 System internally:-
+check karega
+role assign karega
+account create karega
+
+🎯 Real Scenario:-
+👨 Rahul join karta hai:-
+👉 System check:-
+dept = IT → admin tool access
+location = India → India server access
+👉 Ye sab custom logic se hota hai
+
+🔹 3. Flexible Integration 🔥:-
+👉 kuch bhi integrate kar sakta hai
+mobile app
+web portal
+internal dashboard
+
+🔹 4. Real-time provisioning:-
+👉 turant user create / delete
+
+🎯 Real Scenario:-
+Company ka internal dashboard:-
+👨 Rahul join karta hai:-
+SailPoint API call karta hai
+Rahul ka account create hota hai
+role assign hota hai
+login ready
+----------------------------------------------
+🔥8️⃣ Delimited / Aggregation Application:-
+👉 Example: -
+HR Feed
+HR data sources
+Identity feeds
+✅ Kya karta hai:-
+external data import karta hai
+identity sync karta hai
+🔥 Real Work:-
+HR system → SailPoint sync
+-------------------------------------------------------------------------------------------
+🔥 2️⃣ getAttribute() ke andar kya hota hai?
+👉 Important 🔥 — ye sirf simple value nahi hota
+👉 Ye internally Application ka configuration map hota hai.
+📦 Structure:-
+Application
+   ↓
+Attributes (Map)
+      ↓
+      url = https://sap.company.com
+      username = admin
+      password = ****
+      timeout = 30
+🔹 Code:
+String url = app.getAttribute("url");
+String user = app.getAttribute("username");
+📤 Output:
+https://sap.company.com
+admin
+
+🔥 Real Samajh:-
+👉 getAttribute() = connector configuration + connection properties
+👉 Example:-
+URL
+credentials
+API endpoint
+timeout
+---------------------------------------------------------------------------------------------------------
+🔥 3️⃣ Owner kaun hota hai? (Real World 🔥)
+👉 Owner = application ka responsible banda / team
+🔹 Kaun ho sakta hai:-
+IT Admin
+Application Owner
+System Owner
+Security Team
+
+🔹 Real Responsibility:-
+Kaam Owner karta hai
+access approve✔
+issue fix✔
+audit answer✔
+system manage✔
+---------------------------------------------------------------------------------------------------------
+//////////*
+()🎯 1. System integration nahi ho.
+👉 Situation:-
+HR system SailPoint se directly connect nahi ho raha
+API / connector available nahi
+
+👉 Solution:-
+HR Excel/CSV file de deta hai
+
+👉 SailPoint:-
+file read karta hai
+users create/update karta hai
+-------------------------------------------------------------
+🎯 2. Bulk onboarding karna ho:-
+👉 Situation:-
+500 employees ek saath join kar rahe hain
+👉 HR ek file deta hai:-
+Name,Email,Dept
+Rahul,rahul@gmail.com,IT
+Amit,amit@gmail.com,HR
+👉 SailPoint:-
+ek shot me sab users create
+--------------------------------------------------------------------
+🎯 3. Migration karna ho:-
+👉 Situation:-
+purana system se naya system me shift
+👉 Example:-
+Old HR system → new SailPoint
+👉 File export hoti hai → SailPoint me import
+--------------------------------------------------------
+🔥 1️⃣ ERP me “Invoice” kya hota hai?
+👉 Invoice = bill / payment document
+Matlab:-
+company kisi ko paise deti hai ya leti hai
+uska record = invoice
+✅ Example:-
+Company ne laptop kharida:-
+Price: ₹50,000
+Vendor: ABC Pvt Ltd
+
+👉 Invoice banega:-
+Invoice No: 123
+Amount: 50000
+Vendor: ABC Pvt Ltd
+Status: Pending Approval
+
+🔥 ERP kya karta hai isme?
+👉 ERP system (jaise SAP):-
+✔ Invoice Create karta hai
+employee entry karta hai
+✔ Invoice Approve karta hai
+manager check karta hai
+✔ Payment Process karta hai
+finance team payment karti hai
+*///////////////

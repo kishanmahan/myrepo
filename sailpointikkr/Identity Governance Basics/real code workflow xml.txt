@@ -1,0 +1,138 @@
+🔥 Event ka real meaning code me:-
+Event directly nahi hota, but condition se represent hota hai 👇
+
+if(identity.isNew()){   // ye hi "Event" hai (Identity Created)
+    System.out.println("Event Triggered");
+}
+👉 Yaha:-
+identity.isNew() = Event detect kar raha hai,agar detect hua toh true aur nahi toh false return karta hai.
+Ye koi method of Event nahi hai.
+---------------------------------------------------------
+🚀 FULL REAL CODE (Rule + Workflow Trigger)
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.Workflow;
+import java.util.Map;
+import java.util.HashMap;
+
+public class EventRule {
+
+    public static void execute(SailPointContext context, String identityName) throws Exception {
+
+        Identity identity = context.getObjectByName(Identity.class, identityName);
+
+        if (identity != null) {
+
+            // 🔥 1. Identity Created Event
+            if (identity.isNew()) {
+                System.out.println("Event: Identity Created");
+
+                Map<String, Object> args = new HashMap<String, Object>();
+                args.put("identityName", identity.getName());
+
+                Workflow wf = context.getObjectByName(Workflow.class, "IdentityCreationWorkflow");
+                context.startWorkflow(wf, args);
+            }
+
+            // 🔥 2. Identity Updated Event
+            else if (identity.isModified()) {
+                System.out.println("Event: Identity Updated");
+
+                Map<String, Object> args = new HashMap<String, Object>();
+                args.put("identityName", identity.getName());
+
+                Workflow wf = context.getObjectByName(Workflow.class, "IdentityUpdateWorkflow");
+                context.startWorkflow(wf, args);
+            }
+
+            // 🔥 3. Identity Deleted Event
+            else if (identity.isDeleted()) {
+                System.out.println("Event: Identity Deleted");
+
+                Map<String, Object> args = new HashMap<String, Object>();
+                args.put("identityName", identity.getName());
+
+                Workflow wf = context.getObjectByName(Workflow.class, "IdentityDeleteWorkflow");
+                context.startWorkflow(wf, args);
+            }
+        }
+    }
+}
+🔥 Workflow XML (Real SailPoint Style)
+<Workflow name="IdentityCreationWorkflow">
+    <Step name="Start">
+        <Transition to="Provision"/>
+    </Step>
+
+    <Step name="Provision">
+        <Action>Provision Identity</Action>
+        <Transition to="End"/>
+    </Step>
+
+    <Step name="End">
+        <End/>
+    </Step>
+</Workflow>
+✅ Output (Real Scenario)
+👉 Case 1: New Identity
+Event: Identity Created
+👉 Case 2: Modified Identity
+Event: Identity Updated
+👉 Case 3: Deleted Identity
+Event: Identity Deleted
+///////////////*
+()1️⃣ context.getObjectByName(Workflow.class, "IdentityDeleteWorkflow"):-
+👉 “SailPoint se naam ke basis pe workflow object le aa”
+
+2️⃣ context.startWorkflow(wf, args);:-
+🔹 startWorkflow:-
+👉 Method hai jo workflow ko run/execute karta hai
+
+🔹 wf:-
+👉 Ye actual Workflow object hai jo upar fetch kiya
+
+🔹 args:-
+👉 Ye input data (Map) hai jo workflow ko diya jaata hai
+Example:-
+args.put("identityName", "Kishan");
+✅ Simple samajh:-
+👉 “Workflow start karo aur usko input data do”
+
+🔹 <Workflow name="IdentityCreationWorkflow">:-
+👉 Ye poora workflow ka container hai
+👉 name = workflow ka unique naam
+
+🔹 <Step name="Start">:-
+👉 Step = ek stage / phase workflow ka
+👉 "Start" = first step
+
+🔹 <Transition to="Provision"/>:-
+👉 Transition = next step kaha jayega
+👉 "Provision" = next step ka naam
+
+🔹 <Step name="Provision">:-
+👉 Ye next step hai jaha actual kaam hota hai
+
+🔹 <Action>Provision Identity</Action>:-
+👉 Action = jo kaam perform hoga
+👉 Yaha → Identity ka provisioning (account create/update)
+
+🔹 <Transition to="End"/>:-
+👉 Kaam hone ke baad → next step "End"
+
+🔹 <Step name="End">:-
+👉 Final step (workflow khatam hone wala stage)
+
+🔹 <End/>:-
+👉 Workflow ko terminate (finish) kar deta hai.
+------------------------------------------------------
+()“Provision Identity ka real code kaha hai?”
+🚀 Answer (REAL SAILPOINT TRUTH)
+👉 <Action>Provision Identity</Action>
+ye sirf ek instruction / keyword hai
+
+❌ Iske andar direct Java code nahi hota
+✅ Ye internally SailPoint engine ko bolta hai:
+👉 “Provisioning engine ko call karo”
+*//////////////
+-----------------------------------------------------------------------------------------------------------------------------------

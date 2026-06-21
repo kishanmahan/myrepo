@@ -1,0 +1,90 @@
+()SailPoint IdentityIQ (IIQ) Installation (Tomcat + Database) 💻
+Main tujhe real project style step-by-step bata raha hoon 👇
+🏗️ IIQ Installation Overview:-
+
+IIQ generally deploy hota hai:-
+
+✅ Application Server → Apache Tomcat
+✅ Database → Oracle / MySQL / SQL Server
+Architecture:-
+User Browser
+     ↓
+Tomcat (IIQ WAR deployed)
+     ↓
+Database
+
+🧰 Pre-Requisites:-
+Installation se pehle ye ready hona chahiye:-
+🔹 1️⃣ Java:-
+JDK 8 / 11 (project requirement ke hisaab se)
+Check:-
+java -version
+
+🔹 2️⃣ Database Installed:-
+Example:-
+Oracle
+MySQL
+SQL Server
+
+🔹 3️⃣ Tomcat Installed:-
+Download:-
+Apache Tomcat 9 (commonly used)
+Extract karo:-
+C:\tomcat
+-----------------------------------------------------------
+🗄️ Step 1: Database Setup
+1️⃣ New Database Create karo
+Example (MySQL):-
+CREATE DATABASE iiq;
+
+2️⃣ DB User Create karo
+CREATE USER 'iiquser' IDENTIFIED BY 'password';
+GRANT ALL PRIVILEGES ON iiq.* TO 'iiquser';
+
+3️⃣ SailPoint DB Scripts Run karo
+SailPoint installation package me milta hai:
+database/create_db.sql
+Isko run karna hota hai.
+Ye:-
+Tables create karega
+Indexes banayega
+Default objects dalega
+------------------------------------------------------------------------
+⚙️ Step 2: Tomcat Configuration:-
+1️⃣ Tomcat Install karo
+Folder structure:-
+tomcat/
+   ├── bin
+   ├── conf
+   ├── webapps
+
+2️⃣ IIQ WAR File Deploy karo
+IIQ package me milega:-
+identityiq.war
+Isko copy karo:-
+tomcat/webapps/
+Tomcat start karte hi WAR auto-extract ho jayega.
+
+🔧 Step 3: Configure Database Connection
+File open karo:-
+identityiq/WEB-INF/classes/iiq.properties
+Edit karo:-
+dataSource.username=iiquser
+dataSource.password=password
+dataSource.url=jdbc:mysql://localhost:3306/iiq
+dataSource.driverClassName=com.mysql.cj.jdbc.Driver
+
+🚀 Step 4: Tomcat Start karo
+Command:-
+cd tomcat/bin
+startup.bat
+Linux:-
+./startup.sh
+
+🌐 Step 5: Browser me Open karo
+http://localhost:8080/identityiq
+Agar sab sahi hai:-
+Login page open ho jayega 🎉
+Default login:-
+spadmin
+-----------------------------------------------------------------------------------

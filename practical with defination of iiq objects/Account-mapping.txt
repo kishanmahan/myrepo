@@ -1,0 +1,57 @@
+()global-setting->Account-mapping->
+
+->Add new attribute->Add source->Application attribute->select application->LDAP->select attribute-employeeNumber->add->save->
+->Attribute name-prisec-displayname-prisec->save->
+
+()Edit Account Attribute:-
+Jab aap koi naya attribute banate hain (jaise: email, department, ya manager), toh ye options dikhte hain:
+
+--Attribute Name: Database mein use hone wala technical naam. (Example: firstname)
+
+--Display Name: Jo aapko screen par dikhega. (Example: First Name)
+
+--Edit Mode:-
+Read Only: User ya Admin ise SailPoint mein change nahi kar sakta. Data sirf source system se aayega.
+
+--Editable: Admin ise manually change kar sakta hai.
+
+--Attribute Type: Data kis tarah ka hai? (Example: string text ke liye, boolean Yes/No ke liye).
+
+--Multi-Valued: Agar ek user ki is attribute mein ek se zyada values ho sakti hain (Example: Ek user ke pas 3 mobile numbers hain).
+
+--Searchable: Agar ye checked hai, toh aap Identity Warehouse mein is attribute ke base par users ko filter/search kar sakte hain.
+
+()Source Mappings (Data kahan se aayega?):-
+Ye sabse important part hai. SailPoint ko batana padta hai ki ye email ya firstname kis application se uthana hai.
+
+()1. Application Attribute:-
+Example: Aapne Active Directory (AD) select kiya aur uske andar se mail attribute chuna.
+Kyun?: Sabse simple tarika. Jo AD mein hai, wahi SailPoint identity mein aa jayega.
+
+()2. Application Rule:-
+Yeh rule kisi khaas (specific) application se juda hota hai.Jab SailPoint us application se data read karta hai,tabhi yeh rule trigger hota hai.
+Kya karta hai?: Yeh us application ke attributes ko process karke ek final value nikalta hai.
+Kyu use hota hai?: Jab aapko kisi application ke raw data ko modify karke Identity profile mein daalna ho.
+Example:-
+Maan lijiye aapne Active Directory (AD) connect kiya hai.
+AD mein user ka department code FIN-001 hai.
+Lekin aap chahte hain ki SailPoint Identity mein yeh sirf Finance dikhe.
+Aap ek Application Rule likhenge jo check karega: if (code == 'FIN-001') return 'Finance';.
+Execution: Yeh rule sirf tabhi chalega jab us specific application ka task (Aggregation) chal raha ho.
+
+()3. Global Rule (All Applications):-
+Yeh rule kisi ek application tak maujood nahi hota. Yeh poore system (Global) level par kaam karta hai.
+Kya karta hai?: Yeh rule sabhi applications ke account data ko access kar sakta hai aur unke base par calculation kar sakta hai.
+Kyu use hota hai?: Jab aapko kai sari applications ke data ko mila kar (Cross-application logic) koi value nikalni ho.
+
+Example:-
+Maan lijiye aapko user ka Status calculate karna hai.
+Logic yeh hai ki agar user ka account HR System mein "Active" hai AUR Active Directory mein bhi "Active" hai, 
+tabhi use "Fully Active" maana jaye.
+Iske liye aap Global Rule use karenge kyunki isse dono applications ka data ek saath check kiya ja sakta hai.
+Execution: Yeh rule tab chalta hai jab Identity Refresh task chalta hai ya jab multiple sources se data aggregate ho raha hota hai.
+
+()Source Mappings mein "Priority" (Priority Check)
+Aap ek attribute ke liye multiple sources (Add Source) bhi daal sakte hain.
+Maan lijiye: Pehla source HR System hai aur doosra Active Directory.
+Logic: SailPoint pehle HR System se data uthayega. Agar HR mein data nahi mila, tabhi wo AD ko check karega.

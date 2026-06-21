@@ -1,0 +1,67 @@
+2. sailpoint.object.Custom:-
+Import:-
+import sailpoint.object.Custom;
+Kaam:-
+IIQ ka Custom Object use karna.
+Custom Object = key-value configuration storage.
+Example:-
+Suppose IIQ me Custom Object hai:-
+
+()1. Ise Kaun Banata Hai Aur Kyun?
+Ise ek SailPoint Developer (tum) banata hai jab use koi aisi settings ya configuration store karni ho jo 
+SailPoint ke standard objects (jaise Application, Identity, Bundle) mein fit nahi baithti.
+Maan lo humne ek object banaya jiska naam hai MyProjectConfiguration:-
+XML
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Custom PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Custom name="MyProjectConfiguration">
+  <Attributes>
+    <Map>
+      <entry key="adminEmail" value="iam-admin@company.com"/>
+      <entry key="maxRetryCount" value="3"/>
+      <entry key="enableDebugLogging" value="true"/>
+    </Map>
+  </Attributes>
+</Custom>
+/////////////*
+MyProjectConfiguration kaha import kare  matlab ish obj ko likhne ke baad ujhe is xml ko global setting se import karna hoga.
+*/////////////
+
+3. Live Code Implementation (Beanshell / Java):-
+Ab dekho ki tum apne kisi Rule ya Workflow mein is sailpoint.object.Custom class ka use karke database se yeh values kaise nikaloge.
+Java
+import sailpoint.object.Custom;
+import sailpoint.object.Attributes;
+import org.apache.log4j.Logger;
+
+// Logger initialize kiya debugging ke liye
+Logger logger = Logger.getLogger("db.custom.rule");
+
+String adminEmail = "";
+int maxRetry = 0;
+boolean isDebugEnabled = false;
+
+try {
+    // 1. Database se Custom Object ko uske naam se fetch karo
+    Custom configObject = context.getObjectByName(Custom.class, "MyProjectConfiguration");
+
+    if (configObject != null) {
+        // 2. Custom Object se saare attributes (Map) nikal lo
+        Attributes attributes = configObject.getAttributes();
+        
+        if (attributes != null) {
+            // 3. Key ka use karke specific value fetch karo
+            adminEmail = attributes.getString("adminEmail");
+            maxRetry = attributes.getInt("maxRetryCount");
+            isDebugEnabled = attributes.getBoolean("enableDebugLogging");
+            
+            logger.info("Config fetched successfully. Admin Email: " + adminEmail);
+        }
+    } else {
+        logger.error("Bhai, 'MyProjectConfiguration' naam ka Custom Object database mein nahi mila!");
+    }
+} catch (Exception e) {
+    logger.error("Error while fetching Custom Object: " + e.getMessage());
+}
+
+// Aage tum is 'adminEmail' aur 'maxRetry' variables ko apne logic mein use kar sakte ho

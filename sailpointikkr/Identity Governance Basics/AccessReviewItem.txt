@@ -1,0 +1,513 @@
+()🔹 AccessReview ke common items jo rerturn hota hai:-
+()Identity Items:-
+Kaun user ka review ho raha hai
+Example:-
+Rahul Kumar
+Priya Sharma
+
+()Entitlement Items:-
+Identity ke paas jo access hai, wo review hota hai
+Example:-
+Salesforce Admin Access
+HR System Role
+
+()Account Items:-
+Identity ke application accounts jo linked hain
+Example:-
+Salesforce: rahul.kumar@company.com
+Jira: priya.sharma
+
+()Role Items:-
+Agar identity role ke through access hold kar rahi hai
+Example:-
+HR Manager Role → includes Payroll App + Employee DB Access
+
+()Policy Violation Items:-
+Agar identity kisi SoD ya policy violation me hai
+Example:-
+User has both “Purchase Approver” + “Finance Admin” → conflict
+
+()Status / Review Info:-
+Item ke status ke info bhi hota hai
+Example:-
+APPROVED
+REVOKE
+PENDING
+
+🔥 🔹 Access Review kya hai?
+👉 Access Review (Certification) ka matlab:-
+User ke paas jo access (roles, entitlements) hai wo sahi hai ya nahi — ye check karna
+Jab tu AccessReview object create ya update karta hai, wo DB me persist hota hai.
+🔥 🔹 Ye kya karta hai?
+👉 System automatically:-
+Users ka access list nikalta hai
+Reviewer (Manager / Admin) ko bhejta hai
+Wo decide karta hai:-
+Approve ✅
+Revoke ❌
+Phir system action leta hai.
+
+🔹 AccessReview kya hai?
+👉 Poora review campaign / collection
+Isme multiple users (identities) hote hain
+Har user ke:-
+roles access
+entitlements access
+permissions access
+👉 Sab kuch ek jagah store hota hai
+✔️ Simple:-
+AccessReview = sab users + unka access ka review ek container me.
+
+🔹 1️⃣ AccessReviewItem kya hai?
+Definition:
+AccessReviewItem ek object/class hai jo Access Review ke andar review hone wale single item ko represent karta hai.
+Matlab:-
+Jab tu AccessReview.getItems() karta hai, har item ek AccessReviewItem object hota hai.
+Ye basically identity + entitlement/account/role + status info ka container hai.
+Ek user (identity) ka ek entitlement/account/role ka review item.
+Ye object DB me store hota hai, taaki audit aur compliance ke liye track rahe.
+-------------------------------------------------------------------------------------------------------------------
+🔹 AccessReviewItem kya hai?
+👉 Ek single access ka review item,
+Ye represent karta hai:-
+ek role access
+ya ek entitlement access
+ya ek permission access
+👉 Reviewer isi ko:-
+Approve ❇️
+Revoke ❌
+👉 AccessReviewItem = ek access (role/entitlement) ka review, user ka nahi.
+
+🔹 2️⃣ AccessReviewItem kya karta hai?
+Review me identity ke access ko track karta hai
+Status maintain karta hai – APPROVED, REVOKE, PENDING
+Audit info maintain karta hai – kaun approve/reject kiya, kab, comments
+Entitlement / Role / Account ke details rakhta hai.
+-------------------------------------------------------------------------------------------------------------------
+📦 Kya AccessReviewItem DB me save hota hai?
+✔️ Haan — save hota hai.
+Jab Access Review run hota hai aur items generate ho jaate hain,
+ye items SailPoint database me persist ho jaate hain as part of the review.
+Reviewer decisions/status (Approved, Revoked, Pending, etc.) bhi DB me record hota hai
+ye audit / compliance ke liye zaroori hota hai.
+
+🔹 2️⃣ AccessReviewItem andar kya hota hai (fields / attributes) hai aur ye review process me use hote hain aur db me store hote hai.:-
+Field/Attribute	       Type/Example	                            Description
+id:--------------------String/UUID:---------------------Unique identifier for the item
+identity:-------------Identity object:------------------Kaun user ka review ho raha hai
+entitlement:---------Entitlement object:---------Kya access review ho raha hai (role, app access, permission)
+account:---------------Account object:------------------Identity ka application account
+role:------------------Role object:-------------------Agar entitlement role ke through hai
+application:---------Application object:------------Application jisme entitlement/account hai
+status:-----------Enum:PENDING/APPROVED/REVOKE:----------Current review status
+comments:-----------------String:----------------------------Reviewer ka comment
+dueDate:------------------Date:----------------------------Item ka review due date
+createdDate:--------------Date:--------------------------Item create hua kab
+modifiedDate:-------------Date:-----------------------------Last update date
+delegated:--------------Boolean:--------------------Ye item delegated review me hai ya nahi
+manager:------------Identity / Manager object:---------Responsible manager for approval
+type:------------------Enum / String:--------------Item type: Entitlement / Role / Account / Policy
+newAccess:---------------Boolean:-----------------------Flag for newly assigned access
+completed:---------------Boolean:------------------------Review complete hua ya nahi
+accessSummary:---------String / Object:--------------------Summary of the access
+identitySummary:-------String / Object:--------------------Summary of the identity
+---------------------------------------------------------------------------------------------------------------------------------------
+NewAccessReviewItem()
+NewAccessReviewItemWithDefaults()
+
+GetAccessSummary()
+GetAccessSummaryOk()
+SetAccessSummary()
+HasAccessSummary()
+
+GetIdentitySummary()
+GetIdentitySummaryOk()
+SetIdentitySummary()
+HasIdentitySummary()
+
+GetId()
+GetIdOk()
+SetId()
+HasId()
+
+GetCompleted()
+GetCompletedOk()
+SetCompleted()
+HasCompleted()
+
+GetNewAccess()
+GetNewAccessOk()
+SetNewAccess()
+HasNewAccess()
+
+GetDecision()
+GetDecisionOk()
+SetDecision()
+HasDecision()
+
+GetComments()
+GetCommentsOk()
+SetComments()
+HasComments()
+SetCommentsNil()
+UnsetComments()
+---------------------------------------------------------------------------------------------------------------------------------------
+🔹 1️⃣ NewAccessReviewItem():-
+Ye ek naya empty AccessReviewItem object create karta hai,
+Fields sab initially null / empty hote hain,
+Tu manually identity, entitlement, status, comments set kar sakta hai.
+AccessReviewItem item = new AccessReviewItem(); // NewAccessReviewItem()
+item.setIdentity(identityObj);
+item.setEntitlement(entitlementObj);
+item.setStatus(Status.PENDING);
+
+🔹 2️⃣ NewAccessReviewItemWithDefaults();-
+Ye naya AccessReviewItem object create karta hai with default values
+Example defaults:
+status = PENDING
+completed = false
+newAccess = true/false
+------------------------------------------------------------------------------------------------------------------------------------
+()🔹 1️⃣ accessSummary kya hai?
+Identity ke paas jo access ya entitlement hai, uska ek short description,
+Reviewer ko ek nazar me samajh aajaye ki kya access review ho raha hai,
+Audit aur reporting me bhi use hota hai.
+Example value:-
+"Salesforce Admin Access assigned via HR Role"
+"Jira Developer Permission"
+"VPN Access - New Assignment"
+Storage: Ye field DB me store hoti hai, kyunki AccessReviewItem DB me save hota hai for audit/compliance.
+
+2.1 GetAccessSummary():-
+Purpose: Ye method accessSummary ki value fetch karne ke liye use hota hai.
+Return type: Usually String ya Object (depending on SDK version)
+Use case: Jab tu review item ko read kar raha ho aur summary display karna ho
+String summary = item.getAccessSummary();
+System.out.println("Access Summary: " + summary);
+Output example:-
+Access Summary: Salesforce Admin Access assigned via HR Role
+
+2.2 GetAccessSummaryOk():-
+Purpose: Ye method accessSummary fetch karne ke saath existence check bhi karta hai
+Return type: Tuple (value, exists) ya (AccessSummary, boolean)
+Use case: Null check ke saath safe read karna
+AccessSummary summary;
+boolean exists;
+(summary, exists) = item.GetAccessSummaryOk();
+if(exists){
+    System.out.println("Access Summary Exists: " + summary);
+} else {
+    System.out.println("No Access Summary set");
+}
+Advantage: Null pointer exception avoid karta hai.
+
+2.3 SetAccessSummary():-
+Purpose: Ye method accessSummary ko set/update karne ke liye use hota hai
+Use case: Jab tu reviewer ka custom comment/summary update karna ho
+item.setAccessSummary("VPN Access - Pending Approval");
+System.out.println("Updated Access Summary: " + item.getAccessSummary());
+Output example:-
+Updated Access Summary: VPN Access - Pending Approval
+
+2.4 HasAccessSummary():-
+Purpose: Check karta hai ki accessSummary field me value exist karti hai ya nahi
+Return type: Boolean
+Use case: Conditional logic me useful, jaise null values ko avoid karna
+if(item.hasAccessSummary()){
+    System.out.println("Summary: " + item.getAccessSummary());
+} else {
+    System.out.println("No summary available");
+}
+---------------------------------------------------------------------------------------------------------------------------------------
+🔹 1️⃣ identitySummary kya hai?
+Definition:-
+identitySummary ek field/attribute hai jo review item ke identity (user) ka concise summary / short description rakhta hai.
+Purpose:-
+Reviewer ko ek nazar me samajh aaye ki kaun identity ka review ho raha hai
+Audit aur reporting me use hota hai
+Especially helpful jab AccessReview me multiple users ke items hote hain
+Example values:-
+"Rahul Kumar - HR Manager"
+"Priya Sharma - Salesforce Admin"
+"John Doe - IT Support"
+Storage: Ye field bhi DB me store hoti hai, kyunki AccessReviewItem database me persist hota hai.
+
+🔹 2️⃣ IdentitySummary ke common methods:-
+AccessReviewItem me ye charo methods usually use hote hain:-
+Method	                          Kya karta hai
+GetIdentitySummary():---identitySummary ko fetch karta hai
+GetIdentitySummaryOk():-fetch + check existence safely
+SetIdentitySummary():---identitySummary ko set/update karta hai
+HasIdentitySummary():---check karta hai ki identitySummary exist karti hai ya nahi.
+
+2.1 GetIdentitySummary():-
+String idSummary = item.getIdentitySummary();
+System.out.println("Identity Summary: " + idSummary);
+Output example:-
+Identity Summary: Rahul Kumar - HR Manager
+
+2.2 GetIdentitySummaryOk():-
+String idSummary;
+boolean exists;
+(idSummary, exists) = item.GetIdentitySummaryOk();
+if(exists){
+    System.out.println("Identity Summary Exists: " + idSummary);
+} else {
+    System.out.println("No Identity Summary set");
+}
+Advantage: Null pointer exception avoid hota hai.
+
+2.3 SetIdentitySummary():-
+item.setIdentitySummary("Priya Sharma - Salesforce Admin");
+System.out.println("Updated Identity Summary: " + item.getIdentitySummary());
+Output:
+Updated Identity Summary: Priya Sharma - Salesforce Admin.
+
+2.4 HasIdentitySummary():-
+if(item.hasIdentitySummary()){
+    System.out.println("Summary exists: " + item.getIdentitySummary());
+} else {
+    System.out.println("No identity summary available");
+}
+Boolean check: true/false.
+--------------------------------------------------------------------------------------------------------------------------------
+🔹 1️⃣ id kya hai?
+Definition:-
+id ek unique identifier hai jo har AccessReviewItem ko uniquely identify karta hai.
+Purpose:-
+Ye DB me primary key ke tarah kaam karta hai
+AccessReviewItem ko workflow me track aur fetch karne ke liye use hota hai
+Audit aur compliance ke liye essential hai
+Example value:
+"123e4567-e89b-12d3-a456-426614174000" (UUID format)
+"ARItem-20260326-001"
+Storage: Ye DB me save hota hai AccessReviewItem ke saath.
+
+🔹 2️⃣ id ke charo methods:-
+AccessReviewItem me id handle karne ke liye ye methods commonly use hote hain:-
+Method	                                     Kya karta hai
+GetId()	                                   id ko fetch karta hai
+GetIdOk()	                           id fetch + check if exists safely
+SetId()                              	id ko set/update karta hai
+HasId()	                      check karta hai ki id exist karti hai ya nahi
+
+2.1 GetId():-
+Purpose: Item ka id fetch karne ke liye
+Example:-
+String itemId = item.getId();
+System.out.println("AccessReviewItem ID: " + itemId);
+Output example:
+AccessReviewItem ID: 123e4567-e89b-12d3-a456-426614174000
+
+2.2 GetIdOk():-
+Purpose: id fetch + check if exists (null-safe)
+Example:-
+String itemId;
+boolean exists;
+(itemId, exists) = item.GetIdOk();
+if(exists){
+    System.out.println("ID exists: " + itemId);
+} else {
+    System.out.println("ID not set");
+}
+Advantage: Null pointer exception avoid karta hai.
+
+2.3 SetId():-
+Purpose: id set / update karne ke liye
+Example:
+item.setId("ARItem-20260326-001");
+System.out.println("Updated ID: " + item.getId());
+Output:
+Updated ID: ARItem-20260326-001
+
+2.4 HasId():-
+Purpose: Check karta hai ki item ke paas id exist karti hai ya nahi
+Example:-
+if(item.hasId()){
+    System.out.println("ID exists: " + item.getId());
+} else {
+    System.out.println("No ID assigned");
+}
+Output example:
+ID exists: 123e4567-e89b-12d3-a456-426614174000
+--------------------------------------------------------------------------------------------------------------------
+🔹 completed kya hota hai?
+👉 Ye ek boolean field hota hai
+true → review complete ho gaya
+false → abhi pending hai.
+
+1️⃣ GetCompleted():-
+👉 Ye method direct value return karta hai,
+boolean status = item.getCompleted();
+System.out.println(status);
+
+2️⃣ GetCompletedOk():-
+👉 Ye thoda advanced method hai
+👉 Ye 2 cheeze return karta hai:-
+value
+boolean (set hua hai ya nahi)
+Boolean value = item.getCompletedOk();
+💡 Concept:-
+Agar value set hai → return karega
+Agar set nahi hai → null ya default handle.
+
+3️⃣ SetCompleted(boolean value):-
+👉 Ye value set karta hai
+item.setCompleted(true);
+
+✔️ Meaning:-
+Reviewer ne decision de diya → completed = true
+
+👉 Agar:-
+item.setCompleted(false);
+→ abhi pending hai
+
+4️⃣ HasCompleted():-
+👉 Check karta hai ki value set hui hai ya nahi
+boolean exists = item.hasCompleted();
+System.out.println(exists);
+
+✔️ Output:-
+true  → value set hai
+false → value set nahi hai
+------------------------------------------------------------------------------------------------------------------------------------
+🔹 newAccess kya hota hai?
+👉 newAccess = kya ye access recently (naya) assign hua hai?
+true → naya access hai 🆕
+false → purana access hai
+
+🔥 Real use case:-
+Maan le:-
+👤 User ko abhi-abhi Admin Role mila hai
+👉 Toh review me dikhega:
+
+AccessReviewItem (Admin Role)
+newAccess = true
+
+Aur agar purana access hai:-
+AccessReviewItem (Email Access)
+newAccess = false
+----------------------------------------------------------------------------
+1️⃣ GetNewAccess():-
+👉 Direct value return karta hai
+boolean val = item.getNewAccess();
+System.out.println(val);
+✔️ Output:-
+true / false
+👉 Simple:-
+kya access naya hai ya nahi.
+------------------------------------------------
+🔹 GetNewAccessOk() kya karta hai?
+👉 Ye ek safe getter method hai
+👉 Ye normally 2 cheez ka concept handle karta hai:-
+value (true/false)
+kya value set hui hai ya nahi
+🔥 Simple language me:-
+👉
+getNewAccessOk() = "value do + batao valid hai ya nahi"
+-----------------------------------------------
+3️⃣ SetNewAccess(boolean value):-
+👉 Ye value set karta hai
+item.setNewAccess(true);
+✔️ Meaning:-
+Ye access abhi assign hua hai.
+-----------------------------------------
+4️⃣ HasNewAccess():-
+👉 Check karta hai ki value set hui hai ya nahi
+boolean exists = item.hasNewAccess();
+✔️ Output:-
+true  → value set hai  
+false → set nahi hai.
+--------------------------------------------------------------------------------------------
+🔹 decision kya hota hai?
+👉 Ye batata hai reviewer ne kya kiya:-
+Approve ✅
+Revoke ❌
+Abstain / No decision ⚪
+📦 Example:-
+decision = "APPROVE"
+decision = "REVOKE"
+
+1️⃣ GetDecision():-
+👉 Direct decision value deta hai,
+String decision = item.getDecision();
+System.out.println(decision);
+✔️ Output:-
+APPROVE   // ya REVOKE
+
+2️⃣ GetDecisionOk():-
+👉 Safe getter hai (important 🔥)
+String decision = item.getDecisionOk();
+👉 Ye return karega:-
+"APPROVE"
+"REVOKE"
+null ❗ (agar set nahi hai)
+✔️ Simple:-
+value + check (set hai ya nahi)
+
+3️⃣ SetDecision(String decision):-
+👉 Reviewer ka decision set karta hai,
+item.setDecision("APPROVE");
+
+4️⃣ HasDecision():-
+👉 Check karta hai ki decision diya gaya hai ya nahi,
+boolean exists = item.hasDecision();
+System.out.println(exists);
+✔️ Output:-
+true  → decision diya gaya
+false → abhi pending hai
+--------------------------------------------------------------------------------------------------------------------------
+🔹 comments kya hota hai?
+👉 Reviewer ka note / reason
+"Access required for project"
+"No longer needed"
+"Temporary access"
+📦 Example:-
+comments = "User needs access for SAP project"
+
+1️⃣ GetComments():-
+👉 Direct comment return karta hai
+String c = item.getComments();
+System.out.println(c);
+✔️ Output:-
+User needs access for SAP project.
+
+2️⃣ GetCommentsOk():-
+👉 Safe getter hai (important 🔥)
+String c = item.getCommentsOk();
+👉 Return:-
+String (agar value hai)
+null (agar set nahi hai)
+✔️ Simple:-
+value + null safety
+
+3️⃣ SetComments(String comments):-
+👉 Comment set karta hai
+item.setComments("Access approved for testing purpose");
+👉 Reviewer jab decision deta hai tab use hota hai
+
+4️⃣ HasComments():-
+👉 Check karta hai comment diya gaya hai ya nahi
+boolean has = item.hasComments();
+System.out.println(has);
+✔️ Output:-
+true  → comment hai
+false → comment nahi hai
+------------------------------------------------------------------------------------------------------------------
+5️⃣ SetCommentsNil():-
+👉 ⚠️ Ye thoda advanced hai
+👉 Iska matlab:-
+value intentionally null set karna
+item.setCommentsNil();
+👉 Difference:-
+Normal null → set nahi hua
+Nil → intentionally empty (API ko batana hai)
+
+✔️ Use case:-
+API response me explicitly null bhejna
+
+6️⃣ UnsetComments():-
+👉 Completely field remove kar deta hai
+item.unsetComments();
+👉 Meaning:-
+Jaise kabhi set hi nahi hua tha.

@@ -1,0 +1,64 @@
+-----------------------------------------------------------------------------------------------------
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule created="1760203657847" id="c0a83c0199d417218199d4505277003b" language="beanshell" modified="1776007072269" name="TestProvisioningRule" significantModified="1776007072269">
+  <ReferencedRules>
+    <Reference class="sailpoint.object.Rule" id="c0a83c0199d315958199d336cf32000d" name="NS_Global_RuleLibrary_Utils"/>
+  </ReferencedRules>
+  <Signature returnType="String"/>
+  <Source>
+import java.util.ArrayList;
+import java.util.List;
+import sailpoint.api.Provisioner;
+import sailpoint.object.Identity;
+import sailpoint.object.ProvisioningPlan;
+import sailpoint.object.ProvisioningPlan.AccountRequest;
+import sailpoint.object.ProvisioningPlan.AttributeRequest;
+import sailpoint.object.ProvisioningProject;
+import sailpoint.tools.GeneralException;
+import sailpoint.tools.Util;
+import sailpoint.api.PasswordGenerator;
+  
+  
+  String identityName="f1aea43c-892b-4f9d-be64-42557cc5650f";
+  System.out.println("rule execution start");
+  Identity identity =context.getObjectByName(Identity.class,identityName);
+ // return identity;
+  //return getaDAccountLink("spadmin");
+  try {
+
+    List attrReqList = new ArrayList();
+    ProvisioningPlan plan = new ProvisioningPlan();
+    AccountRequest accReq = new AccountRequest();
+    accReq.setOperation(AccountRequest.Operation.Create);
+    accReq.setApplication("Active Directory");
+    
+    String samAccountName="singh.nikesh"; //= generateUserName(identity);
+  //  String nativeIdentity = "CN=" + "Susan titu Jones" + ",OU=Financial and Administrative Affairs,OU=Employees,OU=Users,OU=SailPoint,DC=nsiiq,DC=com";
+    String nativeIdentity = "CN=" + samAccountName +",OU=Financial Accounting and Reporting"+ ",OU=Permanent Employees,OU=Users,OU=SailPoint,DC=nsiiq,DC=com";
+    accReq.setNativeIdentity(nativeIdentity);
+   
+    String password = generatePassword(identityName);
+    attrReqList.add(new AttributeRequest("password", ProvisioningPlan.Operation.Set,password));
+    attrReqList.add(new AttributeRequest("sAMAccountName", ProvisioningPlan.Operation.Set,samAccountName));
+    accReq.setAttributeRequests(attrReqList);
+   
+    plan.add(accReq);
+    plan.setIdentity(identity);
+System.out.println("plan:::::::" + plan.toXml());
+    //  Execute provisioning
+    Provisioner p = new Provisioner(context);
+    ProvisioningProject proj = p.compile(plan);
+    System.out.println("proj:::::::" + proj.toXml());
+  //  return proj;
+    p.execute(proj);
+    
+
+    System.out.println("=== AD Create Account Rule completed successfully ===");
+  } catch (Exception e) {
+    System.out.println("Error in AD Create Account Rule: " + e);
+    throw new GeneralException("AD Account Creation failed: " + e.getMessage());
+  }
+  return "success"
+  </Source>
+</Rule>
